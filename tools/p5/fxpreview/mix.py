@@ -21,7 +21,8 @@ for t, n, v in events:
     elif (SFX / f"{n}.ogg").exists():
         resolved.append((float(t), SFX / f"{n}.ogg", float(v)))
 events = resolved
-cmd = ["ffmpeg", "-loglevel", "error", "-y", "-framerate", "30", "-i", str(HERE / "out" / s / "f%08d.png")]
+import os
+cmd = ["ffmpeg", "-loglevel", "error", "-y", "-framerate", os.environ.get("FPS", "30"), "-i", str(HERE / "out" / s / "f%08d.png")]
 for _, f, _ in events:
     cmd += ["-i", str(f)]
 if events:

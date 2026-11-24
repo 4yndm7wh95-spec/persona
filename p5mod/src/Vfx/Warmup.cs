@@ -418,6 +418,19 @@ public static class Warmup
 		QueueTextures(PileText.Textures());
 		QueueShaders(typeof(PileDraw));
 		QueueShaders(typeof(PileExhaust));
+		QueueShaders(typeof(PileDiscard));
+		// 用户 2026-11-24：入场卡 —— 第一次打开时才编译的东西都提前做：入场用的裁剪（clip_children）+ 读屏反色的画法、菜单 3D Joker（网格、动作片段、3D 材质）
+		Enqueue(new("pile clip + invert", Draw: slot =>
+		{
+			Polygon2D clip = new() { Polygon = new[] { new Vector2(0, 0), new Vector2(16, 0), new Vector2(16, 16) }, ClipChildren = CanvasItem.ClipChildrenMode.Only, Position = new Vector2(60, 44) };
+			clip.AddChild(new ColorRect { Size = new Vector2(16, 16), Material = PileDraw.StarMaterial(118f, Colors.White, Colors.Black, Colors.Gray, Vector2.Zero), MouseFilter = Control.MouseFilterEnum.Ignore });
+			slot.AddChild(clip);
+			slot.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });
+			slot.AddChild(new Polygon2D { Polygon = new[] { new Vector2(60, 44), new Vector2(76, 44), new Vector2(76, 60) }, Antialiased = true, Material = new ShaderMaterial { Shader = PileDiscard.InvertShader } });
+		}));
+		QueueTextures(new[] { "m3d_c0001_t01_face01UI", "m3d_c0001_t01_kamenUI" });
+		Enqueue(new("menu 3d data", Load: () => { MenuJoker3D.Preload("main_0000", "main_0005", "main_0010", "main_0015", "main_0016"); return true; }));
+		Enqueue(new("menu 3d material", Draw: MenuJoker3D.Warm));
 		QueueSounds(new[] { "camp_open", "camp_cancel", Sfx.Cursor });
 		LogPlan("pile");
 	}

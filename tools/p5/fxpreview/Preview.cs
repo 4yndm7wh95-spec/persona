@@ -1633,6 +1633,11 @@ public partial class Preview : Node2D
 			{
 				scenario = a["--scenario=".Length..];
 			}
+			if (a == "--measure")
+			{
+				_measure = true;
+				RenderingServer.ViewportSetMeasureRenderTime(GetViewport().GetViewportRid(), true);
+			}
 		}
 		string texDir = ProjectSettings.GlobalizePath("res://.tex");
 		Stage.LoadTexture = name =>
@@ -1687,10 +1692,25 @@ public partial class Preview : Node2D
 	private Vector2? _shakeDir;
 	private long _frames;
 
+	private bool _measure;
+	private double _mGpu, _mCpu; private int _mN, _mSec;
+
 	public override void _Process(double delta)
 	{
 		_clock += delta;
 		_frames++;
+		if (_measure)
+		{
+			// --measure：每 0.5s（场景时间）打印主视口平均渲染耗时（GPU / CPU 毫秒）
+			Rid vp = GetViewport().GetViewportRid();
+			_mGpu += RenderingServer.ViewportGetMeasuredRenderTimeGpu(vp); _mCpu += RenderingServer.ViewportGetMeasuredRenderTimeCpu(vp); _mN++;
+			if ((int)(_clock * 2) != _mSec)
+			{
+				_mSec = (int)(_clock * 2);
+				GD.Print($"[measure] t={_clock:F1} gpu={_mGpu / _mN:F2}ms cpu={_mCpu / _mN:F2}ms n={_mN}");
+				_mGpu = _mCpu = 0; _mN = 0;
+			}
+		}
 		foreach (Action a in _every)
 		{
 			Stage.Safe("every", a);

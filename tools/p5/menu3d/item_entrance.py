@@ -100,6 +100,8 @@ def main():
                   '\tpublic static readonly Vector2[][][] Dark =\n\t{\n' + ''.join('\t\t' + cs_polys(d) + ',\n' for d in dark) + '\t};\n'
                   '\tpublic static readonly Vector2[][][] Red =\n\t{\n' + ''.join('\t\t' + cs_polys(r) + ',\n' for r in red) + '\t};\n}\n', encoding='utf-8')
     print(json.dumps(meta['frames']))
+    import morph_regions
+    morph_regions.main(cs, 'PileDiscardEntrance', ['Dark', 'Red'], 4)
 
 
 if __name__ == '__main__':

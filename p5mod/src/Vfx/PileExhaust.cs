@@ -46,12 +46,6 @@ public sealed class PileExhaust : IPileDecor
 	/// <summary>原版一帧的时长（录像约 27.5fps = 0.0364s，稍微压快一点）；第 i 帧（原版 112+i）在 FrameT(i) 显示，原版 123（2D 立绘）= HandAt。</summary>
 	private const float FrameDt = 0.0335f;
 	private static float FrameT(float i) => HandAt - (11f - i) * FrameDt;
-	/// <summary>3D 帧的左上角（原版屏幕坐标，research/p5r/menu3d_skill/frames.json）。</summary>
-	private static readonly Vector2[] Sk3dAt =
-	{
-		new(-60f, -48f), new(-60f, -35f), new(-60f, -23f), new(-60f, -29f), new(-60f, -36f), new(-60f, -42f),
-		new(19f, -60f), new(-60f, 90f), new(-60f, 40f), new(-60f, 16f), new(-60f, 0f),
-	};
 	/// <summary>白板左边缘（原版屏幕坐标，y=500 / y=900 两点）：原版 112–117 量出来的，118 起 = 反色区左边的直线 L（= 立绘白腿的直边）。</summary>
 	private static readonly (Vector2 A, Vector2 B)[] EdgeKeys =
 	{
@@ -73,8 +67,9 @@ public sealed class PileExhaust : IPileDecor
 	private readonly Polygon2D _slab, _wedge, _plate, _cover, _invert;
 	private readonly Vector2[] _slabPts, _platePts;
 	private readonly Node2D _band, _portrait;
-	private readonly Texture2D?[] _sk3d = new Texture2D?[11];
-	private readonly Sprite2D? _m3d;
+	/// <summary>原版 112–122 的 3D Joker：游戏里实时渲染（MenuJoker3D，关键帧 MenuJoker3DKeys.Exhaust）。</summary>
+	private readonly MenuJoker3D? _m3d;
+	private static readonly string[] Hide3d = { "smartphone", "card", "school_bag", "gun_outline", "gun_main", "ef line_obj_01", "ef line_obj_02", "ef line_obj_03", "ef line_obj_04", "ef line_obj_05", "ef line_obj_06", "ef line_obj_07", "ef line_obj_08" };
 	private readonly Sprite2D _porSprite;
 	private readonly float _porScale = 1f;
 	private readonly List<(Node2D Node, Vector2 At, float Rot, float Delay)> _pops = new();
@@ -117,11 +112,10 @@ public sealed class PileExhaust : IPileDecor
 		// 4. 入场白板（Joker 下面）→ 3D Joker → 白板遮罩（Joker 上面，挖掉黑色区域：白板里的 Joker 是白的，白底上看不见）
 		_plate = new Polygon2D { Color = Paper, Antialiased = true, Visible = false };
 		root.AddChild(_plate);
-		for (int i = 0; i < 11; i++) _sk3d[i] = Fx.Tex($"pile_sk3d_{i:00}");
-		if (_sk3d[0] != null)
+		if (MenuJoker3D.Available)
 		{
-			_m3d = new Sprite2D { Texture = _sk3d[0], Centered = false, Scale = Vector2.One * MapK * k, TextureFilter = CanvasItem.TextureFilterEnum.Linear, Visible = false };
-			root.AddChild(_m3d);
+			_m3d = new MenuJoker3D(root, view, MapK, PorAt - OrigArtAt * MapK, Hide3d);
+			root.AddChild(_m3d.Sprite);
 		}
 		_coverMat = new ShaderMaterial { Shader = CoverShader };
 		_cover = new Polygon2D { Color = Paper, Antialiased = true, Visible = false, Material = _coverMat };
@@ -288,18 +282,20 @@ void fragment() {
 			_invertMat.SetShaderParameter("r", rr);
 			if (_m3d != null)
 			{
-				// 原版 112–122 的 3D Joker：第 i 帧在 FrameT(i) 前后半帧显示；最开始从左边滑进来（原版切镜头时那一下甩）
-				int i = Mathf.Clamp(Mathf.FloorToInt((t - FrameT(0)) / FrameDt + 0.5f), 0, 10);
-				if (_sk3d[i] is Texture2D f && _m3d.Texture != f) _m3d.Texture = f;
+				// 原版 112–122 的 3D Joker：连续播（u = 原版第几帧，小数在两帧之间插值）；最开始从左边滑进来（原版切镜头时那一下甩）
 				float slide = Ease5.OutExpo(Mathf.Clamp((t - 0.035f) / 0.09f, 0f, 1f));
-				_m3d.Position = Map(Sk3dAt[i]) * k + new Vector2(-140f * k * (1f - slide), 0f);
-				_m3d.Visible = t >= 0.035f;
+				if (t >= 0.035f)
+				{
+					_m3d.Show(MenuJoker3DKeys.Exhaust, Mathf.Clamp((t - FrameT(0)) / FrameDt, 0f, 10f));
+					_m3d.Sprite.Position = new Vector2(-140f * k * (1f - slide), 0f);
+				}
+				else _m3d.Hide();
 			}
 		}
 		else
 		{
 			_plate.Visible = _cover.Visible = _invert.Visible = false;
-			if (_m3d != null) _m3d.Visible = false;
+			_m3d?.Hide();
 			// 换成立绘，从 1.02 倍砸下（HandAt → SlamAt，加速），压扁 0.965 再回弹（同抽牌堆的手掌）
 			float scale, drop;
 			if (t < SlamAt)
@@ -344,7 +340,7 @@ void fragment() {
 	{
 		float k = _k;
 		_root.Position = Vector2.Zero;
-		if (_m3d != null) _m3d.Visible = false;
+		_m3d?.Hide();
 		_plate.Visible = _cover.Visible = _invert.Visible = false;
 		_portrait.Visible = true;
 		float ei = Ease5Ext.InCubic(e);
@@ -378,5 +374,5 @@ void fragment() {
 		parent.AddChild(new Sprite2D { Texture = t, Position = at * _k, Scale = Vector2.One * w * _k / t.GetWidth(), Modulate = tint, TextureFilter = CanvasItem.TextureFilterEnum.Linear });
 	}
 
-	public static readonly string[] Textures = { "pile_sk3d_00", "pile_sk3d_01", "pile_sk3d_02", "pile_sk3d_03", "pile_sk3d_04", "pile_sk3d_05", "pile_sk3d_06", "pile_sk3d_07", "pile_sk3d_08", "pile_sk3d_09", "pile_sk3d_10", "pile_campskill", "pile_txt_menu", "pile_txt_cmdselect", "pile_txt_command", "pile_txt_command_ol" };
+	public static readonly string[] Textures = { "pile_campskill", "pile_txt_menu", "pile_txt_cmdselect", "pile_txt_command", "pile_txt_command_ol" };
 }

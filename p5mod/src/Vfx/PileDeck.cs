@@ -54,8 +54,9 @@ public sealed class PileDeck : IPileDecor
 	private float _exitT0 = -1f;
 	// 入场（原版 233–239）
 	private readonly Node2D _entrance;
-	private readonly Sprite2D? _m3d;
-	private readonly Texture2D?[] _m3dTex = new Texture2D?[FrameCount];
+	/// <summary>原版 233–239 的 3D Joker：游戏里实时渲染（MenuJoker3D，关键帧 MenuJoker3DKeys.Deck；这一页拿着枪）。</summary>
+	private readonly MenuJoker3D? _m3d;
+	private static readonly string[] Hide3d = { "smartphone", "card", "school_bag", "ef line_obj_01", "ef line_obj_02", "ef line_obj_03", "ef line_obj_04", "ef line_obj_05", "ef line_obj_06", "ef line_obj_07", "ef line_obj_08" };
 	private readonly List<Polygon2D> _star = new(), _gray = new(), _red = new(), _darkPaper = new(), _darkInvert = new();
 	private int _shownFrame = -1;
 
@@ -97,11 +98,10 @@ public sealed class PileDeck : IPileDecor
 		Clipped(_red, PileDeckEntrance.Red, redMat);
 		Node2D paper = new();
 		_entrance.AddChild(paper);
-		for (int i = 0; i < FrameCount; i++) _m3dTex[i] = Fx.Tex($"pile_dk3d_{i:00}");
-		if (_m3dTex[0] != null)
+		if (MenuJoker3D.Available)
 		{
-			_m3d = new Sprite2D { Texture = _m3dTex[0], Centered = false, Scale = Vector2.One * MapK * k, TextureFilter = CanvasItem.TextureFilterEnum.Linear };
-			_entrance.AddChild(_m3d);
+			_m3d = new MenuJoker3D(_entrance, view, MapK, new Vector2(-80f, 0f), Hide3d);
+			_entrance.AddChild(_m3d.Sprite);
 		}
 		_entrance.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });
 		Node2D inverted = new();
@@ -184,9 +184,12 @@ public sealed class PileDeck : IPileDecor
 		}
 	}
 
-	/// <summary>换到入场第 f 帧：3D 帧图和四种区域。</summary>
-	private void ShowFrame(int f)
+	/// <summary>入场第 u 帧（原版 233 + u，小数）：3D Joker 连续插值；四种区域取最近的补间形状（每帧 Sub 步）。</summary>
+	private void ShowFrame(float u)
 	{
+		u = Mathf.Clamp(u, 0f, FrameCount - 1);
+		_m3d?.Show(MenuJoker3DKeys.Deck, u);
+		int f = Mathf.Clamp(Mathf.RoundToInt(u * PileDeckEntrance.Sub), 0, PileDeckEntrance.Dark.Length - 1);
 		if (f == _shownFrame) return;
 		_shownFrame = f;
 		SetPolys(_star, PileDeckEntrance.Star[f]);
@@ -194,11 +197,6 @@ public sealed class PileDeck : IPileDecor
 		SetPolys(_red, PileDeckEntrance.Red[f]);
 		SetPolys(_darkPaper, PileDeckEntrance.Dark[f]);
 		SetPolys(_darkInvert, PileDeckEntrance.Dark[f]);
-		if (_m3d != null && _m3dTex[f] is Texture2D t)
-		{
-			_m3d.Texture = t;
-			_m3d.Position = Map(PileDeckEntrance.FrameAt[f]) * _k;
-		}
 	}
 
 	private Vector2[] Scale(Vector2[] pts, Vector2 offset, float s)
@@ -256,9 +254,10 @@ public sealed class PileDeck : IPileDecor
 		// 入场：七帧原版画面（星纹带 + 黑区 + 3D Joker + 红底 / 浅灰板），开头从右边甩进来；PortraitAt 硬切成 2D 立绘 + 最终排版（同原版第 240 帧）
 		bool cut = t >= PortraitAt;
 		_entrance.Visible = !cut;
+		if (cut) _m3d?.Hide();
 		if (!cut)
 		{
-			ShowFrame(Mathf.Clamp(Mathf.FloorToInt((t - FrameStart) / FrameDt), 0, FrameCount - 1));
+			ShowFrame((t - FrameStart) / FrameDt - 0.5f);
 			_entrance.Position = new Vector2(_view.X * 0.7f * (1f - Ease5.OutExpo(Seg(t, 0f, 0.1f))), 0f);
 		}
 		_back.Visible = _portrait.Visible = _list.Visible = cut;
@@ -309,6 +308,5 @@ public sealed class PileDeck : IPileDecor
 	{
 		"pile_dk_bg", "pile_dk_portrait", "pile_dk_title", "pile_dk_command",
 		"pile_dk_big0", "pile_dk_big1", "pile_dk_big2", "pile_dk_big3", "pile_dk_big4", "pile_dk_big5", "pile_dk_big6", "pile_dk_big7", "pile_dk_big8", "pile_dk_big9",
-		"pile_dk3d_00", "pile_dk3d_01", "pile_dk3d_02", "pile_dk3d_03", "pile_dk3d_04", "pile_dk3d_05", "pile_dk3d_06",
 	};
 }

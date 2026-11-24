@@ -55,9 +55,10 @@ public sealed class PileDiscard : IPileDecor
 	private const int FrameCount = 9;
 	/// <summary>切成 2D 立绘的时刻（= 原版第 186 帧）。</summary>
 	private const float CutAt = FrameStart + FrameCount * FrameDt;
-	private readonly Texture2D?[] _m3dTex = new Texture2D?[FrameCount];
+	private static readonly string[] Hide3d = { "smartphone", "card", "school_bag", "gun_outline", "gun_main", "ef line_obj_01", "ef line_obj_02", "ef line_obj_03", "ef line_obj_04", "ef line_obj_05", "ef line_obj_06", "ef line_obj_07", "ef line_obj_08" };
 	private readonly Node2D _entrance;
-	private readonly Sprite2D? _m3d;
+	/// <summary>原版 177–185 的 3D Joker：游戏里实时渲染（MenuJoker3D，关键帧 MenuJoker3DKeys.Discard）。</summary>
+	private readonly MenuJoker3D? _m3d;
 	private readonly ShaderMaterial _invertMat;
 	private readonly List<Polygon2D> _darkPaper = new(), _darkInvert = new(), _redMasks = new();
 	private int _shownFrame = -1;
@@ -101,11 +102,10 @@ public sealed class PileDiscard : IPileDecor
 		_entrance.AddChild(new ColorRect { Size = view, Material = plateMat, MouseFilter = Control.MouseFilterEnum.Ignore });
 		Node2D paper = new();
 		_entrance.AddChild(paper);
-		for (int i = 0; i < FrameCount; i++) _m3dTex[i] = Fx.Tex($"pile_dc3d_{i:00}");
-		if (_m3dTex[0] != null)
+		if (MenuJoker3D.Available)
 		{
-			_m3d = new Sprite2D { Texture = _m3dTex[0], Centered = false, Scale = Vector2.One * MapK * k, TextureFilter = CanvasItem.TextureFilterEnum.Linear };
-			_entrance.AddChild(_m3d);
+			_m3d = new MenuJoker3D(_entrance, view, MapK, new Vector2(-80f, 0f), Hide3d);
+			_entrance.AddChild(_m3d.Sprite);
 		}
 		_entrance.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });
 		Node2D inverted = new();
@@ -256,9 +256,12 @@ void fragment() {
 		return q;
 	}
 
-	/// <summary>换到入场第 f 帧：3D 帧图、黑区、红底。</summary>
-	private void ShowFrame(int f)
+	/// <summary>入场第 u 帧（原版 177 + u，小数）：3D Joker 连续插值；黑区、红底取最近的补间形状（每帧 Sub 步）。</summary>
+	private void ShowFrame(float u)
 	{
+		u = Mathf.Clamp(u, 0f, FrameCount - 1);
+		_m3d?.Show(MenuJoker3DKeys.Discard, u);
+		int f = Mathf.Clamp(Mathf.RoundToInt(u * PileDiscardEntrance.Sub), 0, PileDiscardEntrance.Dark.Length - 1);
 		if (f == _shownFrame) return;
 		_shownFrame = f;
 		Vector2[][] dark = PileDiscardEntrance.Dark[f], red = PileDiscardEntrance.Red[f];
@@ -276,11 +279,6 @@ void fragment() {
 			bool on = i < red.Length;
 			_redMasks[i].Visible = on;
 			if (on) _redMasks[i].Polygon = red[i].Select(MapEdge).ToArray();
-		}
-		if (_m3d != null && _m3dTex[f] is Texture2D t)
-		{
-			_m3d.Texture = t;
-			_m3d.Position = Map(PileDiscardEntrance.FrameAt[f]) * _k;
 		}
 	}
 
@@ -308,9 +306,11 @@ void fragment() {
 		// 入场：九帧原版画面（星纹底 + 黑区 + 3D Joker + 红底），开头从右边甩进来；CutAt 硬切成 2D 立绘 + 最终排版（同原版第 186 帧）
 		bool cut = t >= CutAt;
 		_entrance.Visible = !cut;
+		if (cut) _m3d?.Hide();
 		if (!cut)
 		{
-			ShowFrame(Mathf.Clamp(Mathf.FloorToInt((t - FrameStart) / FrameDt), 0, FrameCount - 1));
+			// 原版第 k 帧原来显示在 [FrameStart + k·dt, FrameStart + (k+1)·dt)：连续播放时第 k 帧落在这段的中点
+			ShowFrame((t - FrameStart) / FrameDt - 0.5f);
 			_entrance.Position = new Vector2(_view.X * 0.7f * (1f - Ease5.OutExpo(Seg(t, 0f, 0.1f))), 0f);
 		}
 		_slab.Visible = _portrait.Visible = _panel.Visible = _bandRoot.Visible = cut;
@@ -375,7 +375,6 @@ void fragment() {
 
 	public static readonly string[] Textures =
 	{
-		"pile_dc3d_00", "pile_dc3d_01", "pile_dc3d_02", "pile_dc3d_03", "pile_dc3d_04", "pile_dc3d_05", "pile_dc3d_06", "pile_dc3d_07", "pile_dc3d_08",
 		"pile_dc_slab", "pile_dc_portrait", "pile_dc_title", "pile_dc_command", "pile_dc_underline", "pile_dc_tag_discard", "pile_dc_tag_bytype",
 		"pile_dc_row0", "pile_dc_row1", "pile_dc_row2", "pile_dc_row3", "pile_dc_row4", "pile_dc_row5",
 	};

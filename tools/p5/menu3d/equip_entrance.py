@@ -61,6 +61,10 @@ def main():
                   'internal static class PileDeckEntrance\n{\n'
                   '\tpublic static readonly Vector2[] FrameAt = { ' + ', '.join(cs_vec(p) for p in at) + ' };\n' + body + '}\n', encoding='utf-8')
     print(json.dumps(meta['frames']))
+    # 区域形状在相邻两帧之间补间（游戏里 3D 实时渲染、跟着平滑变化），关键帧给 MenuJoker3D
+    import morph_regions, runtime_keys
+    morph_regions.main(cs, 'PileDeckEntrance', list(k.capitalize() for k in KINDS), 4)
+    runtime_keys.main()
 
 
 if __name__ == '__main__':
