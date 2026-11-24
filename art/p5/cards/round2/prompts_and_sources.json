@@ -1,0 +1,373 @@
+{
+  "status": "awaiting_user_review",
+  "cards": [
+    {
+      "card": "bullet_time",
+      "prompt": "Use case: precise-object-edit. Image1 is the CURRENT P5 version of this card and the strict EDIT TARGET; Image2 is the original Silent card for reference only. Change ONLY what this prompt names and keep everything else in Image1 exactly as it is: background, palette, composition, effects and every other element. Every named character MUST match the attached reference images exactly (face shape, eyes, hairstyle, mask, outfit). Anatomy must be correct and readable: natural joints, two arms and two legs attached where they should be, hands with five fingers, no extra or floating limbs or heads; if a pose is hard, choose a simpler pose with the same silhouette. Match the existing hard cel-shading; no blur, no photoreal rendering. Output: opaque, same size as Image1, no text, letters, numbers, frame, UI or watermark. Redraw only JOKER's face and hair so they match the JOKER references exactly (white domino mask with black edging, sharp grey eyes behind it, messy black curly hair, calm confident expression). Keep his pose, raised red glove, coat, pistol and all bullets unchanged. Character designs (follow the attached references): [JOKER] = JOKER (Ren Amamiya, P5R protagonist): messy black curly hair, white domino mask with black edging, black high-collared long tailcoat over a grey vest, bright red gloves, dark trousers, brown boots; a short combat knife and a black pistol.",
+      "image1": "art/p5/cards/round1/batch_04/bullet_time.png",
+      "original": "research/silent_assets/card_portraits/bullet_time.png",
+      "round1": "art/p5/cards/round1/batch_04/bullet_time.png",
+      "refs": [
+        "art/p5/cards/refs/joker/"
+      ],
+      "inputs": [
+        "art/p5/cards/round1/batch_04/bullet_time.png",
+        "research/silent_assets/card_portraits/bullet_time.png",
+        "art/p5/cards/refs/joker/civilian.png",
+        "art/p5/cards/refs/joker/front_unmasked.png",
+        "art/p5/cards/refs/joker/phantom.png"
+      ],
+      "generated": "exec-d85b0c70-3f3b-4ced-9338-3923fad009fb.png",
+      "output": "art/p5/cards/round2/bullet_time.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "tool": "built-in image_gen"
+    },
+    {
+      "card": "dodge_and_roll",
+      "prompt": "Use case: precise-object-edit. Image1 is the CURRENT P5 version of this card and the strict EDIT TARGET; Image2 is the original Silent card for reference only. Change ONLY what this prompt names and keep everything else in Image1 exactly as it is: background, palette, composition, effects and every other element. Every named character MUST match the attached reference images exactly (face shape, eyes, hairstyle, mask, outfit). Anatomy must be correct and readable: natural joints, two arms and two legs attached where they should be, hands with five fingers, no extra or floating limbs or heads; if a pose is hard, choose a simpler pose with the same silhouette. Match the existing hard cel-shading; no blur, no photoreal rendering. Output: opaque, same size as Image1, no text, letters, numbers, frame, UI or watermark. Replace the tangled figure with JOKER doing one clean, readable forward roll in the same place and size: body curled into a ball, head tucked, back rounded toward the viewer, one red-gloved hand touching the ground, knees drawn in, black coat tails wrapping around him following the orange swoosh. Two arms, two legs, correct anatomy. Keep the background, lightning and swoosh. Character designs (follow the attached references): [JOKER] = JOKER (Ren Amamiya, P5R protagonist): messy black curly hair, white domino mask with black edging, black high-collared long tailcoat over a grey vest, bright red gloves, dark trousers, brown boots; a short combat knife and a black pistol.",
+      "image1": "art/p5/cards/round1/batch_06/dodge_and_roll.png",
+      "original": "research/silent_assets/card_portraits/dodge_and_roll.png",
+      "round1": "art/p5/cards/round1/batch_06/dodge_and_roll.png",
+      "refs": [
+        "art/p5/cards/refs/joker/"
+      ],
+      "inputs": [
+        "art/p5/cards/round1/batch_06/dodge_and_roll.png",
+        "research/silent_assets/card_portraits/dodge_and_roll.png",
+        "art/p5/cards/refs/joker/civilian.png",
+        "art/p5/cards/refs/joker/front_unmasked.png",
+        "art/p5/cards/refs/joker/phantom.png"
+      ],
+      "generated": "exec-972e92ac-538f-4e6c-b1c1-fce6407c9854.png",
+      "output": "art/p5/cards/round2/dodge_and_roll.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "tool": "built-in image_gen"
+    },
+    {
+      "card": "hand_trick",
+      "prompt": "Use case: precise-object-edit. Image1 is the CURRENT P5 version of this card and the strict EDIT TARGET; Image2 is the original Silent card for reference only. Change ONLY what this prompt names and keep everything else in Image1 exactly as it is: background, palette, composition, effects and every other element. Every named character MUST match the attached reference images exactly (face shape, eyes, hairstyle, mask, outfit). Anatomy must be correct and readable: natural joints, two arms and two legs attached where they should be, hands with five fingers, no extra or floating limbs or heads; if a pose is hard, choose a simpler pose with the same silhouette. Match the existing hard cel-shading; no blur, no photoreal rendering. Output: opaque, same size as Image1, no text, letters, numbers, frame, UI or watermark. The grey bandaged gauntlet hand at the upper left still belongs to the Silent: replace it with JOKER's second hand in a red glove and black coat sleeve, open and relaxed, as if about to catch the calling card. Keep the front hand, the calling card, the sparkle and the background. Character designs (follow the attached references): [JOKER] = JOKER (Ren Amamiya, P5R protagonist): messy black curly hair, white domino mask with black edging, black high-collared long tailcoat over a grey vest, bright red gloves, dark trousers, brown boots; a short combat knife and a black pistol.",
+      "image1": "art/p5/cards/round1/batch_09/hand_trick.png",
+      "original": "research/silent_assets/card_portraits/hand_trick.png",
+      "round1": "art/p5/cards/round1/batch_09/hand_trick.png",
+      "refs": [
+        "art/p5/cards/refs/joker/"
+      ],
+      "inputs": [
+        "art/p5/cards/round1/batch_09/hand_trick.png",
+        "research/silent_assets/card_portraits/hand_trick.png",
+        "art/p5/cards/refs/joker/civilian.png",
+        "art/p5/cards/refs/joker/front_unmasked.png",
+        "art/p5/cards/refs/joker/phantom.png"
+      ],
+      "generated": "exec-23b93b7e-6566-48f5-9dd9-17ea8606ee5a.png",
+      "output": "art/p5/cards/round2/hand_trick.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "tool": "built-in image_gen"
+    },
+    {
+      "card": "neutralize",
+      "prompt": "Use case: precise-object-edit. Image1 is the CURRENT P5 version of this card and the strict EDIT TARGET; Image2 is the original Silent card for reference only. Change ONLY what this prompt names and keep everything else in Image1 exactly as it is: background, palette, composition, effects and every other element. Every named character MUST match the attached reference images exactly (face shape, eyes, hairstyle, mask, outfit). Anatomy must be correct and readable: natural joints, two arms and two legs attached where they should be, hands with five fingers, no extra or floating limbs or heads; if a pose is hard, choose a simpler pose with the same silhouette. Match the existing hard cel-shading; no blur, no photoreal rendering. Output: opaque, same size as Image1, no text, letters, numbers, frame, UI or watermark. Keep the golden scales, their size, position and the purple background, but make them a palace Treasure with a story: the left pan holds a red-and-black calling card, the right pan holds a cracked white SHADOW mask, and the beam tips toward the card (the calling card outweighs the shadow). Add a faint red glint on the card. No characters.",
+      "image1": "art/p5/cards/round1/batch_12/neutralize.png",
+      "original": "research/silent_assets/card_portraits/neutralize.png",
+      "round1": "art/p5/cards/round1/batch_12/neutralize.png",
+      "refs": [],
+      "inputs": [
+        "art/p5/cards/round1/batch_12/neutralize.png",
+        "research/silent_assets/card_portraits/neutralize.png"
+      ],
+      "generated": "exec-c4ee1886-c3ff-45a8-b8f2-0ddcaf6fca21.png",
+      "output": "art/p5/cards/round2/neutralize.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "tool": "built-in image_gen"
+    },
+    {
+      "card": "nightmare",
+      "prompt": "Use case: precise-object-edit. Image1 is the CURRENT P5 version of this card and the strict EDIT TARGET; Image2 is the original Silent card for reference only. Change ONLY what this prompt names and keep everything else in Image1 exactly as it is: background, palette, composition, effects and every other element. Every named character MUST match the attached reference images exactly (face shape, eyes, hairstyle, mask, outfit). Anatomy must be correct and readable: natural joints, two arms and two legs attached where they should be, hands with five fingers, no extra or floating limbs or heads; if a pose is hard, choose a simpler pose with the same silhouette. Match the existing hard cel-shading; no blur, no photoreal rendering. Output: opaque, same size as Image1, no text, letters, numbers, frame, UI or watermark. Remove the two floating heads of CAROLINE and JUSTINE completely. Keep only the two pairs of black-gloved hands in blue Velvet Room warden cuffs, and make the arms enter cleanly from the top-left and right frame edges (sleeves continue past the edge), clutching the green nightmare blob. Fill where the heads were with the original dark red background shapes. Character designs (follow the attached references): [CAROLINE_JUSTINE] = CAROLINE and JUSTINE: identical small twin wardens with platinum hair in blue Velvet Room warden uniforms and eyepatches (Caroline's on the right eye with a baton, Justine's on the left with a clipboard).",
+      "image1": "art/p5/cards/round1/batch_12/nightmare.png",
+      "original": "research/silent_assets/card_portraits/nightmare.png",
+      "round1": "art/p5/cards/round1/batch_12/nightmare.png",
+      "refs": [
+        "art/p5/cards/refs/caroline/",
+        "art/p5/cards/refs/justine/"
+      ],
+      "inputs": [
+        "art/p5/cards/round1/batch_12/nightmare.png",
+        "research/silent_assets/card_portraits/nightmare.png",
+        "art/p5/cards/refs/caroline/official.png",
+        "art/p5/cards/refs/justine/official.png"
+      ],
+      "generated": "exec-1df14c1b-d9b9-432f-a355-2471c36bf778.png",
+      "output": "art/p5/cards/round2/nightmare.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "tool": "built-in image_gen"
+    },
+    {
+      "card": "predator",
+      "prompt": "Use case: precise-object-edit. Image1 is the CURRENT P5 version of this card and the strict EDIT TARGET; Image2 is the original Silent card for reference only. Change ONLY what this prompt names and keep everything else in Image1 exactly as it is: background, palette, composition, effects and every other element. Every named character MUST match the attached reference images exactly (face shape, eyes, hairstyle, mask, outfit). Anatomy must be correct and readable: natural joints, two arms and two legs attached where they should be, hands with five fingers, no extra or floating limbs or heads; if a pose is hard, choose a simpler pose with the same silhouette. Match the existing hard cel-shading; no blur, no photoreal rendering. Output: opaque, same size as Image1, no text, letters, numbers, frame, UI or watermark. Remove the raised pistol and the arm holding it. JOKER's other arm hangs naturally at his side or is hidden behind his coat; keep the red-gloved hand gripping the glowing knife in front, his face, coat, the floating shards and the background unchanged. Character designs (follow the attached references): [JOKER] = JOKER (Ren Amamiya, P5R protagonist): messy black curly hair, white domino mask with black edging, black high-collared long tailcoat over a grey vest, bright red gloves, dark trousers, brown boots; a short combat knife and a black pistol.",
+      "image1": "art/p5/cards/round1/batch_14/predator.png",
+      "original": "research/silent_assets/card_portraits/predator.png",
+      "round1": "art/p5/cards/round1/batch_14/predator.png",
+      "refs": [
+        "art/p5/cards/refs/joker/"
+      ],
+      "inputs": [
+        "art/p5/cards/round1/batch_14/predator.png",
+        "research/silent_assets/card_portraits/predator.png",
+        "art/p5/cards/refs/joker/civilian.png",
+        "art/p5/cards/refs/joker/front_unmasked.png",
+        "art/p5/cards/refs/joker/phantom.png"
+      ],
+      "generated": "exec-10eeeb79-1acc-491d-bf98-ca65486c5435.png",
+      "output": "art/p5/cards/round2/predator.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "tool": "built-in image_gen"
+    },
+    {
+      "card": "prepared",
+      "prompt": "Use case: precise-object-edit. Image1 is the CURRENT P5 version of this card and the strict EDIT TARGET; Image2 is the original Silent card for reference only. Change ONLY what this prompt names and keep everything else in Image1 exactly as it is: background, palette, composition, effects and every other element. Every named character MUST match the attached reference images exactly (face shape, eyes, hairstyle, mask, outfit). Anatomy must be correct and readable: natural joints, two arms and two legs attached where they should be, hands with five fingers, no extra or floating limbs or heads; if a pose is hard, choose a simpler pose with the same silhouette. Match the existing hard cel-shading; no blur, no photoreal rendering. Output: opaque, same size as Image1, no text, letters, numbers, frame, UI or watermark. Simplify to a clean close-up of JOKER's torso and hands: his left red-gloved hand pulls his black coat open, his right red-gloved hand grips the knife handle at his belt ready to draw. No pistol, no face (crop at the chin), no shadow monster. Two hands only, correct anatomy. Keep the magenta background. Character designs (follow the attached references): [JOKER] = JOKER (Ren Amamiya, P5R protagonist): messy black curly hair, white domino mask with black edging, black high-collared long tailcoat over a grey vest, bright red gloves, dark trousers, brown boots; a short combat knife and a black pistol.",
+      "image1": "art/p5/cards/round1/batch_14/prepared.png",
+      "original": "research/silent_assets/card_portraits/prepared.png",
+      "round1": "art/p5/cards/round1/batch_14/prepared.png",
+      "refs": [
+        "art/p5/cards/refs/joker/"
+      ],
+      "inputs": [
+        "art/p5/cards/round1/batch_14/prepared.png",
+        "research/silent_assets/card_portraits/prepared.png",
+        "art/p5/cards/refs/joker/civilian.png",
+        "art/p5/cards/refs/joker/front_unmasked.png",
+        "art/p5/cards/refs/joker/phantom.png"
+      ],
+      "generated": "exec-caba279e-9b4c-4e63-b958-224b1ab51fc1.png",
+      "output": "art/p5/cards/round2/prepared.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "tool": "built-in image_gen"
+    },
+    {
+      "card": "reflex",
+      "prompt": "Use case: precise-object-edit. Image1 is the CURRENT P5 version of this card and the strict EDIT TARGET; Image2 is the original Silent card for reference only. Change ONLY what this prompt names and keep everything else in Image1 exactly as it is: background, palette, composition, effects and every other element. Every named character MUST match the attached reference images exactly (face shape, eyes, hairstyle, mask, outfit). Anatomy must be correct and readable: natural joints, two arms and two legs attached where they should be, hands with five fingers, no extra or floating limbs or heads; if a pose is hard, choose a simpler pose with the same silhouette. Match the existing hard cel-shading; no blur, no photoreal rendering. Output: opaque, same size as Image1, no text, letters, numbers, frame, UI or watermark. Redraw JOKER in one clear pose: body turned three-quarters toward the SHADOW at left, right arm extended pointing his pistol at it, left arm drawn back holding his knife low, coat flaring. Correct anatomy, both arms clearly attached. Keep the SHADOW, the cyan lightning between them and the background. Character designs (follow the attached references): [JOKER] = JOKER (Ren Amamiya, P5R protagonist): messy black curly hair, white domino mask with black edging, black high-collared long tailcoat over a grey vest, bright red gloves, dark trousers, brown boots; a short combat knife and a black pistol.",
+      "image1": "art/p5/cards/round1/batch_14/reflex.png",
+      "original": "research/silent_assets/card_portraits/reflex.png",
+      "round1": "art/p5/cards/round1/batch_14/reflex.png",
+      "refs": [
+        "art/p5/cards/refs/joker/"
+      ],
+      "inputs": [
+        "art/p5/cards/round1/batch_14/reflex.png",
+        "research/silent_assets/card_portraits/reflex.png",
+        "art/p5/cards/refs/joker/civilian.png",
+        "art/p5/cards/refs/joker/front_unmasked.png",
+        "art/p5/cards/refs/joker/phantom.png"
+      ],
+      "generated": "exec-eacdc561-1443-4d31-936a-15e66500bde3.png",
+      "output": "art/p5/cards/round2/reflex.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "tool": "built-in image_gen"
+    },
+    {
+      "card": "speedster",
+      "prompt": "Use case: precise-object-edit. Image1 is the CURRENT P5 version of this card and the strict EDIT TARGET; Image2 is the original Silent card for reference only. Change ONLY what this prompt names and keep everything else in Image1 exactly as it is: background, palette, composition, effects and every other element. Every named character MUST match the attached reference images exactly (face shape, eyes, hairstyle, mask, outfit). Anatomy must be correct and readable: natural joints, two arms and two legs attached where they should be, hands with five fingers, no extra or floating limbs or heads; if a pose is hard, choose a simpler pose with the same silhouette. Match the existing hard cel-shading; no blur, no photoreal rendering. Output: opaque, same size as Image1, no text, letters, numbers, frame, UI or watermark. Redraw JOKER in the original's dynamic pose: leaping down off the rock ledge toward the viewer, front leg stretched forward with the boot sole leading, back leg bent, body leaning forward, coat tails streaming behind him, one red glove reaching forward. No pistol. Correct anatomy. Keep the debris, the rock and the yellow-green speed background. Character designs (follow the attached references): [JOKER] = JOKER (Ren Amamiya, P5R protagonist): messy black curly hair, white domino mask with black edging, black high-collared long tailcoat over a grey vest, bright red gloves, dark trousers, brown boots; a short combat knife and a black pistol.",
+      "image1": "art/p5/cards/round1/batch_16/speedster.png",
+      "original": "research/silent_assets/card_portraits/speedster.png",
+      "round1": "art/p5/cards/round1/batch_16/speedster.png",
+      "refs": [
+        "art/p5/cards/refs/joker/"
+      ],
+      "inputs": [
+        "art/p5/cards/round1/batch_16/speedster.png",
+        "research/silent_assets/card_portraits/speedster.png",
+        "art/p5/cards/refs/joker/civilian.png",
+        "art/p5/cards/refs/joker/front_unmasked.png",
+        "art/p5/cards/refs/joker/phantom.png"
+      ],
+      "generated": "exec-f125132e-9513-4855-847a-7df59ebaad47.png",
+      "output": "art/p5/cards/round2/speedster.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "tool": "built-in image_gen"
+    },
+    {
+      "card": "cloak_and_dagger",
+      "prompt": "Use case: precise-object-edit. Image1 is the CURRENT P5 version of this card and the strict EDIT TARGET; Image2 is the original Silent card for reference only. Change ONLY what this prompt names and keep everything else in Image1 exactly as it is: background, palette, composition, effects and every other element. Every named character MUST match the attached reference images exactly (face shape, eyes, hairstyle, mask, outfit). Anatomy must be correct and readable: natural joints, two arms and two legs attached where they should be, hands with five fingers, no extra or floating limbs or heads; if a pose is hard, choose a simpler pose with the same silhouette. Match the existing hard cel-shading; no blur, no photoreal rendering. Output: opaque, same size as Image1, no text, letters, numbers, frame, UI or watermark. The big green cloak filling the background is still the Silent's: turn it into JOKER's black tailcoat seen up close (black fabric folds, a glimpse of the dark red lining, a silver button), same shapes and lighting. Keep the red-gloved hand and the knife. Character designs (follow the attached references): [JOKER] = JOKER (Ren Amamiya, P5R protagonist): messy black curly hair, white domino mask with black edging, black high-collared long tailcoat over a grey vest, bright red gloves, dark trousers, brown boots; a short combat knife and a black pistol.",
+      "image1": "art/p5/cards/round1/batch_04/cloak_and_dagger.png",
+      "original": "research/silent_assets/card_portraits/cloak_and_dagger.png",
+      "round1": "art/p5/cards/round1/batch_04/cloak_and_dagger.png",
+      "refs": [
+        "art/p5/cards/refs/joker/"
+      ],
+      "inputs": [
+        "art/p5/cards/round1/batch_04/cloak_and_dagger.png",
+        "research/silent_assets/card_portraits/cloak_and_dagger.png",
+        "art/p5/cards/refs/joker/civilian.png",
+        "art/p5/cards/refs/joker/front_unmasked.png",
+        "art/p5/cards/refs/joker/phantom.png"
+      ],
+      "generated": "exec-efc254ea-8e15-4b13-ac34-6936efcd3e5c.png",
+      "output": "art/p5/cards/round2/cloak_and_dagger.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "tool": "built-in image_gen"
+    },
+    {
+      "card": "corrosive_wave",
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL Slay the Spire 2 card illustration (a Silent card) and the strict EDIT TARGET. Reinterpret the replaced subject as a specific Persona 5 Royal moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, effects and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Wherever the Silent (the green-hooded huntress) appears, remove her completely with no remnants (no green hood, skull-like face, green cloak or pouches left) and refill the cleared area with the original background shapes, unless this prompt replaces her with someone. If the original composition cannot fit the idea literally, keep the composition and adapt the idea to it. Every named character MUST match the attached reference images exactly: face shape, eyes, hairstyle and hair color, mask, outfit, weapon; do not invent features or change their look; if a detail is unclear, keep it simple rather than guess. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness; no blur, no soft glow, no photoreal rendering. A SHADOW (P5R enemy, no reference image) is drawn as: a hunched black sludge-like body with drippy edges and a smooth white oval mask with two narrow slanted eye slits; keep it simple and consistent. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, the same size as Image1, no text, letters, numbers, frame, UI or watermark. Redesign the scene (you may change the composition): a Mementos subway tunnel seen in perspective, a huge black-and-crimson cognitive wave crashing through it toward the viewer, its crest breaking into dripping red curse; SHADOWS are swept up inside the wave, and a dark subway train is being swallowed at the far end. Keep the diagonal energy of the original wave. Red, black and a sickly green glow on the wave edge.",
+      "image1": "research/silent_assets/card_portraits/corrosive_wave.png",
+      "original": "research/silent_assets/card_portraits/corrosive_wave.png",
+      "round1": "art/p5/cards/round1/batch_05/corrosive_wave.png",
+      "refs": [],
+      "inputs": [
+        "research/silent_assets/card_portraits/corrosive_wave.png"
+      ],
+      "generated": "exec-895efa2a-d5f0-479b-8a05-a6611f00d809.png",
+      "output": "art/p5/cards/round2/corrosive_wave.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "tool": "built-in image_gen"
+    },
+    {
+      "card": "grand_finale",
+      "prompt": "Use case: new illustration (key card, free design). Image1 is the original Silent card and is shown ONLY for the canvas size, orientation and the bold hard cel-shaded card-art style; do NOT copy its composition or subject. Design a striking, cinematic Persona 5 Royal illustration that reads instantly at thumbnail size: one strong focal shape, high contrast, a clear silhouette, dramatic lighting, P5 red / black / white palette with the colors this prompt names. Every named character MUST match the attached reference images exactly (face shape, eyes, hairstyle, mask, outfit, design details); do not invent features. Anatomy must be correct; no extra limbs. Hard cel-shading: crisp dark outlines, deep near-black shadows, clear lit planes; no blur, no photoreal rendering. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, the same size as Image1, no text, letters, numbers, frame, UI or watermark. SATANAEL, colossal, rising behind a night-time Tokyo skyline under a blood-red sky, its halo of blades blazing, aiming its gigantic revolver straight down toward the viewer; the muzzle is the focal point, charged with a swirling blue-white flame bullet about to fire. Tiny in the foreground on a rooftop edge, JOKER stands with his back to us, one red-gloved arm raised pointing at the target, coat whipping in the wind. Strong low-angle perspective. Character designs (follow the attached references): [SATANAEL] = SATANAEL: a gigantic winged dark god with a halo of blades, holding a huge gun. [JOKER] = JOKER (Ren Amamiya, P5R protagonist): messy black curly hair, white domino mask with black edging, black high-collared long tailcoat over a grey vest, bright red gloves, dark trousers, brown boots; a short combat knife and a black pistol.",
+      "image1": "research/silent_assets/card_portraits/grand_finale.png",
+      "original": "research/silent_assets/card_portraits/grand_finale.png",
+      "round1": "art/p5/cards/round1/batch_09/grand_finale.png",
+      "refs": [
+        "art/p5/cards/refs/satanael/",
+        "art/p5/cards/refs/joker/"
+      ],
+      "inputs": [
+        "research/silent_assets/card_portraits/grand_finale.png",
+        "art/p5/cards/refs/satanael/model_front.png",
+        "art/p5/cards/refs/satanael/model_head.png",
+        "work/joker_refs.jpg"
+      ],
+      "generated": "exec-985fc366-0183-44b2-9261-2008551dca2b.png",
+      "output": "art/p5/cards/round2/grand_finale.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "tool": "built-in image_gen"
+    },
+    {
+      "card": "outbreak",
+      "prompt": "Use case: new illustration (key card, free design). Image1 is the original Silent card and is shown ONLY for the canvas size, orientation and the bold hard cel-shaded card-art style; do NOT copy its composition or subject. Design a striking, cinematic Persona 5 Royal illustration that reads instantly at thumbnail size: one strong focal shape, high contrast, a clear silhouette, dramatic lighting, P5 red / black / white palette with the colors this prompt names. Every named character MUST match the attached reference images exactly (face shape, eyes, hairstyle, mask, outfit, design details); do not invent features. Anatomy must be correct; no extra limbs. Hard cel-shading: crisp dark outlines, deep near-black shadows, clear lit planes; no blur, no photoreal rendering. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, the same size as Image1, no text, letters, numbers, frame, UI or watermark. Close-up of JOKER ripping off his white domino mask with one red-gloved hand, blood-red and black curse flame exploding out of the mask; from that flame ARSENE erupts behind him, wings flung wide, chains snapping, red-flame eyes, filling the upper frame. Toxic magenta-purple poison flames spread outward from the burst toward the edges. Dramatic low angle, diagonal composition. Character designs (follow the attached references): [JOKER] = JOKER (Ren Amamiya, P5R protagonist): messy black curly hair, white domino mask with black edging, black high-collared long tailcoat over a grey vest, bright red gloves, dark trousers, brown boots; a short combat knife and a black pistol. [ARSENE] = ARSENE (Joker's Persona): a tall dark demon gentleman with black wings, crimson-and-black tailored suit, a tall top hat, chains, glowing red-flame eyes.",
+      "image1": "research/silent_assets/card_portraits/outbreak.png",
+      "original": "research/silent_assets/card_portraits/outbreak.png",
+      "round1": "art/p5/cards/round1/batch_12/outbreak.png",
+      "refs": [
+        "art/p5/cards/refs/joker/",
+        "art/p5/cards/refs/arsene/"
+      ],
+      "inputs": [
+        "research/silent_assets/card_portraits/outbreak.png",
+        "art/p5/cards/refs/joker/civilian.png",
+        "art/p5/cards/refs/joker/front_unmasked.png",
+        "art/p5/cards/refs/joker/phantom.png",
+        "art/p5/cards/refs/arsene/official.png"
+      ],
+      "generated": "exec-5c507966-a137-4acd-b6a0-69982bb8de37.png",
+      "output": "art/p5/cards/round2/outbreak.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "tool": "built-in image_gen"
+    },
+    {
+      "card": "wraith_form",
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL Slay the Spire 2 card illustration (a Silent card) and the strict EDIT TARGET. Reinterpret the replaced subject as a specific Persona 5 Royal moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, effects and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Wherever the Silent (the green-hooded huntress) appears, remove her completely with no remnants (no green hood, skull-like face, green cloak or pouches left) and refill the cleared area with the original background shapes, unless this prompt replaces her with someone. If the original composition cannot fit the idea literally, keep the composition and adapt the idea to it. Every named character MUST match the attached reference images exactly: face shape, eyes, hairstyle and hair color, mask, outfit, weapon; do not invent features or change their look; if a detail is unclear, keep it simple rather than guess. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness; no blur, no soft glow, no photoreal rendering. A SHADOW (P5R enemy, no reference image) is drawn as: a hunched black sludge-like body with drippy edges and a smooth white oval mask with two narrow slanted eye slits; keep it simple and consistent. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, the same size as Image1, no text, letters, numbers, frame, UI or watermark. Keep the vertical canvas, the green background and the dark root-like tendrils. In the center, JOKER floats, turning into a wraith: his body becomes translucent green-black smoke from the waist down, the smoke trailing into the tendrils; only his white mask and red gloves stay solid and bright; behind him a faint, huge silhouette of ARSENE's wings and top hat made of the same smoke. Calm, eerie, untouchable. Character designs (follow the attached references): [JOKER] = JOKER (Ren Amamiya, P5R protagonist): messy black curly hair, white domino mask with black edging, black high-collared long tailcoat over a grey vest, bright red gloves, dark trousers, brown boots; a short combat knife and a black pistol. [ARSENE] = ARSENE (Joker's Persona): a tall dark demon gentleman with black wings, crimson-and-black tailored suit, a tall top hat, chains, glowing red-flame eyes.",
+      "image1": "research/silent_assets/card_portraits/wraith_form.png",
+      "original": "research/silent_assets/card_portraits/wraith_form.png",
+      "round1": "art/p5/cards/round1/batch_19/wraith_form.png",
+      "refs": [
+        "art/p5/cards/refs/joker/",
+        "art/p5/cards/refs/arsene/"
+      ],
+      "inputs": [
+        "research/silent_assets/card_portraits/wraith_form.png",
+        "art/p5/cards/refs/joker/civilian.png",
+        "art/p5/cards/refs/joker/front_unmasked.png",
+        "art/p5/cards/refs/joker/phantom.png",
+        "art/p5/cards/refs/arsene/official.png"
+      ],
+      "generated": "exec-24a5581d-e0f4-4503-acf3-bc2c13326cbf.png",
+      "output": "art/p5/cards/round2/wraith_form.png",
+      "size": [
+        606,
+        852
+      ],
+      "status": "awaiting_user_review",
+      "tool": "built-in image_gen"
+    },
+    {
+      "card": "shiv",
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL Slay the Spire 2 card illustration (a Silent card) and the strict EDIT TARGET. Reinterpret the replaced subject as a specific Persona 5 Royal moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, effects and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Wherever the Silent (the green-hooded huntress) appears, remove her completely with no remnants (no green hood, skull-like face, green cloak or pouches left) and refill the cleared area with the original background shapes, unless this prompt replaces her with someone. If the original composition cannot fit the idea literally, keep the composition and adapt the idea to it. Every named character MUST match the attached reference images exactly: face shape, eyes, hairstyle and hair color, mask, outfit, weapon; do not invent features or change their look; if a detail is unclear, keep it simple rather than guess. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness; no blur, no soft glow, no photoreal rendering. A SHADOW (P5R enemy, no reference image) is drawn as: a hunched black sludge-like body with drippy edges and a smooth white oval mask with two narrow slanted eye slits; keep it simple and consistent. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, the same size as Image1, no text, letters, numbers, frame, UI or watermark. This mod turns Shivs into Joker's gunshots. The original knife becomes a single gleaming brass pistol bullet flying in the same direction and at the same size and angle as the knife, with a hot red tracer streak and a small muzzle-flash burst at the trailing end; the tip glints. Keep the background, palette and any sparkle or motion effects. No characters.",
+      "image1": "research/silent_assets/card_portraits/shiv.png",
+      "original": "research/silent_assets/card_portraits/shiv.png",
+      "round1": null,
+      "refs": [],
+      "inputs": [
+        "research/silent_assets/card_portraits/shiv.png"
+      ],
+      "generated": "exec-dda48a96-4b20-4294-b717-2b7e57b19c53.png",
+      "output": "art/p5/cards/round2/shiv.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "tool": "built-in image_gen"
+    }
+  ],
+  "shiv_source": {
+    "pck": "G:/SteamLibrary/steamapps/common/Slay the Spire 2/SlayTheSpire2.pck",
+    "resource": "res://images/packed/card_portraits/token/shiv.png",
+    "method": "Godot read-only PCK resource mount; Texture2D image PNG export"
+  },
+  "notes": [
+    "grand_finale Joker references grouped into temporary contact sheet to fit five-input limit; original reference paths recorded in refs"
+  ]
+}
