@@ -63,9 +63,12 @@ public sealed class PileDiscard : IPileDecor
 	/// 3D 动作放到切 2D 那一刻（MotionEnd = CutAt）：
 	/// 用户 2026-11-24 第一次：手往外甩一下才切，像回弹、拖沓 → 改成 0.29 秒收进 185 的姿势定住；
 	/// 第二次：动作早就到位了却迟迟不变成立绘，而且 185（俯拍、低头、眼睛被头发挡）和立绘（抬眼看玩家）对不上，切的时候跳。
-	/// 第三次：最后单独一段睁眼（缓出）还是像停住等 → 整段机位搬到立绘角度、睁眼并进 185，曲线放平（power 1.4），一直动到 CutAt 干脆切。
+	/// 第三、四次：最后一段睁眼（镜头几乎不动、只有眼睛慢慢睁开）看着像停住等他眨眼 → 不要睁眼（185 用原版姿势），匀速（power 1）一直动到 CutAt，手扫过脸之后 0.1 秒就切。
 	/// </summary>
-	private const float MotionEnd = CutAt, MotionPower = 1.4f;
+	private const float MotionEnd = CutAt, MotionPower = 1f;
+	/// <summary>183→185 是很小的动作（手放下、头微动），匀速也要占 0.1 秒以上、看着像停住：0 → FaceAt 匀速播到 183（手扫过脸、脸露出来），剩下 0.04 秒带过 184、185 就切。</summary>
+	private const float FaceAt = CutAt - 0.04f;
+	private static float MotionU(float t) => t < FaceAt ? 6f * Mathf.Clamp(t / FaceAt, 0f, 1f) : 6f + 2f * Mathf.Clamp((t - FaceAt) / (MotionEnd - FaceAt), 0f, 1f);
 	// 最终排版的块面（mock_discard.py / export_discard.py 的黑块、星纹条、斜带，1080p；伸出屏幕的边延长到画面外）：
 	// 撞色斜线 x = Lx(y) 是黑块的左边，也是星纹条的右边；黑块外面全是红底
 	private static float Lx(float y) => 1002.66f - 0.419f * y;
@@ -306,7 +309,7 @@ public sealed class PileDiscard : IPileDecor
 		if (cut) _m3d?.Hide();
 		else
 		{
-			_m3d?.Show(MenuJoker3DKeys.Discard, PileReveal.Progress(t, MotionEnd, FrameCount - 1, MotionPower));
+			_m3d?.Show(MenuJoker3DKeys.Discard, MotionU(t));
 			_field.SetTime(t);
 			Field(t);
 		}

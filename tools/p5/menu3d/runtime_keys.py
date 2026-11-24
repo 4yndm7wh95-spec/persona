@@ -10,14 +10,19 @@ def cs_key(u, a, fa, b, fb, w, cam):
     c = ', '.join(f'{float(v):.4f}f' for v in cam)
     return f'\t\tnew({u:.3f}f, "{a}", {fa:.4f}f, "{b}", {fb:.4f}f, {w:.4f}f, new[] {{ {c} }}),\n'
 
-def rebase(cam, old, new):
+def rebase(cam, old, new, w=1.0):
     """整段机位轨迹跟着收尾机位一起搬：old → new 的刚体变换（世界坐标）作用到 cam 上（fov 加同样的差）。
     用户 2026-11-24：只改收尾那一帧的机位，前面还是旧角度，看得出最后镜头转过去；整段一起搬，从第一帧起就是新角度、镜头运动和原来一样。"""
     import numpy as np, m3d
     Ro, Rn, Ri = (m3d.rot_yxz(c[3:6]) for c in (old, new, cam))
     D = Rn @ Ro.T
     p = D @ (np.array(cam[:3], float) - np.array(old[:3], float)) + np.array(new[:3], float)
-    return [round(float(v), 4) for v in p] + [round(float(v), 4) for v in m3d.euler_yxz(D @ Ri)] + [round(cam[6] + new[6] - old[6], 4)]
+    if w >= 1: return [round(float(v), 4) for v in p] + [round(float(v), 4) for v in m3d.euler_yxz(D @ Ri)] + [round(cam[6] + new[6] - old[6], 4)]
+    # 只搬一部分（w）：位置线性、朝向球面插值，在原机位和整段搬过去的机位之间
+    from scipy.spatial.transform import Rotation as Rot, Slerp
+    r = Slerp([0, 1], Rot.from_matrix([Ri, D @ Ri]))([w]).as_matrix()[0]
+    p = (1 - w) * np.array(cam[:3], float) + w * p
+    return [round(float(v), 4) for v in p] + [round(float(v), 4) for v in m3d.euler_yxz(r)] + [round(cam[6] + w * (new[6] - old[6]), 4)]
 
 # 牌组收尾「240」第一版的机位（fit240.py）：233–239 按它 → 第二版（fit240b.py，final.json 里的 "240"）整段搬过去
 DECK_OLD_240 = [122.626, 147.73, 55.601, -6.327, 54.791, -12.251, 30.0012]
@@ -35,15 +40,16 @@ def main():
     for idx, (f, cam) in it.FRAMES.items():
         if idx == 186: continue
         cam = rebase(cam, it.FRAMES[185][1], it.FRAMES[186][1])   # 177–185 整段搬到收尾「186」（立绘）的角度
-        # 185 直接用「186」的姿势（main_0010 最后一帧、眼睛睁开）：用户 2026-11-24 第三次——单独一段睁眼放在最后，看着像停住等它睁完才切
-        if idx == 185: f = it.FRAMES[186][0]
+        # 不要睁眼（用户 2026-11-24 第三、四次：睁眼那段镜头不动、只有眼睛慢慢睁开，看着像停住等他眨眼）：185 用原版拟合的姿势，切立绘时直接换成睁眼
         lines += cs_key(idx - 177, 'main_0010', f, 'main_0010', f, 0.0, cam)
     out.append(('Discard', '弃牌堆（原版 ITEM 页 177–185，机位整段搬到 2D 立绘的角度、185 用立绘的姿势；U = 原版帧 − 177）', lines))
     fin = ROOT / 'tools/p5/menu3d/fit/equip_example/final.json'
     if fin.exists():
         lines = ''
         for idx, (f, cam) in sorted(json.load(open(fin)).items(), key=lambda kv: int(kv[0])):
-            if idx != '240': cam = rebase(cam, DECK_OLD_240, json.load(open(fin))['240'][1])   # 233–239 整段搬到新「240」的角度
+            # 233–239 逐渐搬到新「240」的角度（用户 2026-11-24：整段全搬过去前半段和原版角度对不上——原版侧身、左手全程看不见；
+            # 只搬最后一帧又看得出最后镜头转过去）：开头用原版拟合的机位，按 ((原版帧 − 233) / 7)² 越往后搬得越多，转角摊在整段运镜里
+            if idx != '240': cam = rebase(cam, DECK_OLD_240, json.load(open(fin))['240'][1], ((int(idx) - 233) / 7) ** 2)
             if idx == '240': f = 11.0   # 第 11 帧 = 第 9 帧 + 大衣下摆往左铺开（coat240.py，export_runtime 接在 main_0005 后面）
             lines += cs_key(int(idx) - 233, 'main_0005', f, 'main_0005', f, 0.0, cam)
         out.append(('Deck', '牌组（原版 EQUIP 页 233–239 + 收尾「240」= 枪甩下来对上 2D 立绘，U = 原版帧 − 233）', lines))
