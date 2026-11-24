@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-11-24 · 会话 E 补充：P3 蓝蝶（用户认可，待合进 P3 mod）+ P5 卡面 Mod
+
+- **P3 君王之剑替代的蓝蝶**（用户：可以了）：`tools/p3/butterfly/SovereignButterfly.cs`，只依赖 Godot，**还没接进 P3 mod**，由 P3 那边的会话（`claude/admiring-knuth-lqj1x7`）合并：
+  整份搬进 `mod/src/Vfx`（命名空间已经是 `P3Makoto.Vfx`），在 `mod/src/Patches/ScenePatches.cs` 的 `SovereignBladeReskinPatch` 里 `BladeReskin.Hide(__instance)` 之后
+  `SovereignButterfly.Start(人物身前特效层, 人物身后特效层, () => (脚底, 身高))`，君王之剑节点释放（TreeExiting）时 `Stop()`。前景 / 背景两层按深度切换，蝴蝶会真的绕到人物身后。
+  预览 `docs/preview/p3_sovereign_butterfly_v3.mp4`（预览里用 Joker 站位），预览场景 `p3_butterfly`（`tools/p5/fxpreview/FxPreview.csproj` 额外编译了 tools/p3/butterfly）。
+- **P5CardArt 1.0.0**（独立卡面 Mod）：`p5cardart/`，92 张（静默猎手 91 + 小刀做成子弹），图来自审批台通过的第一 / 二轮；编译打包安装交给 Codex：`docs/codex/codex_p5_cardart_build_1.0.0.md`。
+- 牌堆界面：用户说不用这个会话管了（交还牌堆会话）。
+
+---
+
 ## 2026-11-23 · 会话 E 交接（总览，最新）—— 分支 `claude/confirm-next-tasks-k5wu6t`，等合并
 
 ### 分支状态
