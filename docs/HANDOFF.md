@@ -14,6 +14,9 @@
   预览 `docs/preview/p3_sovereign_butterfly_v3.mp4`（预览里用 Joker 站位），预览场景 `p3_butterfly`（`tools/p5/fxpreview/FxPreview.csproj` 额外编译了 tools/p3/butterfly）。
 - **P5CardArt 1.0.0**（独立卡面 Mod）：`p5cardart/`，92 张（静默猎手 91 + 小刀做成子弹），图来自审批台通过的第一 / 二轮；编译打包安装交给 Codex：`docs/codex/codex_p5_cardart_build_1.0.0.md`。
 - 牌堆界面：用户说不用这个会话管了（交还牌堆会话）。
+- **合并状态（2026-11-24 收尾）**：本分支 `claude/confirm-next-tasks-k5wu6t` 已推送、工作区干净、类型检查通过。
+  `codex/p5-0951-integration`、`claude/confident-hypatia-nropgi` 都是它的祖先（合回去是快进）；`claude/p5-pile-ui` 之后又多了 5 个提交，和本分支试合并**无冲突**（本会话改过弃牌堆，牌堆会话合并时以它那边为准再看一眼 `Vfx/PileDiscard.cs`）。
+  **P3 分支 `claude/admiring-knuth-lqj1x7` 不要整个合本分支**（会在 `mod/P3Makoto.json` 冲突，那是 P5 集成分支带过来的旧 P3 版本号，和这次无关）：P3 会话只拷 `tools/p3/butterfly/SovereignButterfly.cs` 一个文件。
 
 ---
 
