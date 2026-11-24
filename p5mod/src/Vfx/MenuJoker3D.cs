@@ -163,7 +163,9 @@ public sealed class MenuJoker3D
 			var mat = new StandardMaterial3D
 			{
 				ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
-				CullMode = s.Cull ? BaseMaterial3D.CullModeEnum.Back : BaseMaterial3D.CullModeEnum.Disabled,
+				// 纯黑无贴图的网格（衣服、头发、手、枪身）两面都画：机位从下往上看时（弃牌堆收尾的角度）领子内侧是背面，剔掉了会透出后面的脸 / 脖子（白点、像透明）。
+				// 有贴图的（脸、眼睛）和灰色描边（gun_outline，反向外壳，靠剔除）照旧。
+				CullMode = s.Cull && !(s.Tex.Length == 0 && s.Color.R < 0.01f && s.Color.G < 0.01f && s.Color.B < 0.01f) ? BaseMaterial3D.CullModeEnum.Back : BaseMaterial3D.CullModeEnum.Disabled,
 				AlbedoColor = s.Color,
 			};
 			if (s.Tex.Length > 0 && Fx.Tex("m3d_" + s.Tex) is Texture2D t)

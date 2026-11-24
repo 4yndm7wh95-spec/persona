@@ -33,14 +33,18 @@ def main():
     out.append(('Exhaust', '消耗堆（原版 SKILL 页 112–122，U = 原版帧 − 112）', lines))
     lines = ''
     for idx, (f, cam) in it.FRAMES.items():
-        if idx < 186: cam = rebase(cam, it.FRAMES[185][1], it.FRAMES[186][1])   # 177–185 整段搬到收尾「186」的角度
+        if idx == 186: continue
+        cam = rebase(cam, it.FRAMES[185][1], it.FRAMES[186][1])   # 177–185 整段搬到收尾「186」（立绘）的角度
+        # 185 直接用「186」的姿势（main_0010 最后一帧、眼睛睁开）：用户 2026-11-24 第三次——单独一段睁眼放在最后，看着像停住等它睁完才切
+        if idx == 185: f = it.FRAMES[186][0]
         lines += cs_key(idx - 177, 'main_0010', f, 'main_0010', f, 0.0, cam)
-    out.append(('Discard', '弃牌堆（原版 ITEM 页 177–185 + 收尾「186」= 对上 2D 立绘，U = 原版帧 − 177）', lines))
+    out.append(('Discard', '弃牌堆（原版 ITEM 页 177–185，机位整段搬到 2D 立绘的角度、185 用立绘的姿势；U = 原版帧 − 177）', lines))
     fin = ROOT / 'tools/p5/menu3d/fit/equip_example/final.json'
     if fin.exists():
         lines = ''
         for idx, (f, cam) in sorted(json.load(open(fin)).items(), key=lambda kv: int(kv[0])):
             if idx != '240': cam = rebase(cam, DECK_OLD_240, json.load(open(fin))['240'][1])   # 233–239 整段搬到新「240」的角度
+            if idx == '240': f = 11.0   # 第 11 帧 = 第 9 帧 + 大衣下摆往左铺开（coat240.py，export_runtime 接在 main_0005 后面）
             lines += cs_key(int(idx) - 233, 'main_0005', f, 'main_0005', f, 0.0, cam)
         out.append(('Deck', '牌组（原版 EQUIP 页 233–239 + 收尾「240」= 枪甩下来对上 2D 立绘，U = 原版帧 − 233）', lines))
     fin = ROOT / 'tools/p5/menu3d/fit/draw_example/final.json'

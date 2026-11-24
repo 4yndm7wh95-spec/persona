@@ -2,7 +2,7 @@
 research/p5r/menu3d_runtime/mesh.bin + <片段>.f16（stage_p5 原样放进 pck 的 res://p5joker/m3d/）；脸部贴图走 pile_textures（m3d_<贴图名>）。
 mesh.bin（小端）：'M3D1'、int 网格数、int 总顶点数；每个网格：int 名字字节数 + 名字、int 顶点数、int 索引数、float×4 颜色、
   int 贴图名字节数 + 贴图名（0 = 无贴图）、byte 剔除、byte alpha 裁切阈值、int32×索引数（已换成 Godot 的绕序）、有贴图时 float×2×顶点数 UV。
-片段 .f16 = research/p5r/menu3d_data 原样（[帧][顶点][xyz] float16）。
+片段 .f16 = research/p5r/menu3d_data 原样（[帧][顶点][xyz] float16）+ research/p5r/menu3d_extra 里手改的额外帧（接在后面）。
 用法：python3 tools/p5/menu3d/export_runtime.py"""
 import json, shutil, struct
 from pathlib import Path
@@ -28,7 +28,13 @@ def main():
             uv = [c for pair in s['uv'] for c in pair]
             b += struct.pack(f'<{len(uv)}f', *uv)
     (OUT / 'mesh.bin').write_bytes(bytes(b))
-    for c in CLIPS: shutil.copy(SRC / f'{c}.f16', OUT / f'{c}.f16')
+    for c in CLIPS:
+        b = (SRC / f'{c}.f16').read_bytes()
+        # 手改过的额外帧接在片段后面（research/p5r/menu3d_extra/<片段>.f16，同样 [帧][顶点][xyz] float16）：
+        # main_0005 第 11 帧 = 牌组收尾「240」，大衣下摆往左铺开对上立绘（fit/equip_example/coat240.py）
+        extra = ROOT / 'research/p5r/menu3d_extra' / f'{c}.f16'
+        if extra.exists(): b += extra.read_bytes()
+        (OUT / f'{c}.f16').write_bytes(b)
     print('mesh.bin', len(b), 'bytes,', len(specs), 'meshes,', total, 'verts')
 
 if __name__ == '__main__':
