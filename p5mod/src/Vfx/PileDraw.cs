@@ -23,7 +23,7 @@ namespace P5Joker;
 public sealed class PileDraw : IPileDecor
 {
 	// ── 版式（1920×1080）──
-	public const float GridX = 70f, GridTop = 176f, GridBottom = 1046f;
+	public const float GridX = 70f, GridTop = 214f, GridBottom = 1046f;
 	public const int Cols = 4;
 	public const float CardW = 168f, CellW = 182f, CellH = 250f;
 	// 立绘按原版比例（实机截图量的：比第一版大 1.258 倍，手指尖顶到画面上缘）；牌格子改 4 列，手掌左边缘正好在牌格子右边
@@ -98,7 +98,7 @@ public sealed class PileDraw : IPileDecor
 		root.AddChild(_portrait);
 		root.MoveChild(_plates, _portrait.GetIndex());   // 标题牌压在立绘上面（原版的拼贴字牌都在最上层；顶栏让位后不能钻到头发下面）
 		_por = new ShaderMaterial { Shader = FillShader };
-		_porSprite = new Sprite2D { Texture = Fx.Tex("pile_camptop"), Material = _por, TextureFilter = CanvasItem.TextureFilterEnum.Linear };
+		_porSprite = new Sprite2D { Texture = Fx.Tex("pile_camptop"), Material = _por, TextureFilter = CanvasItem.TextureFilterEnum.LinearWithMipmaps };
 		_porScale = _porSprite.Texture is { } pt ? PortraitW * k / pt.GetWidth() : 1f;
 		_porSprite.Scale = Vector2.One * _porScale;
 		_portrait.AddChild(_porSprite);
@@ -160,7 +160,7 @@ public sealed class PileDraw : IPileDecor
 	float IPileDecor.ExitTime => ExitTime;
 	public Vector2 FocusAt => new(640f, 560f);
 	public Vector2 InfoAt => new(1000f, 300f);
-	public Vector2 SwitchAt => new(70f, 112f);   // 游戏顶栏（约 80px）下面
+	public Vector2 SwitchAt => new(70f, 152f);   // 游戏顶栏（80px）和它下面那排遗物（到 y≈148）都让开
 	public Vector2 EnterOffset => new(-40f, 46f);
 	public Vector2 ExitOffset => new(-20f, 130f);
 
@@ -340,8 +340,8 @@ public sealed class PileDraw : IPileDecor
 		_plates.AddChild(n);
 		Vector2 h = size * 0.5f * k;
 		float e = 6f * k;
-		Fx.Poly(n, new[] { new Vector2(-h.X, -h.Y), new Vector2(h.X, -h.Y), new Vector2(h.X, h.Y), new Vector2(-h.X, h.Y) }, edge);
-		Fx.Poly(n, new[] { new Vector2(-h.X + e, -h.Y + e), new Vector2(h.X - e, -h.Y + e), new Vector2(h.X - e, h.Y - e), new Vector2(-h.X + e, h.Y - e) }, fill);
+		Poly(n, new[] { new Vector2(-h.X, -h.Y), new Vector2(h.X, -h.Y), new Vector2(h.X, h.Y), new Vector2(-h.X, h.Y) }, edge);
+		Poly(n, new[] { new Vector2(-h.X + e, -h.Y + e), new Vector2(h.X - e, -h.Y + e), new Vector2(h.X - e, h.Y - e), new Vector2(-h.X + e, h.Y - e) }, fill);
 		if (glyph != null) Glyph(n, glyph, Vector2.Zero, glyphW, 0f, tint);
 		_pops.Add((n, n.Position, n.Rotation, delay));
 		return n;
@@ -350,7 +350,7 @@ public sealed class PileDraw : IPileDecor
 	private Sprite2D? Glyph(Node2D parent, string tex, Vector2 at, float width, float rotDeg, Color tint)
 	{
 		if (Fx.Tex(tex) is not Texture2D t) return null;
-		Sprite2D s = new() { Texture = t, Position = at * _k, Rotation = Mathf.DegToRad(rotDeg), Modulate = tint, TextureFilter = CanvasItem.TextureFilterEnum.Linear };
+		Sprite2D s = new() { Texture = t, Position = at * _k, Rotation = Mathf.DegToRad(rotDeg), Modulate = tint, TextureFilter = CanvasItem.TextureFilterEnum.LinearWithMipmaps };
 		float w = tex.EndsWith("_ol") && Fx.Tex(tex[..^3]) is Texture2D body ? width * t.GetWidth() / body.GetWidth() : width;
 		s.Scale = Vector2.One * w * _k / t.GetWidth();
 		parent.AddChild(s);
@@ -358,6 +358,14 @@ public sealed class PileDraw : IPileDecor
 	}
 
 	// ── 星纹着色器 ──
+	/// <summary>牌堆界面的多边形一律抗锯齿（用户 2026-11-24：UI 边缘锯齿感；斜放的标题牌、色块边缘都是斜线）。</summary>
+	internal static Polygon2D Poly(Node parent, Vector2[] points, Color color)
+	{
+		Polygon2D p = Fx.Poly(parent, points, color);
+		p.Antialiased = true;
+		return p;
+	}
+
 	internal static ShaderMaterial StarMaterial(float baseSize, Color paper, Color ink, Color grayInk, Vector2 shade)
 	{
 		ShaderMaterial m = new() { Shader = StarShader };
@@ -583,7 +591,7 @@ public sealed class CallingCard
 		// 落在手上的投影（跟着卡的宽度变化）
 		c._shadow = new Polygon2D { Color = new Color(0.12f, 0f, 0f, 0.3f), Polygon = Fx.Circle(1f, 48), Material = Soft };
 		parent.AddChild(c._shadow);
-		c._view = new TextureRect { Texture = c._vp.GetTexture(), Size = c.Box * k, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, TextureFilter = CanvasItem.TextureFilterEnum.Linear, MouseFilter = Control.MouseFilterEnum.Ignore, Modulate = new Color(1f, 1f, 1f, 0f) };
+		c._view = new TextureRect { Texture = c._vp.GetTexture(), Size = c.Box * k, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, TextureFilter = CanvasItem.TextureFilterEnum.LinearWithMipmaps, MouseFilter = Control.MouseFilterEnum.Ignore, Modulate = new Color(1f, 1f, 1f, 0f) };
 		parent.AddChild(c._view);
 		return c;
 	}

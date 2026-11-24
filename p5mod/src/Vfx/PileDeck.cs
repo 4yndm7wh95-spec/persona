@@ -144,9 +144,9 @@ public sealed class PileDeck : IPileDecor
 			{
 				// 原版名单选中行：青 / 红斜条垫白底
 				Vector2 o = new(-36f, -18f);
-				Fx.Poly(row, Scale(new[] { new Vector2(0f, 54f), new(300f, 0f), new(334f, 78f), new(30f, 84f) }, o, 280f / 340f), new Color(0.9f, 0.1f, 0.11f));
-				Fx.Poly(row, Scale(new[] { new Vector2(0f, 54f), new(150f, 27f), new(170f, 80f), new(30f, 84f) }, o, 280f / 340f), new Color(0.31f, 0.9f, 0.94f));
-				Fx.Poly(row, Scale(new[] { new Vector2(24f, 10f), new(286f, 4f), new(300f, 70f), new(40f, 76f) }, o, 280f / 340f), Paper);
+				PileDraw.Poly(row, Scale(new[] { new Vector2(0f, 54f), new(300f, 0f), new(334f, 78f), new(30f, 84f) }, o, 280f / 340f), new Color(0.9f, 0.1f, 0.11f));
+				PileDraw.Poly(row, Scale(new[] { new Vector2(0f, 54f), new(150f, 27f), new(170f, 80f), new(30f, 84f) }, o, 280f / 340f), new Color(0.31f, 0.9f, 0.94f));
+				PileDraw.Poly(row, Scale(new[] { new Vector2(24f, 10f), new(286f, 4f), new(300f, 70f), new(40f, 76f) }, o, 280f / 340f), Paper);
 			}
 			Color tc = hl ? Ink : Paper;
 			float w = PileText.Word(row, Keys[i], Vector2.Zero, 44f * k, tc, !hl);
@@ -226,7 +226,7 @@ public sealed class PileDeck : IPileDecor
 		Node2D n = new() { Position = at };
 		parent.AddChild(n);
 		if (Fx.Tex("pile_dk_" + name) is Texture2D t)
-			n.AddChild(new Sprite2D { Texture = t, Centered = false, Scale = Vector2.One * _k, TextureFilter = CanvasItem.TextureFilterEnum.Linear });
+			n.AddChild(new Sprite2D { Texture = t, Centered = false, Scale = Vector2.One * _k, TextureFilter = CanvasItem.TextureFilterEnum.LinearWithMipmaps });
 		return n;
 	}
 
@@ -238,7 +238,7 @@ public sealed class PileDeck : IPileDecor
 		{
 			if (c < '0' || c > '9' || Fx.Tex($"pile_dk_big{c}") is not Texture2D t) continue;
 			float w = t.GetWidth() * h / t.GetHeight();
-			parent.AddChild(new Sprite2D { Texture = t, Centered = false, Position = at + new Vector2(x, 0f), Scale = Vector2.One * h / t.GetHeight(), Modulate = tint, TextureFilter = CanvasItem.TextureFilterEnum.Linear });
+			parent.AddChild(new Sprite2D { Texture = t, Centered = false, Position = at + new Vector2(x, 0f), Scale = Vector2.One * h / t.GetHeight(), Modulate = tint, TextureFilter = CanvasItem.TextureFilterEnum.LinearWithMipmaps });
 			x += w * 0.82f;
 		}
 	}

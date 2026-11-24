@@ -42,8 +42,29 @@ public static class Fx
 	{
 		if (Cache.ContainsKey(name)) return true;
 		if (!PollResource(TextureDirectory + name + ".png", out Resource? resource)) return false;
-		if (resource is Texture2D texture) Cache[name] = texture;
+		if (resource is Texture2D texture) Cache[name] = WithMipmaps(name, texture);
 		return true;
+	}
+
+	/// <summary>
+	/// 牌堆界面的大图（pile_*：立绘、字图、图层）按 1440p 预缩，1080p 下缩到 0.75 显示；ctex 没有 mipmap，缩小采样时高对比的描边会起锯齿
+	///（用户 2026-11-24：UI 的边缘有很多锯齿感）→ 第一次取用时生成 mipmap（预热里先做掉），显示用 LinearWithMipmaps。
+	/// </summary>
+	private static Texture2D WithMipmaps(string name, Texture2D texture)
+	{
+		if (!name.StartsWith("pile_", StringComparison.Ordinal) || texture.GetImage() is not Image img) return texture;
+		try
+		{
+			img = (Image)img.Duplicate();
+			if (img.IsCompressed()) img.Decompress();
+			if (!img.HasMipmaps()) img.GenerateMipmaps();
+			return ImageTexture.CreateFromImage(img);
+		}
+		catch (Exception e)
+		{
+			Stage.Report("mipmaps " + name, e);
+			return texture;
+		}
 	}
 
 	internal static Texture2D? ReadyTexture(string name) => Cache.TryGetValue(name, out Texture2D? texture) ? texture : null;
@@ -91,6 +112,7 @@ public static class Fx
 			if (Loading.Remove(path))
 				tex = ResourceLoader.LoadThreadedGet(path) as Texture2D;
 			tex ??= Stage.LoadTexture(name);
+			if (tex != null) tex = WithMipmaps(name, tex);
 			Cache[name] = tex;
 		}
 		return tex;

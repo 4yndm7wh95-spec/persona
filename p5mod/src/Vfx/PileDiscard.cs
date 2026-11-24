@@ -35,7 +35,7 @@ public sealed class PileDiscard : IPileDecor
 	private static readonly Color Teal = new(92 / 255f, 230 / 255f, 200 / 255f), Pink = new(226 / 255f, 70 / 255f, 220 / 255f);
 	private const float ListK = 0.84f;
 	/// <summary>游戏顶栏的高度（1080p）：顶部的东西都放到它下面。</summary>
-	private const float TopInset = 78f, ListSquash = 0.93f, TitleDrop = 62f;   // 标题牌只让出顶栏露出来的那截，不压第一排牌
+	private const float TopInset = 142f, ListSquash = 0.87f, TitleDrop = 62f;   // 列表第一行让开顶栏下面那排遗物（到 y≈148）   // 标题牌只让出顶栏露出来的那截，不压第一排牌
 	private static readonly Vector2 EdgeA = new(474f, -20f), EdgeB = new(322f, 1100f);
 	/// <summary>每行（export_discard.py 的 layout.json）：头像底图层左上角、排版用的 hx / yc（列表画布单位，再乘 ListK）、倾斜。</summary>
 	private static readonly (string Key, Vector2 Img, float Hx, float Yc, float Tilt)[] Rows =
@@ -148,9 +148,9 @@ public sealed class PileDiscard : IPileDecor
 		// 4. 左边面板：斜边（白边 + 黑 + 内侧红条）+ 六行 + 两个标签牌
 		_panel = new Node2D { Name = "PileDiscardList" };
 		root.AddChild(_panel);
-		Fx.Poly(_panel, new[] { new Vector2(-40f, -20f), EdgeA + new Vector2(14f, 0f), EdgeB + new Vector2(14f, 0f), new Vector2(-40f, 1100f) }.Select(p => p * k).ToArray(), new Color(0.94f, 0.94f, 0.94f));
-		Fx.Poly(_panel, new[] { new Vector2(-40f, -20f), EdgeA, EdgeB, new Vector2(-40f, 1100f) }.Select(p => p * k).ToArray(), new Color(0.03f, 0.03f, 0.03f));
-		Fx.Poly(_panel, new[] { EdgeA + new Vector2(-22f, 0f), EdgeA + new Vector2(-15f, 0f), EdgeB + new Vector2(-15f, 0f), EdgeB + new Vector2(-22f, 0f) }.Select(p => p * k).ToArray(), new Color(0.78f, 0.08f, 0.12f));
+		PileDraw.Poly(_panel, new[] { new Vector2(-40f, -20f), EdgeA + new Vector2(14f, 0f), EdgeB + new Vector2(14f, 0f), new Vector2(-40f, 1100f) }.Select(p => p * k).ToArray(), new Color(0.94f, 0.94f, 0.94f));
+		PileDraw.Poly(_panel, new[] { new Vector2(-40f, -20f), EdgeA, EdgeB, new Vector2(-40f, 1100f) }.Select(p => p * k).ToArray(), new Color(0.03f, 0.03f, 0.03f));
+		PileDraw.Poly(_panel, new[] { EdgeA + new Vector2(-22f, 0f), EdgeA + new Vector2(-15f, 0f), EdgeB + new Vector2(-15f, 0f), EdgeB + new Vector2(-22f, 0f) }.Select(p => p * k).ToArray(), new Color(0.78f, 0.08f, 0.12f));
 		// 游戏顶栏（1080p 下约 80px）盖在界面最上面：列表整体下移 TopInset、纵向压到 ListSquash，六行都露出来（用户 2026-11-24 实机截图）
 		Node2D list = new() { Position = new Vector2(0f, TopInset * k), Scale = new Vector2(1f, ListSquash) };
 		_panel.AddChild(list);
@@ -184,7 +184,7 @@ public sealed class PileDiscard : IPileDecor
 		ShaderMaterial underMat = (ShaderMaterial)_bg.Duplicate();
 		underMat.SetShaderParameter("wipe", 1e7f);
 		underMask.AddChild(new ColorRect { Size = view, Material = underMat, MouseFilter = Control.MouseFilterEnum.Ignore });
-		Fx.Poly(_bandRoot, new[] { R(1765.7f, 766.6f), R(1804.8f, 883.8f), R(1223.7f, 1049.8f) }, new Color(0.84f, 0.84f, 0.84f));
+		PileDraw.Poly(_bandRoot, new[] { R(1765.7f, 766.6f), R(1804.8f, 883.8f), R(1223.7f, 1049.8f) }, new Color(0.84f, 0.84f, 0.84f));
 		Callable.From(() =>
 		{
 			if (!GodotObject.IsInstanceValid(_bandRoot) || !GodotObject.IsInstanceValid(root)) return;
@@ -201,7 +201,7 @@ public sealed class PileDiscard : IPileDecor
 		Node2D n = new() { Position = at };
 		parent.AddChild(n);
 		if (Fx.Tex("pile_dc_" + name) is Texture2D t)
-			n.AddChild(new Sprite2D { Texture = t, Centered = false, Scale = Vector2.One * _k, TextureFilter = CanvasItem.TextureFilterEnum.Linear });
+			n.AddChild(new Sprite2D { Texture = t, Centered = false, Scale = Vector2.One * _k, TextureFilter = CanvasItem.TextureFilterEnum.LinearWithMipmaps });
 		return n;
 	}
 
@@ -238,7 +238,7 @@ public sealed class PileDiscard : IPileDecor
 		{
 			if (c < '0' || c > '9' || Fx.Tex($"pile_dc_{set}{c}") is not Texture2D t) continue;
 			float w = t.GetWidth() * h / t.GetHeight();
-			parent.AddChild(new Sprite2D { Texture = t, Centered = false, Position = at + new Vector2(x, 0f), Scale = Vector2.One * h / t.GetHeight(), Modulate = tint, TextureFilter = CanvasItem.TextureFilterEnum.Linear });
+			parent.AddChild(new Sprite2D { Texture = t, Centered = false, Position = at + new Vector2(x, 0f), Scale = Vector2.One * h / t.GetHeight(), Modulate = tint, TextureFilter = CanvasItem.TextureFilterEnum.LinearWithMipmaps });
 			x += w * advance;
 			lastW = w;
 		}
@@ -248,7 +248,7 @@ public sealed class PileDiscard : IPileDecor
 	private static void Underline(Node2D parent, Vector2 at, float w, Color tint)
 	{
 		if (Fx.Tex("pile_dc_underline") is not Texture2D t) return;
-		parent.AddChild(new Sprite2D { Texture = t, Centered = false, Position = at, Scale = new Vector2(w / t.GetWidth(), 11f / t.GetHeight()), Modulate = tint, TextureFilter = CanvasItem.TextureFilterEnum.Linear });
+		parent.AddChild(new Sprite2D { Texture = t, Centered = false, Position = at, Scale = new Vector2(w / t.GetWidth(), 11f / t.GetHeight()), Modulate = tint, TextureFilter = CanvasItem.TextureFilterEnum.LinearWithMipmaps });
 	}
 
 	public void Kick() { }

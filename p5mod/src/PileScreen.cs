@@ -900,14 +900,14 @@ public static class PileScreen
 		f.Band = new Node2D { Position = c, Rotation = Mathf.DegToRad(-14f) };
 		f.Layer.AddChild(f.Band);
 		float len = 2600f * k, h = 250f * k;
-		Fx.Poly(f.Band, new[] { new Vector2(-len, -h / 2), new Vector2(len, -h / 2), new Vector2(len, h / 2), new Vector2(-len, h / 2) }, new Color(0.78f, 0.05f, 0.08f, 0.95f));
-		Fx.Poly(f.Band, new[] { new Vector2(-len, h / 2 + 10f * k), new Vector2(len, h / 2 + 10f * k), new Vector2(len, h / 2 + 24f * k), new Vector2(-len, h / 2 + 24f * k) }, Ink);
-		Fx.Poly(f.Band, new[] { new Vector2(-len, -h / 2 - 18f * k), new Vector2(len, -h / 2 - 18f * k), new Vector2(len, -h / 2 - 10f * k), new Vector2(-len, -h / 2 - 10f * k) }, Paper);
+		PileDraw.Poly(f.Band, new[] { new Vector2(-len, -h / 2), new Vector2(len, -h / 2), new Vector2(len, h / 2), new Vector2(-len, h / 2) }, new Color(0.78f, 0.05f, 0.08f, 0.95f));
+		PileDraw.Poly(f.Band, new[] { new Vector2(-len, h / 2 + 10f * k), new Vector2(len, h / 2 + 10f * k), new Vector2(len, h / 2 + 24f * k), new Vector2(-len, h / 2 + 24f * k) }, Ink);
+		PileDraw.Poly(f.Band, new[] { new Vector2(-len, -h / 2 - 18f * k), new Vector2(len, -h / 2 - 18f * k), new Vector2(len, -h / 2 - 10f * k), new Vector2(-len, -h / 2 - 10f * k) }, Paper);
 		f.Info = new Node2D();
 		f.Layer.AddChild(f.Info);
 		float ix = infoAt.X, iy = infoAt.Y;
 		f.Name = Text(f.Info, "", Cjk, (int)(54f * k), Paper, new Vector2(ix, iy) * k, (int)(7f * k), Ink);
-		Fx.Poly(f.Info, new[] { new Vector2(ix, iy + 84f) * k, new Vector2(ix + 360f, iy + 78f) * k, new Vector2(ix + 356f, iy + 90f) * k, new Vector2(ix - 4f, iy + 94f) * k }, Red);
+		PileDraw.Poly(f.Info, new[] { new Vector2(ix, iy + 84f) * k, new Vector2(ix + 360f, iy + 78f) * k, new Vector2(ix + 356f, iy + 90f) * k, new Vector2(ix - 4f, iy + 94f) * k }, Red);
 		f.Kind = new Node2D();
 		f.Info.AddChild(f.Kind);
 		f.Copies = new Node2D();
@@ -961,8 +961,8 @@ public static class PileScreen
 		float h = 54f;
 		Vector2[] outer = { new(-4f, -h / 2 + 1f), new(x + 4f, -h / 2 - 4f), new(x + 12f, h / 2 + 1f), new(2f, h / 2 + 6f) };
 		Vector2[] inner = { new(0f, -h / 2 + 4f), new(x, -h / 2), new(x + 8f, h / 2 - 2f), new(6f, h / 2 + 2f) };
-		Fx.Poly(plate, outer.Select(p => p * k).ToArray(), Paper);
-		Fx.Poly(plate, inner.Select(p => p * k).ToArray(), Ink);
+		PileDraw.Poly(plate, outer.Select(p => p * k).ToArray(), Paper);
+		PileDraw.Poly(plate, inner.Select(p => p * k).ToArray(), Ink);
 		return n;
 	}
 
@@ -996,7 +996,7 @@ public static class PileScreen
 		Flip f = new() { Vp = vp, Card = card, Size = size, Back = Fx.Tex("calling_card_back") };
 		f.Node = new Node2D { Visible = false };
 		front.AddChild(f.Node);
-		f.Mesh = new Polygon2D { TextureFilter = CanvasItem.TextureFilterEnum.Linear };
+		f.Mesh = new Polygon2D { TextureFilter = CanvasItem.TextureFilterEnum.LinearWithMipmaps };
 		f.Node.AddChild(f.Mesh);
 		Godot.Collections.Array polys = new();
 		for (int i = 0; i < FlipStrips; i++) polys.Add(new[] { i, i + 1, FlipStrips + 1 + i + 1, FlipStrips + 1 + i });
@@ -1049,8 +1049,8 @@ public static class PileScreen
 		Node2D n = new() { Visible = false, Rotation = Mathf.DegToRad(-3f) };
 		root.AddChild(n);
 		float w = 280f, h = 52f;
-		Fx.Poly(n, new[] { new Vector2(8f, 10f), new Vector2(w + 12f, 4f), new Vector2(w + 18f, h + 6f), new Vector2(12f, h + 10f) }.Select(p => p * k).ToArray(), Ink);
-		Fx.Poly(n, new[] { new Vector2(0f, 6f), new Vector2(w, 0f), new Vector2(w + 6f, h), new Vector2(4f, h + 4f) }.Select(p => p * k).ToArray(), Red);
+		PileDraw.Poly(n, new[] { new Vector2(8f, 10f), new Vector2(w + 12f, 4f), new Vector2(w + 18f, h + 6f), new Vector2(12f, h + 10f) }.Select(p => p * k).ToArray(), Ink);
+		PileDraw.Poly(n, new[] { new Vector2(0f, 6f), new Vector2(w, 0f), new Vector2(w + 6f, h), new Vector2(4f, h + 4f) }.Select(p => p * k).ToArray(), Red);
 		Label l = Text(n, "", Cjk, (int)(30f * k), Paper, new Vector2(18f, 6f) * k, (int)(4f * k), Ink);
 		l.ClipText = true;
 		l.Size = new Vector2((w - 30f) * k, (h - 8f) * k);
@@ -1091,10 +1091,10 @@ public static class PileScreen
 			float w = 214f * k, h = 38f * k, lean = 9f * k;
 			b.Root = new Node2D { Name = "P5UpgradeButton", Visible = false };
 			parent.AddChild(b.Root);
-			Fx.Poly(b.Root, new[] { new Vector2(lean + 5f * k, 5f * k), new Vector2(w + lean + 5f * k, 5f * k), new Vector2(w + 5f * k, h + 5f * k), new Vector2(5f * k, h + 5f * k) }, new Color(0f, 0f, 0f, 0.5f));
-			Fx.Poly(b.Root, new[] { new Vector2(lean, 0f), new Vector2(w + lean, 0f), new Vector2(w, h), new Vector2(0f, h) }, Ink);
-			b._sel = Fx.Poly(b.Root, new[] { new Vector2(lean, 0f), new Vector2(w + lean, 0f), new Vector2(w, h), new Vector2(0f, h) }, Paper);
-			Fx.Poly(b.Root, new[] { new Vector2(0f, h - 4f * k), new Vector2(w, h - 4f * k), new Vector2(w, h), new Vector2(0f, h) }, Red);
+			PileDraw.Poly(b.Root, new[] { new Vector2(lean + 5f * k, 5f * k), new Vector2(w + lean + 5f * k, 5f * k), new Vector2(w + 5f * k, h + 5f * k), new Vector2(5f * k, h + 5f * k) }, new Color(0f, 0f, 0f, 0.5f));
+			PileDraw.Poly(b.Root, new[] { new Vector2(lean, 0f), new Vector2(w + lean, 0f), new Vector2(w, h), new Vector2(0f, h) }, Ink);
+			b._sel = PileDraw.Poly(b.Root, new[] { new Vector2(lean, 0f), new Vector2(w + lean, 0f), new Vector2(w, h), new Vector2(0f, h) }, Paper);
+			PileDraw.Poly(b.Root, new[] { new Vector2(0f, h - 4f * k), new Vector2(w, h - 4f * k), new Vector2(w, h), new Vector2(0f, h) }, Red);
 			b._k = k;
 			b._text = new Node2D();
 			b.Root.AddChild(b._text);

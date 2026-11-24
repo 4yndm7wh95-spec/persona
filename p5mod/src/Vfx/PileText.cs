@@ -68,9 +68,9 @@ public static class PileText
 		{
 			// 描边版四周多了 pad 像素（打包时加的）：按高度比例对齐中心
 			float so = s * t.GetHeight() / (o.GetHeight() - 2f * OlPad) ;
-			parent.AddChild(new Sprite2D { Texture = o, Centered = false, Position = at - new Vector2(OlPad, OlPad) * so, Scale = Vector2.One * so, Modulate = new Color(0.04f, 0.04f, 0.04f, color.A), TextureFilter = CanvasItem.TextureFilterEnum.Linear });
+			parent.AddChild(new Sprite2D { Texture = o, Centered = false, Position = at - new Vector2(OlPad, OlPad) * so, Scale = Vector2.One * so, Modulate = new Color(0.04f, 0.04f, 0.04f, color.A), TextureFilter = CanvasItem.TextureFilterEnum.LinearWithMipmaps });
 		}
-		parent.AddChild(new Sprite2D { Texture = t, Centered = false, Position = at, Scale = Vector2.One * s, Modulate = color, TextureFilter = CanvasItem.TextureFilterEnum.Linear });
+		parent.AddChild(new Sprite2D { Texture = t, Centered = false, Position = at, Scale = Vector2.One * s, Modulate = color, TextureFilter = CanvasItem.TextureFilterEnum.LinearWithMipmaps });
 		return t.GetWidth() * s;
 	}
 

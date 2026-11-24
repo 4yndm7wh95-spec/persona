@@ -1854,6 +1854,9 @@ public partial class Preview : Node2D
 		CanvasLayer barLayer = new() { Layer = 60 };
 		p.AddChild(barLayer);
 		barLayer.AddChild(new ColorRect { Size = new Vector2(1920f, 80f), Color = new Color(0.17f, 0.22f, 0.25f, 0.85f), MouseFilter = Control.MouseFilterEnum.Ignore });
+		// 顶栏下面那排遗物（实机截图：y 85–143，三个）
+		for (int r = 0; r < 3; r++)
+			barLayer.AddChild(new ColorRect { Position = new Vector2(18f + 66f * r, 87f), Size = new Vector2(54f, 54f), Color = new Color(0.25f, 0.6f, 0.35f, 0.8f), MouseFilter = Control.MouseFilterEnum.Ignore });
 		p.At(0.5, () =>
 		{
 			// 弃牌堆：攻击 5（升级 2）/ 技能 5（升级 1）/ 能力 2，同排版图

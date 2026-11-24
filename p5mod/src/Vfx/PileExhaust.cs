@@ -17,7 +17,7 @@ namespace P5Joker;
 public sealed class PileExhaust : IPileDecor
 {
 	public float GridX => 1130f;
-	public float GridTop => 196f;
+	public float GridTop => 214f;
 	public float GridBottom => 1050f;
 	public int Cols => 4;
 	public float CardW => 158f;
@@ -27,7 +27,7 @@ public sealed class PileExhaust : IPileDecor
 	public float ExitTime => 0.32f;
 	public Vector2 FocusAt => new(560f, 560f);
 	public Vector2 InfoAt => new(980f, 300f);
-	public Vector2 SwitchAt => new(1130f, 120f);
+	public Vector2 SwitchAt => new(1130f, 152f);   // 遗物栏（到 y≈148）下面
 	public Vector2 EnterOffset => new(70f, 30f);
 	public Vector2 ExitOffset => new(260f, 40f);
 
@@ -134,7 +134,7 @@ public sealed class PileExhaust : IPileDecor
 		_portrait = new Node2D { Name = "PilePortrait", Position = (PorAt + new Vector2(PorW, PorW) * 0.5f) * k, Visible = false };
 		root.AddChild(_portrait);
 		_por = new ShaderMaterial { Shader = PileDraw.FillShader };
-		_porSprite = new Sprite2D { Texture = Fx.Tex("pile_campskill"), Material = _por, TextureFilter = CanvasItem.TextureFilterEnum.Linear };
+		_porSprite = new Sprite2D { Texture = Fx.Tex("pile_campskill"), Material = _por, TextureFilter = CanvasItem.TextureFilterEnum.LinearWithMipmaps };
 		if (_porSprite.Texture is Texture2D pt) _porScale = PorW * k / pt.GetWidth();
 		_porSprite.Scale = Vector2.One * _porScale;
 		_portrait.AddChild(_porSprite);
@@ -152,9 +152,9 @@ public sealed class PileExhaust : IPileDecor
 		Node2D plateIn = new() { Scale = Vector2.One * 0.86f };
 		plate.AddChild(plateIn);
 		Vector2 h = new Vector2(215f, 65f) * k;
-		Fx.Poly(plateIn, new[] { -h, new Vector2(h.X, -h.Y), h, new Vector2(-h.X, h.Y) }, Paper);
+		PileDraw.Poly(plateIn, new[] { -h, new Vector2(h.X, -h.Y), h, new Vector2(-h.X, h.Y) }, Paper);
 		Vector2 hi = h - new Vector2(6f, 6f) * k;
-		Fx.Poly(plateIn, new[] { -hi, new Vector2(hi.X, -hi.Y), hi, new Vector2(-hi.X, hi.Y) }, Ink);
+		PileDraw.Poly(plateIn, new[] { -hi, new Vector2(hi.X, -hi.Y), hi, new Vector2(-hi.X, hi.Y) }, Ink);
 		Glyph(plateIn, "pile_txt_menu", new Vector2(-128f, -15f), 120f, Paper);
 		PileText.Exact(plateIn, "menu_exhaust", new Vector2(-58f, -46f) * k, 52f * k, Paper);
 		Glyph(plateIn, "pile_txt_cmdselect", new Vector2(5f, 40f), 212f, Paper);
@@ -406,7 +406,7 @@ void fragment() {
 	{
 		if (Fx.Tex(tex) is not Texture2D t) return;
 		float w = tex.EndsWith("_ol") && Fx.Tex(tex[..^3]) is Texture2D body ? width * t.GetWidth() / body.GetWidth() : width;
-		parent.AddChild(new Sprite2D { Texture = t, Position = at * _k, Scale = Vector2.One * w * _k / t.GetWidth(), Modulate = tint, TextureFilter = CanvasItem.TextureFilterEnum.Linear });
+		parent.AddChild(new Sprite2D { Texture = t, Position = at * _k, Scale = Vector2.One * w * _k / t.GetWidth(), Modulate = tint, TextureFilter = CanvasItem.TextureFilterEnum.LinearWithMipmaps });
 	}
 
 	public static readonly string[] Textures = { "pile_campskill", "pile_txt_menu", "pile_txt_cmdselect", "pile_txt_command", "pile_txt_command_ol" };
