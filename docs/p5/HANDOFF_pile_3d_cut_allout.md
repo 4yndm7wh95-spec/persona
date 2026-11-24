@@ -68,7 +68,7 @@
 
 ## 2026-11-24 · 会话 E 已接手做完（0.9.76，分支 `claude/confirm-next-tasks-k5wu6t`）
 
-预览：`docs/p5/preview/pile_discard_v10.mp4`、`pile_deck_v7.mp4`、`pile_draw_v11.mp4`（854 宽、60fps、无声）。
+预览：`docs/p5/preview/pile_discard_v11.mp4`、`pile_deck_v8.mp4`、`pile_draw_v11.mp4`（854 宽、60fps、无声）。
 
 1. **弃牌堆**：加收尾关键帧「186」（`fit/item_example/closing.py`：在我们显示出来的立绘上量眼、鼻、嘴、下巴，换回原版坐标拟合；main_0010 第 10 帧眼睛睁开看镜头）。
    机位从俯拍（185）压低成略仰拍，脸抬起来看玩家。`MotionEnd = CutAt`（0.40）、power 2.0：177–185 照旧前快（0.29s 左右到 185），剩下的时间就是抬脸这一段，切的那一刻落在立绘上，不再定住干等。
@@ -79,3 +79,7 @@
    做法：加关键帧「53」= main_0000 第 11 帧（手臂抬起来，机位同 52），`ArmAt = HandAt − 0.05` 之后手臂加速抬起；白手掌出现时整张立绘从右边顺时针 20°、右偏 160px 甩回正（和砸下同一条 d³ 曲线）。
    `SlamAt` 跟开菜单音效的「啪」对齐不能动，所以 46–52 整体快了 0.05s。
 4. **总攻击多条命**：`AllOutPatches.OnDeath` 改成和游戏 `IsCombatEnding` 一样的判断（没有活着的主要敌人 && `!Hook.ShouldStopCombatFromEnding`），会复活的（`ShouldCreatureBeRemovedFromCombatAfterDeath` = false）不截剪影。没法在云端实机验证。
+
+5. **（用户追加）整段机位一起搬**：只改收尾帧的话前半段还是旧角度，看得出最后镜头转过去。`runtime_keys.py` 的 `rebase()`：
+   旧收尾机位 → 新收尾机位的刚体变换作用到前面所有关键帧（弃牌堆 177–185 → 「186」的角度，185 和 186 同机位；牌组 233–239 按第一版「240」→ 第二版「240」），
+   镜头运动的形状不变，从第一帧起就是新角度。拟合数据（item_entrance.py FRAMES、equip final.json）还是原版逐帧拟合的值，搬是在生成 MenuJoker3DKeys.cs 时做的。

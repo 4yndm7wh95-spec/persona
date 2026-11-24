@@ -10,6 +10,18 @@ def cs_key(u, a, fa, b, fb, w, cam):
     c = ', '.join(f'{float(v):.4f}f' for v in cam)
     return f'\t\tnew({u:.3f}f, "{a}", {fa:.4f}f, "{b}", {fb:.4f}f, {w:.4f}f, new[] {{ {c} }}),\n'
 
+def rebase(cam, old, new):
+    """整段机位轨迹跟着收尾机位一起搬：old → new 的刚体变换（世界坐标）作用到 cam 上（fov 加同样的差）。
+    用户 2026-11-24：只改收尾那一帧的机位，前面还是旧角度，看得出最后镜头转过去；整段一起搬，从第一帧起就是新角度、镜头运动和原来一样。"""
+    import numpy as np, m3d
+    Ro, Rn, Ri = (m3d.rot_yxz(c[3:6]) for c in (old, new, cam))
+    D = Rn @ Ro.T
+    p = D @ (np.array(cam[:3], float) - np.array(old[:3], float)) + np.array(new[:3], float)
+    return [round(float(v), 4) for v in p] + [round(float(v), 4) for v in m3d.euler_yxz(D @ Ri)] + [round(cam[6] + new[6] - old[6], 4)]
+
+# 牌组收尾「240」第一版的机位（fit240.py）：233–239 按它 → 第二版（fit240b.py，final.json 里的 "240"）整段搬过去
+DECK_OLD_240 = [122.626, 147.73, 55.601, -6.327, 54.791, -12.251, 30.0012]
+
 def main():
     import skill_entrance as sk, item_entrance as it
     out = []
@@ -21,12 +33,14 @@ def main():
     out.append(('Exhaust', '消耗堆（原版 SKILL 页 112–122，U = 原版帧 − 112）', lines))
     lines = ''
     for idx, (f, cam) in it.FRAMES.items():
+        if idx < 186: cam = rebase(cam, it.FRAMES[185][1], it.FRAMES[186][1])   # 177–185 整段搬到收尾「186」的角度
         lines += cs_key(idx - 177, 'main_0010', f, 'main_0010', f, 0.0, cam)
     out.append(('Discard', '弃牌堆（原版 ITEM 页 177–185 + 收尾「186」= 对上 2D 立绘，U = 原版帧 − 177）', lines))
     fin = ROOT / 'tools/p5/menu3d/fit/equip_example/final.json'
     if fin.exists():
         lines = ''
         for idx, (f, cam) in sorted(json.load(open(fin)).items(), key=lambda kv: int(kv[0])):
+            if idx != '240': cam = rebase(cam, DECK_OLD_240, json.load(open(fin))['240'][1])   # 233–239 整段搬到新「240」的角度
             lines += cs_key(int(idx) - 233, 'main_0005', f, 'main_0005', f, 0.0, cam)
         out.append(('Deck', '牌组（原版 EQUIP 页 233–239 + 收尾「240」= 枪甩下来对上 2D 立绘，U = 原版帧 − 233）', lines))
     fin = ROOT / 'tools/p5/menu3d/fit/draw_example/final.json'
