@@ -6,6 +6,21 @@
 
 ---
 
+## 2026-11-24 · 会话 E 收尾：牌堆三页入场 + 总攻击多条命（0.9.76，用户：可以了，等合并）
+
+- 分支 `claude/confirm-next-tasks-k5wu6t`（已推送、工作区干净、类型检查通过），已合入 `claude/p5-pile-ui`、`claude/p5-restore-fx`（这两个现在都是本分支的祖先）。
+- 细节、每一轮用户意见和做法：`docs/p5/HANDOFF_pile_3d_cut_allout.md`（末尾 1–8 条）。最终预览：`docs/p5/preview/pile_discard_v13.mp4`、`pile_deck_v11.mp4`、`pile_draw_v11.mp4`。
+  - **弃牌堆**：整段机位搬到立绘角度；0–0.36s 播到 183（手扫过脸），0.04s 带过 184/185 就切，不睁眼、不停顿。
+  - **牌组**：233–241 全对原版逐帧拟合（原版 240、241 还是 3D，左臂全藏住），241 后硬切立绘 + 枪口闪光（去掉了红边斜扫）。
+  - **抽牌堆**：52 后加「53」手臂抬起，白手掌从右边甩进来砸下（砸的时刻跟音效对齐没动）。
+  - **MenuJoker3D**：每个网格固定大包围盒（之前牌组的枪被视锥剔掉）；纯黑无贴图网格两面画（从下往上看领子不再透）。
+  - **总攻击**：`AllOutPatches.OnDeath` 和游戏 `IsCombatEnding` 同一判断，会复活的怪（实验体前两条命）不截剪影、不开播。云端没法实机验证，需要进游戏打一次实验体。
+- 注意：`tools/p5/menu3d/export_runtime.py` 现在重新生成的 mesh.bin 和仓库里的不一样（大小不同），没提交；以后重跑先查清楚。
+- **合并检查（2026-11-24）**：`codex/p5-status-list-touch`（Joker 状态列表，2 个提交）和本分支试合并**无冲突**（只加 `p5mod/src/StatusList.cs`）。
+  P3 的分支（`claude/admiring-knuth-lqj1x7`、`codex/p3-status-list-touch`）照旧不要整个合本分支，只拷蓝蝶那一个文件（见下一条）。
+
+---
+
 ## 2026-11-24 · 会话 E 补充：P3 蓝蝶（用户认可，待合进 P3 mod）+ P5 卡面 Mod
 
 - **P3 君王之剑替代的蓝蝶**（用户：可以了）：`tools/p3/butterfly/SovereignButterfly.cs`，只依赖 Godot，**还没接进 P3 mod**，由 P3 那边的会话（`claude/admiring-knuth-lqj1x7`）合并：
