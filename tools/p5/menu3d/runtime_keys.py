@@ -22,7 +22,7 @@ def main():
     lines = ''
     for idx, (f, cam) in it.FRAMES.items():
         lines += cs_key(idx - 177, 'main_0010', f, 'main_0010', f, 0.0, cam)
-    out.append(('Discard', '弃牌堆（原版 ITEM 页 177–185，U = 原版帧 − 177）', lines))
+    out.append(('Discard', '弃牌堆（原版 ITEM 页 177–185 + 收尾「186」= 对上 2D 立绘，U = 原版帧 − 177）', lines))
     fin = ROOT / 'tools/p5/menu3d/fit/equip_example/final.json'
     if fin.exists():
         lines = ''
@@ -35,7 +35,7 @@ def main():
         d = json.load(open(fin)); lines = ''
         for idx, (f, cam) in sorted(d['keys'].items(), key=lambda kv: int(kv[0])):
             lines += cs_key(int(idx) - 46, 'main_0000', f, 'main_0000', f, 0.0, cam)
-        out.append(('Draw', '抽牌堆（原版主菜单 46–52，U = 原版帧 − 46）', lines))
+        out.append(('Draw', '抽牌堆（原版主菜单 46–52 + 「53」= main_0000 最后一帧、手臂抬起来（机位同 52），然后 2D 手掌砸下来；U = 原版帧 − 46）', lines))
         split = ('\t/// <summary>抽牌堆 46–52 每帧红底 / 星纹的分界线 x = a + b·y（原版坐标，fit/draw_example/split.py）。</summary>\n'
                  '\tpublic static readonly float[][] DrawSplit = { ' + ', '.join(f'new[] {{ {a:.2f}f, {b:.4f}f }}' for a, b in d['split']) + ' };\n')
     body = split + ''.join(f'\t/// <summary>{doc}</summary>\n\tpublic static readonly MenuJoker3D.Key[] {name} =\n\t{{\n{ls}\t}};\n' for name, doc, ls in out)

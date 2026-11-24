@@ -13,8 +13,8 @@ namespace P5Joker;
 /// 入场（用户 2026-11-24：原版截图抠出来的区域不规则、乱 → 自己设计干净的色块碰撞，PileField 一个着色器画完）：
 /// 黑白星纹从右边扫进来（前沿红边）→ 一把扇形从撞色斜线的底端转上来（黑块里是黑、外面是红，黑的前沿一道红条），
 /// 同时左边的红底从左边撞到斜线上，星纹被两边挤成头顶那条星纹条 → 右下浅灰斜带从下面撞进黑块；
-/// 原版 3D Joker（177–185 逐帧拟合的动作，MenuJoker3DKeys.Discard）从第 0 帧连续播、斜带进来前就干脆地收进最后的姿势（MotionEnd），
-/// 在黑块里反色成浅灰（同立绘），别处是黑的；CutAt（0.40 秒）切成 2D 立绘 + 最终排版（色块位置不变），立绘压一下、左边面板滑进、六行弹出、
+/// 原版 3D Joker（177–185 逐帧拟合的动作 + 收尾「186」= 立绘的机位和姿势，MenuJoker3DKeys.Discard）从第 0 帧连续播，前快后收，
+/// 最后一段机位压低、脸抬起来看玩家，正好在 CutAt 落到立绘的样子；在黑块里反色成浅灰（同立绘），别处是黑的；CutAt（0.40 秒）切成 2D 立绘 + 最终排版（色块位置不变），立绘压一下、左边面板滑进、六行弹出、
 /// 标题牌 / COMMAND 压上、牌飞入。
 /// </summary>
 public sealed class PileDiscard : IPileDecor
@@ -54,16 +54,18 @@ public sealed class PileDiscard : IPileDecor
 	// ── 入场：色块碰撞（PileField）+ 原版 177–185 的 3D Joker ──
 	/// <summary>原版立绘 = 缩放 0.5、左上 (0, 0)，我们的立绘 = 缩放 1500/3072、左上 (-80, 0)：3D 的取景按同一个变换放进来（3D → 2D 立绘的相对位置和原版一样）。</summary>
 	private const float MapK = 1500f / 3072f / 0.5f;
-	/// <summary>3D 关键帧数（原版 177–185）；CutAt 切成 2D 立绘（= 原版第 186 帧）。</summary>
-	private const int FrameCount = 9;
+	/// <summary>3D 关键帧数（原版 177–185 + 收尾「186」）；CutAt 切成 2D 立绘（= 原版第 186 帧）。</summary>
+	private const int FrameCount = 10;
 	private const float CutAt = 0.40f;   // 斜带 0.384 秒到位，紧接着切
 	/// <summary>色块动画的节奏（用户 2026-11-24：切入别太拖沓）：Field 里的时间点按 0.52 秒的版本写，整体压到 0.8 倍。</summary>
 	private const float Pace = 0.8f;
 	/// <summary>
-	/// 3D 动作在这之前放完（用户 2026-11-24：之前一直拖到切 2D 那一刻，斜带进来时他已经差不多是最后的姿势了，手却还往外甩一下才切，像回弹、拖沓）：
-	/// 原版 183→185 只有三帧（约 0.1 秒），这里也是前快后收得干脆（power 2.2），斜带撞进来时手已经到位，剩下的时间定住等切。
+	/// 3D 动作放到切 2D 那一刻（MotionEnd = CutAt）：
+	/// 用户 2026-11-24 第一次：手往外甩一下才切，像回弹、拖沓 → 改成 0.29 秒收进 185 的姿势定住；
+	/// 第二次：动作早就到位了却迟迟不变成立绘，而且 185（俯拍、低头、眼睛被头发挡）和立绘（抬眼看玩家）对不上，切的时候跳。
+	/// 现在 177–185 照旧前快后收（0.29 秒左右走到 185），剩下的时间是收尾这一段：机位压低、脸抬起来看玩家，CutAt 正好落在立绘的样子，没有定住干等。
 	/// </summary>
-	private const float MotionEnd = 0.29f, MotionPower = 2.2f;
+	private const float MotionEnd = CutAt, MotionPower = 2.0f;
 	// 最终排版的块面（mock_discard.py / export_discard.py 的黑块、星纹条、斜带，1080p；伸出屏幕的边延长到画面外）：
 	// 撞色斜线 x = Lx(y) 是黑块的左边，也是星纹条的右边；黑块外面全是红底
 	private static float Lx(float y) => 1002.66f - 0.419f * y;
@@ -298,7 +300,7 @@ public sealed class PileDiscard : IPileDecor
 		float k = _k;
 		// 红星纹底：入场里由 PileField 画（同一套星星、同一个时间），切到最终排版时才露出来
 		_bg.SetShaderParameter("wipe", t >= CutAt ? 1e7f : 0f);
-		// 入场：色块碰撞 + 3D 从第 0 帧就开始连续播，MotionEnd 收进最后的姿势；CutAt 硬切成 2D 立绘 + 最终排版（同原版第 186 帧）
+		// 入场：色块碰撞 + 3D 从第 0 帧就开始连续播，一路连到收尾「186」（= 立绘）；CutAt 硬切成 2D 立绘 + 最终排版（同原版第 186 帧）
 		bool cut = t >= CutAt;
 		_entrance.Visible = !cut;
 		if (cut) _m3d?.Hide();

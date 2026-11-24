@@ -175,7 +175,10 @@ public sealed class MenuJoker3D
 				mat.TextureFilter = BaseMaterial3D.TextureFilterEnum.LinearWithMipmaps;
 			}
 			_mesh[i] = new ArrayMesh();
-			_inst[i] = new MeshInstance3D { Mesh = _mesh[i], MaterialOverride = mat, Visible = !hide.Contains(s.Name), CastShadow = GeometryInstance3D.ShadowCastingSetting.Off };
+			// 之后只更新顶点缓冲（MeshSurfaceUpdateVertexRegion），网格的包围盒还是第一次建的那一帧：动得远的部件（牌组页甩下来的枪）会被视锥剔掉。
+			// 包围盒给死一个够大的（模型坐标，人在 ±200 以内）。
+			_inst[i] = new MeshInstance3D { Mesh = _mesh[i], MaterialOverride = mat, Visible = !hide.Contains(s.Name), CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
+				CustomAabb = new Aabb(new Vector3(-500f, -500f, -500f), new Vector3(1000f, 1000f, 1000f)) };
 			_vp.AddChild(_inst[i]);
 		}
 		Sprite = new Sprite2D { Name = "P5MenuJoker3DView", Texture = _vp.GetTexture(), Centered = false, Visible = false };

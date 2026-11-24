@@ -36,7 +36,7 @@ public sealed class PileDeck : IPileDecor
 	private static readonly Color Ink = PileDraw.Ink, Paper = PileDraw.Paper;
 	/// <summary>
 	/// 3D 入场的关键帧数：原版 233–239 + 收尾的「240」（用户 2026-11-24：3D 最后一帧和 2D 立绘差太多，切的时候跳一大下 ——
-	/// 原版 239 枪举在头顶、240 直接是枪口朝右下的 2D 立绘；这里让 3D 把枪甩下来（main_0005 第 8.35 帧），机位按立绘的头 / 耳 / 眼拟合
+	/// 原版 239 枪举在头顶、240 直接是枪口朝右下的 2D 立绘；这里让 3D 把枪甩下来、手臂水平伸出去（main_0005 第 9.0 帧），机位按立绘的耳 / 眼 + 枪的击锤 / 枪口 / 握把拟合（fit240b.py；第一版 8.35 只对了头，枪收在身前、低着头，用户 2026-11-24 说枪和视线都朝下）
 	///（fit/equip_example/fit240.py），切的时候头、身子、枪的方向都对得上）。PortraitAt 切成 2D 立绘。
 	/// </summary>
 	private const int FrameCount = 8;
@@ -51,8 +51,9 @@ public sealed class PileDeck : IPileDecor
 	private const float WipeAt = PortraitAt - 0.02f, WipeTime = 0.12f;
 	/// <summary>
 	/// 立绘的手臂和枪（L2 右边那块）在扫过去的同时往外送：立绘的枪是夸张透视（比模型的枪长得多），按行往 L2 压到 ArmFrom，ArmTime 弹开。
+	/// 收尾「240」第二版 3D 已经把手臂和枪伸到立绘的位置（fit240b.py），再压回去反而跳：ArmFrom = 1（不压）；以后要再用就改回 0.5。
 	/// </summary>
-	private const float ArmFrom = 0.5f, ArmTime = 0.14f;
+	private const float ArmFrom = 1f, ArmTime = 0.14f;
 	// 最终排版的块面分界（export_deck.py，原版坐标换到我们的排版）：星纹 | L1 | 黑（Joker 白）| L2 | 灰 | 折线 | 红
 	private static float X1(float y) => 624.1f - 0.3275f * y;
 	private static float X2(float y) => 1155.4f - 0.628f * y;

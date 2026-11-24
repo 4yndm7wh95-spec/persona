@@ -63,3 +63,19 @@
   - 慢放（`AllOut` 的 TimeScale 0.12）也要一起别误触发，`OnDeath` 开头的 `AllOut.RestoreTime()` 逻辑别动坏。
 - 验证：实验体（三条命）打第一、二条命不播，第三条播；普通精英 / Boss 最后一击照常慢放 + 总攻击；多敌人房间最后一只才播。
 - 用户要求：**先别直接改**的是本会话；接手会话负责修。
+
+---
+
+## 2026-11-24 · 会话 E 已接手做完（0.9.76，分支 `claude/confirm-next-tasks-k5wu6t`）
+
+预览：`docs/p5/preview/pile_discard_v10.mp4`、`pile_deck_v7.mp4`、`pile_draw_v11.mp4`（854 宽、60fps、无声）。
+
+1. **弃牌堆**：加收尾关键帧「186」（`fit/item_example/closing.py`：在我们显示出来的立绘上量眼、鼻、嘴、下巴，换回原版坐标拟合；main_0010 第 10 帧眼睛睁开看镜头）。
+   机位从俯拍（185）压低成略仰拍，脸抬起来看玩家。`MotionEnd = CutAt`（0.40）、power 2.0：177–185 照旧前快（0.29s 左右到 185），剩下的时间就是抬脸这一段，切的那一刻落在立绘上，不再定住干等。
+   注意：我们的 CAMPITEM 立绘比 MapK 推出来的位置略往左、略小（≈30px），所以特征点直接量显示出来的。
+2. **牌组**：收尾「240」重拟（`fit/equip_example/fit240b.py`）：耳、眼 + 枪的击锤 / 枪口 / 握把一起解，动作帧改成 main_0005 第 9.0 帧（手臂水平伸出、枪口朝右下），头 / 枪都和立绘重合。
+   立绘手臂不再先压回去（`ArmFrom = 1`）。**顺带修了一个 bug**：`MenuJoker3D` 只更新顶点缓冲不更新包围盒，枪甩出第一帧的包围盒就被视锥剔掉了（之前牌组 3D 手里一直是空的）——每个网格给了固定的大 `CustomAabb`。
+3. **抽牌堆**：原版 53 已经是 2D（上面有 COMMAND 字样），main_0000 也拼不出立绘那个角度（剪影搜索：立绘 = main_0000 最后一帧从正面看，和 52 的背面机位差 180°）。
+   做法：加关键帧「53」= main_0000 第 11 帧（手臂抬起来，机位同 52），`ArmAt = HandAt − 0.05` 之后手臂加速抬起；白手掌出现时整张立绘从右边顺时针 20°、右偏 160px 甩回正（和砸下同一条 d³ 曲线）。
+   `SlamAt` 跟开菜单音效的「啪」对齐不能动，所以 46–52 整体快了 0.05s。
+4. **总攻击多条命**：`AllOutPatches.OnDeath` 改成和游戏 `IsCombatEnding` 一样的判断（没有活着的主要敌人 && `!Hook.ShouldStopCombatFromEnding`），会复活的（`ShouldCreatureBeRemovedFromCombatAfterDeath` = false）不截剪影。没法在云端实机验证。

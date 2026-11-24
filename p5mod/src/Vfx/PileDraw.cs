@@ -207,9 +207,10 @@ public sealed class PileDraw : IPileDecor
 		Vector2 home = (PortraitAt + new Vector2(PortraitW, PortraitW) * 0.5f) * k + new Vector2(_rx, 0f);
 		if (_has3d && _m3d != null && _split != null)
 		{
-			// 原版入场 46–52：3D Joker 从第 0 帧就开始连续播（u = 原版第几帧，小数在两帧之间插值），HandAt（白手掌冲进来）正好放到最后一帧；
+			// 原版入场 46–52：3D Joker 从第 0 帧就开始连续播（u = 原版第几帧，小数在两帧之间插值），ArmAt 放到 52；
 			// 不再定格滑入（用户 2026-11-24）：跟着红底铺开的那道斜线一起露出来（SplitShader 的 wipe 和 _bg 同一组参数）
-			float u = PileReveal.Progress(t, HandAt, 6f);
+			// 然后「53」：手臂加速抬起来（main_0000 最后几帧），HandAt 白手掌接着砸下来（用户 2026-11-24：之前 3D 背影、头还没转过来就切了，少了手挥过来那一下）
+			float u = t < ArmAt ? PileReveal.Progress(t, ArmAt, 6f) : 6f + Mathf.Pow(Mathf.Clamp((t - ArmAt) / (HandAt - ArmAt), 0f, 1f), 1.6f);
 			Vector2 off = Vector2.Zero;
 			bool show3d = t < HandAt;
 			if (show3d)
@@ -238,13 +239,16 @@ public sealed class PileDraw : IPileDecor
 			_panel.SetShaderParameter("edge_shift", 0f);
 			// 手掌拍下来（用户：要有力量感）：从放大 1.22 倍猛地砸下去（0.36 → 0.42，加速），砸到底压扁到 0.965，
 			// 再弹回 1.0（0.42 → 0.56）；砸中那一下整个界面短促一震（衰减 0.24s）+ 低沉的重击声
-			float scale, drop;
+			// 手挥过来（用户 2026-11-24：少了手挥过来那一下）：3D 的手臂先抬起来（关键帧「53」），手掌接着从右边甩进来——
+			// 整张立绘绕中心从顺时针 SwingDeg 甩回正、同时从右边带过来，和砸下去同一条加速曲线
+			float scale, drop, swing = 0f;
 			if (t < SlamAt)
 			{
 				float d = Mathf.Clamp((t - HandAt) / (SlamAt - HandAt), 0f, 1f);
 				float e = d * d * d;
 				scale = Mathf.Lerp(1.22f, 0.965f, e);
 				drop = Mathf.Lerp(-70f, 8f, e);
+				swing = 1f - e;
 			}
 			else
 			{
@@ -253,7 +257,8 @@ public sealed class PileDraw : IPileDecor
 				scale = Mathf.Lerp(0.965f, 1f, b);
 				drop = Mathf.Lerp(8f, 0f, b);
 			}
-			_portrait.Position = home + new Vector2(0f, drop) * k;
+			_portrait.Position = home + new Vector2(SwingX * swing, drop) * k;
+			_portrait.Rotation = Mathf.DegToRad(SwingDeg) * swing;
 			_porSprite.Scale = Vector2.One * _porScale * scale;
 			_por.SetShaderParameter("fill_amt", 0f);
 			_portrait.Modulate = new Color(1f, 1f, 1f, t >= HandAt ? 1f : 0f);
@@ -291,6 +296,10 @@ public sealed class PileDraw : IPileDecor
 	/// </summary>
 	public const float SlamAt = 0.488f;
 	private const float HandAt = SlamAt - 0.06f;                       // 手掌出现、开始往下砸（砸 0.06s，加速）
+	/// <summary>3D 放到原版 52 的时刻；之后到 HandAt 是手臂抬起来（关键帧「53」）。SlamAt 跟音效对齐不能挪，所以 46–52 整体快了 0.05s。</summary>
+	private const float ArmAt = HandAt - 0.05f;
+	/// <summary>手掌甩进来的起点：顺时针转多少度、往右偏多少（1080p 像素）。</summary>
+	private const float SwingDeg = 20f, SwingX = 160f;
 	private bool _slammed;
 
 
