@@ -23,7 +23,7 @@ namespace P5Joker;
 public sealed class PileDraw : IPileDecor
 {
 	// ── 版式（1920×1080）──
-	public const float GridX = 70f, GridTop = 168f, GridBottom = 1046f;
+	public const float GridX = 70f, GridTop = 214f, GridBottom = 1046f;
 	public const int Cols = 4;
 	public const float CardW = 168f, CellW = 182f, CellH = 250f;
 	// 立绘按原版比例（实机截图量的：比第一版大 1.258 倍，手指尖顶到画面上缘）；牌格子改 4 列，手掌左边缘正好在牌格子右边
@@ -47,12 +47,17 @@ public sealed class PileDraw : IPileDecor
 	private readonly CallingCard? _card;
 	private float _exitT0 = -1f;
 	private float _porA = 1f, _porScale = 1f;
-	// 原版菜单 3D Joker 的入场动作（research/p5r/menu3d/main_0000，12 帧，Codex 从 MENU_C0001 GMD/GAP 渲的）
-	private readonly Texture2D?[] _m3dFrames = new Texture2D?[12];
-	private readonly Sprite2D? _m3d;
+	// 原版菜单 3D Joker（原版序号 46–52，动作 main_0000）：游戏里实时渲染（MenuJoker3D，关键帧 MenuJoker3DKeys.Draw，tools/p5/menu3d/fit/draw_example）
+	private readonly MenuJoker3D? _m3d;
 	private readonly ShaderMaterial? _split;
 	private readonly bool _has3d;
-	private static readonly Vector2 M3dAt = new(1117f, 117f), M3dSize = new(921f, 1007f);   // 高度含往下延伸的 240px（×0.843）   // 1080p 下的左上角和大小（最后一帧的头对齐 2D 定格图的头）
+	/// <summary>原版屏幕坐标 → 我们的排版：原版 2D 立绘 CAMPTOP 在原版里缩放 0.51295、左上 (401.93, −22.15)（reg2d 配准第 56 帧），对齐到我们的 PortraitAt / PortraitW。</summary>
+	private const float MapK = PortraitW / 3072f / 0.51295f;
+	private static readonly Vector2 MapOff = PortraitAt - new Vector2(401.93f, -22.15f) * MapK;
+	/// <summary>原版一帧（录像 27.5fps）；46 帧在 T46，53（白手掌冲进来）= HandAt。</summary>
+	private const float FrameDt = 0.0364f;
+	private const float T46 = HandAt - 7f * FrameDt;
+	private static readonly string[] Hide3d = { "smartphone", "card", "school_bag", "gun_outline", "gun_main", "ef line_obj_01", "ef line_obj_02", "ef line_obj_03", "ef line_obj_04", "ef line_obj_05", "ef line_obj_06", "ef line_obj_07", "ef line_obj_08" };
 
 	public PileDraw(Control root, Vector2 view, int count)
 	{
@@ -81,9 +86,9 @@ public sealed class PileDraw : IPileDecor
 		// 3. 标题牌 + 牌数
 		_plates = new Node2D { Name = "PilePlates" };
 		root.AddChild(_plates);
-		Plate(new Vector2(1520f, 72f), new Vector2(470f, 92f), -6f, Ink, Paper, "pile_txt_dontlook", 413f, Paper, 0.30f);
-		Plate(new Vector2(1700f, 150f), new Vector2(330f, 96f), -2f, Paper, Ink, "pile_txt_likethat", 292f, Ink, 0.34f);
-		Node2D menu = Plate(new Vector2(1760f, 300f), new Vector2(300f, 130f), 5f, Ink, Paper, null, 0f, Paper, 0.38f);
+		Plate(new Vector2(1655f, 118f), new Vector2(470f, 92f), -6f, Ink, Paper, "pile_txt_dontlook", 413f, Paper, 0.30f);
+		Plate(new Vector2(1745f, 202f), new Vector2(330f, 96f), -2f, Paper, Ink, "pile_txt_likethat", 292f, Ink, 0.34f);
+		Node2D menu = Plate(new Vector2(1760f, 346f), new Vector2(300f, 130f), 5f, Ink, Paper, null, 0f, Paper, 0.38f);
 		Glyph(menu, "pile_txt_menu", new Vector2(-60f, -12f), 131f, 0f, Paper);
 		Glyph(menu, "pile_txt_main", new Vector2(70f, -20f), 106f, 0f, Paper);
 		Glyph(menu, "pile_txt_cmdselect", new Vector2(5f, 40f), 212f, 0f, Paper);
@@ -91,21 +96,24 @@ public sealed class PileDraw : IPileDecor
 		// 4. Joker + 白手 + 红手套（剪影 → 原画用 fill 着色器）
 		_portrait = new Node2D { Name = "PilePortrait", Position = (PortraitAt + new Vector2(PortraitW, PortraitW) * 0.5f) * k + new Vector2(_rx, 0f) };
 		root.AddChild(_portrait);
+		root.MoveChild(_plates, _portrait.GetIndex());   // 标题牌压在立绘上面（原版的拼贴字牌都在最上层；顶栏让位后不能钻到头发下面）
 		_por = new ShaderMaterial { Shader = FillShader };
-		_porSprite = new Sprite2D { Texture = Fx.Tex("pile_camptop"), Material = _por, TextureFilter = CanvasItem.TextureFilterEnum.Linear };
+		_porSprite = new Sprite2D { Texture = Fx.Tex("pile_camptop"), Material = _por, TextureFilter = CanvasItem.TextureFilterEnum.LinearWithMipmaps };
 		_porScale = _porSprite.Texture is { } pt ? PortraitW * k / pt.GetWidth() : 1f;
 		_porSprite.Scale = Vector2.One * _porScale;
 		_portrait.AddChild(_porSprite);
 
-		// 4b. 原版菜单 3D Joker：播原版入场动作，一条斜线从右往左扫过，人物由白剪影变成黑（原版就是同一段动作 + 移动的分界线）
-		for (int i = 0; i < 12; i++) _m3dFrames[i] = Fx.Tex($"pile_m3d_{i:00}");
-		_has3d = _m3dFrames[0] != null && _m3dFrames[11] != null;
+		// 4b. 原版菜单 3D Joker（46–52）：分界线左边整个变白剪影、右边照常（黑），分界线和星纹面板的斜边是同一条（原版逐帧量的，MenuJoker3DKeys.DrawSplit）
+		_has3d = MenuJoker3D.Available;
 		if (_has3d)
 		{
+			_m3d = new MenuJoker3D(root, view, MapK, MapOff + new Vector2(_rx / k, 0f), Hide3d);
 			_split = new ShaderMaterial { Shader = SplitShader };
-			_m3d = new Sprite2D { Name = "PileMenu3d", Texture = _m3dFrames[0], Material = _split, TextureFilter = CanvasItem.TextureFilterEnum.Linear, Visible = false };
-			_m3d.Scale = Vector2.One * M3dSize.X * k / _m3dFrames[0]!.GetWidth();
-			root.AddChild(_m3d);
+			_split.SetShaderParameter("size", view);
+			_split.SetShaderParameter("wipe_origin", WipeFrom * k);
+			_split.SetShaderParameter("wipe_dir", new Vector2(1f, -0.62f).Normalized());
+			_m3d.Sprite.Material = _split;
+			root.AddChild(_m3d.Sprite);
 		}
 
 		// 牌数（原版页码大数字，白字黑描边，叠在 Joker 右边）
@@ -152,7 +160,7 @@ public sealed class PileDraw : IPileDecor
 	float IPileDecor.ExitTime => ExitTime;
 	public Vector2 FocusAt => new(640f, 560f);
 	public Vector2 InfoAt => new(1000f, 300f);
-	public Vector2 SwitchAt => new(70f, 44f);
+	public Vector2 SwitchAt => new(70f, 152f);   // 游戏顶栏（80px）和它下面那排遗物（到 y≈148）都让开
 	public Vector2 EnterOffset => new(-40f, 46f);
 	public Vector2 ExitOffset => new(-20f, 130f);
 
@@ -172,7 +180,6 @@ public sealed class PileDraw : IPileDecor
 		if (_exitT0 >= 0f) return;
 		_exitT0 = now;
 		_porA = _portrait.Modulate.A;
-		Sfx.Play("camp_cancel", 0.55f);
 	}
 
 	/// <summary>每帧：now = 打开以来的秒数（真实时间）。</summary>
@@ -193,23 +200,42 @@ public sealed class PileDraw : IPileDecor
 		float wipe = Ease5.OutQuint(Mathf.Clamp(t / 0.3f, 0f, 1f));
 		float reach = (_view + new Vector2(0f, _view.Y)).Length() * 1.05f;
 		_bg.SetShaderParameter("wipe", t >= 0.3f ? 1e7f : wipe * reach);
-		// 星纹面板从右边扫进来：0.06 → 0.42s
+		// 星纹面板从右边扫进来：0.06 → 0.42s（有 3D 入场时斜边跟着原版的分界线走，见下面）
 		float pe = Ease5.OutExpo(Mathf.Clamp((t - 0.06f) / 0.36f, 0f, 1f));
 		_panel.SetShaderParameter("edge_shift", (1f - pe) * (_view.X - PanelEdgeBottom * k - _rx + 40f * k));
+		if (_has3d) { _panel.SetShaderParameter("edge_top", PanelEdgeTop * k + _rx); _panel.SetShaderParameter("edge_bottom", PanelEdgeBottom * k + _rx); }
 		Vector2 home = (PortraitAt + new Vector2(PortraitW, PortraitW) * 0.5f) * k + new Vector2(_rx, 0f);
 		if (_has3d && _m3d != null && _split != null)
 		{
-			// 原版入场：3D Joker 带着白剪影斜着滑进来（0.03 → 0.23），播原版转身抬头（0.06 → HandAt），
-			// 同时分界线从右往左扫过（0.08 → 0.34）由白变黑；0.36 起交叉切到 2D 定格（白手 + 红手套），手带一点回弹
-			float slide = Ease5.OutExpo(Mathf.Clamp((t - 0.05f) / 0.2f, 0f, 1f));
-			Vector2 at = (M3dAt + M3dSize * 0.5f) * k + new Vector2(_rx, 0f);
-			_m3d.Position = at + new Vector2(-220f, 120f) * k * (1f - slide);
-			int idx = Mathf.RoundToInt(Mathf.Clamp((t - 0.06f) / (HandAt - 0.07f), 0f, 1f) * 11f);
-			if (_m3dFrames[idx] is Texture2D f && _m3d.Texture != f) _m3d.Texture = f;
-			_split.SetShaderParameter("edge", 1.25f - 1.6f * Ease5Ext.InOutCubic(Mathf.Clamp((t - 0.08f) / 0.26f, 0f, 1f)));
-			float m3dA = t >= HandAt ? 0f : Mathf.Clamp((t - 0.05f) / 0.02f, 0f, 1f);   // 手掌砸进来那一帧硬切，不留半透明重影
-			_m3d.Visible = m3dA > 0.001f;
-			_m3d.Modulate = new Color(1f, 1f, 1f, m3dA);
+			// 原版入场 46–52：3D Joker 从第 0 帧就开始连续播（u = 原版第几帧，小数在两帧之间插值），HandAt（白手掌冲进来）正好放到最后一帧；
+			// 不再定格滑入（用户 2026-11-24）：跟着红底铺开的那道斜线一起露出来（SplitShader 的 wipe 和 _bg 同一组参数）
+			float u = PileReveal.Progress(t, HandAt, 6f);
+			Vector2 off = Vector2.Zero;
+			bool show3d = t < HandAt;
+			if (show3d)
+			{
+				_m3d.Show(MenuJoker3DKeys.Draw, u);
+				_m3d.Sprite.Position = off;
+			}
+			else _m3d.Hide();
+			_split.SetShaderParameter("wipe", t >= 0.3f ? 1e7f : wipe * reach);
+			// 分界线（原版坐标 x = a + b·y）：开头 0.14s 跟着星纹面板从右边扫进来，之后按原版逐帧（插值），52 之后转到最终面板的斜边
+			var (la, lb) = SplitAt(u);
+			if (t < 0.14f)
+			{
+				float e = 1f - Mathf.Pow(1f - t / 0.14f, 3f);
+				la += (1f - e) * 1400f;
+			}
+			Vector2 top = ToScreen(new Vector2(la, 0f)), bot = ToScreen(new Vector2(la + lb * 1080f, 1080f));
+			// 屏幕上的线（过 top、bot 两点），延到屏幕上下边
+			float dxdy = (bot.X - top.X) / Mathf.Max(1f, bot.Y - top.Y);
+			float x0 = top.X - dxdy * top.Y, x1 = x0 + dxdy * _view.Y;
+			_split.SetShaderParameter("line", new Vector2(x0 - off.X + dxdy * off.Y, dxdy));
+			float fin = Ease5.OutExpo(Mathf.Clamp((t - HandAt) / (SlamAt - HandAt + 0.1f), 0f, 1f));
+			float et = Mathf.Lerp(x0, PanelEdgeTop * k + _rx, fin), eb = Mathf.Lerp(x1, PanelEdgeBottom * k + _rx, fin);
+			_panel.SetShaderParameter("edge_top", et);
+			_panel.SetShaderParameter("edge_bottom", eb);
+			_panel.SetShaderParameter("edge_shift", 0f);
 			// 手掌拍下来（用户：要有力量感）：从放大 1.22 倍猛地砸下去（0.36 → 0.42，加速），砸到底压扁到 0.965，
 			// 再弹回 1.0（0.42 → 0.56）；砸中那一下整个界面短促一震（衰减 0.24s）+ 低沉的重击声
 			float scale, drop;
@@ -267,12 +293,6 @@ public sealed class PileDraw : IPileDecor
 	private const float HandAt = SlamAt - 0.06f;                       // 手掌出现、开始往下砸（砸 0.06s，加速）
 	private bool _slammed;
 
-	/// <summary>打开界面时调用一次（和 camp_open 同时）：把砸中那一下的两声按起音提前量预约好。</summary>
-	public static void ScheduleSlamSounds()
-	{
-		Sfx.Play(Sfx.SubBoom, 0.7f, SlamAt);
-		Sfx.Play(Sfx.Slam, 0.4f, SlamAt - 0.087f);
-	}
 
 	/// <summary>手掌砸中：整个界面（root）短促一震，衰减 0.24s；第一次到这一刻时放重击声。</summary>
 	private void Shake(float t)
@@ -291,7 +311,7 @@ public sealed class PileDraw : IPileDecor
 	private void Exit(float e)
 	{
 		float k = _k;
-		if (_m3d != null) _m3d.Visible = false;
+		_m3d?.Hide();
 		_root.Position = Vector2.Zero;
 		// 面板先往右退（0 → 0.7），红底晚一点从后往按钮那个角收（0.15 → 1，先慢后快）
 		float pe = Ease5Ext.InOutCubic(Mathf.Clamp(e / 0.7f, 0f, 1f));
@@ -320,8 +340,8 @@ public sealed class PileDraw : IPileDecor
 		_plates.AddChild(n);
 		Vector2 h = size * 0.5f * k;
 		float e = 6f * k;
-		Fx.Poly(n, new[] { new Vector2(-h.X, -h.Y), new Vector2(h.X, -h.Y), new Vector2(h.X, h.Y), new Vector2(-h.X, h.Y) }, edge);
-		Fx.Poly(n, new[] { new Vector2(-h.X + e, -h.Y + e), new Vector2(h.X - e, -h.Y + e), new Vector2(h.X - e, h.Y - e), new Vector2(-h.X + e, h.Y - e) }, fill);
+		Poly(n, new[] { new Vector2(-h.X, -h.Y), new Vector2(h.X, -h.Y), new Vector2(h.X, h.Y), new Vector2(-h.X, h.Y) }, edge);
+		Poly(n, new[] { new Vector2(-h.X + e, -h.Y + e), new Vector2(h.X - e, -h.Y + e), new Vector2(h.X - e, h.Y - e), new Vector2(-h.X + e, h.Y - e) }, fill);
 		if (glyph != null) Glyph(n, glyph, Vector2.Zero, glyphW, 0f, tint);
 		_pops.Add((n, n.Position, n.Rotation, delay));
 		return n;
@@ -330,7 +350,7 @@ public sealed class PileDraw : IPileDecor
 	private Sprite2D? Glyph(Node2D parent, string tex, Vector2 at, float width, float rotDeg, Color tint)
 	{
 		if (Fx.Tex(tex) is not Texture2D t) return null;
-		Sprite2D s = new() { Texture = t, Position = at * _k, Rotation = Mathf.DegToRad(rotDeg), Modulate = tint, TextureFilter = CanvasItem.TextureFilterEnum.Linear };
+		Sprite2D s = new() { Texture = t, Position = at * _k, Rotation = Mathf.DegToRad(rotDeg), Modulate = tint, TextureFilter = CanvasItem.TextureFilterEnum.LinearWithMipmaps };
 		float w = tex.EndsWith("_ol") && Fx.Tex(tex[..^3]) is Texture2D body ? width * t.GetWidth() / body.GetWidth() : width;
 		s.Scale = Vector2.One * w * _k / t.GetWidth();
 		parent.AddChild(s);
@@ -338,6 +358,14 @@ public sealed class PileDraw : IPileDecor
 	}
 
 	// ── 星纹着色器 ──
+	/// <summary>牌堆界面的多边形一律抗锯齿（用户 2026-11-24：UI 边缘锯齿感；斜放的标题牌、色块边缘都是斜线）：AaPoly（Polygon2D 的 Antialiased 在 4.5 不起作用）。</summary>
+	internal static AaPoly Poly(Node parent, Vector2[] points, Color color)
+	{
+		AaPoly p = new() { Polygon = points, Color = color };
+		parent.AddChild(p);
+		return p;
+	}
+
 	internal static ShaderMaterial StarMaterial(float baseSize, Color paper, Color ink, Color grayInk, Vector2 shade)
 	{
 		ShaderMaterial m = new() { Shader = StarShader };
@@ -434,18 +462,35 @@ void fragment() {
 }
 " };
 
-	/// <summary>菜单 3D Joker：分界线左边整个变成白剪影，右边是原样（黑底白细节）；分界线上斜（上端偏右），抗锯齿。</summary>
+	/// <summary>原版坐标 → 屏幕。</summary>
+	private Vector2 ToScreen(Vector2 p) => (p * MapK + MapOff) * _k + new Vector2(_rx, 0f);
+
+	/// <summary>原版第 u 帧（46 + u）的分界线 x = a + b·y（原版坐标），帧间线性插值。</summary>
+	private static (float A, float B) SplitAt(float u)
+	{
+		float[][] l = MenuJoker3DKeys.DrawSplit;
+		int i = Mathf.Clamp((int)u, 0, l.Length - 1), j = Mathf.Min(i + 1, l.Length - 1);
+		float f = Mathf.Clamp(u - i, 0f, 1f);
+		return (Mathf.Lerp(l[i][0], l[j][0], f), Mathf.Lerp(l[i][1], l[j][1], f));
+	}
+
+	/// <summary>菜单 3D Joker（实时渲染的整屏画面）：屏幕上一条线（x = line.x + line.y·y，画面像素）左边整个变成白剪影，右边原样；抗锯齿。</summary>
 	private static Shader? _splitShader;
 	private static Shader SplitShader => _splitShader ??= new Shader { Code = @"
 shader_type canvas_item;
-uniform float edge = 1.25;
-uniform float slope = 0.28;
+uniform vec2 line = vec2(1e6, 0.0);
+uniform vec2 size = vec2(1920.0, 1080.0);
+uniform vec2 wipe_origin = vec2(0.0);
+uniform vec2 wipe_dir = vec2(1.0, 0.0);
+uniform float wipe = 1e7;
 void fragment() {
 	// Godot 4：COLOR 进来时已经是 贴图 × modulate
-	float line = edge + slope * (0.5 - UV.y);
-	float w = fwidth(UV.x) * 1.5;
-	float white = 1.0 - smoothstep(line - w, line + w, UV.x);
+	vec2 px = UV * size;
+	float d = px.x - (line.x + line.y * px.y);
+	float white = 1.0 - smoothstep(-0.75, 0.75, d);
 	COLOR.rgb = mix(COLOR.rgb, vec3(0.94), white);
+	// 跟红底一起铺开：红底前沿外面不画（_bg 的 wipe 同一组参数）
+	COLOR.a *= clamp(wipe - dot(px - wipe_origin, wipe_dir) - 16.0 + 0.5, 0.0, 1.0);
 }
 " };
 
@@ -483,7 +528,7 @@ void fragment() {
 	public static readonly string[] Textures = BuildTextureList();
 	private static string[] BuildTextureList()
 	{
-		List<string> l = new() { "pile_m3d_00", "pile_m3d_01", "pile_m3d_02", "pile_m3d_03", "pile_m3d_04", "pile_m3d_05", "pile_m3d_06", "pile_m3d_07", "pile_m3d_08", "pile_m3d_09", "pile_m3d_10", "pile_m3d_11", "pile_camptop", "pile_txt_command", "pile_txt_command_ol", "pile_txt_dontlook", "pile_txt_likethat", "pile_txt_menu", "pile_txt_main", "pile_txt_cmdselect", "pile_card_front" };
+		List<string> l = new() { "pile_camptop", "pile_txt_command", "pile_txt_command_ol", "pile_txt_dontlook", "pile_txt_likethat", "pile_txt_menu", "pile_txt_main", "pile_txt_cmdselect", "pile_card_front" };
 		for (int i = 0; i < 10; i++) { l.Add($"pile_digit_{i}"); l.Add($"pile_digit_{i}_ol"); }
 		foreach (string s in CallingCard.Letters) l.Add("pile_letter_" + s);
 		return l.ToArray();
@@ -546,7 +591,7 @@ public sealed class CallingCard
 		// 落在手上的投影（跟着卡的宽度变化）
 		c._shadow = new Polygon2D { Color = new Color(0.12f, 0f, 0f, 0.3f), Polygon = Fx.Circle(1f, 48), Material = Soft };
 		parent.AddChild(c._shadow);
-		c._view = new TextureRect { Texture = c._vp.GetTexture(), Size = c.Box * k, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, TextureFilter = CanvasItem.TextureFilterEnum.Linear, MouseFilter = Control.MouseFilterEnum.Ignore, Modulate = new Color(1f, 1f, 1f, 0f) };
+		c._view = new TextureRect { Texture = c._vp.GetTexture(), Size = c.Box * k, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, TextureFilter = CanvasItem.TextureFilterEnum.LinearWithMipmaps, MouseFilter = Control.MouseFilterEnum.Ignore, Modulate = new Color(1f, 1f, 1f, 0f) };
 		parent.AddChild(c._view);
 		return c;
 	}

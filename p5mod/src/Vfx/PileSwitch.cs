@@ -14,7 +14,7 @@ public sealed class PileModeSwitch
 	private const float W = 300f, H = 46f;
 	public Action<bool>? Changed;
 	private Node2D root = null!;
-	private Polygon2D knob = null!;
+	private AaPoly knob = null!;
 	private Node2D left = null!, right = null!;
 	private float k;
 	private bool order;
@@ -25,9 +25,9 @@ public sealed class PileModeSwitch
 		m.root = new Node2D { Position = at, Rotation = Mathf.DegToRad(-2f) };
 		parent.AddChild(m.root);
 		// 白边：消耗堆 / 弃牌堆的切换放在黑块上，没有白边就和黑底糊成一片（同段标题的白边）
-		Fx.Poly(m.root, new[] { new Vector2(-4f, 0f), new Vector2(W + 4f, -4f), new Vector2(W + 8f, H + 4f), new Vector2(-2f, H + 8f) }.Select(p => p * k).ToArray(), Paper);
-		Fx.Poly(m.root, new[] { new Vector2(0f, 4f), new Vector2(W, 0f), new Vector2(W + 4f, H), new Vector2(2f, H + 4f) }.Select(p => p * k).ToArray(), Ink);
-		m.knob = new Polygon2D { Color = Red, Polygon = new[] { new Vector2(4f, 6f), new Vector2(W / 2f, 3f), new Vector2(W / 2f + 2f, H - 2f), new Vector2(6f, H) }.Select(p => p * k).ToArray() };
+		PileDraw.Poly(m.root, new[] { new Vector2(-4f, 0f), new Vector2(W + 4f, -4f), new Vector2(W + 8f, H + 4f), new Vector2(-2f, H + 8f) }.Select(p => p * k).ToArray(), Paper);
+		PileDraw.Poly(m.root, new[] { new Vector2(0f, 4f), new Vector2(W, 0f), new Vector2(W + 4f, H), new Vector2(2f, H + 4f) }.Select(p => p * k).ToArray(), Ink);
+		m.knob = new AaPoly { Color = Red, Polygon = new[] { new Vector2(4f, 6f), new Vector2(W / 2f, 3f), new Vector2(W / 2f + 2f, H - 2f), new Vector2(6f, H) }.Select(p => p * k).ToArray() };
 		m.root.AddChild(m.knob);
 		// 文字：P5 字图（原版顺序 / 按类型），各自在半边里居中
 		m.left = new Node2D();
@@ -61,7 +61,6 @@ public sealed class PileModeSwitch
 	{
 		order = toOrder;
 		Fx.Animate(knob, 0, 0.32, t => Paint(Ease5.OutExpo(t)));
-		Sfx.Play(Sfx.Cursor, 0.35f);
 	}
 
 	private void Paint(float t)

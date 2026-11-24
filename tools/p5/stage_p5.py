@@ -534,14 +534,12 @@ def pile_textures():
             ol.putalpha(a)
             yield name + "_ol", ol
         yield name, im
-    # 弃牌堆入场的原版菜单 3D Joker（tools/p5/menu3d/item_entrance.py 渲的 10 帧，research/p5r/menu3d_item）→ pile_dc3d_00…09
-    for i in range(10):
-        f = ROOT / f"research/p5r/menu3d_item/f{i:02d}.png"
-        if f.exists():
-            yield f"pile_dc3d_{i:02d}", Image.open(f).convert("RGBA")
     # 弃牌堆（ITEM 页）：tools/p5/pile/export_discard.py 从排版图分层导出的 1080p 图层 → pile_dc_<名字>（原尺寸，PileDiscard.cs 按 1080p 摆）
     for f in sorted((ROOT / "art/p5/ui/pile_discard").glob("*.png")):
         yield "pile_dc_" + f.stem, Image.open(f).convert("RGBA")
+    # 牌组（EQUIP 页）：tools/p5/pile/export_deck.py 从排版图分层导出的 1080p 图层 → pile_dk_<名字>（PileDeck.cs 按 1080p 摆）
+    for f in sorted((ROOT / "art/p5/ui/pile_deck").glob("*.png")):
+        yield "pile_dk_" + f.stem, Image.open(f).convert("RGBA")
     # 原版菜单 3D Joker 的入场动作（research/p5r/menu3d/main_0000，Codex 从 MENU_C0001 GMD/GAP 渲的 12 帧，1920×1080）：
     # 裁到 12 帧的并集包围盒 (828,125)-(1920,1080)，游戏里显示 0.843 倍，×1.34 会超过原尺寸 → 保留原尺寸（PileDraw.M3d*）
     m3d = ROOT / "research/p5r/menu3d/main_0000"
@@ -559,12 +557,9 @@ def pile_textures():
     # 每张另出一张黑描边版 _ol（每边多 PILE_TEXT_OL 像素，PileText.OlPad）
     for name, im in pile_texts():
         yield name, im
-    # 消耗堆（SKILL 页）入场的 3D Joker：原版 frame 112–122 逐帧拟合出来的机位和动作（tools/p5/menu3d/skill_entrance.py，
-    # research/p5r/menu3d_skill：main_0015 抬膝 → 镜头上仰 → 混合进定格姿势 main_0016 = 2D 立绘的姿势）。
-    # 已经裁到不透明区域，每帧的位置在 frames.json（PileExhaust.Sk3d 里抄了一份）；游戏里按 0.961 显示，原尺寸足够
-    sk = ROOT / "research/p5r/menu3d_skill"
-    for i, idx in enumerate(range(112, 123)):
-        yield f"pile_sk3d_{i:02d}", Image.open(sk / f"f{idx}.png").convert("RGBA")
+    # 牌堆入场的菜单 3D Joker 游戏里实时渲染（MenuJoker3D.cs，数据在 p5joker/m3d/，见 main()）：脸 / 面具贴图 → m3d_<贴图名>
+    for f in sorted((ROOT / "research/p5r/model/joker/joker_menu_Textures").glob("*.png")):
+        yield "m3d_" + f.stem, Image.open(f).convert("RGBA")
     # 预告信（tools/p5/pile/deskew_cards.py 拉正的原版）：正面 + 7 封信的正文（每次打开随机一封当背面）；运行时生成 mipmap
     yield "pile_card_front", Image.open(ROOT / "art/p5/ui/pile/calling_card.png").convert("RGBA")
     for f in sorted((ROOT / "art/p5/ui/pile/letters").glob("letter_*.png")):
@@ -599,12 +594,17 @@ skeleton_file_res = ExtResource("2_skel")
 default_mix = 0.1
 """)
     for name, im in fx_textures():
-        write_texture(STAGE, f"p5joker/fx/{name}.png", im)
+        # 牌堆界面的图（按 1440p 预缩，1080p 下缩到 0.75 显示）和菜单 3D 的贴图带 mipmap：缩小显示不起锯齿（用户 2026-11-24）
+        write_texture(STAGE, f"p5joker/fx/{name}.png", im, mipmaps=name.startswith(("pile_", "m3d_")))
     # 总攻击收尾的原版数据（网格 / 材质 / 240 帧矩阵），AllOutFinale 直接读字节
     from allout_native.export_runtime import main as export_allout
     export_allout(STAGE / "p5joker/allout/hero.bin")
     for f in sorted((ROOT / "tools/p5/allout_native/cracks").glob("cracks_*.json")):
         shutil.copy(f, STAGE / "p5joker/allout" / f.name)
+    # 菜单 3D Joker 的网格和动作片段（tools/p5/menu3d/export_runtime.py），MenuJoker3D 直接读字节
+    (STAGE / "p5joker/m3d").mkdir(parents=True, exist_ok=True)
+    for f in sorted((ROOT / "research/p5r/menu3d_runtime").iterdir()):
+        shutil.copy(f, STAGE / "p5joker/m3d" / f.name)
     # fonts: raw .ttf (p5mod/src/Vfx/P5Ui.cs loads them with FontFile.LoadDynamicFont, no import needed; SIL OFL)
     (STAGE / "p5joker/fonts").mkdir(parents=True, exist_ok=True)
     for f in ("BarlowCondensed-900Italic.ttf", "BarlowCondensed-700Italic.ttf"):

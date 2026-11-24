@@ -17,7 +17,7 @@ namespace P5Joker;
 public sealed class PileExhaust : IPileDecor
 {
 	public float GridX => 1130f;
-	public float GridTop => 196f;
+	public float GridTop => 214f;
 	public float GridBottom => 1050f;
 	public int Cols => 4;
 	public float CardW => 158f;
@@ -27,7 +27,7 @@ public sealed class PileExhaust : IPileDecor
 	public float ExitTime => 0.32f;
 	public Vector2 FocusAt => new(560f, 560f);
 	public Vector2 InfoAt => new(980f, 300f);
-	public Vector2 SwitchAt => new(1130f, 120f);
+	public Vector2 SwitchAt => new(1130f, 152f);   // 遗物栏（到 y≈148）下面
 	public Vector2 EnterOffset => new(70f, 30f);
 	public Vector2 ExitOffset => new(260f, 40f);
 
@@ -46,12 +46,6 @@ public sealed class PileExhaust : IPileDecor
 	/// <summary>原版一帧的时长（录像约 27.5fps = 0.0364s，稍微压快一点）；第 i 帧（原版 112+i）在 FrameT(i) 显示，原版 123（2D 立绘）= HandAt。</summary>
 	private const float FrameDt = 0.0335f;
 	private static float FrameT(float i) => HandAt - (11f - i) * FrameDt;
-	/// <summary>3D 帧的左上角（原版屏幕坐标，research/p5r/menu3d_skill/frames.json）。</summary>
-	private static readonly Vector2[] Sk3dAt =
-	{
-		new(-60f, -48f), new(-60f, -35f), new(-60f, -23f), new(-60f, -29f), new(-60f, -36f), new(-60f, -42f),
-		new(19f, -60f), new(-60f, 90f), new(-60f, 40f), new(-60f, 16f), new(-60f, 0f),
-	};
 	/// <summary>白板左边缘（原版屏幕坐标，y=500 / y=900 两点）：原版 112–117 量出来的，118 起 = 反色区左边的直线 L（= 立绘白腿的直边）。</summary>
 	private static readonly (Vector2 A, Vector2 B)[] EdgeKeys =
 	{
@@ -70,11 +64,15 @@ public sealed class PileExhaust : IPileDecor
 	private readonly Vector2 _view;
 	private readonly float _k, _rx;
 	private readonly ShaderMaterial _bg, _por, _coverMat, _invertMat;
-	private readonly Polygon2D _slab, _wedge, _plate, _cover, _invert;
+	private readonly AaPoly _slab, _wedge, _plate, _cover, _invert;
 	private readonly Vector2[] _slabPts, _platePts;
 	private readonly Node2D _band, _portrait;
-	private readonly Texture2D?[] _sk3d = new Texture2D?[11];
-	private readonly Sprite2D? _m3d;
+	private readonly AaPoly _bandEdge;
+	private readonly Vector2[] _bandPts;
+	/// <summary>原版 112–122 的 3D Joker：游戏里实时渲染（MenuJoker3D，关键帧 MenuJoker3DKeys.Exhaust）。</summary>
+	private readonly MenuJoker3D? _m3d;
+	private readonly PileReveal? _reveal;
+	private static readonly string[] Hide3d = { "smartphone", "card", "school_bag", "gun_outline", "gun_main", "ef line_obj_01", "ef line_obj_02", "ef line_obj_03", "ef line_obj_04", "ef line_obj_05", "ef line_obj_06", "ef line_obj_07", "ef line_obj_08" };
 	private readonly Sprite2D _porSprite;
 	private readonly float _porScale = 1f;
 	private readonly List<(Node2D Node, Vector2 At, float Rot, float Delay)> _pops = new();
@@ -101,37 +99,42 @@ public sealed class PileExhaust : IPileDecor
 		_slabPts = new[] { R(560f, 0f), R(1650f, 0f), R(1920f, 300f), R(1920f, 760f), R(1350f, 1080f), R(560f, 1080f) };
 		// 入场白板的外轮廓 = 黑块往左延伸到 x=300（左边由白板边 / 直线 L 裁）：原版反色区一直贴着 L 到屏幕底，立绘白腿也越过 x=560
 		_platePts = new[] { R(300f, 0f), R(1650f, 0f), R(1920f, 300f), R(1920f, 760f), R(1350f, 1080f), R(300f, 1080f) };
-		_slab = new Polygon2D { Polygon = _slabPts, Color = new Color(0.03f, 0.03f, 0.03f), Antialiased = true, Visible = false };
+		_slab = new AaPoly { Polygon = _slabPts, Color = new Color(0.03f, 0.03f, 0.03f), Visible = false };
 		root.AddChild(_slab);
-		_wedge = new Polygon2D { Polygon = new[] { R(560f, 1080f), R(560f, 620f), R(1350f, 1080f) }, Color = Gray, Antialiased = true, Visible = false };
+		_wedge = new AaPoly { Polygon = new[] { R(560f, 1080f), R(560f, 620f), R(1350f, 1080f) }, Color = Gray, Visible = false };
 		root.AddChild(_wedge);
 
 		// 3. 立绘 / 3D Joker 后面的黑白星纹斜带：裁在一个斜四边形里（clip_children）；入场时就在 Joker 身后（原版 112–117 头后面的星纹）
-		Polygon2D bandMask = new() { Polygon = new[] { R(600f, 0f), R(900f, 0f), R(700f, 520f), R(560f, 520f) }, Color = Colors.White, ClipChildren = CanvasItem.ClipChildrenMode.Only, Visible = false };
+		_bandPts = new[] { R(600f, 0f), R(900f, 0f), R(700f, 520f), R(560f, 520f) };
+		AaPoly bandMask = new() { Polygon = _bandPts, Color = Colors.White, ClipChildren = CanvasItem.ClipChildrenMode.Only, Visible = false };
 		root.AddChild(bandMask);
 		ShaderMaterial bandMat = PileDraw.StarMaterial(118f, new Color(0.91f, 0.91f, 0.91f), new Color(0.03f, 0.03f, 0.03f), new Color(0.376f, 0.376f, 0.376f), Vector2.Zero);
 		bandMat.SetShaderParameter("size", view);
 		bandMask.AddChild(new ColorRect { Size = view, Material = bandMat, MouseFilter = Control.MouseFilterEnum.Ignore });
 		_band = bandMask;
+		// 切入的前沿：一道黑边跟着划开的下沿走（同红底铺开的前沿）
+		_bandEdge = new AaPoly { Color = new Color(0.02f, 0.02f, 0.02f), Visible = false };
+		root.AddChild(_bandEdge);
 
 		// 4. 入场白板（Joker 下面）→ 3D Joker → 白板遮罩（Joker 上面，挖掉黑色区域：白板里的 Joker 是白的，白底上看不见）
-		_plate = new Polygon2D { Color = Paper, Antialiased = true, Visible = false };
+		_plate = new AaPoly { Color = Paper, Visible = false };
 		root.AddChild(_plate);
-		for (int i = 0; i < 11; i++) _sk3d[i] = Fx.Tex($"pile_sk3d_{i:00}");
-		if (_sk3d[0] != null)
+		if (MenuJoker3D.Available)
 		{
-			_m3d = new Sprite2D { Texture = _sk3d[0], Centered = false, Scale = Vector2.One * MapK * k, TextureFilter = CanvasItem.TextureFilterEnum.Linear, Visible = false };
-			root.AddChild(_m3d);
+			_m3d = new MenuJoker3D(root, view, MapK, PorAt - OrigArtAt * MapK, Hide3d);
+			root.AddChild(_m3d.Sprite);
+			_reveal = new PileReveal(root, view);
+			_m3d.Sprite.Material = _reveal.Track();
 		}
 		_coverMat = new ShaderMaterial { Shader = CoverShader };
-		_cover = new Polygon2D { Color = Paper, Antialiased = true, Visible = false, Material = _coverMat };
+		_cover = new AaPoly { Color = Paper, Visible = false, Material = _coverMat };
 		root.AddChild(_cover);
 
 		// 5. Joker（原版 CAMPSKILL_2D01），砸中时出现
 		_portrait = new Node2D { Name = "PilePortrait", Position = (PorAt + new Vector2(PorW, PorW) * 0.5f) * k, Visible = false };
 		root.AddChild(_portrait);
 		_por = new ShaderMaterial { Shader = PileDraw.FillShader };
-		_porSprite = new Sprite2D { Texture = Fx.Tex("pile_campskill"), Material = _por, TextureFilter = CanvasItem.TextureFilterEnum.Linear };
+		_porSprite = new Sprite2D { Texture = Fx.Tex("pile_campskill"), Material = _por, TextureFilter = CanvasItem.TextureFilterEnum.LinearWithMipmaps };
 		if (_porSprite.Texture is Texture2D pt) _porScale = PorW * k / pt.GetWidth();
 		_porSprite.Scale = Vector2.One * _porScale;
 		_portrait.AddChild(_porSprite);
@@ -139,20 +142,23 @@ public sealed class PileExhaust : IPileDecor
 		// 6. 黑色反色区：读屏幕，白板 ↔ 黑、黑 Joker ↔ 白（P 系列的撞色）；形状 = 白板多边形，着色器只保留圆内
 		root.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });
 		_invertMat = new ShaderMaterial { Shader = InvertShader };
-		_invertMat.SetShaderParameter("sum", Paper.R + Ink.R);
-		_invert = new Polygon2D { Color = Colors.White, Antialiased = true, Visible = false, Material = _invertMat };
+		_invertMat.SetShaderParameter("sum", Paper.R + 0.03f);   // 白板反过来 = 黑块的颜色（0.03），两块黑接在一起看不出边
+		_invertMat.SetShaderParameter("paper", Paper.R);
+		_invert = new AaPoly { Color = Colors.White, Visible = false, Material = _invertMat };
 		root.AddChild(_invert);
 
 		// 7. 标题牌 MeNu&EXHAUST + COMMAND SELECT（原版字图 + P5 字图）
-		Node2D plate = new() { Position = R(1680f, 90f), Rotation = Mathf.DegToRad(-4f) };
+		Node2D plate = new() { Position = R(1690f, 142f), Rotation = Mathf.DegToRad(-4f) };   // 在游戏顶栏（约 80px）下面
 		root.AddChild(plate);
+		Node2D plateIn = new() { Scale = Vector2.One * 0.86f };
+		plate.AddChild(plateIn);
 		Vector2 h = new Vector2(215f, 65f) * k;
-		Fx.Poly(plate, new[] { -h, new Vector2(h.X, -h.Y), h, new Vector2(-h.X, h.Y) }, Paper);
+		PileDraw.Poly(plateIn, new[] { -h, new Vector2(h.X, -h.Y), h, new Vector2(-h.X, h.Y) }, Paper);
 		Vector2 hi = h - new Vector2(6f, 6f) * k;
-		Fx.Poly(plate, new[] { -hi, new Vector2(hi.X, -hi.Y), hi, new Vector2(-hi.X, hi.Y) }, Ink);
-		Glyph(plate, "pile_txt_menu", new Vector2(-128f, -15f), 120f, Paper);
-		PileText.Exact(plate, "menu_exhaust", new Vector2(-58f, -46f) * k, 52f * k, Paper);
-		Glyph(plate, "pile_txt_cmdselect", new Vector2(5f, 40f), 212f, Paper);
+		PileDraw.Poly(plateIn, new[] { -hi, new Vector2(hi.X, -hi.Y), hi, new Vector2(-hi.X, hi.Y) }, Ink);
+		Glyph(plateIn, "pile_txt_menu", new Vector2(-128f, -15f), 120f, Paper);
+		PileText.Exact(plateIn, "menu_exhaust", new Vector2(-58f, -46f) * k, 52f * k, Paper);
+		Glyph(plateIn, "pile_txt_cmdselect", new Vector2(5f, 40f), 212f, Paper);
 		_pops.Add((plate, plate.Position, plate.Rotation, SlamAt + 0.02f));
 
 		// 8. COMMAND + 说明
@@ -168,21 +174,53 @@ public sealed class PileExhaust : IPileDecor
 
 	public void Kick() { }
 
+	/// <summary>
+	/// 星纹斜带切入（用户 2026-11-24：之前直接放进来太僵硬）：0.05 → 0.25s 从顶部沿斜带往下划开，同时从中线向两边张开（三次缓出，前快后慢），
+	/// 下沿跟着一道黑边；到位后黑边收掉。原版这条带是上一页的星纹拼贴收成的一窄条，这里用同一个方向的划入。
+	/// </summary>
+	private void Band(float t)
+	{
+		const float t0 = 0.05f, len = 0.2f;
+		float p = Mathf.Clamp((t - t0) / len, 0f, 1f);
+		var mask = (AaPoly)_band;
+		mask.Visible = t >= t0;
+		_bandEdge.Visible = t >= t0 && p < 1f;
+		if (p >= 1f) { mask.Polygon = _bandPts; return; }
+		float d = 1f - Mathf.Pow(1f - p, 3f), w = 1f - Mathf.Pow(1f - Mathf.Clamp(p * 1.3f, 0f, 1f), 3f);
+		Vector2 a = _bandPts[0], b = _bandPts[1], c = _bandPts[2], e = _bandPts[3];
+		Vector2 midTop = (a + b) * 0.5f, midBot = (e + c) * 0.5f;
+		Vector2 Spread(Vector2 q, Vector2 mid) => mid + (q - mid) * Mathf.Lerp(0.15f, 1f, w);
+		// 下沿在左右两条边上按 d 往下走
+		Vector2 l = a.Lerp(e, d), r = b.Lerp(c, d), midL = midTop.Lerp(midBot, d);
+		Vector2 tl = Spread(a, midTop), tr = Spread(b, midTop), bl = Spread(l, midL), br = Spread(r, midL);
+		mask.Polygon = new[] { tl, tr, br, bl };
+		float th = 14f * _k * (1f - p);
+		Vector2 n = new Vector2(0f, th);
+		_bandEdge.Polygon = new[] { bl, br, br + n, bl + n };
+	}
+
 	private static Shader? _inv, _cov;
-	/// <summary>黑色反色区：圆内读屏幕、两种色调互换（sum = 纸色 + 墨色：白板 → 墨黑，黑 Joker → 纸白），圆外丢弃；圆边 2px 抗锯齿。</summary>
-	private static Shader InvertShader => _inv ??= new Shader { Code = @"
+	/// <summary>
+	/// 黑色反色区：圆内读屏幕、两种色调互换（sum = 纸色 + 墨色：白板 → 墨黑，黑 Joker → 纸白），圆外丢弃；圆边 2px 抗锯齿。
+	/// 多边形边上的羽化条（AaPoly，顶点 alpha = 白板在这个像素的覆盖率 a）不能整像素反色：半白半黑的边反过来还是灰，会留一根灰线
+	///（用户 2026-11-24：黑区里那根线）→ 只把白板那一份换成反色：s − a·纸 + a·(sum − 纸)。
+	/// </summary>
+	internal static Shader InvertShader => _inv ??= new Shader { Code = @"
 shader_type canvas_item;
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
 uniform vec2 c = vec2(0.0);
 uniform float r = 0.0;
 uniform float sum = 0.98;
+uniform float paper = 0.94;
 varying vec2 lp;
 void vertex() { lp = VERTEX; }
 void fragment() {
-	float a = 1.0 - smoothstep(r - 1.0, r + 1.0, distance(lp, c));
-	if (a <= 0.0) discard;
+	float ca = 1.0 - smoothstep(r - 1.0, r + 1.0, distance(lp, c));
+	if (ca <= 0.0) discard;
 	vec3 s = texture(screen_tex, SCREEN_UV).rgb;
-	COLOR = vec4(clamp(vec3(sum) - s, 0.0, 1.0), COLOR.a * a);
+	float a = COLOR.a;
+	vec3 inv = a >= 0.999 ? vec3(sum) - s : s + a * (sum - 2.0 * paper);
+	COLOR = vec4(clamp(inv, 0.0, 1.0), ca);
 }
 " };
 	/// <summary>白板遮罩：盖在 3D Joker 上面的白板，圆内（黑色反色区）挖空，让下面的 Joker 被反色成白腿。</summary>
@@ -203,7 +241,6 @@ void fragment() {
 	{
 		if (_exitT0 >= 0f) return;
 		_exitT0 = now;
-		Sfx.Play("camp_cancel", 0.55f);
 	}
 
 	public void Update(float now, float dt)
@@ -213,15 +250,13 @@ void fragment() {
 		else Exit(Mathf.Clamp((now - _exitT0) / ExitTime, 0f, 1f));
 	}
 
+	/// <summary>入场进度 = 原版第几帧（112 + u）：从 0 开始就在动，HandAt 正好到第 10 帧（3D、白板边、反色圆共用）。</summary>
+	private static float U(float t) => PileReveal.Progress(t, HandAt, 10f);
+
 	/// <summary>白板左边缘在 t 时刻的两点（原版屏幕坐标）：先从右边扫进来，112–117 按原版逐帧插值，117→118 跳到直线 L。</summary>
 	private static (Vector2 A, Vector2 B) Edge(float t)
 	{
-		float u = (t - FrameT(0)) / FrameDt;
-		if (u <= 0f)
-		{
-			float s = 1500f * (1f - Ease5.OutExpo(Mathf.Clamp((t - 0.015f) / (FrameT(0) - 0.015f), 0f, 1f)));
-			return (EdgeKeys[0].A + new Vector2(s, 0f), EdgeKeys[0].B + new Vector2(s, 0f));
-		}
+		float u = U(t);
 		int i = Mathf.Min((int)u, EdgeKeys.Length - 1);
 		if (i >= EdgeKeys.Length - 1) return EdgeKeys[^1];
 		float f = Ease5Ext.InOutCubic(u - i);
@@ -231,7 +266,7 @@ void fragment() {
 	/// <summary>黑色反色区半径（原版屏幕坐标）：117 之前 0，之后按原版逐帧插值。</summary>
 	private static float Radius(float t)
 	{
-		float u = (t - FrameT(5)) / FrameDt;
+		float u = U(t) - 5f;
 		if (u <= 0f) return 0f;
 		int i = Mathf.Min((int)u, RRadius.Length - 1);
 		if (i >= RRadius.Length - 1) return RRadius[^1];
@@ -262,20 +297,25 @@ void fragment() {
 		float reach = (_view + new Vector2(0f, _view.Y)).Length() * 1.05f;
 		_bg.SetShaderParameter("wipe", t >= 0.3f ? 1e7f : Ease5.OutQuint(Mathf.Clamp(t / 0.3f, 0f, 1f)) * reach);
 		bool cut = t >= HandAt;
+		_reveal?.Set(t);
 		// 黑块从白板到位起就垫在 Joker 下面（原版 Joker 身后是黑底：黑色的身体 / 腿和背景连成一片），不然黑色区域和身体之间会露出一条红缝
-		_slab.Visible = t >= 0.03f;
-		_slab.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((t - 0.03f) / 0.05f, 0f, 1f));
+		_slab.Visible = true;
+		_slab.Modulate = Colors.White;
+		Vector2[] slab = _reveal != null && !cut ? _reveal.Clip(_slabPts) : _slabPts;
+		_slab.Visible = slab.Length >= 3;
+		if (_slab.Visible) _slab.Polygon = slab;
 		// 灰楔形是我们排版自己加的，原版切立绘那一刻是黑的：砸中之后再淡进来，切换那一下不冒出一块灰
 		_wedge.Visible = cut;
 		_wedge.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((t - SlamAt) / 0.16f, 0f, 1f));
-		_band.Visible = t >= 0.05f;
+		Band(t);
 		_portrait.Visible = cut;
 		if (!cut)
 		{
 			// 白板（Joker 下面 + 上面的遮罩）和黑色反色区共用同一个多边形：最终黑块的形状裁掉白板左边缘左侧
 			var (ea, eb) = Edge(t);
 			Vector2[] poly = ClipRight(_platePts, Map(ea) * k, Map(eb) * k);
-			bool show = t >= 0.015f && poly.Length >= 3;
+			if (_reveal != null) poly = _reveal.Clip(poly);   // 白板也跟着揭幕的斜线露出来（原来是从右边整块滑进来）
+			bool show = poly.Length >= 3;
 			_plate.Visible = _cover.Visible = show;
 			if (show) _plate.Polygon = _cover.Polygon = _invert.Polygon = poly;
 			float r = Radius(t);
@@ -288,18 +328,16 @@ void fragment() {
 			_invertMat.SetShaderParameter("r", rr);
 			if (_m3d != null)
 			{
-				// 原版 112–122 的 3D Joker：第 i 帧在 FrameT(i) 前后半帧显示；最开始从左边滑进来（原版切镜头时那一下甩）
-				int i = Mathf.Clamp(Mathf.FloorToInt((t - FrameT(0)) / FrameDt + 0.5f), 0, 10);
-				if (_sk3d[i] is Texture2D f && _m3d.Texture != f) _m3d.Texture = f;
-				float slide = Ease5.OutExpo(Mathf.Clamp((t - 0.035f) / 0.09f, 0f, 1f));
-				_m3d.Position = Map(Sk3dAt[i]) * k + new Vector2(-140f * k * (1f - slide), 0f);
-				_m3d.Visible = t >= 0.035f;
+				// 原版 112–122 的 3D Joker：从第 0 帧就开始连续播（u = 原版第几帧，小数在两帧之间插值）、HandAt 正好放到最后一帧；
+				// 斜切揭幕（PileReveal）露出来，不再定格平移（用户 2026-11-24）
+				_m3d.Show(MenuJoker3DKeys.Exhaust, U(t));
+				_m3d.Sprite.Position = Vector2.Zero;
 			}
 		}
 		else
 		{
 			_plate.Visible = _cover.Visible = _invert.Visible = false;
-			if (_m3d != null) _m3d.Visible = false;
+			_m3d?.Hide();
 			// 换成立绘，从 1.02 倍砸下（HandAt → SlamAt，加速），压扁 0.965 再回弹（同抽牌堆的手掌）
 			float scale, drop;
 			if (t < SlamAt)
@@ -344,7 +382,7 @@ void fragment() {
 	{
 		float k = _k;
 		_root.Position = Vector2.Zero;
-		if (_m3d != null) _m3d.Visible = false;
+		_m3d?.Hide();
 		_plate.Visible = _cover.Visible = _invert.Visible = false;
 		_portrait.Visible = true;
 		float ei = Ease5Ext.InCubic(e);
@@ -354,6 +392,7 @@ void fragment() {
 		float pe = Ease5Ext.InOutCubic(Mathf.Clamp(e / 0.75f, 0f, 1f));
 		Vector2 off = new(1500f * k * pe, 0f);
 		_slab.Position = _wedge.Position = _band.Position = off;
+		_bandEdge.Visible = false;
 		// 黑块 / 灰楔形 / 星纹带边退边淡掉（不然灰楔形滑到牌后面露出一块白三角）
 		Color fade = new(1f, 1f, 1f, 1f - Mathf.Clamp(e / 0.45f, 0f, 1f));
 		_wedge.Modulate = fade;
@@ -375,8 +414,8 @@ void fragment() {
 	{
 		if (Fx.Tex(tex) is not Texture2D t) return;
 		float w = tex.EndsWith("_ol") && Fx.Tex(tex[..^3]) is Texture2D body ? width * t.GetWidth() / body.GetWidth() : width;
-		parent.AddChild(new Sprite2D { Texture = t, Position = at * _k, Scale = Vector2.One * w * _k / t.GetWidth(), Modulate = tint, TextureFilter = CanvasItem.TextureFilterEnum.Linear });
+		parent.AddChild(new Sprite2D { Texture = t, Position = at * _k, Scale = Vector2.One * w * _k / t.GetWidth(), Modulate = tint, TextureFilter = CanvasItem.TextureFilterEnum.LinearWithMipmaps });
 	}
 
-	public static readonly string[] Textures = { "pile_sk3d_00", "pile_sk3d_01", "pile_sk3d_02", "pile_sk3d_03", "pile_sk3d_04", "pile_sk3d_05", "pile_sk3d_06", "pile_sk3d_07", "pile_sk3d_08", "pile_sk3d_09", "pile_sk3d_10", "pile_campskill", "pile_txt_menu", "pile_txt_cmdselect", "pile_txt_command", "pile_txt_command_ol" };
+	public static readonly string[] Textures = { "pile_campskill", "pile_txt_menu", "pile_txt_cmdselect", "pile_txt_command", "pile_txt_command_ol" };
 }

@@ -36,3 +36,40 @@ public static class PileScreenClosePatch
 		return !handled;
 	}
 }
+
+/// <summary>牌组界面（地图 / 顶栏的牌组按钮，NDeckViewScreen）= P5R EQUIP 页（Vfx/PileDeck.cs），交互同另外三个牌堆。</summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Screens.NDeckViewScreen), nameof(MegaCrit.Sts2.Core.Nodes.Screens.NDeckViewScreen._Ready))]
+public static class DeckScreenPatch
+{
+	public static void Postfix(MegaCrit.Sts2.Core.Nodes.Screens.NDeckViewScreen __instance)
+	{
+		ModEntry.Safe("deck screen", () =>
+		{
+			if (Joker.LocalPlayer is not { } player) return;
+			var pile = MegaCrit.Sts2.Core.Entities.Cards.PileTypeExtensions.GetPile(MegaCrit.Sts2.Core.Entities.Cards.PileType.Deck, player);
+			if (!PileScreen.Enabled(pile)) return;
+			try
+			{
+				PileScreen.Build(__instance, pile);
+			}
+			catch
+			{
+				PileScreen.Rollback(__instance);
+				throw;
+			}
+		});
+	}
+}
+
+/// <summary>牌组界面关闭：先播退场，播完再做原版的收尾（藏起来 + 删掉 + 顶栏牌组按钮动画）。</summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Screens.NDeckViewScreen), nameof(MegaCrit.Sts2.Core.Nodes.Screens.NDeckViewScreen.AfterCapstoneClosed))]
+public static class DeckScreenClosePatch
+{
+	public static bool Prefix(MegaCrit.Sts2.Core.Nodes.Screens.NDeckViewScreen __instance)
+	{
+		bool handled = false;
+		ModEntry.Safe("deck screen exit", () => handled = PileScreen.TryExit(__instance));
+		if (handled) ModEntry.Safe("deck top bar", () => MegaCrit.Sts2.Core.Nodes.NRun.Instance?.GlobalUi.TopBar.Deck.ToggleAnimState());
+		return !handled;
+	}
+}
