@@ -52,6 +52,34 @@ public static partial class AllOut
 	private static readonly Color Red = new(0.86f, 0.02f, 0.09f);
 	private static readonly Color Ink = new(0.015f, 0.008f, 0.012f);
 
+	// ── 慢放（0.9.58）：最后一击之后到碎开之前，游戏画面慢放（只改本地流速，不改结算） ──
+	private const float SlowScale = 0.12f;
+	private static bool _slowed;
+	private static ulong _playRun;
+	private static double _savedScale = 1.0;
+
+	private static void SlowDown(float scale)
+	{
+		if (!_slowed)
+		{
+			HitStop.Finish();
+			_savedScale = Engine.TimeScale;
+		}
+		_slowed = true;
+		Engine.TimeScale = scale;
+	}
+
+	/// <summary>总攻击正在播（碎开之前的慢放段）。</summary>
+	public static bool Playing => _slowed;
+
+	/// <summary>恢复正常速度（只在我们改过时恢复；可以重复调用）。AllOutPatches 在战斗结束 / 新战斗开始时也会调。</summary>
+	public static void RestoreTime()
+	{
+		if (!_slowed) return;
+		_slowed = false;
+		Engine.TimeScale = _savedScale > 0.01 ? _savedScale : 1.0;
+	}
+
 	/// <summary>本场已播总攻击（同一场不重复）。</summary>
 	public static bool Played;
 
@@ -206,7 +234,7 @@ public static partial class AllOut
 
 		CanvasLayer layer = new() { Layer = 110, Name = "P5AllOut" };
 		host.AddChild(layer);
-		Control rootC = new() { Size = screen, MouseFilter = Control.MouseFilterEnum.Ignore, Name = "P5AllOutRoot" };
+		Control rootC = new() { Size = screen, MouseFilter = Control.MouseFilterEnum.Stop, Name = "P5AllOutRoot" };   // 挡住输入（揭幕时放开）
 		layer.AddChild(rootC);
 		AllOutFinale? fin = null;
 		// Arrange cleanup before building the layers so partial setup cannot leave a full-screen overlay.
@@ -215,6 +243,16 @@ public static partial class AllOut
 			if (GodotObject.IsInstanceValid(layer)) layer.QueueFree();
 			fin?.Free();
 		};
+		// 前半段不定格：游戏画面慢放（Engine.TimeScale），碎开那一刻恢复；万一中途被打断，节点离开场景树时 / 真实时间计时器到点时也恢复。
+		// 上一场的延迟回调不能改下一场的速度。
+		ulong playRun = ++_playRun;
+		void RestoreThisRun()
+		{
+			if (playRun == _playRun) RestoreTime();
+		}
+		layer.TreeExiting += RestoreThisRun;
+		tree.CreateTimer(ShatterAt + 0.6, true, false, true).Timeout += RestoreThisRun;
+		SlowDown(SlowScale);
 
 		// ── 前半段：直接盖在游戏画面上（读屏着色器压暗去色）+ 集中线 + 裂痕；碎开那一刻把整屏截下来当玻璃片的贴图 ──
 		Control stageRoot = new() { Size = screen, MouseFilter = Control.MouseFilterEnum.Ignore };
@@ -404,7 +442,6 @@ public static partial class AllOut
 
 		// ── 声音（用户 2026-11-18：只要三样）：蓄势（P3 mod 同款，高潮正好在碎开）、碎开、怪物喷血（P5R 原版总攻击斩击） ──
 		// 在时间轴里按真实时间触发（不用 Sfx 的延时：慢放会把延时也拖长）
-		const float cueGain = 0.28f;
 		var cues = new List<(float At, string Name, float Vol)> { (ShatterAt - 0.65f, Sfx.AoaZoom, 1.9f), (CrackAt, Sfx.AoaCrack, 1.5f), (ShatterAt, Sfx.Shatter, 1.9f), (ArtT - 0.05f, Sfx.AoaSplatter, 2.0f) };
 		var fired = new bool[cues.Count];
 
@@ -424,7 +461,7 @@ public static partial class AllOut
 			if (!GodotObject.IsInstanceValid(layer)) return;
 			for (int i = 0; i < cues.Count; i++)
 			{
-				if (!fired[i] && T >= cues[i].At) { fired[i] = true; Sfx.PlayLoud(cues[i].Name, cues[i].Vol * cueGain); }
+				if (!fired[i] && T >= cues[i].At) { fired[i] = true; Sfx.PlayLoud(cues[i].Name, cues[i].Vol); }
 			}
 			// 定格：裂纹从敌人那里炸开，画面往里推一点
 			// 顿帧：最开头两帧是黑白反转的冲击帧，之后画面压暗、去色、四周收暗，撞击点附近色散，集中线一闪一闪
@@ -490,6 +527,7 @@ public static partial class AllOut
 				shardsVisible = shot != null && !shot.IsEmpty();
 				if (shardsVisible) ApplyShatterTexture(gl, shards, shot!, screen);
 				stageRoot.Visible = false;
+				RestoreThisRun();
 				finRoot.Visible = true;
 				if (shardsVisible)
 					foreach (Shard sh in shards) sh.Face.Visible = sh.Back.Visible = sh.Edge.Visible = true;

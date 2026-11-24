@@ -39,8 +39,8 @@ public static class SerpentFormPlay
 
 	private static (Vector2 Feet, float Tall, float Face)? Body(NCreature node)
 	{
-		if (!Fx.Active(node) || node.Entity is not { IsDead: false } c || !Joker.Is(c.Player)
-			|| c.GetPower<SerpentFormPower>() == null)
+		// 0.9.58：只看人还在不在。战斗结束原版会清掉能力，蛇照旧留到房间退场（用户 2026-11-24：战斗一结束蛇就没了，很割裂）
+		if (!Fx.Active(node) || node.Entity is not { IsDead: false } c || !Joker.Is(c.Player))
 		{
 			return null;
 		}
@@ -161,4 +161,35 @@ public static class LegacySerpentFormCuePatch
 	}
 
 	public static void Finalizer(bool __state) => Active.Value = __state;
+}
+
+/// <summary>
+/// 用户 2026-11-13：群蛇形态的出伤不跟手（打击牌结算完还要等一下蛇才咬）。原版 SerpentFormPower.AfterCardPlayed 在造成伤害前
+/// 先 Cmd.CustomScaledWait(0.1, 0.2)；Joker 的跳过这一下（随机目标、伤害照旧），蛇的扑咬自己只要 0.1s。只改等待，不改结算。
+/// 做法：进 AfterCardPlayed 时立一个标记，它里面第一次调用 CustomScaledWait 时直接返回完成的 Task；出来时清掉标记。
+/// </summary>
+[HarmonyPatch(typeof(SerpentFormPower), nameof(SerpentFormPower.AfterCardPlayed))]
+public static class SerpentFormNoWaitPatch
+{
+	[ThreadStatic] internal static bool Skip;
+
+	public static void Prefix(SerpentFormPower __instance)
+	{
+		Skip = false;
+		ModEntry.Safe("SerpentNoWait", () => Skip = __instance.Owner?.Player is { } p && Joker.Is(p));
+	}
+
+	public static void Finalizer() => Skip = false;
+}
+
+[HarmonyPatch(typeof(Cmd), nameof(Cmd.CustomScaledWait))]
+public static class SerpentFormWaitSkipPatch
+{
+	public static bool Prefix(ref System.Threading.Tasks.Task __result)
+	{
+		if (!SerpentFormNoWaitPatch.Skip) return true;
+		SerpentFormNoWaitPatch.Skip = false;
+		__result = System.Threading.Tasks.Task.CompletedTask;
+		return false;
+	}
 }

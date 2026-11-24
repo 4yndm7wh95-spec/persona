@@ -716,9 +716,30 @@ void fragment() {
 		Fx.After(front, ChargeAt + 0.45f, () => Fx.Shake(1));
 		Fx.After(front, ChargeAt + 0.62f, () => Fx.Shake(1));
 		Fx.After(front, ChargeAt + 0.74f, () => Fx.Shake(2));
-		// Freeze the presentation's clocks. Vanilla creature nodes keep their own lifecycle.
-		Fx.After(front, FreezeAt, () => Fx.HoldClocks(root, true));
-		Fx.After(front, FireAt, () => Fx.HoldClocks(root, false));
+		// 时停：场景里自己会动的东西（火焰、云、余烬、撒旦耶尔的翅膀）全部停住；敌人的待机动画也停住（Joker 这时本来就举着枪不动）。
+		// 只停画面节点的处理（开枪那一刻 / 演出节点离开时还原），不碰结算。
+		var held = new List<(Node n, Node.ProcessModeEnum mode)>();
+		void release()
+		{
+			foreach ((Node n, Node.ProcessModeEnum mode) in held)
+			{
+				if (GodotObject.IsInstanceValid(n)) n.ProcessMode = mode;
+			}
+			held.Clear();
+			Fx.HoldClocks(root, false);
+		}
+		Fx.After(front, FreezeAt, () =>
+		{
+			Fx.HoldClocks(root, true);
+			foreach (CanvasItem? ev in s.EnemyVisuals)
+			{
+				if (ev == null || !GodotObject.IsInstanceValid(ev)) continue;
+				held.Add((ev, ev.ProcessMode));
+				ev.ProcessMode = Node.ProcessModeEnum.Disabled;
+			}
+		});
+		Fx.After(front, FireAt, release);
+		root.TreeExiting += release;
 
 		// ── 开枪
 		Fx.After(front, FireAt - 0.18f, () => s.OnJokerShoot?.Invoke());       // shiv_from_aim 前 0.18s 是举枪不动，落在时停里看不出来
