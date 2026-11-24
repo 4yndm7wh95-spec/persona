@@ -431,7 +431,6 @@ public static class Warmup
 		QueueTextures(new[] { "m3d_c0001_t01_face01UI", "m3d_c0001_t01_kamenUI" });
 		Enqueue(new("menu 3d data", Load: () => { MenuJoker3D.Preload("main_0000", "main_0005", "main_0010", "main_0015", "main_0016"); return true; }));
 		Enqueue(new("menu 3d material", Draw: MenuJoker3D.Warm));
-		QueueSounds(new[] { "camp_open", "camp_cancel", Sfx.Cursor });
 		LogPlan("pile");
 	}
 

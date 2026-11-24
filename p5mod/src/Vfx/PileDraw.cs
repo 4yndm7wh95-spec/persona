@@ -180,7 +180,6 @@ public sealed class PileDraw : IPileDecor
 		if (_exitT0 >= 0f) return;
 		_exitT0 = now;
 		_porA = _portrait.Modulate.A;
-		Sfx.Play("camp_cancel", 0.55f);
 	}
 
 	/// <summary>每帧：now = 打开以来的秒数（真实时间）。</summary>
@@ -294,12 +293,6 @@ public sealed class PileDraw : IPileDecor
 	private const float HandAt = SlamAt - 0.06f;                       // 手掌出现、开始往下砸（砸 0.06s，加速）
 	private bool _slammed;
 
-	/// <summary>打开界面时调用一次（和 camp_open 同时）：把砸中那一下的两声按起音提前量预约好。</summary>
-	public static void ScheduleSlamSounds()
-	{
-		Sfx.Play(Sfx.SubBoom, 0.7f, SlamAt);
-		Sfx.Play(Sfx.Slam, 0.4f, SlamAt - 0.087f);
-	}
 
 	/// <summary>手掌砸中：整个界面（root）短促一震，衰减 0.24s；第一次到这一刻时放重击声。</summary>
 	private void Shake(float t)

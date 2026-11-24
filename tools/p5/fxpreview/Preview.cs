@@ -1856,8 +1856,6 @@ public partial class Preview : Node2D
 		barLayer.AddChild(new ColorRect { Size = new Vector2(1920f, 80f), Color = new Color(0.17f, 0.22f, 0.25f, 0.85f), MouseFilter = Control.MouseFilterEnum.Ignore });
 		p.At(0.5, () =>
 		{
-			Sfx.Play("camp_open", 0.5f);
-			if (!discard && !deck) PileDraw.ScheduleSlamSounds();
 			// 弃牌堆：攻击 5（升级 2）/ 技能 5（升级 1）/ 能力 2，同排版图
 			var dstats = (12, 3, new Dictionary<string, (int N, int Up)> { ["attack"] = (5, 2), ["skill"] = (5, 1), ["power"] = (2, 0) });
 			var kstats = (20, 4, new Dictionary<string, (int N, int Up)> { ["attack"] = (8, 2), ["skill"] = (9, 2), ["power"] = (2, 0), ["curse"] = (1, 0) });
@@ -1934,9 +1932,9 @@ public partial class Preview : Node2D
 				float now = t * 6f, dt = Mathf.Max(0f, now - last);
 				last = now;
 				if (exitAt < 0f && now >= 4.4f) { exitAt = now; draw.BeginExit(now); }
-				if (!switched && now >= SwitchAt) { switched = true; sw.Set(true); Sfx.Play("gx_card_stack", 0.2f); }
+				if (!switched && now >= SwitchAt) { switched = true; sw.Set(true); }
 				int want = now >= 1.7f && now < 2.45f ? 1 : now >= 3.35f && now < 4.1f ? 8 : -1;
-				if (want != hovered) { hovered = want; if (want >= 0) { draw.Kick(); Sfx.Play("cursor", 0.35f); } }
+				if (want != hovered) { hovered = want; if (want >= 0) { draw.Kick(); } }
 				draw.Update(now, dt);
 				float ex = exitAt < 0f ? 0f : Mathf.Clamp((now - exitAt) / L.ExitTime, 0f, 1f);
 				float sIn = Mathf.Clamp((now - L.CardsStart) / 0.3f, 0f, 1f);

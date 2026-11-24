@@ -61,7 +61,6 @@ public sealed class PileModeSwitch
 	{
 		order = toOrder;
 		Fx.Animate(knob, 0, 0.32, t => Paint(Ease5.OutExpo(t)));
-		Sfx.Play(Sfx.Cursor, 0.35f);
 	}
 
 	private void Paint(float t)

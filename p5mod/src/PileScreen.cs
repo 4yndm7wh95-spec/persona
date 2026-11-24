@@ -232,7 +232,6 @@ public static class PileScreen
 			if (focused == null || !focusOn || upT0 >= 0f || !focused.Card.IsUpgradable || flip == null) return;
 			upT0 = Now();
 			upSwapped = false;
-			Sfx.Play(Sfx.MenuWhoosh, 0.3f);
 		}
 		void EnsureFocus()
 		{
@@ -357,7 +356,6 @@ public static class PileScreen
 			if (deck) P5Settings.SetDeckOrder(toOrder); else if (discard) P5Settings.SetDiscardOrder(toOrder); else if (exhaust) P5Settings.SetExhaustOrder(toOrder); else P5Settings.SetDrawOrder(toOrder);
 			Refresh(pile.Cards.ToList(), animateSort: true);
 			modeSwitch.Set(toOrder);
-			Sfx.Take("gx_card_stack", 0.2f);
 		}
 
 		float MaxScroll() => Mathf.Max(0f, contentH - (L.GridBottom - L.GridTop));
@@ -401,7 +399,6 @@ public static class PileScreen
 				if (hovered != it)
 				{
 					hovered = it;
-					Sfx.Play(Sfx.Cursor, 0.35f);
 					draw.Kick();
 				}
 			}
@@ -451,12 +448,10 @@ public static class PileScreen
 				focusUp = false;
 				ShowFace(it, focusUp);
 				upBtn.Show(it.Card.IsUpgradable, it.Card.IsUpgraded, focusUp, it.Card.CurrentUpgradeLevel + 1, it.Card.MaxUpgradeLevel > 1);
-				Sfx.Play(Sfx.Select, 0.5f);
 			}
 			else if (focusOn)
 			{
 				focusOn = false;
-				Sfx.Play(Sfx.MenuWhoosh, 0.25f);
 			}
 		}
 		catcher.GuiInput += ev => ModEntry.Safe("pile focus input", () =>
@@ -526,7 +521,6 @@ public static class PileScreen
 			if (best != null)
 			{
 				sel = best;
-				Sfx.Play(Sfx.Cursor, 0.35f);
 				draw.Kick();
 			}
 		}
@@ -702,8 +696,10 @@ public static class PileScreen
 					s.Head.Position = p + new Vector2(-6f * k + 120f * k * Ease5Ext.InCubic(d), 0f);
 					s.Head.Modulate = new Color(1f, 1f, 1f, 1f - d);
 				}
-				float headIn = Ease5.OutExpo(Mathf.Clamp((now - 0.24f) / 0.3f, 0f, 1f));
-				head.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((now - 0.24f) / 0.2f, 0f, 1f) * (1f - 0.85f * fe) * (1f - ex));
+				// 排序切换跟着牌一起出来（入场的 3D 段放完以后；之前固定 0.24s，弃牌堆 / 牌组的入场还没放完就冒出来，用户 2026-11-24）
+				float headAt = L.CardsStart;
+				float headIn = Ease5.OutExpo(Mathf.Clamp((now - headAt) / 0.3f, 0f, 1f));
+				head.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((now - headAt) / 0.2f, 0f, 1f) * (1f - 0.85f * fe) * (1f - ex));
 				head.Position = new Vector2(-120f * k * (1f - headIn) - 260f * k * Ease5Ext.InCubic(ex), 0f);
 				Nav(now);
 				if (focused != null) hovered = null;
@@ -770,7 +766,6 @@ public static class PileScreen
 							upSwapped = true;
 							focusUp = !focusUp;
 							ShowFace(it, focusUp);
-							Sfx.Play(Sfx.Select, 0.35f);
 						}
 						bool upFlipping = upT0 >= 0f;
 						float halfW = FocusW * k * 0.5f, halfH = halfW * cs.Y / cs.X;
@@ -877,8 +872,6 @@ public static class PileScreen
 			flip = null;
 		};
 		// 建界面这一帧要几十毫秒：延到下一帧再播，声音不抢在画面前面
-		Sfx.Play("camp_open", 0.5f, 0.001f);
-		if (!discard && !deck) PileDraw.ScheduleSlamSounds();   // camp_open 的「啪」、重击、拳击声都落在手掌砸中那一刻（PileDraw.SlamAt）
 	}
 
 

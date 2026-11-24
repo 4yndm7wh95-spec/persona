@@ -249,7 +249,6 @@ public sealed class PileDeck : IPileDecor
 	{
 		if (_exitT0 >= 0f) return;
 		_exitT0 = now;
-		Sfx.Play("camp_cancel", 0.55f);
 	}
 
 	public void Update(float now, float dt)
