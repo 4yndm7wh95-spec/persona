@@ -8,15 +8,34 @@ namespace P5Joker;
 [HarmonyPatch(typeof(NCreature), nameof(NCreature._Ready))]
 public static class JokerBattleScalePatch
 {
+	private static bool _reportedMissingBody, _reportedUnknownSkeleton;
+
 	public static void Postfix(NCreature __instance)
 	{
 		if (__instance.Entity?.Player?.Character is not Silent) return;
 		// SkinChanger can replay Ready while still applying the saved visual transforms.
 		Callable.From(() => Stage.Safe("Joker combat body scale", () =>
 		{
-			if (!Fx.Active(__instance) || !JokerCostume.Selected
-				|| __instance.Visuals?.GetCurrentBody() is not Node2D body || !Fx.Active(body)
-				|| JokerCostume.OwnsBody(body) != true) return;
+			if (!Fx.Active(__instance) || !JokerCostume.Selected) return;
+			if (__instance.Visuals?.GetCurrentBody() is not Node2D body || !Fx.Active(body))
+			{
+				if (!_reportedMissingBody)
+				{
+					_reportedMissingBody = true;
+					GD.PushWarning("[P5Joker] Selected in combat, but no active Silent body was found after Ready.");
+				}
+				return;
+			}
+			bool? ownsBody = JokerCostume.OwnsBody(body);
+			if (ownsBody != true)
+			{
+				if (!_reportedUnknownSkeleton)
+				{
+					_reportedUnknownSkeleton = true;
+					GD.PushWarning($"[P5Joker] Selected in combat, but could not confirm Joker's Spine animation (body={body.GetClass()}; signature={(ownsBody == false ? "absent" : "unavailable")}).");
+				}
+				return;
+			}
 			if (RestoreTinyBody(__instance, body))
 				GD.Print("[P5Joker] restored undersized combat body to the base Silent scale");
 		})).CallDeferred();

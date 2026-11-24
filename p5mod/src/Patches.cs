@@ -823,6 +823,31 @@ public static class JokerIconScenePatch
 	});
 }
 
+// The history icon fills its parent. The Joker texture must not grow the slot.
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Screens.RunHistoryScreen.NRunHistoryPlayerIcon), "LoadRun")]
+public static class JokerHistoryIconPatch
+{
+	private sealed record IconLayout(Godot.TextureRect.ExpandModeEnum Expand, Godot.TextureRect.StretchModeEnum Stretch);
+	private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Godot.TextureRect, IconLayout> Layouts = new();
+
+	public static void Prefix(MegaCrit.Sts2.Core.Runs.RunHistoryPlayer __0, Godot.TextureRect ____icon) =>
+		ModEntry.Safe("Joker history icon", () =>
+	{
+		if (__0.Character.Entry == "SILENT" && JokerCostume.Selected && Fx.Tex("icon_top") != null)
+		{
+			Layouts.GetValue(____icon, icon => new IconLayout(icon.ExpandMode, icon.StretchMode));
+			____icon.ExpandMode = Godot.TextureRect.ExpandModeEnum.IgnoreSize;
+			____icon.StretchMode = Godot.TextureRect.StretchModeEnum.KeepAspectCentered;
+		}
+		else if (Layouts.TryGetValue(____icon, out IconLayout? layout))
+		{
+			____icon.ExpandMode = layout.Expand;
+			____icon.StretchMode = layout.Stretch;
+			Layouts.Remove(____icon);
+		}
+	});
+}
+
 /// <summary>
 /// 战斗开始：原版「战斗开始」横幅只藏画面（节点照常跑 —— 它播完负责生成第 1 回合的横幅），换成剪报纸带 + TAKE YOUR HEART!（Vfx/BattleUiFx.cs）。
 /// </summary>

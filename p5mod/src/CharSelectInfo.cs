@@ -31,7 +31,7 @@ public static class CharSelectInfo
 
 	// Hide the stock panel as soon as Joker is selected. Reveal our panel after
 	// the backdrop is ready, or restore the stock panel if the backdrop fails.
-	internal static Action<bool?>? Prepare(Control screen)
+	internal static Action<bool?>? Prepare(Control screen, bool waitForTransition = true)
 	{
 		Control? panel = Traverse.Create(screen).Field("_infoPanel").GetValue<Control>();
 		if (panel == null || !GodotObject.IsInstanceValid(panel))
@@ -95,7 +95,7 @@ public static class CharSelectInfo
 				if (!StillOwnsPanel()) return;
 				try
 				{
-					if (NGame.Instance?.Transition.InTransition == true)
+				if (waitForTransition && NGame.Instance?.Transition.InTransition == true)
 					{
 						Restore(panel, saved);
 						return;

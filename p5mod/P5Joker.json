@@ -3,7 +3,7 @@
   "name": "P5 Joker（静默猎手换皮）",
   "author": "brooks",
   "description": "将《杀戮尖塔 2》的静默猎手替换为《女神异闻录 5》的 Joker，包含专属动画、战斗特效、音效和界面。",
-  "version": "0.9.72",
+  "version": "0.9.74",
   "has_pck": true,
   "has_dll": true,
   "affects_gameplay": false
