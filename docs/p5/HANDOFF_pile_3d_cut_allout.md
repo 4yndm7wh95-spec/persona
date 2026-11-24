@@ -1,0 +1,65 @@
+# 交接：牌堆入场 3D→2D 切换的视角问题 + 总攻击多条命 bug（2026-11-24）
+
+接手说明：本会话只写交接、没改这两件事的代码。分支 `claude/p5-pile-ui`（PR #1，合并由别的会话负责），总攻击相关在 `claude/p5-restore-fx`。
+规矩照旧：回复用中文；不 rebase / 不 force push，推之前 fetch + merge；预览 854 宽、60fps、无声，放 `docs/p5/preview/`，旧版本删掉；发之前逐帧对比、100% 看。
+
+---
+
+## 一、牌堆入场：3D 最后一帧和 2D 立绘「视角不同」（用户反馈，三页都有）
+
+用户原话要点：动作是同一个动作，但我们套的**镜头角度不对**，所以最后一帧 3D 和定格立绘对不上，切的时候跳。
+看人物**视线朝向**就能看出来：3D 里他在往下看，立绘里他大概在看玩家。
+
+### 1. 牌组（EQUIP，`p5mod/src/Vfx/PileDeck.cs`）——最明显
+- 现状：关键帧 `MenuJoker3DKeys.Deck` = 原版 233–239 逐帧拟合 + 我加的收尾「240」（`tools/p5/menu3d/fit/equip_example/final.json` 的 `"240"`，
+  `fit240.py` 拟合：main_0005 第 8.35 帧，机位只对齐了立绘的右耳 / 右眼两个点 + 头身剪影）。切换时 PortraitAt−0.02 起一道红边斜线 0.12s 扫成 2D，
+  立绘手臂（L2 右边）按行压扁后弹开（`ArmShader`、`ArmFrom/ArmTime`）。
+- 问题（用户图）：3D 最后一帧枪口、视线都**朝下**；立绘里视线和枪都**朝右（看向画面右边 / 玩家）**。两点对齐只保证了耳眼位置，**朝向没约束**，
+  解出来的机位从上往下俯视，所以同一个姿势看起来在低头、枪往下指。
+- 建议做法：
+  - 在立绘上多量几个点（鼻尖、嘴、下巴、枪口、枪柄、握枪的手、肩），`fitlib.fit` 用这些点解机位，特别是枪口 / 枪柄（决定枪的朝向）；
+    动作帧也一起搜（8.2–8.5，枪从头顶甩下来那段）。目标是投影后**枪的方向和立绘一致（略朝右下 ~16°）**、脸朝镜头。
+  - 239→240 机位变化可能会比较大（镜头要降低、绕到更正面），检查 Catmull-Rom 插值中间有没有怪的甩动；必要时 238/239 也微调让过渡顺。
+  - 机位对上以后，再看斜线扫 + 手臂弹开还要不要（如果 3D 已经很接近，可以缩短 / 去掉）。
+  - 改完跑 `python3 tools/p5/menu3d/runtime_keys.py` 重新生成 `MenuJoker3DKeys.cs`。
+
+### 2. 弃牌堆（ITEM，`PileDiscard.cs`）——同样的问题，没那么明显
+- 现状：关键帧 `MenuJoker3DKeys.Discard` = 原版 177–185（`tools/p5/menu3d/item_entrance.py` 的 `FRAMES`，main_0010），
+  3D 在 `MotionEnd`=0.29s 收进最后姿势（power 2.2），`CutAt`=0.40s 硬切立绘 CAMPITEM_2D01。
+- 问题（用户图）：最后一帧 3D 他在**往下看**，立绘里大概**看着玩家**。185 的机位是对原版截图脸部特征点拟合的，原版 185→186 本身也有视角差。
+- 建议：加一个收尾关键帧「186」（同牌组做法）：动作取 main_0010 最后的姿势（8.22 之后基本不动，见 9–18 帧），机位对**立绘**（CAMPITEM_2D01，0.5 倍、左上 (0,0)；
+  我们的排版是 1500/3072 缩放、左移 80，`MapK`）上量的眼 / 鼻 / 嘴 / 下巴 / 耳拟合，让脸朝向和立绘一致；185→186 用剩下的时间（0.29s 前）过去。
+  注意举起的那只手被左边面板盖住，可以不管。
+
+### 3. 抽牌堆（主菜单，`PileDraw.cs`）——有点跳
+- 用户：在这一帧（3D 背影、头转过来之前）就切到了立绘（大手掌），**少了一段手挥过来的动作**，稍微跳。
+- 现状：3D 关键帧 `MenuJoker3DKeys.Draw`（原版主菜单 46–52，`fit/draw_example/final.json`），`HandAt = SlamAt − 0.06`（0.428s）切成手掌 + 立绘砸下来，`SlamAt`=0.488。
+- 建议：看原版主菜单 52 之后到立绘之间（手挥过来遮住脸那几帧），把 3D 多放一段手挥过来的动作再切（可能要多拟合几帧，或把 HandAt 往后挪、3D 播到手挥过来），
+  让手掌出现时 3D 的手也在差不多位置。别让整体变拖沓（用户同时要求切入别拖沓，四页现在都在 0.40–0.49s 切）。
+
+### 工具
+- 拟合：`tools/p5/menu3d/fit/`（`fitlib.py`：特征点解机位；`rast.py`：Python 剪影光栅化，牌组要 `P5FIT_KEEP=gun_main,gun_outline`；
+  `common.orig(i)`：原版逐帧截图；各页 `*_example/` 有现成脚本，`equip_example/fit240.py` 是本轮的收尾帧拟合，可直接扩展）。
+- 原版立绘：`research/p5r/art/portrait/BASE__P5_CAMPEQUIP_2D01__*.png`、`BASE__P5_CAMPITEM_2D01__*.png`（原版里 ≈0.5 倍贴左上角）。
+- 研究渲染（对照用）：`tools/p5/menu3d/item_entrance.py` 里的 `cam()` / `godot()`。
+- 预览：`tools/p5/fxpreview/render.sh pile_deck 3`（`FPS=60`，`GODOT=/root/godot/Godot_v4.5.1-stable_mono_linux_x86_64/Godot_v4.5.1-stable_mono_linux.x86_64`），
+  `FPS=60 W=854 python3 mix.py pile_deck` 出 mp4。入场从第 ~29 帧开始，切换在 ~53–56 帧。
+- 运行时插值：`MenuJoker3D.Show(keys, u)` 机位 Catmull-Rom、动作线性；动作数据每片段 11 帧（0–10）。
+
+---
+
+## 二、总攻击：打多条命的怪，第一条命就弹总攻击（回归 bug）
+
+- 现象：比如「实验体」有三条命，打掉第一条命就播总攻击动画（应该只在**整场战斗真正胜利**时播）。之前修好过，后来被改回去了。
+- 原因（很可能）：`claude/p5-restore-fx` 的 769948ee（0.9.75「恢复 0.9.58 的特效时机」）把总攻击改成「最后一只敌人倒下就立刻开播 + 慢放」：
+  `p5mod/src/AllOutPatches.cs` 的 `AllOutGame.OnDeath`（`StartDeathAnim` 的 Prefix）里
+  `bool last = e.CombatState?.Enemies.All(x => !x.IsAlive) == true;` → `if (last) batch.Playback ??= Play(room, batch);`。
+  多条命的怪每条命「死」的时候也走 StartDeathAnim，那一刻所有敌人都 `!IsAlive`，于是误判成最后一击。
+  0.9.72 之前是等游戏确认胜利（`AfterCombatEnd` → `OnCombatEnd`）才播，所以没这个问题；恢复 0.9.58 时机时把这个保护丢了。
+- 修法方向（保留「最后一击就开始慢放」的手感，同时不误触发）：
+  - 判断「真的最后一击」时排除还会复活 / 进下一阶段的敌人：查这只怪身上的复活类 power / 阶段机制（实验体是哪个 power，看游戏源码 `research/src_full` 里该怪的 Monster 类和
+    `Creature` 复活相关字段），或者看战斗是否还有后续（例如 `CombatState` 有没有「即将结束 / 胜利」标记、怪物是否有下一形态）；
+  - 拿不准的情况退回到 `OnCombatEnd` 再播（现在战斗结束时没开播会在那里补播）。
+  - 慢放（`AllOut` 的 TimeScale 0.12）也要一起别误触发，`OnDeath` 开头的 `AllOut.RestoreTime()` 逻辑别动坏。
+- 验证：实验体（三条命）打第一、二条命不播，第三条播；普通精英 / Boss 最后一击照常慢放 + 总攻击；多敌人房间最后一只才播。
+- 用户要求：**先别直接改**的是本会话；接手会话负责修。
