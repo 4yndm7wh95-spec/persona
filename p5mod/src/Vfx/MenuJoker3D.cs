@@ -124,6 +124,10 @@ public sealed class MenuJoker3D
 	private readonly Vector2 _o;
 	/// <summary>显示用的精灵（加到页面的节点树里，Z 序由页面决定）。</summary>
 	public readonly Sprite2D Sprite;
+	/// <summary>false = 不用精灵显示，由别的着色器直接采样 Texture（PileField：黑区里反色）。</summary>
+	public bool UseSprite = true;
+	/// <summary>渲染结果（屏幕大小、屏幕坐标对齐）。</summary>
+	public Texture2D Texture => _vp.GetTexture();
 
 	/// <summary>
 	/// view：屏幕大小；k = view.Y / 1080；scale / offset：原版 1920×1080 坐标 → 我们排版的 1080p 坐标（p · scale + offset），再 × k 到屏幕。
@@ -268,7 +272,7 @@ public sealed class MenuJoker3D
 		Upload();
 		SetCamera(cam);
 		_vp.RenderTargetUpdateMode = SubViewport.UpdateMode.Always;
-		Sprite.Visible = true;
+		Sprite.Visible = UseSprite;
 	}
 
 	/// <summary>原版第 u 帧（小数）的姿势和机位：机位 Catmull-Rom 样条、动作线性插值（关键帧必须按 U 排好、相邻帧同片段）。</summary>

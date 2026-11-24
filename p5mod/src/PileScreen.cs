@@ -1079,7 +1079,7 @@ public static class PileScreen
 	{
 		internal Node2D Root = null!;
 		internal Control Hit = null!;
-		private Polygon2D _sel = null!;
+		private AaPoly _sel = null!;
 		private Node2D _text = null!;
 		private float _k;
 		private bool _mouse, _enabled, _up, _multi;

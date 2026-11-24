@@ -14,7 +14,7 @@ public sealed class PileReveal
 	private const float Slope = 0.36f;                    // 线的斜率：x 每往下一行往左挪多少（上端偏右）
 	private readonly Vector2 _view;
 	private readonly float _k;
-	private readonly Polygon2D _red, _black;
+	private readonly AaPoly _red, _black;
 	private float _c = -1e6f;                             // 线：x = _c − Slope·y（屏幕像素）；右边露出
 	public bool Done { get; private set; }
 
@@ -37,8 +37,8 @@ void fragment() {
 	{
 		_view = view;
 		_k = view.Y / 1080f;
-		_red = new Polygon2D { Color = new Color(0.86f, 0.06f, 0.1f), Antialiased = true };
-		_black = new Polygon2D { Color = new Color(0.02f, 0.02f, 0.02f), Antialiased = true };
+		_red = new AaPoly { Color = new Color(0.86f, 0.06f, 0.1f) };
+		_black = new AaPoly { Color = new Color(0.02f, 0.02f, 0.02f) };
 		parent.AddChild(_red);
 		parent.AddChild(_black);
 	}

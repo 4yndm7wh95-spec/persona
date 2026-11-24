@@ -358,11 +358,11 @@ public sealed class PileDraw : IPileDecor
 	}
 
 	// ── 星纹着色器 ──
-	/// <summary>牌堆界面的多边形一律抗锯齿（用户 2026-11-24：UI 边缘锯齿感；斜放的标题牌、色块边缘都是斜线）。</summary>
-	internal static Polygon2D Poly(Node parent, Vector2[] points, Color color)
+	/// <summary>牌堆界面的多边形一律抗锯齿（用户 2026-11-24：UI 边缘锯齿感；斜放的标题牌、色块边缘都是斜线）：AaPoly（Polygon2D 的 Antialiased 在 4.5 不起作用）。</summary>
+	internal static AaPoly Poly(Node parent, Vector2[] points, Color color)
 	{
-		Polygon2D p = Fx.Poly(parent, points, color);
-		p.Antialiased = true;
+		AaPoly p = new() { Polygon = points, Color = color };
+		parent.AddChild(p);
 		return p;
 	}
 

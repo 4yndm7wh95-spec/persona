@@ -594,7 +594,8 @@ skeleton_file_res = ExtResource("2_skel")
 default_mix = 0.1
 """)
     for name, im in fx_textures():
-        write_texture(STAGE, f"p5joker/fx/{name}.png", im)
+        # 牌堆界面的图（按 1440p 预缩，1080p 下缩到 0.75 显示）和菜单 3D 的贴图带 mipmap：缩小显示不起锯齿（用户 2026-11-24）
+        write_texture(STAGE, f"p5joker/fx/{name}.png", im, mipmaps=name.startswith(("pile_", "m3d_")))
     # 总攻击收尾的原版数据（网格 / 材质 / 240 帧矩阵），AllOutFinale 直接读字节
     from allout_native.export_runtime import main as export_allout
     export_allout(STAGE / "p5joker/allout/hero.bin")

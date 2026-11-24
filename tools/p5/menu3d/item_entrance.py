@@ -1,6 +1,7 @@
-"""弃牌堆入场（= P5R 暂停菜单 ITEM 页）的 3D Joker 逐帧渲染 + 每帧的区域形状：原版序号 177–185 九帧，第 186 帧起是 2D 立绘。
-输出：research/p5r/menu3d_item/f00.png … f08.png（裁到不透明区域）+ frames.json（每帧在原版屏幕坐标里的左上角）；
-      p5mod/src/Vfx/PileDiscardEntrance.cs（生成的：每帧左上角、黑区 / 红底多边形，原版 1920×1080 坐标）。
+"""弃牌堆入场（= P5R 暂停菜单 ITEM 页）的 3D Joker 逐帧渲染（对照用）：原版序号 177–185 九帧，第 186 帧起是 2D 立绘。
+输出：research/p5r/menu3d_item/f00.png … f08.png（裁到不透明区域）+ frames.json（每帧在原版屏幕坐标里的左上角）。
+游戏里 3D 是实时渲染的（MenuJoker3D，关键帧 MenuJoker3DKeys.Discard）；色块是 PileDiscard.cs 自己设计的（PileField），
+不再用从原版截图抠出来的区域（用户 2026-11-24：抠出来的形状不规则、乱）。
 
 结论（2026-11-23，牌堆会话重做；之前会话 E 的版本只拟合了最后一帧、前面按比例推近，姿势和原版对不上）：
 - 动作 = main_0010（转身、手扫过脸、手举到头边），对；机位要逐帧解：tools/p5/menu3d/fit/item_example/
@@ -9,7 +10,7 @@
   动作帧不是匀速的（joint.py 的 SCHEDULE：手 181 还伸在右边画外、182 张开在右边、183 已经扫到脸前），按逐帧叠原版挑的。每帧单独再加轮廓细调（refine.py）会让动作帧来回跳、机位乱转，反而不像，没用。
   对照（红线 = 我们的剪影叠在原版上）：脸、扫过的手、举起的手都对得上，183 那一帧手挡在脸前也对。
 - 原版这一段的画面：主菜单的黑白星纹底（Joker 在上面是黑的）+ 黑区（Joker 进去变白，P 系列的撞色）+ 右下慢慢露出来的红底。
-  黑区 / 红底的形状逐帧从原版截图里取（item_example/regions_v4.py：Joker 身上靠渲染和原版的明暗是否一致来判断在哪一区）。
+  （之前黑区 / 红底的形状逐帧从原版截图里取：item_example/regions_v4.py，现在只留作对照。）
 - 最后一帧和 2D 立绘几乎同一个姿势（手举到头边），原版也是这里硬切。
 用法：python3 tools/p5/menu3d/item_entrance.py
 """
@@ -50,58 +51,24 @@ def godot(jobs, size, ss, tmp):
                    cwd=Path(__file__).parent, check=True, capture_output=True)
 
 
-def edge_out(poly, m=14):
-    """贴着原版画面边的点推到边外 40px（C# 那边再把右 / 下边外的点推到屏幕边外：我们的排版把原版缩小了，原版的右 / 下边缘在屏幕里面）"""
-    out = []
-    for x, y in poly:
-        x = -40.0 if x <= m else 1960.0 if x >= 1920 - m else x
-        y = -40.0 if y <= m else 1120.0 if y >= 1080 - m else y
-        out.append([x, y])
-    return out
-
-
-def cs_vec(p): return f'new({p[0]:.1f}f, {p[1]:.1f}f)'
-
-
-def cs_polys(polys):
-    return 'new Vector2[][] { ' + ', '.join('new Vector2[] { ' + ', '.join(cs_vec(q) for q in p) + ' }' for p in polys) + ' }'
-
-
 def main():
-    from regions_v4 import regions
     OUT.mkdir(parents=True, exist_ok=True)
     tmp = OUT / '_tmp'; tmp.mkdir(exist_ok=True)
     idxs = sorted(FRAMES)
     jobs = [{'clip': 'main_0010', 'frame': float(FRAMES[i][0]), 'camera': cam(FRAMES[i][1], EXT), 'mode': 'color', 'hide': HIDE, 'out': str(tmp / f'r{i}.png')} for i in idxs]
     godot(jobs, (1920 + 2 * EXT, 1080 + 2 * EXT), 2, tmp)
-    small = [{'clip': 'main_0010', 'frame': float(FRAMES[i][0]), 'camera': cam(FRAMES[i][1]), 'mode': 'color', 'hide': HIDE, 'out': str(tmp / f's{i}.png')} for i in idxs]
-    godot(small, (960, 540), 1, tmp)
     for old in OUT.glob('f*.png'): old.unlink()
     meta = {'ext': EXT, 'note': '第 k 帧 = 原版序号 177 + k；PNG 在原版 1920×1080 屏幕坐标里的左上角 = (x, y)；原版 2D 立绘 CAMPITEM_2D01 = 缩放 0.5、左上 (0, 0)', 'frames': {}}
-    at, dark, red = [], [], []
     for k, i in enumerate(idxs):
         im = Image.open(tmp / f'r{i}.png').convert('RGBA')
         ys, xs = np.nonzero(np.asarray(im)[..., 3] > 0)
         x0, y0, x1, y1 = xs.min(), ys.min(), xs.max() + 1, ys.max() + 1
         im.crop((x0, y0, x1, y1)).save(OUT / f'f{k:02d}.png', optimize=True)
         meta['frames'][str(k)] = {'orig': i, 'x': int(x0) - EXT, 'y': int(y0) - EXT, 'w': int(x1 - x0), 'h': int(y1 - y0)}
-        at.append((int(x0) - EXT, int(y0) - EXT))
-        reg, _ = regions(i, tmp / f's{i}.png')
-        dark.append([edge_out(p) for p in reg['dark']]); red.append([edge_out(p) for p in reg['red']])
     json.dump(meta, open(OUT / 'frames.json', 'w'), indent=1, ensure_ascii=False)
     for p in tmp.iterdir(): p.unlink()
     tmp.rmdir()
-    cs = ROOT / 'p5mod/src/Vfx/PileDiscardEntrance.cs'
-    cs.write_text('// 生成的文件（tools/p5/menu3d/item_entrance.py），别手改。\n'
-                  'using Godot;\n\nnamespace P5Joker;\n\n'
-                  '/// <summary>弃牌堆入场（原版 ITEM 页序号 177–185）逐帧数据，原版 1920×1080 屏幕坐标：3D 帧图左上角、黑区（Joker 在里面反色变白）和红底的多边形。</summary>\n'
-                  'internal static class PileDiscardEntrance\n{\n'
-                  '\tpublic static readonly Vector2[] FrameAt = { ' + ', '.join(cs_vec(p) for p in at) + ' };\n'
-                  '\tpublic static readonly Vector2[][][] Dark =\n\t{\n' + ''.join('\t\t' + cs_polys(d) + ',\n' for d in dark) + '\t};\n'
-                  '\tpublic static readonly Vector2[][][] Red =\n\t{\n' + ''.join('\t\t' + cs_polys(r) + ',\n' for r in red) + '\t};\n}\n', encoding='utf-8')
     print(json.dumps(meta['frames']))
-    import morph_regions
-    morph_regions.main(cs, 'PileDiscardEntrance', ['Dark', 'Red'], 4)
 
 
 if __name__ == '__main__':

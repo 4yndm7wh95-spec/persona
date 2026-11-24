@@ -64,10 +64,10 @@ public sealed class PileExhaust : IPileDecor
 	private readonly Vector2 _view;
 	private readonly float _k, _rx;
 	private readonly ShaderMaterial _bg, _por, _coverMat, _invertMat;
-	private readonly Polygon2D _slab, _wedge, _plate, _cover, _invert;
+	private readonly AaPoly _slab, _wedge, _plate, _cover, _invert;
 	private readonly Vector2[] _slabPts, _platePts;
 	private readonly Node2D _band, _portrait;
-	private readonly Polygon2D _bandEdge;
+	private readonly AaPoly _bandEdge;
 	private readonly Vector2[] _bandPts;
 	/// <summary>原版 112–122 的 3D Joker：游戏里实时渲染（MenuJoker3D，关键帧 MenuJoker3DKeys.Exhaust）。</summary>
 	private readonly MenuJoker3D? _m3d;
@@ -99,25 +99,25 @@ public sealed class PileExhaust : IPileDecor
 		_slabPts = new[] { R(560f, 0f), R(1650f, 0f), R(1920f, 300f), R(1920f, 760f), R(1350f, 1080f), R(560f, 1080f) };
 		// 入场白板的外轮廓 = 黑块往左延伸到 x=300（左边由白板边 / 直线 L 裁）：原版反色区一直贴着 L 到屏幕底，立绘白腿也越过 x=560
 		_platePts = new[] { R(300f, 0f), R(1650f, 0f), R(1920f, 300f), R(1920f, 760f), R(1350f, 1080f), R(300f, 1080f) };
-		_slab = new Polygon2D { Polygon = _slabPts, Color = new Color(0.03f, 0.03f, 0.03f), Antialiased = true, Visible = false };
+		_slab = new AaPoly { Polygon = _slabPts, Color = new Color(0.03f, 0.03f, 0.03f), Visible = false };
 		root.AddChild(_slab);
-		_wedge = new Polygon2D { Polygon = new[] { R(560f, 1080f), R(560f, 620f), R(1350f, 1080f) }, Color = Gray, Antialiased = true, Visible = false };
+		_wedge = new AaPoly { Polygon = new[] { R(560f, 1080f), R(560f, 620f), R(1350f, 1080f) }, Color = Gray, Visible = false };
 		root.AddChild(_wedge);
 
 		// 3. 立绘 / 3D Joker 后面的黑白星纹斜带：裁在一个斜四边形里（clip_children）；入场时就在 Joker 身后（原版 112–117 头后面的星纹）
 		_bandPts = new[] { R(600f, 0f), R(900f, 0f), R(700f, 520f), R(560f, 520f) };
-		Polygon2D bandMask = new() { Polygon = _bandPts, Color = Colors.White, ClipChildren = CanvasItem.ClipChildrenMode.Only, Visible = false };
+		AaPoly bandMask = new() { Polygon = _bandPts, Color = Colors.White, ClipChildren = CanvasItem.ClipChildrenMode.Only, Visible = false };
 		root.AddChild(bandMask);
 		ShaderMaterial bandMat = PileDraw.StarMaterial(118f, new Color(0.91f, 0.91f, 0.91f), new Color(0.03f, 0.03f, 0.03f), new Color(0.376f, 0.376f, 0.376f), Vector2.Zero);
 		bandMat.SetShaderParameter("size", view);
 		bandMask.AddChild(new ColorRect { Size = view, Material = bandMat, MouseFilter = Control.MouseFilterEnum.Ignore });
 		_band = bandMask;
 		// 切入的前沿：一道黑边跟着划开的下沿走（同红底铺开的前沿）
-		_bandEdge = new Polygon2D { Color = new Color(0.02f, 0.02f, 0.02f), Antialiased = true, Visible = false };
+		_bandEdge = new AaPoly { Color = new Color(0.02f, 0.02f, 0.02f), Visible = false };
 		root.AddChild(_bandEdge);
 
 		// 4. 入场白板（Joker 下面）→ 3D Joker → 白板遮罩（Joker 上面，挖掉黑色区域：白板里的 Joker 是白的，白底上看不见）
-		_plate = new Polygon2D { Color = Paper, Antialiased = true, Visible = false };
+		_plate = new AaPoly { Color = Paper, Visible = false };
 		root.AddChild(_plate);
 		if (MenuJoker3D.Available)
 		{
@@ -127,7 +127,7 @@ public sealed class PileExhaust : IPileDecor
 			_m3d.Sprite.Material = _reveal.Track();
 		}
 		_coverMat = new ShaderMaterial { Shader = CoverShader };
-		_cover = new Polygon2D { Color = Paper, Antialiased = true, Visible = false, Material = _coverMat };
+		_cover = new AaPoly { Color = Paper, Visible = false, Material = _coverMat };
 		root.AddChild(_cover);
 
 		// 5. Joker（原版 CAMPSKILL_2D01），砸中时出现
@@ -143,7 +143,7 @@ public sealed class PileExhaust : IPileDecor
 		root.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });
 		_invertMat = new ShaderMaterial { Shader = InvertShader };
 		_invertMat.SetShaderParameter("sum", Paper.R + Ink.R);
-		_invert = new Polygon2D { Color = Colors.White, Antialiased = true, Visible = false, Material = _invertMat };
+		_invert = new AaPoly { Color = Colors.White, Visible = false, Material = _invertMat };
 		root.AddChild(_invert);
 
 		// 7. 标题牌 MeNu&EXHAUST + COMMAND SELECT（原版字图 + P5 字图）
@@ -181,7 +181,7 @@ public sealed class PileExhaust : IPileDecor
 	{
 		const float t0 = 0.05f, len = 0.2f;
 		float p = Mathf.Clamp((t - t0) / len, 0f, 1f);
-		var mask = (Polygon2D)_band;
+		var mask = (AaPoly)_band;
 		mask.Visible = t >= t0;
 		_bandEdge.Visible = t >= t0 && p < 1f;
 		if (p >= 1f) { mask.Polygon = _bandPts; return; }
@@ -200,7 +200,7 @@ public sealed class PileExhaust : IPileDecor
 
 	private static Shader? _inv, _cov;
 	/// <summary>黑色反色区：圆内读屏幕、两种色调互换（sum = 纸色 + 墨色：白板 → 墨黑，黑 Joker → 纸白），圆外丢弃；圆边 2px 抗锯齿。</summary>
-	private static Shader InvertShader => _inv ??= new Shader { Code = @"
+	internal static Shader InvertShader => _inv ??= new Shader { Code = @"
 shader_type canvas_item;
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
 uniform vec2 c = vec2(0.0);

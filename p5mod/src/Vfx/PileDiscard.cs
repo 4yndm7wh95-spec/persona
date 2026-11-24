@@ -10,9 +10,11 @@ namespace P5Joker;
 /// 黑块 + 黑白星纹条、撞色立绘（原版 CAMPITEM_2D01，斜线右边黑 → 浅灰）、标题牌、COMMAND、左边列表每行的头像底 / 图标、两个标签牌。
 /// 运行时做：红星纹底、左边面板（斜边 + 白边 + 内侧红条）、每行的张数 / 已升级数（原版数字字图）和文字、
 /// 右下浅灰斜带和它下面的红底（盖在牌上面，牌从下面钻过去）、入场 / 退场。
-/// 入场照原版 ITEM 页序号 177–185 逐帧还原（tools/p5/menu3d/item_entrance.py：逐帧拟合的机位 + 从原版截图取的区域形状，PileDiscardEntrance.cs）：
-/// 主菜单的黑白星纹底上，原版 3D Joker 转身、手扫过脸、手举到头边，镜头一路推近；黑区（P 系列撞色：Joker 进去变白）和右下的红底逐帧变形状；
-/// 然后硬切成 2D 立绘 + 最终排版（同原版第 186 帧），左边面板滑进、六行弹出、标题牌 / COMMAND 压上、斜带切进来、牌飞入。
+/// 入场（用户 2026-11-24：原版截图抠出来的区域不规则、乱 → 自己设计干净的色块碰撞，PileField 一个着色器画完）：
+/// 黑白星纹从右边扫进来（前沿红边）→ 一把扇形从撞色斜线的底端转上来（黑块里是黑、外面是红，黑的前沿一道红条），
+/// 同时左边的红底从左边撞到斜线上，星纹被两边挤成头顶那条星纹条 → 右下浅灰斜带从下面撞进黑块；
+/// 原版 3D Joker（177–185 逐帧拟合的动作，MenuJoker3DKeys.Discard）从头到尾连续播，在黑块里反色成浅灰（同立绘），别处是黑的；
+/// CutAt 切成 2D 立绘 + 最终排版（色块位置不变），立绘压一下、左边面板滑进、六行弹出、标题牌 / COMMAND 压上、牌飞入。
 /// </summary>
 public sealed class PileDiscard : IPileDecor
 {
@@ -48,28 +50,29 @@ public sealed class PileDiscard : IPileDecor
 		("curse", new(3f, 896f), 65.35f, 1178.57f, -2f),
 	};
 
-	// ── 入场（原版序号 177–185，九帧）：帧图 / 区域都是原版屏幕坐标；原版立绘 = 缩放 0.5、左上 (0, 0)，我们的立绘 = 缩放 1500/3072、左上 (-80, 0)
-	//    → 同一个变换 Map 把原版坐标换到我们的排版（3D → 2D 立绘的相对位置和原版一样）──
+	// ── 入场：色块碰撞（PileField）+ 原版 177–185 的 3D Joker ──
+	/// <summary>原版立绘 = 缩放 0.5、左上 (0, 0)，我们的立绘 = 缩放 1500/3072、左上 (-80, 0)：3D 的取景按同一个变换放进来（3D → 2D 立绘的相对位置和原版一样）。</summary>
 	private const float MapK = 1500f / 3072f / 0.5f;
-	private static Vector2 Map(Vector2 p) => p * MapK + new Vector2(-80f, 0f);
-	/// <summary>原版一帧（录像 27.5fps）；第 k 帧在 FrameStart + k·FrameDt 显示，九帧放完硬切 2D 立绘。</summary>
-	private const float FrameDt = 0.036f;
+	/// <summary>3D 关键帧数（原版 177–185）；CutAt 切成 2D 立绘（= 原版第 186 帧）。</summary>
 	private const int FrameCount = 9;
-	/// <summary>九帧放完正好是 PileDraw.SlamAt（camp_open 自带的那一声「啪」，用户 2026-11-24：音效没对齐）。</summary>
-	private const float FrameStart = PileDraw.SlamAt - FrameCount * FrameDt;
-	/// <summary>切成 2D 立绘的时刻（= 原版第 186 帧）。</summary>
-	private const float CutAt = FrameStart + FrameCount * FrameDt;
+	private const float CutAt = 0.52f;
+	// 最终排版的块面（mock_discard.py / export_discard.py 的黑块、星纹条、斜带，1080p；伸出屏幕的边延长到画面外）：
+	// 撞色斜线 x = Lx(y) 是黑块的左边，也是星纹条的右边；黑块外面全是红底
+	private static float Lx(float y) => 1002.66f - 0.419f * y;
+	private static readonly Vector2[] Slab = { new(956.8f, 109.4f), new(1553.1f, -60f), new(1565.0f, -60f), new(1804.8f, 883.8f), new(1223.7f, 1049.8f), new(1133.6f, 1140f), new(524.9f, 1140f) };
+	private static readonly Vector2[] Strip = { new(683.2f, -60f), new(1027.8f, -60f), new(818.3f, 440f), new(740f, 440f) };
+	private static readonly Vector2[] Band = { new(1765.7f, 766.6f), new(1804.8f, 883.8f), new(1223.7f, 1049.8f) };
+	/// <summary>斜带长边（黑块底边）的法线，朝右下：斜带顺着它从下面撞进来。</summary>
+	private static readonly Vector2 BandN = new Vector2(166.1f, 581.1f).Normalized();
+	/// <summary>扇形的轴心（斜线底端，屏幕下面）和转到的角度（= 斜线的方向）。</summary>
+	private static readonly Vector2 FanPivot = new(Lx(1140f), 1140f);
+	private static readonly float FanEnd = Mathf.Atan2(-1200f, Lx(-60f) - Lx(1140f));
+	private static readonly Color StripeRed = new(0.86f, 0.06f, 0.1f);
 	private static readonly string[] Hide3d = { "smartphone", "card", "school_bag", "gun_outline", "gun_main", "ef line_obj_01", "ef line_obj_02", "ef line_obj_03", "ef line_obj_04", "ef line_obj_05", "ef line_obj_06", "ef line_obj_07", "ef line_obj_08" };
 	private readonly Node2D _entrance;
-	/// <summary>原版 177–185 的 3D Joker：游戏里实时渲染（MenuJoker3D，关键帧 MenuJoker3DKeys.Discard）。</summary>
+	private readonly PileField _field;
+	/// <summary>原版 177–185 的 3D Joker：游戏里实时渲染（MenuJoker3D，关键帧 MenuJoker3DKeys.Discard），PileField 直接采样它（黑块里反色）。</summary>
 	private readonly MenuJoker3D? _m3d;
-	private readonly Polygon2D _base;
-	private readonly PileReveal _reveal;
-	private readonly ShaderMaterial? _revealMat;
-	private Vector2[][] _curDark = System.Array.Empty<Vector2[]>(), _curRed = System.Array.Empty<Vector2[]>();
-	private readonly ShaderMaterial _invertMat;
-	private readonly List<Polygon2D> _darkPaper = new(), _darkInvert = new(), _redMasks = new();
-	private int _shownFrame = -1;
 
 	private readonly Control _root;
 	private readonly Vector2 _view;
@@ -102,48 +105,17 @@ public sealed class PileDiscard : IPileDecor
 		// 2. 黑块 + 星纹条、3. 撞色立绘
 		_slab = Layer(root, "slab", R(548f, 0f));
 		_portrait = Layer(root, "portrait", Vector2.Zero);
-		// 2b. 入场（原版 177–185）：主菜单的黑白星纹底 → 黑区先画成白纸 → 3D Joker → 读屏把黑区反色（白纸 → 黑、黑 Joker → 白，同消耗堆的撞色）→ 红底
+		// 2b. 入场：色块合成 + 3D Joker（PileField；底是黑白星纹，盖子从右边扫进来）
 		_entrance = new Node2D { Name = "PileDiscardEntrance" };
 		root.AddChild(_entrance);
-		ShaderMaterial plateMat = PileDraw.StarMaterial(118f, new Color(0.91f, 0.91f, 0.91f), new Color(0.03f, 0.03f, 0.03f), new Color(0.376f, 0.376f, 0.376f), Vector2.Zero);
-		plateMat.SetShaderParameter("size", view);
-		// 揭幕（PileReveal）：整屏星纹底裁在一个跟着斜线走的多边形里
-		_base = new Polygon2D { Color = Colors.White, ClipChildren = CanvasItem.ClipChildrenMode.Only };
-		_base.AddChild(new ColorRect { Size = view, Material = plateMat, MouseFilter = Control.MouseFilterEnum.Ignore });
-		_entrance.AddChild(_base);
-		Node2D paper = new();
-		_entrance.AddChild(paper);
+		_field = new PileField(_entrance, view, PileField.Kind.Star);
+		_field.SetInvert(new Color(8 / 255f, 8 / 255f, 8 / 255f), new Color(222 / 255f, 222 / 255f, 222 / 255f), new Color(8 / 255f, 8 / 255f, 8 / 255f));
 		if (MenuJoker3D.Available)
 		{
-			_m3d = new MenuJoker3D(_entrance, view, MapK, new Vector2(-80f, 0f), Hide3d);
+			_m3d = new MenuJoker3D(_entrance, view, MapK, new Vector2(-80f, 0f), Hide3d) { UseSprite = false };
 			_entrance.AddChild(_m3d.Sprite);
-			_revealMat = new ShaderMaterial { Shader = PileReveal.Shader };
-			_m3d.Sprite.Material = _revealMat;
+			_field.SetJoker(_m3d.Texture);
 		}
-		_entrance.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });
-		Node2D inverted = new();
-		_entrance.AddChild(inverted);
-		_invertMat = new ShaderMaterial { Shader = InvertShader };
-		_invertMat.SetShaderParameter("sum", Paper.R + Ink.R);
-		int maxDark = PileDiscardEntrance.Dark.Max(f => f.Length), maxRed = PileDiscardEntrance.Red.Max(f => f.Length);
-		for (int i = 0; i < maxDark; i++)
-		{
-			_darkPaper.Add(new Polygon2D { Color = Paper, Antialiased = true });
-			paper.AddChild(_darkPaper[^1]);
-			_darkInvert.Add(new Polygon2D { Color = Colors.White, Antialiased = true, Material = _invertMat });
-			inverted.AddChild(_darkInvert[^1]);
-		}
-		ShaderMaterial redMat = (ShaderMaterial)_bg.Duplicate();
-		redMat.SetShaderParameter("wipe", 1e7f);
-		for (int i = 0; i < maxRed; i++)
-		{
-			Polygon2D m = new() { Color = Colors.White, ClipChildren = CanvasItem.ClipChildrenMode.Only, Antialiased = true };
-			m.AddChild(new ColorRect { Size = view, Material = redMat, MouseFilter = Control.MouseFilterEnum.Ignore });
-			_entrance.AddChild(m);
-			_redMasks.Add(m);
-		}
-		_reveal = new PileReveal(_entrance, view);
-		if (_revealMat != null) _reveal.Track(_revealMat);
 
 		// 4. 左边面板：斜边（白边 + 黑 + 内侧红条）+ 六行 + 两个标签牌
 		_panel = new Node2D { Name = "PileDiscardList" };
@@ -179,7 +151,7 @@ public sealed class PileDiscard : IPileDecor
 		_bandRoot = new Node2D { Name = "PileDiscardBand" };
 		root.AddChild(_bandRoot);
 		Vector2[] under = { R(1804.8f, 883.8f), R(1960f, 891.8f), R(1960f, 1120f), R(1193.5f, 1120f), R(1179.8f, 1093.8f), R(1223.7f, 1049.8f) };
-		Polygon2D underMask = new() { Polygon = under, Color = Colors.White, ClipChildren = CanvasItem.ClipChildrenMode.Only };
+		AaPoly underMask = new() { Polygon = under, Color = Colors.White, ClipChildren = CanvasItem.ClipChildrenMode.Only };
 		_bandRoot.AddChild(underMask);
 		ShaderMaterial underMat = (ShaderMaterial)_bg.Duplicate();
 		underMat.SetShaderParameter("wipe", 1e7f);
@@ -253,56 +225,48 @@ public sealed class PileDiscard : IPileDecor
 
 	public void Kick() { }
 
-	private static Shader? _inv;
-	/// <summary>入场的黑区：读屏把两种色调互换（sum = 纸色 + 墨色：白纸 → 墨黑，黑 Joker → 纸白，脸 → 暗），多边形边缘按覆盖率混合。</summary>
-	internal static Shader InvertShader => _inv ??= new Shader { Code = @"
-shader_type canvas_item;
-uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
-uniform float sum = 0.98;
-void fragment() {
-	vec3 s = texture(screen_tex, SCREEN_UV).rgb;
-	COLOR = vec4(clamp(vec3(sum) - s, 0.0, 1.0), COLOR.a);
-}
-" };
-
-	/// <summary>原版坐标的区域点 → 屏幕：贴原版画面右 / 下边（生成时推到边外的点）推到屏幕边外（我们的排版把原版缩小了，原版右 / 下边缘落在屏幕里面）。</summary>
-	private Vector2 MapEdge(Vector2 p)
+	/// <summary>
+	/// 入场第 t 秒的色块（1080p 排版坐标；宽屏时黑块 / 星纹条 / 斜带跟右半边一起右移 sx）。
+	/// 层从下往上：黑白星纹底（盖子）→ 左边红底 → 星纹条 → 扇形（红）→ 扇形 ∩ 黑块（黑）→ 黑的前沿红条 → 浅灰斜带。
+	/// </summary>
+	private void Field(float t)
 	{
-		Vector2 q = Map(p) * _k;
-		if (p.X >= 1950f) q.X = _view.X + 40f;
-		if (p.Y >= 1110f) q.Y = _view.Y + 40f;
-		return q;
-	}
-
-	/// <summary>入场第 u 帧（原版 177 + u，小数）：3D Joker 连续插值；黑区、红底取最近的补间形状（每帧 Sub 步），再按揭幕的斜线裁。</summary>
-	private void ShowFrame(float u)
-	{
-		u = Mathf.Clamp(u, 0f, FrameCount - 1);
-		_m3d?.Show(MenuJoker3DKeys.Discard, u);
-		int f = Mathf.Clamp(Mathf.RoundToInt(u * PileDiscardEntrance.Sub), 0, PileDiscardEntrance.Dark.Length - 1);
-		if (f != _shownFrame)
+		float W = _view.X / _k + 120f, sx = _rx / _k;
+		Vector2 shift = new(sx, 0f);
+		// 1. 盖子：黑白星纹从右边扫进来（边和撞色斜线平行），前沿红边
+		float c = PileShapes.OutCubic(PileShapes.Seg(t, 0f, 0.15f));
+		float xc = Mathf.Lerp(W + 300f, -300f, c);
+		_field.Begin(PileShapes.RightOf(new Vector2(xc + 0.419f * 600f, -60f), new Vector2(xc - 0.419f * 600f, 1140f)), 18f * (1f - c));
+		// 2. 左边红底从左边撞到斜线上（前沿黑边，到位收掉）
+		float r = PileShapes.Seg(t, 0.13f, 0.2f);
+		if (r > 0f)
 		{
-			_shownFrame = f;
-			_curDark = PileDiscardEntrance.Dark[f].Select(p => p.Select(MapEdge).ToArray()).ToArray();
-			_curRed = PileDiscardEntrance.Red[f].Select(p => p.Select(MapEdge).ToArray()).ToArray();
+			float dx = 1300f * (1f - PileShapes.OutQuint(r));
+			_field.Add(PileShapes.LeftOf(new Vector2(Lx(-60f) + sx - dx, -60f), new Vector2(Lx(1140f) + sx - dx, 1140f)), PileField.Kind.Red, 14f * (1f - PileShapes.OutCubic(r)), Ink);
 		}
-		bool clip = !_reveal.Done;
-		Vector2 big = _view + new Vector2(80f, 80f);
-		_base.Polygon = _reveal.Clip(new[] { new Vector2(-40f, -40f), new Vector2(big.X, -40f), big, new Vector2(-40f, big.Y) });
-		for (int i = 0; i < _darkPaper.Count; i++)
+		// 3. 星纹条：压在红底上面（红底从它下面钻过去，最后只剩头顶这一条星纹）
+		_field.Add(PileShapes.Shift(Strip, shift), PileField.Kind.Star);
+		// 4. 扇形从斜线底端转上来，停在斜线上：黑块里是黑（Joker 反色），黑块外是红；黑的前沿一道红条，到位收掉
+		float f = PileShapes.Seg(t, 0.05f, 0.24f);
+		if (f > 0f)
 		{
-			Vector2[] pts = i < _curDark.Length ? (clip ? _reveal.Clip(_curDark[i]) : _curDark[i]) : System.Array.Empty<Vector2>();
-			bool on = pts.Length >= 3;
-			_darkPaper[i].Visible = _darkInvert[i].Visible = on;
-			if (on) _darkPaper[i].Polygon = _darkInvert[i].Polygon = pts;
+			float e = PileShapes.OutCubic(f);
+			Vector2 pivot = FanPivot + shift;
+			float th = FanEnd * e;
+			Vector2 tip = pivot + new Vector2(Mathf.Cos(th), Mathf.Sin(th)) * 3000f;
+			float bulge = 100f * (1f - e);
+			Vector2[] fan = PileShapes.Side(pivot, tip, bulge);
+			Vector2[] slab = PileShapes.Shift(Slab, shift);
+			_field.Add(fan, PileField.Kind.Red);
+			_field.Add(PileShapes.Intersect(slab, fan), PileField.Kind.Dark);
+			if (PileShapes.EdgeStripe(pivot, tip, bulge, 18f * (1f - e)) is Vector2[] stripe)
+				_field.Add(PileShapes.Intersect(slab, stripe), PileField.Kind.Solid, 0f, StripeRed);
 		}
-		for (int i = 0; i < _redMasks.Count; i++)
-		{
-			Vector2[] pts = i < _curRed.Length ? (clip ? _reveal.Clip(_curRed[i]) : _curRed[i]) : System.Array.Empty<Vector2>();
-			bool on = pts.Length >= 3;
-			_redMasks[i].Visible = on;
-			if (on) _redMasks[i].Polygon = pts;
-		}
+		// 5. 右下浅灰斜带从下面撞进黑块（带一点回弹）
+		float g = PileShapes.Seg(t, 0.31f, 0.17f);
+		if (g > 0f)
+			_field.Add(PileShapes.Shift(Band, shift + BandN * (320f * (1f - PileShapes.OutBack(g, 1.0f)))), PileField.Kind.Gray, 12f * (1f - PileShapes.OutCubic(g)));
+		_field.Commit();
 	}
 
 	public void BeginExit(float now)
@@ -323,17 +287,17 @@ void fragment() {
 	private void Enter(float t)
 	{
 		float k = _k;
-		float reach = (_view + new Vector2(0f, _view.Y)).Length() * 1.05f;
-		_bg.SetShaderParameter("wipe", t >= 0.3f ? 1e7f : Ease5.OutQuint(Seg(t, 0f, 0.3f)) * reach);
-		// 入场：九帧原版画面（星纹底 + 黑区 + 3D Joker + 红底），开头从右边甩进来；CutAt 硬切成 2D 立绘 + 最终排版（同原版第 186 帧）
+		// 红星纹底：入场里由 PileField 画（同一套星星、同一个时间），切到最终排版时才露出来
+		_bg.SetShaderParameter("wipe", t >= CutAt ? 1e7f : 0f);
+		// 入场：色块碰撞 + 3D 从第 0 帧就开始连续播，CutAt 正好放到最后一帧；然后硬切成 2D 立绘 + 最终排版（同原版第 186 帧）
 		bool cut = t >= CutAt;
 		_entrance.Visible = !cut;
 		if (cut) _m3d?.Hide();
-		if (!cut)
+		else
 		{
-			// 斜切揭幕 + 3D 从第 0 帧就开始连续播，CutAt（= camp_open 的「啪」）正好放到最后一帧
-			_reveal.Set(t);
-			ShowFrame(PileReveal.Progress(t, CutAt, FrameCount - 1));
+			_m3d?.Show(MenuJoker3DKeys.Discard, PileReveal.Progress(t, CutAt, FrameCount - 1));
+			_field.SetTime(t);
+			Field(t);
 		}
 		_slab.Visible = _portrait.Visible = _panel.Visible = _bandRoot.Visible = cut;
 		_slab.Position = new Vector2(548f * k + _rx, 0f);
@@ -361,9 +325,8 @@ void fragment() {
 		}
 		Pop(_title, t, CutAt + 0.02f, R0(1458f, 7f + TitleDrop));
 		Pop(_command, t, CutAt + 0.05f, Vector2.Zero);
-		// 斜带从右下切进来
-		float b = Ease5.OutExpo(Seg(t, CutAt + 0.02f, 0.22f));
-		_bandRoot.Position = new Vector2(700f, 260f) * k * (1f - b);
+		// 斜带入场里已经撞进来了，切过去原地不动
+		_bandRoot.Position = Vector2.Zero;
 	}
 
 	private Vector2 R0(float x, float y) => new(x * _k + (x > 960f ? _rx : 0f), y * _k);

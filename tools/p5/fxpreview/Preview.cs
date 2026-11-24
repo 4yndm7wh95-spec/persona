@@ -1645,7 +1645,10 @@ public partial class Preview : Node2D
 			string path = $"{texDir}/{name}.png";
 			if (!FileAccess.FileExists(path))
 				path = ProjectSettings.GlobalizePath($"res://../../../p5mod/pck_stage/p5joker/fx/{name}.png");
-			return FileAccess.FileExists(path) ? ImageTexture.CreateFromImage(Image.LoadFromFile(path)) : null;
+			if (!FileAccess.FileExists(path)) return null;
+			Image img = Image.LoadFromFile(path);
+			if (name.StartsWith("pile_") || name.StartsWith("m3d_")) img.GenerateMipmaps();   // 同游戏里打包时带的 mipmap（tools/pck/godot_tex.py）
+			return ImageTexture.CreateFromImage(img);
 		};
 		Stage.Report = (where, e) => GD.PrintErr($"[P5Joker] {where}: {e}");
 		Stage.NowMs = () => (ulong)(_clock * 1000.0);
@@ -1882,8 +1885,8 @@ public partial class Preview : Node2D
 				tx += PileText.Exact(head, keys[g], new Vector2(tx, 8f), 40f, new Color(0.94f, 0.94f, 0.94f)) + 10f;
 				tx += PileText.Exact(head, keys[g] + "_zh", new Vector2(tx, 15f), 28f, new Color(0.9f, 0.1f, 0.11f)) + 12f;
 				tx += PileText.Number(head, "×" + counts[g], new Vector2(tx, 12f), 34f, new Color(0.94f, 0.94f, 0.94f)) + 14f;
-				Polygon2D po = Fx.Poly(head, new[] { new Vector2(-4f, 2f), new Vector2(tx + 4f, -4f), new Vector2(tx + 12f, 56f), new Vector2(2f, 62f) }, new Color(0.94f, 0.94f, 0.94f));
-				Polygon2D pi = Fx.Poly(head, new[] { new Vector2(0f, 5f), new Vector2(tx, 0f), new Vector2(tx + 8f, 52f), new Vector2(6f, 58f) }, new Color(0.04f, 0.04f, 0.04f));
+				var po = PileDraw.Poly(head, new[] { new Vector2(-4f, 2f), new Vector2(tx + 4f, -4f), new Vector2(tx + 12f, 56f), new Vector2(2f, 62f) }, new Color(0.94f, 0.94f, 0.94f));
+				var pi = PileDraw.Poly(head, new[] { new Vector2(0f, 5f), new Vector2(tx, 0f), new Vector2(tx + 8f, 52f), new Vector2(6f, 58f) }, new Color(0.04f, 0.04f, 0.04f));
 				head.MoveChild(po, 0); head.MoveChild(pi, 1);
 				heads.Add((head, new Vector2(L.GridX - 6f, L.GridTop + y)));
 				y += 70f;
@@ -1910,8 +1913,8 @@ public partial class Preview : Node2D
 				float tx = 16f;
 				tx += PileText.Exact(orderHead, deck ? "deck" : discard ? "discard" : exhaust ? "exhaust" : "draw", new Vector2(tx, 8f), 40f, new Color(0.94f, 0.94f, 0.94f)) + 12f;
 				tx += PileText.Number(orderHead, "×" + items.Count, new Vector2(tx, 12f), 34f, new Color(0.94f, 0.94f, 0.94f)) + 14f;
-				Polygon2D po = Fx.Poly(orderHead, new[] { new Vector2(-4f, 2f), new Vector2(tx + 4f, -4f), new Vector2(tx + 12f, 56f), new Vector2(2f, 62f) }, new Color(0.94f, 0.94f, 0.94f));
-				Polygon2D pi = Fx.Poly(orderHead, new[] { new Vector2(0f, 5f), new Vector2(tx, 0f), new Vector2(tx + 8f, 52f), new Vector2(6f, 58f) }, new Color(0.04f, 0.04f, 0.04f));
+				var po = PileDraw.Poly(orderHead, new[] { new Vector2(-4f, 2f), new Vector2(tx + 4f, -4f), new Vector2(tx + 12f, 56f), new Vector2(2f, 62f) }, new Color(0.94f, 0.94f, 0.94f));
+				var pi = PileDraw.Poly(orderHead, new[] { new Vector2(0f, 5f), new Vector2(tx, 0f), new Vector2(tx + 8f, 52f), new Vector2(6f, 58f) }, new Color(0.04f, 0.04f, 0.04f));
 				orderHead.MoveChild(po, 0); orderHead.MoveChild(pi, 1);
 			}
 			Vector2 orderHeadAt = new(L.GridX - 6f, L.GridTop);
