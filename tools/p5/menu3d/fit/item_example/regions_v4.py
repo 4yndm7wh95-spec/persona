@@ -10,36 +10,39 @@ from common import orig
 from regions import polys
 
 def labels(i, render_png, band=20):
-    from scipy.ndimage import binary_erosion
+    """v5：Joker 身上和身边先不判，只用离 Joker 远的地方定「星纹底 / 黑区」，再把边界平滑地延伸穿过 Joker
+    （原版的分界本来就是光滑的直线 / 弧线，人站在上面不改变它）。唯一例外：原版里反成白色的身体一定在黑区里。"""
+    from scipy.ndimage import binary_erosion, binary_dilation, gaussian_filter
     im = np.asarray(orig(i, (960, 540))).astype(float); L = im.mean(-1)
     m = uniform_filter(L, 9); sd = np.sqrt(np.maximum(uniform_filter(L * L, 9) - m * m, 0))
     red = (im[..., 0] > 70) & (im[..., 0] > im[..., 1] * 1.8)
     star = (sd > 40) & ~red
+    starC = binary_closing(star, iterations=6) & ~red          # 星纹里粗的黑条也算星纹底
     rr = np.asarray(Image.open(render_png).convert('RGBA')).astype(float)
     S = rr[..., 3] > 128; rl = rr[..., :3].mean(-1)
-    far = edt(~S) > band                                # 离我们的剪影 band 像素以外（原版头发 / 衣服边比剪影宽一点，挨着的黑不算黑区）
-    lab = np.full((540, 960), -1, int)                 # -1 未定、0 星纹底、1 黑区、2 红
-    lab[red] = 2
-    lab[~S & star] = 0
-    lab[far & ~star & ~red & (L < 60)] = 1
-    # Joker 身上：衣服 / 头发内部（渲染暗、离轮廓 2–3 像素以上）原版白 → 黑区（反色了），原版黑 → 星纹底；脸（渲染亮）这一段一直在星纹底上
-    # 不信：原版那里是星纹（我们的头发 / 衣服比原版大一点、盖到星纹上了）、脸附近（发梢盖在原版的脸上）
-    from scipy.ndimage import binary_dilation
+    far = edt(~S) > band
     face = binary_dilation(S & (rl >= 110), iterations=25)
-    cloth = binary_erosion(S & (rl < 110), iterations=3) & binary_erosion(S, iterations=2) & ~star & ~face
-    lab[cloth & ~red & (L > 150)] = 1
-    lab[cloth & ~red & (L < 70)] = 0
-    lab[S & face & ~red] = 0
-    # 原版 177–181 左下角的 ¥ 金额字压在黑区上（字有纹理，会被当成星纹底）：这一块交给周围决定
-    if i <= 181:
-        lab[440:500, 250:445] = -1
-    known = lab >= 0
-    _, (iy, ix) = edt(~known, return_indices=True)
-    lab = lab[iy, ix]
-    # 黑区里的 UI 字（¥ 金额、按键提示）也有纹理，会被当成星纹底、从黑区里伸出一条细舌头：离 Joker 远的星纹底做开运算，细条归黑区
-    pf = (lab == 0) & (edt(~S) > 30)
-    lab[pf & ~binary_opening(pf, iterations=8)] = 1
-    return lab
+    cloth = binary_erosion(S & (rl < 110), iterations=3) & ~star & ~face
+    # 我们身体深处（离剪影边 25 像素以上）原版是黑的 = Joker 的黑身体站在星纹底上；边上一圈不判（我们的剪影比原版大出来的那点可能盖在黑区背景上）
+    deep = binary_erosion(S, iterations=25)
+    plate_k = (starC & far) | (S & face & ~red) | (deep & ~face & ~red & (L < 70))
+    dark_k = (far & ~starC & ~red & (L < 70)) | (cloth & ~red & (L > 150))
+    # 黑区里的 UI 字（¥ 金额、按键提示）有纹理会被当成星纹：小块星纹（离大片星纹底远）不算
+    lp, n = label(plate_k)
+    if n:
+        sz = np.bincount(lp.ravel()); keep = sz >= 3000; keep[0] = False
+        plate_k = keep[lp] | (S & face & ~red) | (deep & ~face & ~red & (L < 70))
+    w = (plate_k | dark_k).astype(float); v = dark_k.astype(float)
+    out = np.full((540, 960), 0, int)
+    num = gaussian_filter(v * w, 30); den = gaussian_filter(w, 30)
+    num2 = gaussian_filter(v * w, 90); den2 = gaussian_filter(w, 90)
+    ratio = np.where(den > 0.05, num / np.maximum(den, 1e-6), num2 / np.maximum(den2, 1e-6))
+    unk = ~(plate_k | dark_k)
+    out[dark_k] = 1
+    out[unk & (ratio > 0.5)] = 1
+    out[plate_k & ~dark_k] = 0
+    out[red] = 2
+    return out
 
 def clean(mask, k=4, keep_area=0.02):
     """开闭运算去毛刺；只留贴着画面边的块或大块（头发顶上那种细条：原版头发比我们的剪影高一点，单独成一小块，不要）"""
@@ -52,7 +55,18 @@ def clean(mask, k=4, keep_area=0.02):
             out |= binary_fill_holes(c)
     return out
 
+def drop_near(mask, S, near=40, frac=0.5, small=0.06):
+    """面积小、大部分贴着我们剪影的黑区块是误判（原版 Joker 自己的手臂 / 贴纸字），丢掉"""
+    d = edt(~S) <= near
+    lab, n = label(mask); out = mask.copy()
+    for j in range(1, n + 1):
+        c = lab == j
+        if c.sum() < small * c.size and (c & d).sum() > frac * c.sum():
+            out[c] = False
+    return out
+
 def regions(i, render_png, eps=1.6):
     lab = labels(i, render_png)
-    dark = clean(lab == 1); red = clean(lab == 2, 2) & ~dark
+    S = np.asarray(Image.open(render_png).convert('RGBA'))[..., 3] > 128
+    dark = drop_near(clean(lab == 1), S); red = clean(lab == 2, 14) & ~dark   # 开运算加大：原版右上道具列表的红色选中条（细条）不算红底
     return {'dark': polys(dark, eps), 'red': polys(red, eps)}, lab
