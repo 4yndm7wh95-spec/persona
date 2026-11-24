@@ -205,6 +205,8 @@ public partial class Preview : Node2D
 		["pile_exhaust"] = p => PileDrawPreview(p, true),
 		// 弃牌堆界面（p5mod/src/Vfx/PileDiscard.cs，P5R ITEM 页，2026-11-23）
 		["pile_discard"] = p => PileDrawPreview(p, true, true),
+		// 牌组界面（p5mod/src/Vfx/PileDeck.cs，P5R EQUIP 页，2026-11-24）
+		["pile_deck"] = p => PileDrawPreview(p, true, false, true),
 		["damage"] = p =>
 		{
 			p.Strike(0.3, Enemy, 7);
@@ -1818,7 +1820,7 @@ public partial class Preview : Node2D
 		n.AddChild(new Polygon2D { Polygon = Fx.Circle(16f * k, 16), Color = new Color("f2d14a"), Position = new Vector2(20f, -66f) * k });
 	}
 
-	private static void PileDrawPreview(Preview p, bool exhaust, bool discard = false)
+	private static void PileDrawPreview(Preview p, bool exhaust, bool discard = false, bool deck = false)
 	{
 		TranslationServer.SetLocale("zh_CN");          // 预览按中文版（字图走 _zh）
 		CanvasLayer top = new() { Layer = 50 };
@@ -1828,10 +1830,11 @@ public partial class Preview : Node2D
 		p.At(0.5, () =>
 		{
 			Sfx.Play("camp_open", 0.5f);
-			if (!discard) PileDraw.ScheduleSlamSounds();
+			if (!discard && !deck) PileDraw.ScheduleSlamSounds();
 			// 弃牌堆：攻击 5（升级 2）/ 技能 5（升级 1）/ 能力 2，同排版图
 			var dstats = (12, 3, new Dictionary<string, (int N, int Up)> { ["attack"] = (5, 2), ["skill"] = (5, 1), ["power"] = (2, 0) });
-			IPileDecor draw = discard ? new PileDiscard(host, new Vector2(1920f, 1080f), dstats) : exhaust ? new PileExhaust(host, new Vector2(1920f, 1080f), 12) : new PileDraw(host, new Vector2(1920f, 1080f), 23);
+			var kstats = (20, 4, new Dictionary<string, (int N, int Up)> { ["attack"] = (8, 2), ["skill"] = (9, 2), ["power"] = (2, 0), ["curse"] = (1, 0) });
+			IPileDecor draw = deck ? new PileDeck(host, new Vector2(1920f, 1080f), kstats) : discard ? new PileDiscard(host, new Vector2(1920f, 1080f), dstats) : exhaust ? new PileExhaust(host, new Vector2(1920f, 1080f), 12) : new PileDraw(host, new Vector2(1920f, 1080f), 23);
 			IPileDecor L = draw;
 			// 假牌：攻击 7 / 技能 9 / 能力 3（灰卡 + 类型色块），按 PileDraw 的版式排
 			Control cards = new() { MouseFilter = Control.MouseFilterEnum.Ignore };
@@ -1839,7 +1842,7 @@ public partial class Preview : Node2D
 			var items = new List<(Control C, Vector2 At, float Born)>();
 			var heads = new List<(Node2D N, Vector2 At)>();
 			Color[] tint = { new(0.72f, 0.19f, 0.16f), new(0.16f, 0.38f, 0.63f), new(0.77f, 0.59f, 0.16f) };
-			int[] counts = discard ? new[] { 5, 5, 2 } : exhaust ? new[] { 4, 6, 2 } : new[] { 7, 9, 3 };
+			int[] counts = deck ? new[] { 8, 9, 2 } : discard ? new[] { 5, 5, 2 } : exhaust ? new[] { 4, 6, 2 } : new[] { 7, 9, 3 };
 			string[] en = { "ATTACK", "SKILL", "POWER" }, zh = { "攻击", "技能", "能力" };
 			float y = 0f, born = L.CardsStart;
 			for (int g = 0; g < 3; g++)
@@ -1877,7 +1880,7 @@ public partial class Preview : Node2D
 			cards.AddChild(orderHead);
 			{
 				float tx = 16f;
-				tx += PileText.Exact(orderHead, discard ? "discard" : exhaust ? "exhaust" : "draw", new Vector2(tx, 8f), 40f, new Color(0.94f, 0.94f, 0.94f)) + 12f;
+				tx += PileText.Exact(orderHead, deck ? "deck" : discard ? "discard" : exhaust ? "exhaust" : "draw", new Vector2(tx, 8f), 40f, new Color(0.94f, 0.94f, 0.94f)) + 12f;
 				tx += PileText.Number(orderHead, "×" + items.Count, new Vector2(tx, 12f), 34f, new Color(0.94f, 0.94f, 0.94f)) + 14f;
 				Polygon2D po = Fx.Poly(orderHead, new[] { new Vector2(-4f, 2f), new Vector2(tx + 4f, -4f), new Vector2(tx + 12f, 56f), new Vector2(2f, 62f) }, new Color(0.94f, 0.94f, 0.94f));
 				Polygon2D pi = Fx.Poly(orderHead, new[] { new Vector2(0f, 5f), new Vector2(tx, 0f), new Vector2(tx + 8f, 52f), new Vector2(6f, 58f) }, new Color(0.04f, 0.04f, 0.04f));
@@ -1933,6 +1936,7 @@ public partial class Preview : Node2D
 					float lift = i == hovered ? 1f : 0f;
 					float sc = (0.85f + 0.15f * pop) * (1f + 0.26f * lift);
 					float alpha = Mathf.Clamp(bt * 3f, 0f, 1f);
+					alpha *= Mathf.Clamp((L.GridBottom - (at.Y - c.Size.Y * 0.5f)) / (c.Size.Y * 0.8f), 0f, 1f);   // 同游戏：格子区下边以外的牌淡出（牌组页下面要露出枪）
 					if (ex > 0f)
 					{
 						float r = Ease5Ext.InCubic(Mathf.Clamp((ex - Mathf.Min(0.35f, i * 0.012f)) / 0.65f, 0f, 1f));
