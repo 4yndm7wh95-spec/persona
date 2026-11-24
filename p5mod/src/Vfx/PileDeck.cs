@@ -33,8 +33,10 @@ public sealed class PileDeck : IPileDecor
 
 	private static readonly Color Ink = PileDraw.Ink, Paper = PileDraw.Paper;
 	/// <summary>原版一帧（录像 27.5fps）；第 k 帧在 FrameStart + k·FrameDt 显示，七帧放完硬切 2D 立绘（= 原版第 240 帧）。</summary>
-	private const float FrameStart = 0.086f, FrameDt = 0.036f;
+	private const float FrameDt = 0.036f;
 	private const int FrameCount = 7;
+	/// <summary>七帧放完正好是 PileDraw.SlamAt（camp_open 自带的那一声「啪」）；之前停在第一帧滑进来。</summary>
+	private const float FrameStart = PileDraw.SlamAt - FrameCount * FrameDt;
 	private const float PortraitAt = FrameStart + FrameCount * FrameDt;
 	/// <summary>原版 1920×1080 → 我们的排版（同弃牌堆：立绘配准对齐，缩放 0.977、左移 80）。</summary>
 	private const float MapK = 1500f / 3072f / 0.5f;

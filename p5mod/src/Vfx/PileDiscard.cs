@@ -53,8 +53,10 @@ public sealed class PileDiscard : IPileDecor
 	private const float MapK = 1500f / 3072f / 0.5f;
 	private static Vector2 Map(Vector2 p) => p * MapK + new Vector2(-80f, 0f);
 	/// <summary>原版一帧（录像 27.5fps）；第 k 帧在 FrameStart + k·FrameDt 显示，九帧放完硬切 2D 立绘。</summary>
-	private const float FrameStart = 0.086f, FrameDt = 0.036f;
+	private const float FrameDt = 0.036f;
 	private const int FrameCount = 9;
+	/// <summary>九帧放完正好是 PileDraw.SlamAt（camp_open 自带的那一声「啪」，用户 2026-11-24：音效没对齐）；之前停在第一帧滑进来。</summary>
+	private const float FrameStart = PileDraw.SlamAt - FrameCount * FrameDt;
 	/// <summary>切成 2D 立绘的时刻（= 原版第 186 帧）。</summary>
 	private const float CutAt = FrameStart + FrameCount * FrameDt;
 	private static readonly string[] Hide3d = { "smartphone", "card", "school_bag", "gun_outline", "gun_main", "ef line_obj_01", "ef line_obj_02", "ef line_obj_03", "ef line_obj_04", "ef line_obj_05", "ef line_obj_06", "ef line_obj_07", "ef line_obj_08" };

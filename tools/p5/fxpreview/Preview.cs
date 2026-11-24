@@ -1294,7 +1294,7 @@ public partial class Preview : Node2D
 			p.At(0.05, () => { o = new Orochi(p._back, JokerFeet, tall); });
 			p.Every(() =>
 			{
-				t0 += 1.0 / 30.0;
+				t0 += 1.0 / RecFps;
 				float tt = (float)t0;
 				float ltn = Mathf.Exp(-Mathf.Pow((tt - 1.6f) / 0.05f, 2f)) + 0.6f * Mathf.Exp(-Mathf.Pow((tt - 1.8f) / 0.04f, 2f));
 				o?.Set(tt, ltn, Mathf.Min(1f, tt / 0.3f));
@@ -1649,10 +1649,10 @@ public partial class Preview : Node2D
 		};
 		Stage.Report = (where, e) => GD.PrintErr($"[P5Joker] {where}: {e}");
 		Stage.NowMs = () => (ulong)(_clock * 1000.0);
-		HitStop.RealSeconds = () => _frames / 30.0;
+		HitStop.RealSeconds = () => _frames / RecFps;
 		string sfxLog = ProjectSettings.GlobalizePath("res://") + $"out/{scenario}/sfx.txt";
 		System.IO.File.WriteAllText(sfxLog, "");
-		Sfx.Recorder = (name, vol) => System.IO.File.AppendAllText(sfxLog, $"{_frames / 30.0:0.000} {name} {vol:0.00}\n");                 // 顿帧按录像帧数计时（不受时间流速影响）
+		Sfx.Recorder = (name, vol) => System.IO.File.AppendAllText(sfxLog, $"{_frames / RecFps:0.000} {name} {vol:0.00}\n");                 // 顿帧按录像帧数计时（不受时间流速影响）
 		Stage.PlayEvent = (e, vol) => Sfx.Recorder?.Invoke(e, vol);   // 游戏自带的 FMOD 事件：记下事件名，mix.py 用解出来的原版样本（tools/p5/fxpreview/game_sfx.py）
 		GD.Seed(52029);
 		Stage.Shake = s => { _shake = s; _shakeLeft = 0.25f; _shakeDir = null; };
@@ -1691,6 +1691,9 @@ public partial class Preview : Node2D
 
 	private Vector2? _shakeDir;
 	private long _frames;
+
+	/// <summary>录像帧率（render.sh 的 FPS，默认 30）：音效日志、顿帧时钟都按它把帧数换成秒。</summary>
+	private static readonly double RecFps = double.TryParse(System.Environment.GetEnvironmentVariable("FPS"), out double f) && f > 0 ? f : 30.0;
 
 	private bool _measure;
 	private double _mGpu, _mCpu; private int _mN, _mSec;
