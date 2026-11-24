@@ -420,6 +420,7 @@ public static class Warmup
 		QueueShaders(typeof(PileExhaust));
 		QueueShaders(typeof(PileDiscard));
 		QueueShaders(typeof(PileField));
+		QueueShaders(typeof(PileDeck));
 		// 用户 2026-11-24：入场卡 —— 第一次打开时才编译的东西都提前做：裁剪（clip_children）+ 读屏反色的画法（消耗堆）、菜单 3D Joker（网格、动作片段、3D 材质）
 		Enqueue(new("pile clip + invert", Draw: slot =>
 		{

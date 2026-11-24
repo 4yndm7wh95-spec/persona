@@ -8,7 +8,7 @@
   refine.py 在黑区里比白色剪影；zones.py 黑区分界线从网格图读）。镜头从 Joker 正前方绕到他左前方、一路推近，fov 30。
 - 原版画面：233–235 主菜单的星纹弧带 + 黑区（弧线以上，Joker 进去变纯白）+ 右上红底 / 浅灰板；236–239 左上星纹拼贴、
   黑区在一条左上→右下斜线的右边、右边装备栏、右下红底。（之前区域形状逐帧从原版截图取：equip_example/regions_eq.py，现在只留作对照。）
-- 240 硬切成 2D 立绘（原版也是）。
+- 原版 240 硬切成 2D 立绘；我们在 final.json 里多一个收尾关键帧「240」（枪甩下来、头身对上立绘，fit/equip_example/fit240.py），切的时候再用一道斜线扫过去（PileDeck）。
 用法：python3 tools/p5/menu3d/equip_entrance.py"""
 import json, os, subprocess, sys, numpy as np
 from pathlib import Path

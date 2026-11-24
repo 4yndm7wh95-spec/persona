@@ -12,8 +12,9 @@ namespace P5Joker;
 /// 牌格子在原版装备栏的位置，4 列，画在立绘上面（枪在格子下面露出来）。
 /// 入场（用户 2026-11-24：原版截图抠出来的区域不规则、乱 → 自己设计干净的色块碰撞，PileField 一个着色器画完）：
 /// 黑底从左边斜扫进来 → 一道星纹笔触从左下劈到右上 → 左边星纹块、右边灰板、红底先后撞进来，停在最终排版的位置（L1 / L2 / 折线）；
-/// 原版 3D Joker（233–239 逐帧拟合的动作和平滑后的机位，MenuJoker3DKeys.Deck）从头到尾连续播，在黑区里反色（白）、在星纹 / 灰 / 红上是黑的，
-/// 最后正好和立绘的白斜条对上；PortraitAt 切成 2D 立绘 + 最终排版（背景色块不变），立绘压一下、列表一行行弹出、标题牌 / COMMAND 压上、牌飞入。
+/// 原版 3D Joker（233–239 逐帧拟合的动作和平滑后的机位 + 收尾「240」枪甩下来、头身对上立绘，MenuJoker3DKeys.Deck）从头到尾连续播，
+/// 在黑区里反色（白）、在星纹 / 灰 / 红上是黑的；PortraitAt（0.42 秒）前后一道红边斜线从左往右把 3D 扫成 2D 立绘 + 最终排版（背景色块不变），
+/// 立绘的枪往前一送、立绘压一下、列表一行行弹出、标题牌 / COMMAND 压上、牌飞入。
 /// </summary>
 public sealed class PileDeck : IPileDecor
 {
@@ -33,9 +34,25 @@ public sealed class PileDeck : IPileDecor
 	public Vector2 ExitOffset => new(260f, 40f);
 
 	private static readonly Color Ink = PileDraw.Ink, Paper = PileDraw.Paper;
-	/// <summary>3D 入场的关键帧数（原版 233–239）；PortraitAt 切成 2D 立绘。</summary>
-	private const int FrameCount = 7;
-	private const float PortraitAt = 0.52f;
+	/// <summary>
+	/// 3D 入场的关键帧数：原版 233–239 + 收尾的「240」（用户 2026-11-24：3D 最后一帧和 2D 立绘差太多，切的时候跳一大下 ——
+	/// 原版 239 枪举在头顶、240 直接是枪口朝右下的 2D 立绘；这里让 3D 把枪甩下来（main_0005 第 8.35 帧），机位按立绘的头 / 耳 / 眼拟合
+	///（fit/equip_example/fit240.py），切的时候头、身子、枪的方向都对得上）。PortraitAt 切成 2D 立绘。
+	/// </summary>
+	private const int FrameCount = 8;
+	private const float PortraitAt = 0.42f;
+	/// <summary>色块动画的节奏（用户 2026-11-24：切入别太拖沓）：下面 Field 里的时间点按 0.52 秒的版本写，整体压到 0.8 倍。</summary>
+	private const float Pace = 0.8f;
+	/// <summary>
+	/// 3D → 2D 立绘不是一下换掉（用户 2026-11-24：跳动太大 —— 立绘是画的，大衣、白条、伸出去的枪和模型怎么摆都对不上，原版 239→240 也是硬切）：
+	/// 头和身子先用「240」机位对齐，然后一道斜边（同入场黑底的角度）带着红边从左往右扫过去，扫过的地方换成 2D 立绘，前面还是 3D（停在最后的姿势）；
+	/// 背景色块两边一模一样，看得出变化的只有 Joker，变成一刀扫过去的过渡。
+	/// </summary>
+	private const float WipeAt = PortraitAt - 0.02f, WipeTime = 0.12f;
+	/// <summary>
+	/// 立绘的手臂和枪（L2 右边那块）在扫过去的同时往外送：立绘的枪是夸张透视（比模型的枪长得多），按行往 L2 压到 ArmFrom，ArmTime 弹开。
+	/// </summary>
+	private const float ArmFrom = 0.5f, ArmTime = 0.14f;
 	// 最终排版的块面分界（export_deck.py，原版坐标换到我们的排版）：星纹 | L1 | 黑（Joker 白）| L2 | 灰 | 折线 | 红
 	private static float X1(float y) => 624.1f - 0.3275f * y;
 	private static float X2(float y) => 1155.4f - 0.628f * y;
@@ -55,6 +72,7 @@ public sealed class PileDeck : IPileDecor
 	private readonly float _k, _rx;
 	private readonly ShaderMaterial _bg;
 	private readonly Node2D _back, _portrait, _list, _title, _command;
+	private readonly ShaderMaterial? _armMat;
 	private readonly List<(Node2D Node, float Delay, float Alpha)> _rows = new();
 	private float _exitT0 = -1f;
 	// 入场（原版 233–239）
@@ -84,6 +102,12 @@ public sealed class PileDeck : IPileDecor
 		// 背景块面（黑 / 灰 / 星纹拼贴）：图层本身在红色那块是透明的，下面露出红星纹
 		_back = Layer(root, "bg", BgAt * k);
 		_portrait = Layer(root, "portrait", PortraitPos * k);
+		if (_portrait.GetChildCount() > 0 && _portrait.GetChild(0) is Sprite2D ps && ps.Texture is Texture2D pt)
+		{
+			_armMat = new ShaderMaterial { Shader = ArmShader };
+			_armMat.SetShaderParameter("size", new Vector2(pt.GetWidth(), pt.GetHeight()));
+			ps.Material = _armMat;
+		}
 
 		// 1b. 入场：色块合成 + 3D Joker（PileField）
 		_entrance = new Node2D { Name = "PileDeckEntrance" };
@@ -136,13 +160,23 @@ public sealed class PileDeck : IPileDecor
 	/// <summary>
 	/// 入场第 t 秒的色块（1080p 排版坐标）。层从下往上：黑底（盖子）→ 星纹块 → 星纹笔触 → 灰板 → 红底；运动中的前沿带一道描边，到位时收掉。
 	/// </summary>
-	private void Field(float t)
+	private void Field(float t, float wipe = -1f)
 	{
+		t /= Pace;
 		float W = _view.X / _k + 120f;
-		// 1. 黑底从左边扫进来（边和 L1 平行），前沿红边
-		float c = PileShapes.OutCubic(PileShapes.Seg(t, 0f, 0.15f));
-		float xc = Mathf.Lerp(-260f, W + 300f, c);
-		_field.Begin(PileShapes.LeftOf(new Vector2(xc + 0.3275f * 600f, -60f), new Vector2(xc - 0.3275f * 600f, 1140f)), 18f * (1f - c));
+		if (wipe >= 0f)
+		{
+			// 切 2D：盖子换成斜边右边（左边露出下面的 2D 立绘 / 最终排版），斜边从左往右扫，红边跟在后面
+			float xw = Mathf.Lerp(-460f, W + 300f, wipe);
+			_field.Begin(PileShapes.RightOf(new Vector2(xw + 0.3275f * 600f, -60f), new Vector2(xw - 0.3275f * 600f, 1140f)), 14f);
+		}
+		else
+		{
+			// 1. 黑底从左边扫进来（边和 L1 平行），前沿红边
+			float c = PileShapes.OutCubic(PileShapes.Seg(t, 0f, 0.15f));
+			float xc = Mathf.Lerp(-260f, W + 300f, c);
+			_field.Begin(PileShapes.LeftOf(new Vector2(xc + 0.3275f * 600f, -60f), new Vector2(xc - 0.3275f * 600f, 1140f)), 18f * (1f - c));
+		}
 		// 2. 星纹块从左边撞进来，停在 L1（带一点回弹）
 		float s = PileShapes.Seg(t, 0.17f, 0.2f);
 		if (s > 0f)
@@ -206,6 +240,28 @@ public sealed class PileDeck : IPileDecor
 
 	public void Kick() { }
 
+	private static Shader? _armShader;
+	/// <summary>立绘的手臂 / 枪（L2 右边）按行往 L2 压扁：arm = 1 原样，arm &lt; 1 每一行 L2 右边的内容缩到 arm 倍长（袖子根部贴着 L2 不动）。</summary>
+	internal static Shader ArmShader => _armShader ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform vec2 size = vec2(1737.0, 1080.0);
+uniform float arm = 1.0;
+varying vec4 vcol;
+void vertex() { vcol = COLOR; }
+void fragment() {
+	vec2 p = UV * size;
+	float l2 = 1155.4 - 0.628 * p.y;
+	vec4 c;
+	if (arm < 0.999 && p.x > l2) {
+		float qx = l2 + (p.x - l2) / max(arm, 0.05);
+		c = qx < size.x ? texture(TEXTURE, vec2(qx / size.x, UV.y)) : vec4(0.0);
+	} else {
+		c = texture(TEXTURE, UV);
+	}
+	COLOR = c * vcol;
+}
+" };
+
 	public void BeginExit(float now)
 	{
 		if (_exitT0 >= 0f) return;
@@ -225,17 +281,20 @@ public sealed class PileDeck : IPileDecor
 	{
 		float k = _k;
 		float reach = (_view + new Vector2(0f, _view.Y)).Length() * 1.05f;
-		_bg.SetShaderParameter("wipe", t >= PortraitAt ? 1e7f : 0f);
-		// 入场：七帧原版画面（星纹带 + 黑区 + 3D Joker + 红底 / 浅灰板），开头从右边甩进来；PortraitAt 硬切成 2D 立绘 + 最终排版（同原版第 240 帧）
-		bool cut = t >= PortraitAt;
-		_entrance.Visible = !cut;
-		if (cut) _m3d?.Hide();
+		_bg.SetShaderParameter("wipe", t >= WipeAt ? 1e7f : 0f);
+		// 入场：色块碰撞 + 3D（原版 233–239 + 收尾「240」）；PortraitAt 起一道斜边把 3D 扫成 2D 立绘 + 最终排版
+		bool cut = t >= WipeAt;
+		float wipe = cut ? Seg(t, WipeAt, WipeTime) : 0f;
+		bool wiping = cut && wipe < 1f;
+		_entrance.Visible = !cut || wiping;
+		if (cut && !wiping) _m3d?.Hide();
 		else
 		{
-			// 色块碰撞 + 3D 从第 0 帧就开始连续播，PortraitAt 正好放到最后一帧（同一个时间：红星纹和最终排版的红底一起转）
-			_m3d?.Show(MenuJoker3DKeys.Deck, PileReveal.Progress(t, PortraitAt, FrameCount - 1));
+			// 色块碰撞 + 3D 从第 0 帧就开始连续播，PortraitAt 正好放到最后一帧（同一个时间：红星纹和最终排版的红底一起转）；扫的时候停在最后一帧
+			float tf = Mathf.Min(t, PortraitAt);
+			_m3d?.Show(MenuJoker3DKeys.Deck, PileReveal.Progress(tf, PortraitAt, FrameCount - 1));
 			_field.SetTime(t);
-			Field(t);
+			Field(tf, wiping ? PileShapes.OutCubic(wipe) : -1f);
 		}
 		_back.Visible = _portrait.Visible = _list.Visible = cut;
 		_back.Position = Vector2.Zero;
@@ -244,6 +303,7 @@ public sealed class PileDeck : IPileDecor
 		float bump = cut ? Mathf.Lerp(0.965f, 1f, Ease5.OutBack(Seg(t, PortraitAt, 0.14f))) : 1f;
 		_portrait.Scale = Vector2.One * bump;
 		_portrait.Position = new Vector2(560f, 540f) * k * (1f - bump);
+		_armMat?.SetShaderParameter("arm", cut ? Mathf.Lerp(ArmFrom, 1f, PileShapes.OutCubic(Seg(t, PortraitAt + 0.03f, ArmTime))) : ArmFrom);
 		_portrait.Modulate = Colors.White;
 		_root.Position = cut ? new Vector2(Mathf.Sin((t - PortraitAt) * 44f) * 5f, Mathf.Cos((t - PortraitAt) * 34f) * 10f) * k * Mathf.Pow(Mathf.Max(0f, 1f - (t - PortraitAt) / 0.22f), 2f) : Vector2.Zero;
 		// 列表一行行弹出（原版第 240 帧名单在一行行出来）
@@ -275,6 +335,7 @@ public sealed class PileDeck : IPileDecor
 		_back.Position = new Vector2(1400f * k * o, 0f);
 		_portrait.Position = new Vector2(-500f * k * o, 0f);
 		_portrait.Scale = Vector2.One;
+		_armMat?.SetShaderParameter("arm", 1f);
 		Color fade = new(1f, 1f, 1f, 1f - Seg(e, 0.35f, 0.5f));
 		_portrait.Modulate = _back.Modulate = fade;
 		Color quick = new(1f, 1f, 1f, 1f - Mathf.Clamp(e * 1.8f, 0f, 1f));

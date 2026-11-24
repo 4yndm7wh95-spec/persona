@@ -28,7 +28,7 @@ def main():
         lines = ''
         for idx, (f, cam) in sorted(json.load(open(fin)).items(), key=lambda kv: int(kv[0])):
             lines += cs_key(int(idx) - 233, 'main_0005', f, 'main_0005', f, 0.0, cam)
-        out.append(('Deck', '牌组（原版 EQUIP 页 233–239，U = 原版帧 − 233）', lines))
+        out.append(('Deck', '牌组（原版 EQUIP 页 233–239 + 收尾「240」= 枪甩下来对上 2D 立绘，U = 原版帧 − 233）', lines))
     fin = ROOT / 'tools/p5/menu3d/fit/draw_example/final.json'
     split = ''
     if fin.exists():

@@ -13,8 +13,9 @@ namespace P5Joker;
 /// 入场（用户 2026-11-24：原版截图抠出来的区域不规则、乱 → 自己设计干净的色块碰撞，PileField 一个着色器画完）：
 /// 黑白星纹从右边扫进来（前沿红边）→ 一把扇形从撞色斜线的底端转上来（黑块里是黑、外面是红，黑的前沿一道红条），
 /// 同时左边的红底从左边撞到斜线上，星纹被两边挤成头顶那条星纹条 → 右下浅灰斜带从下面撞进黑块；
-/// 原版 3D Joker（177–185 逐帧拟合的动作，MenuJoker3DKeys.Discard）从头到尾连续播，在黑块里反色成浅灰（同立绘），别处是黑的；
-/// CutAt 切成 2D 立绘 + 最终排版（色块位置不变），立绘压一下、左边面板滑进、六行弹出、标题牌 / COMMAND 压上、牌飞入。
+/// 原版 3D Joker（177–185 逐帧拟合的动作，MenuJoker3DKeys.Discard）从第 0 帧连续播、斜带进来前就干脆地收进最后的姿势（MotionEnd），
+/// 在黑块里反色成浅灰（同立绘），别处是黑的；CutAt（0.42 秒）切成 2D 立绘 + 最终排版（色块位置不变），立绘压一下、左边面板滑进、六行弹出、
+/// 标题牌 / COMMAND 压上、牌飞入。
 /// </summary>
 public sealed class PileDiscard : IPileDecor
 {
@@ -55,7 +56,14 @@ public sealed class PileDiscard : IPileDecor
 	private const float MapK = 1500f / 3072f / 0.5f;
 	/// <summary>3D 关键帧数（原版 177–185）；CutAt 切成 2D 立绘（= 原版第 186 帧）。</summary>
 	private const int FrameCount = 9;
-	private const float CutAt = 0.52f;
+	private const float CutAt = 0.42f;
+	/// <summary>色块动画的节奏（用户 2026-11-24：切入别太拖沓）：Field 里的时间点按 0.52 秒的版本写，整体压到 0.8 倍。</summary>
+	private const float Pace = 0.8f;
+	/// <summary>
+	/// 3D 动作在这之前放完（用户 2026-11-24：之前一直拖到切 2D 那一刻，斜带进来时他已经差不多是最后的姿势了，手却还往外甩一下才切，像回弹、拖沓）：
+	/// 原版 183→185 只有三帧（约 0.1 秒），这里也是前快后收得干脆（power 2.2），斜带撞进来时手已经到位，剩下的时间定住等切。
+	/// </summary>
+	private const float MotionEnd = 0.29f, MotionPower = 2.2f;
 	// 最终排版的块面（mock_discard.py / export_discard.py 的黑块、星纹条、斜带，1080p；伸出屏幕的边延长到画面外）：
 	// 撞色斜线 x = Lx(y) 是黑块的左边，也是星纹条的右边；黑块外面全是红底
 	private static float Lx(float y) => 1002.66f - 0.419f * y;
@@ -231,6 +239,7 @@ public sealed class PileDiscard : IPileDecor
 	/// </summary>
 	private void Field(float t)
 	{
+		t /= Pace;
 		float W = _view.X / _k + 120f, sx = _rx / _k;
 		Vector2 shift = new(sx, 0f);
 		// 1. 盖子：黑白星纹从右边扫进来（边和撞色斜线平行），前沿红边
@@ -289,13 +298,13 @@ public sealed class PileDiscard : IPileDecor
 		float k = _k;
 		// 红星纹底：入场里由 PileField 画（同一套星星、同一个时间），切到最终排版时才露出来
 		_bg.SetShaderParameter("wipe", t >= CutAt ? 1e7f : 0f);
-		// 入场：色块碰撞 + 3D 从第 0 帧就开始连续播，CutAt 正好放到最后一帧；然后硬切成 2D 立绘 + 最终排版（同原版第 186 帧）
+		// 入场：色块碰撞 + 3D 从第 0 帧就开始连续播，MotionEnd 收进最后的姿势；CutAt 硬切成 2D 立绘 + 最终排版（同原版第 186 帧）
 		bool cut = t >= CutAt;
 		_entrance.Visible = !cut;
 		if (cut) _m3d?.Hide();
 		else
 		{
-			_m3d?.Show(MenuJoker3DKeys.Discard, PileReveal.Progress(t, CutAt, FrameCount - 1));
+			_m3d?.Show(MenuJoker3DKeys.Discard, PileReveal.Progress(t, MotionEnd, FrameCount - 1, MotionPower));
 			_field.SetTime(t);
 			Field(t);
 		}

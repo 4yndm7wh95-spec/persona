@@ -143,6 +143,7 @@ public sealed class PileExhaust : IPileDecor
 		root.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });
 		_invertMat = new ShaderMaterial { Shader = InvertShader };
 		_invertMat.SetShaderParameter("sum", Paper.R + Ink.R);
+		_invertMat.SetShaderParameter("paper", Paper.R);
 		_invert = new AaPoly { Color = Colors.White, Visible = false, Material = _invertMat };
 		root.AddChild(_invert);
 
@@ -199,20 +200,27 @@ public sealed class PileExhaust : IPileDecor
 	}
 
 	private static Shader? _inv, _cov;
-	/// <summary>黑色反色区：圆内读屏幕、两种色调互换（sum = 纸色 + 墨色：白板 → 墨黑，黑 Joker → 纸白），圆外丢弃；圆边 2px 抗锯齿。</summary>
+	/// <summary>
+	/// 黑色反色区：圆内读屏幕、两种色调互换（sum = 纸色 + 墨色：白板 → 墨黑，黑 Joker → 纸白），圆外丢弃；圆边 2px 抗锯齿。
+	/// 多边形边上的羽化条（AaPoly，顶点 alpha = 白板在这个像素的覆盖率 a）不能整像素反色：半白半黑的边反过来还是灰，会留一根灰线
+	///（用户 2026-11-24：黑区里那根线）→ 只把白板那一份换成反色：s − a·纸 + a·(sum − 纸)。
+	/// </summary>
 	internal static Shader InvertShader => _inv ??= new Shader { Code = @"
 shader_type canvas_item;
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
 uniform vec2 c = vec2(0.0);
 uniform float r = 0.0;
 uniform float sum = 0.98;
+uniform float paper = 0.94;
 varying vec2 lp;
 void vertex() { lp = VERTEX; }
 void fragment() {
-	float a = 1.0 - smoothstep(r - 1.0, r + 1.0, distance(lp, c));
-	if (a <= 0.0) discard;
+	float ca = 1.0 - smoothstep(r - 1.0, r + 1.0, distance(lp, c));
+	if (ca <= 0.0) discard;
 	vec3 s = texture(screen_tex, SCREEN_UV).rgb;
-	COLOR = vec4(clamp(vec3(sum) - s, 0.0, 1.0), COLOR.a * a);
+	float a = COLOR.a;
+	vec3 inv = a >= 0.999 ? vec3(sum) - s : s + a * (sum - 2.0 * paper);
+	COLOR = vec4(clamp(inv, 0.0, 1.0), ca);
 }
 " };
 	/// <summary>白板遮罩：盖在 3D Joker 上面的白板，圆内（黑色反色区）挖空，让下面的 Joker 被反色成白腿。</summary>

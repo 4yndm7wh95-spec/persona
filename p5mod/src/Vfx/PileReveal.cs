@@ -103,10 +103,10 @@ void fragment() {
 		return s * 0.5f;
 	}
 
-	/// <summary>3D 动作的进度：t 从 0 到 cut 把原版第 0 帧到第 last 帧播完（开头就在动，后面慢慢收进定格姿势，不会顿住）。</summary>
-	public static float Progress(float t, float cut, float last)
+	/// <summary>3D 动作的进度：t 从 0 到 cut 把原版第 0 帧到第 last 帧播完（开头就在动，后面慢慢收进定格姿势，不会顿住）；power 越大收得越早越干脆。</summary>
+	public static float Progress(float t, float cut, float last, float power = 1.6f)
 	{
 		float x = Mathf.Clamp(t / cut, 0f, 1f);
-		return last * (1f - Mathf.Pow(1f - x, 1.6f));
+		return last * (1f - Mathf.Pow(1f - x, power));
 	}
 }
