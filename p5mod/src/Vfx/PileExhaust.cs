@@ -142,7 +142,7 @@ public sealed class PileExhaust : IPileDecor
 		// 6. 黑色反色区：读屏幕，白板 ↔ 黑、黑 Joker ↔ 白（P 系列的撞色）；形状 = 白板多边形，着色器只保留圆内
 		root.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });
 		_invertMat = new ShaderMaterial { Shader = InvertShader };
-		_invertMat.SetShaderParameter("sum", Paper.R + Ink.R);
+		_invertMat.SetShaderParameter("sum", Paper.R + 0.03f);   // 白板反过来 = 黑块的颜色（0.03），两块黑接在一起看不出边
 		_invertMat.SetShaderParameter("paper", Paper.R);
 		_invert = new AaPoly { Color = Colors.White, Visible = false, Material = _invertMat };
 		root.AddChild(_invert);

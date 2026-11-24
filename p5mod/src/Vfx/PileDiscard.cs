@@ -14,7 +14,7 @@ namespace P5Joker;
 /// 黑白星纹从右边扫进来（前沿红边）→ 一把扇形从撞色斜线的底端转上来（黑块里是黑、外面是红，黑的前沿一道红条），
 /// 同时左边的红底从左边撞到斜线上，星纹被两边挤成头顶那条星纹条 → 右下浅灰斜带从下面撞进黑块；
 /// 原版 3D Joker（177–185 逐帧拟合的动作，MenuJoker3DKeys.Discard）从第 0 帧连续播、斜带进来前就干脆地收进最后的姿势（MotionEnd），
-/// 在黑块里反色成浅灰（同立绘），别处是黑的；CutAt（0.42 秒）切成 2D 立绘 + 最终排版（色块位置不变），立绘压一下、左边面板滑进、六行弹出、
+/// 在黑块里反色成浅灰（同立绘），别处是黑的；CutAt（0.40 秒）切成 2D 立绘 + 最终排版（色块位置不变），立绘压一下、左边面板滑进、六行弹出、
 /// 标题牌 / COMMAND 压上、牌飞入。
 /// </summary>
 public sealed class PileDiscard : IPileDecor
@@ -56,7 +56,7 @@ public sealed class PileDiscard : IPileDecor
 	private const float MapK = 1500f / 3072f / 0.5f;
 	/// <summary>3D 关键帧数（原版 177–185）；CutAt 切成 2D 立绘（= 原版第 186 帧）。</summary>
 	private const int FrameCount = 9;
-	private const float CutAt = 0.42f;
+	private const float CutAt = 0.40f;   // 斜带 0.384 秒到位，紧接着切
 	/// <summary>色块动画的节奏（用户 2026-11-24：切入别太拖沓）：Field 里的时间点按 0.52 秒的版本写，整体压到 0.8 倍。</summary>
 	private const float Pace = 0.8f;
 	/// <summary>
