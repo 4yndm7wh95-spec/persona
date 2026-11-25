@@ -47,6 +47,50 @@ GEN_TEX = ["cutin_band", "calling_card", "joker_ghost", "arsene_idle"]
 GEN_CODEX = ROOT / "art/p5/fx/gen_codex"
 # P5R's own battle cut-in (BATTLE/CUTIN/BCT_P_BC0001.DDS): Joker's eyes, used for the "1 MORE" eye cut-in (Eyes.cs)
 EYES = ROOT / "research/p5r/art/portrait/BASE__BCT_P_BC0001__e5a7b5aabe.png"
+# P5R's day-change (日替わり) sheet: the calling card, the knife that pins it and the glint (char select embark transition, EmbarkTransition.cs)
+HIGAWARI = ROOT / "research/p5r/ui/calendar/sprites/HIGAWARI_COMMON.SPD_unpacked__27626017d8"
+HIGAWARI_TEX = {"day_knife": 98, "day_glint": 56}   # ナイフ / きらめき1
+# the calling card itself: camp P5_CARD02 (original quality) drawn with a slight perspective -> rectified to a flat card (user 2026-11-17: 予告状 was too tilted)
+CARD02 = ROOT / "research/p5r/ui/camp/SC__P5_CARD02__90df21923c.png"
+CARD02_CORNERS = [(241, 68), (762, 87), (781, 419), (250, 441)]   # TL TR BR BL, measured on the sprite
+
+
+def flat_card(w=720, h=518, keep=0.5, pad=24):
+    """P5_CARD02 透视校正：keep = 保留原图透视的比例（0 = 完全拉正，用户 2026-11-17：完全拉正太正、没有透视 → 留一半）。
+    卡画在带透明边的画布上（pad），沿卡的四边描 4px 白边（黑圈的卡压在黑门上也看得出轮廓）。"""
+    import numpy as np
+    from PIL import ImageDraw
+    src = Image.open(CARD02).convert("RGBA")
+    c = np.array(CARD02_CORNERS, float)
+    # 原图四角归一化到 w×h 的框里（保持原来的形状），再和正矩形按 keep 混合
+    rect = np.array([(0, 0), (w, 0), (w, h), (0, h)], float)
+    lo, hi = c.min(0), c.max(0)
+    orig = (c - lo) / (hi - lo) * [w, h]
+    quad = rect * (1 - keep) + orig * keep + pad
+    W, H = w + 2 * pad, h + 2 * pad
+    A, B = [], []
+    for (x, y), (u, v) in zip(c, quad):
+        A += [[u, v, 1, 0, 0, 0, -x * u, -x * v], [0, 0, 0, u, v, 1, -y * u, -y * v]]
+        B += [x, y]
+    coeffs = np.linalg.solve(np.array(A, float), np.array(B, float))
+    im = src.transform((W, H), Image.PERSPECTIVE, tuple(coeffs), Image.BICUBIC)
+    # 卡的范围：四角往里收 3px（去掉原图投影的边），4 倍超采样画遮罩 + 白边
+    k = 4
+    ctr = quad.mean(0)
+    inner = [tuple(((p - ctr) * (1 - 3 / max(w, h)) + ctr) * k) for p in quad]
+    mask = Image.new("L", (W * k, H * k), 0)
+    ImageDraw.Draw(mask).polygon(inner, fill=255)
+    mask = mask.resize((W, H), Image.LANCZOS)
+    rgb = im.convert("RGB")
+    edge = Image.new("L", (W * k, H * k), 0)
+    ImageDraw.Draw(edge).line(inner + [inner[0]], fill=255, width=4 * k, joint="curve")
+    edge = edge.resize((W, H), Image.LANCZOS)
+    rgb.paste((255, 250, 248), mask=edge)
+    out = rgb.convert("RGBA")
+    out.putalpha(mask)
+    return out
+
+
 # P5R damage numbers / slash lines (research/p5r/ui/battle_gui DAMAGE_DATA.SPD sprites): name -> (sprite index, scale)
 DMG = ROOT / "research/p5r/ui/battle_gui/sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6"
 DMG_TEX = {**{f"dmg_{d}": (79 + d, 0.5) for d in range(10)},
@@ -58,11 +102,15 @@ STAGE = ROOT / "p5mod/pck_stage"
 
 
 def renamed(src_base, dst_base, tmp):
-    """copy <src_base>.{spine-json,atlas,png} to tmp as <dst_base>.*, fixing the atlas page name."""
+    """copy <src_base>.{spine-json,atlas} and every atlas page (<src_base>.png, <src_base>_2.png, ...) to tmp as
+    <dst_base>.*, fixing the page names in the atlas."""
     shutil.copy(RIG / f"{src_base}.spine-json", tmp / f"{dst_base}.spine-json")
-    shutil.copy(RIG / f"{src_base}.png", tmp / f"{dst_base}.png")
     lines = (RIG / f"{src_base}.atlas").read_text().split("\n")
-    lines[0] = f"{dst_base}.png"
+    for i, line in enumerate(lines):
+        if line.startswith(src_base) and line.endswith(".png"):
+            new = dst_base + line[len(src_base):]
+            shutil.copy(RIG / line, tmp / new)
+            lines[i] = new
     (tmp / f"{dst_base}.atlas").write_text("\n".join(lines))
 
 
@@ -85,6 +133,14 @@ V4_TEX = [("slash", n, 0.5) for n in ("slash_thin", "slash_heavy", "slash_cross"
     [("burst", f"burst_0{i}", 0.5) for i in (1, 2, 3)] + \
     [("muzzle", f"muzzle_side_0{i}", 0.5) for i in (1, 2, 3)] + [("muzzle", "muzzle_front", 0.5), ("muzzle", "shell", 1)] + \
     [("glass", "glass_shards_sheet", 0.5), ("glass", "glass_glints", 1), ("glass", "glass_dust", 1)] + \
+    [("buff", n, 0.5) for n in ("thorn_vine_01", "thorn_vine_02", "thorn_vine_03", "thorn_burst", "mirror_crack_01", "mirror_crack_02",
+     "ribbon_01", "ribbon_02", "ribbon_03", "card_stream_01", "card_stream_02", "venom_drops_sheet", "venom_veins_01", "venom_veins_02",
+     "buff_motes_sheet")] + \
+    [("corrosive", n, 0.5) for n in ("curse_wave_body_01", "curse_wave_body_02", "curse_splash_sheet")] + \
+    [("ink", n, 0.5) for n in ("ink_stroke_01", "ink_stroke_02", "ink_stroke_03", "ink_splash_sheet", "ink_drops_sheet")] + \
+    [("ink_fling_v3", n, 0.5) for n in ("gather_streak_sheet", "bullet_burst_sheet")] + [("ink_fling_v3", "fling_arc_sheet", 1)] + \
+    [("painted", n, 0.5) for n in ("chop_heavy_01", "chop_heavy_02", "swipe_arc_01", "swipe_arc_02", "swipe_arc_03", "thrust_01", "thrust_02",
+     "claw_rake_01", "claw_rake_02", "impact_star_sheet", "shadow_grasp_sheet")] + \
     [("arsene/layers_v7", n, 0.35) for n in ("wing_back", "wing_front", "arm_back", "body", "arm_reach", "arm_reach_extend", "arm_reach_fist", "eyes_glow")]   # Arsene v7 (user 2026-11-03)
 
 # P5R sound effects (research/p5r/audio): published name -> file (names in p5mod/src/Vfx/Sfx.cs)
@@ -103,8 +159,24 @@ SFX = {
     "swish_04": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0149.ogg",
     "swish_05": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0151.ogg",
     "sword_sheath": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0048.ogg",          # knife spin: the catch (user 2026-11-02)
+    "camp_whoosh": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0224.ogg",
+    # 牌堆界面（p5mod/src/Vfx/PileDraw.cs）：原版暂停菜单打开 / 关闭（research/p5r/audio/camp，Codex 从 SYSTEM.ACB 拷出）
+    "camp_open": ROOT / "research/p5r/audio/camp/SOUND_J_SOUND_SYSTEM.ACB_0170.ogg",
+    "camp_cancel": ROOT / "research/p5r/audio/camp/SOUND_J_SOUND_SYSTEM.ACB_0172.ogg",           # char select embark transition: the doors whoosh in (EmbarkTransition.cs)
+    # embark transition: P5R's own day-change cues (SYSTEM.AWB streams 37 / 82, ripped by Codex: research/p5r/audio/calendar/README.md)
+    "calendar_change": ROOT / "research/p5r/audio/calendar/calendar_change.ogg",   # the date slams down -> the doors close
+    "stab_knife": ROOT / "research/p5r/audio/calendar/stab_knife.ogg",             # the knife pins it: thunk + metallic ring in one cue
     "damage_enemy": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0022.ogg",
     "battle_all_out_atk": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0024.ogg",
+    "aoa_splatter": ROOT / "research/p5r/audio/allout/battle_all_out_atk_finish_b.ogg",   # 原版总攻击收尾的喷溅声（cue 1074，用户导出），怪物剪影喷血
+    "aoa_crack": ROOT / "art/sfx_p5/aoa_crack.ogg",   # 总攻击裂纹蔓延（art/sfx_p5/aoa_crack.md）
+    "aoa_zoom": ROOT / "research/p3r_se/samples/allout__Xrd777__JP__system__Snd_FX_Btl_Allout_Zoom.ogg",   # 总攻击蓄势（P3 mod 同款：0.2s 起涨、0.65s 冲到高潮）
+    # 总攻击乱斗的另外五声（SYSTEM #25–26 打击、#27–29 斩击，同一组 battle_all_out_atk cue；p5mod/src/Vfx/AllOut.cs）
+    "aoa_hit_2": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0025.ogg",
+    "aoa_hit_3": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0026.ogg",
+    "aoa_slash_1": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0027.ogg",
+    "aoa_slash_2": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0028.ogg",
+    "aoa_slash_3": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0029.ogg",
     "gun_02": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0032.ogg",
     "gun_10": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0038.ogg",                # the shot (user 2026-11-03: gun_07 sounded like a laser; picked D)
     "gun_07": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0037.ogg",                # the shot (user 2026-11-02: gun_02 read as a strike sound)
@@ -164,6 +236,9 @@ def fx_textures():
     for name, (idx, k) in DMG_TEX.items():
         im = Image.open(DMG / f"{idx:05d}.png").convert("RGBA")
         yield name, im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
+    # character select scene (docs/p5/CHARSELECT_PLAN.md, tools/p5/charselect_assets.py)
+    from charselect_assets import textures as charselect_textures
+    yield from charselect_textures()
     for name in GEN_TEX:
         drawn = GEN_CODEX / f"{name}.png"                 # Codex's drawn version wins over the scripted one (user 2026-10-28)
         yield name, Image.open(drawn if drawn.exists() else GEN / f"{name}.png").convert("RGBA")
@@ -195,14 +270,70 @@ def fx_textures():
         if f.exists():
             im = Image.open(f).convert("RGBA")
             out = f"arsene_{name}" if group.startswith("arsene") else name   # Arsene layers: res://p5joker/fx/arsene_<layer>.png
+            if name.startswith("chop_heavy"):
+                im = im.rotate(90, expand=True)   # 竖向的重劈转成横向（上端 → 左端），Paint.Sweep 沿横向扫出
             yield out, im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS) if k != 1 else im
+    # 选卡界面「夺宝」（Codex，art/p5/ui/reward）：剪报拼贴字、色带、悬停底板、STOLEN 印章 → res://p5joker/fx/reward_<name>.png（半尺寸）
+    for f in sorted((ROOT / "art/p5/ui/reward").glob("*.png")):
+        im = Image.open(f).convert("RGBA")
+        yield "reward_" + f.stem, im.resize((round(im.width * 0.5), round(im.height * 0.5)), Image.LANCZOS)
+    # 战斗开始 / 回合横幅（Codex，art/p5/ui/battle，任务单 docs/codex/codex_p5_battle_ui_art.md）：
+    # letters/<WORD>_<n>.png → battle_<WORD>_<n>，digits/digit_<n>.png → battle_digit_<n>，底板 → battle_<name>（都是半尺寸）
+    battle = ROOT / "art/p5/ui/battle"
+    if battle.exists():
+        for f in sorted(battle.rglob("*.png")):
+            im = Image.open(f).convert("RGBA")
+            yield "battle_" + f.stem, im.resize((round(im.width * 0.5), round(im.height * 0.5)), Image.LANCZOS)
+    # 战斗 HUD：能量球、结束回合按钮（Codex，art/p5/ui/hud，任务单 docs/codex/codex_p5_hud_art.md）→ hud_<name>（半尺寸）
+    for f in sorted((ROOT / "art/p5/ui/hud").glob("*.png")):
+        im = Image.open(f).convert("RGBA")
+        yield "hud_" + f.stem, im.resize((round(im.width * 0.5), round(im.height * 0.5)), Image.LANCZOS)
+    # 左上角顶栏 / 战绩 / 联机里的角色头像（Codex，art/p5/ui/icons/joker_top_icon.png）+ 描边版（轮廓往外扩一圈的白色剪影）
+    icon = ROOT / "art/p5/ui/icons/joker_top_icon.png"
+    if icon.exists():
+        im = Image.open(icon).convert("RGBA")
+        im = im.crop(im.getchannel("A").getbbox())
+        side = max(im.size) + 40
+        sq = Image.new("RGBA", (side, side), (0, 0, 0, 0))
+        sq.alpha_composite(im, ((side - im.width) // 2, (side - im.height) // 2))
+        sq = sq.resize((256, 256), Image.LANCZOS)
+        yield "icon_top", sq
+        from PIL import ImageFilter
+        a = sq.getchannel("A").filter(ImageFilter.MaxFilter(9))
+        out = Image.new("RGBA", sq.size, (255, 255, 255, 0))
+        out.putalpha(a)
+        yield "icon_top_outline", out
     # P5R summon blue flame tongues (BE_SYOLOOP, 6x2 flipbook): Persona appear / linger / dismiss (p5mod/src/Vfx/BlueFlame.cs)
     flame = ROOT / "research/p5r/ghost_blueflame/textures_png/bes_syo_fkomaB12kf2.dds.png"
     if flame.exists():
         yield "persona_flame_strip", Image.open(flame).convert("RGBA")
     eyes = Image.open(EYES).convert("RGBA")
     yield "eyes", eyes.resize((eyes.width // 2, eyes.height // 2), Image.LANCZOS)
+    for name, idx in HIGAWARI_TEX.items():
+        yield name, Image.open(HIGAWARI / f"{idx:05d}.png").convert("RGBA")
+    yield "yokoku", flat_card()
+    # 总攻击（p5mod/src/Vfx/AllOut.cs、AllOutFinale.cs）：P5R 原版收尾 BKSK_HERO_CTE 的贴图（原名加 aoa_ 前缀，AllOutFinale 按材质绑定的名字取）
+    # + BKSK_SPLATTER 的血团（smoke）和噪声（test）
+    for f in sorted((ROOT / "tools/p5/allout_native/godot/tex").glob("*.dds.png")):
+        yield "aoa_" + f.name[:-len(".dds.png")], Image.open(f).convert("RGBA")
+    # 总攻击裂纹（Codex 生图，P5 风格黑色裂纹，art/p5/fx/gen_codex/allout_cracks_v2）：整张裂纹 ×2 + 撞击点；
+    # 对应的主裂纹折线在 tools/p5/allout_native/cracks/（trace_cracks.py 描的），打包时拷到 p5joker/allout/
+    for name in ("a", "b", "core"):
+        f = GEN_CODEX / "allout_cracks_v2" / f"crack_p5_{name}.png"
+        if f.exists():
+            yield f"aoa_crackp5_{name}", Image.open(f).convert("RGBA")
+    from allout_native.export_runtime import splatter_textures
+    for name, im in splatter_textures():
+        if name == "smoke":
+            yield "aoa_blob", im
+        elif name == "test":
+            yield "aoa_noise", im
+        elif name == "be0cmn_upaura_uv_d":
+            yield "aoa_drip", im                       # splatterBlood 的滴落遮罩：总攻击喷血的血柱
     yield "arsene_cast", arsene_atlas()
+    # 牌堆界面（p5mod/src/Vfx/PileDraw.cs，docs/p5/PILE_PLAN.md）：原版 P5R 暂停菜单素材，按 1080p 显示尺寸 ×1.34 离线 Lanczos 预缩
+    # （ctex 没有 mipmap，大图直接缩到 1/3 会闪烁起锯齿）；白色字图另出一张黑描边版（_ol）。
+    yield from pile_textures()
     # Izanagi-no-Okami (Codex render of BPS0360_000_main_0006, art/p5/fx/izanagi_okami): spin action atlas + weapon alone
     if (IZANAGI / "spin").exists():
         yield "izanagi_spin", izanagi_atlas()
@@ -342,6 +473,99 @@ def arsene_atlas():
     return atlas
 
 
+PILE_W = 1.34          # 预缩到 1080p 显示宽度的这么多倍（1440p 下 ≈1:1）
+PILE_SPR = ROOT / "research/p5r/ui/camp_main/sprites"
+# 名字 → (来源, 1080p 下显示宽度, 描边半径 px@1080p 或 0)
+PILE_TEX = {
+    "pile_camptop": (ROOT / "research/p5r/art/portrait/BASE__P5_CAMPTOP_2D__e441c53ea3.png", 1510, 0),   # 原版比例（实机截图量的）
+    "pile_campskill": (ROOT / "research/p5r/art/portrait/BASE__P5_CAMPSKILL_2D01__5af504dfb6.png", 1500, 0),   # 消耗堆 = SKILL 页
+    **{f"pile_sd_{i}": (PILE_SPR / f"{96 + i:05d}.png", 0, 0) for i in range(10)},                         # 原版小数字（字图描边见 pile_texts）
+    "pile_sx": (PILE_SPR / "00107.png", 0, 0),
+    "pile_txt_command": (PILE_SPR / "00201.png", 643, 7),
+    "pile_txt_dontlook": (PILE_SPR / "00046.png", 413, 0),
+    "pile_txt_likethat": (PILE_SPR / "00047.png", 292, 0),
+    "pile_txt_menu": (PILE_SPR / "00048.png", 131, 0),
+    "pile_txt_main": (PILE_SPR / "00061.png", 106, 0),
+    "pile_txt_cmdselect": (PILE_SPR / "00479.png", 212, 0),
+    **{f"pile_digit_{i}": (PILE_SPR / f"{33 + i:05d}.png", 123, 6) for i in range(10)},
+}
+
+
+PILE_TEXT_OL = 8
+
+
+def _outline(im, r):
+    from PIL import ImageFilter
+    pad = Image.new("RGBA", (im.width + 2 * PILE_TEXT_OL, im.height + 2 * PILE_TEXT_OL), (0, 0, 0, 0))
+    pad.alpha_composite(im, (PILE_TEXT_OL, PILE_TEXT_OL))
+    a = pad.getchannel("A").filter(ImageFilter.MaxFilter(2 * r + 1)).filter(ImageFilter.GaussianBlur(0.6))
+    out = Image.new("RGBA", pad.size, (255, 255, 255, 0))
+    out.putalpha(a)
+    return out
+
+
+def pile_texts():
+    for f in sorted((ROOT / "art/p5/ui/pile_text").glob("txt_*.png")):
+        im = Image.open(f).convert("RGBA")
+        im = im.resize((round(im.width * 72 / im.height), 72), Image.LANCZOS)
+        name = "pile_t_" + f.stem[4:]
+        yield name, im
+        yield name + "_ol", _outline(im, 5)
+    for i in range(10):
+        im = Image.open(PILE_SPR / f"{96 + i:05d}.png").convert("RGBA")
+        yield f"pile_sd_{i}_ol", _outline(im, 5)
+    yield "pile_sx_ol", _outline(Image.open(PILE_SPR / "00107.png").convert("RGBA"), 5)
+
+
+def pile_textures():
+    from PIL import ImageFilter
+    for name, (src, width, outline) in PILE_TEX.items():
+        im = Image.open(src).convert("RGBA")
+        w = min(im.width, round(width * PILE_W)) if width else im.width
+        if w != im.width:
+            im = im.resize((w, round(im.height * w / im.width)), Image.LANCZOS)
+        if outline:
+            r = max(1, round(outline * PILE_W))
+            pad = Image.new("RGBA", (im.width + 2 * r + 4, im.height + 2 * r + 4), (0, 0, 0, 0))
+            pad.alpha_composite(im, (r + 2, r + 2))
+            im = pad
+            a = im.getchannel("A").filter(ImageFilter.MaxFilter(2 * r + 1)).filter(ImageFilter.GaussianBlur(0.6))
+            ol = Image.new("RGBA", im.size, (255, 255, 255, 0))
+            ol.putalpha(a)
+            yield name + "_ol", ol
+        yield name, im
+    # 弃牌堆（ITEM 页）：tools/p5/pile/export_discard.py 从排版图分层导出的 1080p 图层 → pile_dc_<名字>（原尺寸，PileDiscard.cs 按 1080p 摆）
+    for f in sorted((ROOT / "art/p5/ui/pile_discard").glob("*.png")):
+        yield "pile_dc_" + f.stem, Image.open(f).convert("RGBA")
+    # 牌组（EQUIP 页）：tools/p5/pile/export_deck.py 从排版图分层导出的 1080p 图层 → pile_dk_<名字>（PileDeck.cs 按 1080p 摆）
+    for f in sorted((ROOT / "art/p5/ui/pile_deck").glob("*.png")):
+        yield "pile_dk_" + f.stem, Image.open(f).convert("RGBA")
+    # 原版菜单 3D Joker 的入场动作（research/p5r/menu3d/main_0000，Codex 从 MENU_C0001 GMD/GAP 渲的 12 帧，1920×1080）：
+    # 裁到 12 帧的并集包围盒 (828,125)-(1920,1080)，游戏里显示 0.843 倍，×1.34 会超过原尺寸 → 保留原尺寸（PileDraw.M3d*）
+    m3d = ROOT / "research/p5r/menu3d/main_0000"
+    for i in range(12):
+        f = m3d / f"f{i:04d}.png"
+        if f.exists():
+            im = Image.open(f).convert("RGBA").crop((828, 125, 1920, 1080))
+            # 原渲染画面下缘把身体截断了（游戏里显示时下缘在屏幕 922px 处，下面露出背景）：
+            # 把最后一行像素往下延伸 240px，身体一直延到屏幕底边外（原版人物也是一直到底）
+            ext = Image.new("RGBA", (im.width, im.height + 240))
+            ext.paste(im, (0, 0))
+            ext.paste(im.crop((0, im.height - 1, im.width, im.height)).resize((im.width, 240)), (0, im.height))
+            yield f"pile_m3d_{i:02d}", ext
+    # P5 风格文字（art/p5/ui/pile_text，Codex 照原版菜单字排的）+ 原版小数字 / ×：缩到字高 72（游戏里最高显示约 54px），
+    # 每张另出一张黑描边版 _ol（每边多 PILE_TEXT_OL 像素，PileText.OlPad）
+    for name, im in pile_texts():
+        yield name, im
+    # 牌堆入场的菜单 3D Joker 游戏里实时渲染（MenuJoker3D.cs，数据在 p5joker/m3d/，见 main()）：脸 / 面具贴图 → m3d_<贴图名>
+    for f in sorted((ROOT / "research/p5r/model/joker/joker_menu_Textures").glob("*.png")):
+        yield "m3d_" + f.stem, Image.open(f).convert("RGBA")
+    # 预告信（tools/p5/pile/deskew_cards.py 拉正的原版）：正面 + 7 封信的正文（每次打开随机一封当背面）；运行时生成 mipmap
+    yield "pile_card_front", Image.open(ROOT / "art/p5/ui/pile/calling_card.png").convert("RGBA")
+    for f in sorted((ROOT / "art/p5/ui/pile/letters").glob("letter_*.png")):
+        yield "pile_" + f.stem, Image.open(f).convert("RGBA")
+
+
 def main():
     if STAGE.exists():
         shutil.rmtree(STAGE)
@@ -370,7 +594,21 @@ skeleton_file_res = ExtResource("2_skel")
 default_mix = 0.1
 """)
     for name, im in fx_textures():
-        write_texture(STAGE, f"p5joker/fx/{name}.png", im)
+        # 牌堆界面的图（按 1440p 预缩，1080p 下缩到 0.75 显示）和菜单 3D 的贴图带 mipmap：缩小显示不起锯齿（用户 2026-11-24）
+        write_texture(STAGE, f"p5joker/fx/{name}.png", im, mipmaps=name.startswith(("pile_", "m3d_")))
+    # 总攻击收尾的原版数据（网格 / 材质 / 240 帧矩阵），AllOutFinale 直接读字节
+    from allout_native.export_runtime import main as export_allout
+    export_allout(STAGE / "p5joker/allout/hero.bin")
+    for f in sorted((ROOT / "tools/p5/allout_native/cracks").glob("cracks_*.json")):
+        shutil.copy(f, STAGE / "p5joker/allout" / f.name)
+    # 菜单 3D Joker 的网格和动作片段（tools/p5/menu3d/export_runtime.py），MenuJoker3D 直接读字节
+    (STAGE / "p5joker/m3d").mkdir(parents=True, exist_ok=True)
+    for f in sorted((ROOT / "research/p5r/menu3d_runtime").iterdir()):
+        shutil.copy(f, STAGE / "p5joker/m3d" / f.name)
+    # fonts: raw .ttf (p5mod/src/Vfx/P5Ui.cs loads them with FontFile.LoadDynamicFont, no import needed; SIL OFL)
+    (STAGE / "p5joker/fonts").mkdir(parents=True, exist_ok=True)
+    for f in ("BarlowCondensed-900Italic.ttf", "BarlowCondensed-700Italic.ttf"):
+        shutil.copy(ROOT / "tools/ui/fonts" / f, STAGE / "p5joker/fonts" / f)
     # sounds: raw .ogg (p5mod/src/Vfx/Sfx.cs decodes the bytes itself, no import needed)
     (STAGE / "p5joker/sfx").mkdir(parents=True, exist_ok=True)
     for name, src in SFX.items():

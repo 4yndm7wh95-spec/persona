@@ -55,25 +55,42 @@ detect_3d/compress_to=0
 """
 
 
-def ctex_bytes(im: Image.Image) -> bytes:
-    im = im.convert("RGBA")
+def _webp(im: Image.Image) -> bytes:
     buf = io.BytesIO()
     im.save(buf, "WEBP", lossless=True, quality=100, method=4, exact=True)
-    webp = buf.getvalue()
+    return buf.getvalue()
+
+
+def ctex_bytes(im: Image.Image, mipmaps: bool = False) -> bytes:
+    """mipmaps=True：同 Godot 导入「mipmaps/generate」—— 头部 flags 加 FORMAT_BIT_HAS_MIPMAPS（1 << 23），
+    mip 层数 = 缩到 1×1 要减半几次，每层（宽高各取 max(1, 上一层 // 2)）单独一段无损 WebP（CompressedTexture2D 按层读回再拼起来）。"""
+    im = im.convert("RGBA")
     w, h = im.size
-    head = b"GST2" + struct.pack("<IIIIiIII", 1, w, h, 0x0D000000, -1, 0, 0, 0)
-    head += struct.pack("<IHHII", 2, w, h, 0, 5)
-    return head + struct.pack("<I", len(webp)) + webp
+    levels = [im]
+    if mipmaps:
+        lw, lh = w, h
+        while lw > 1 or lh > 1:
+            lw, lh = max(1, lw // 2), max(1, lh // 2)
+            levels.append(im.resize((lw, lh), Image.LANCZOS))
+    flags = 0x0D000000 | ((1 << 23) if mipmaps else 0)
+    head = b"GST2" + struct.pack("<IIIIiIII", 1, w, h, flags, -1, 0, 0, 0)
+    head += struct.pack("<IHHII", 2, w, h, len(levels) - 1, 5)
+    out = [head]
+    for lv in levels:
+        data = _webp(lv)
+        out.append(struct.pack("<I", len(data)) + data)
+    return b"".join(out)
 
 
 def read_ctex(data: bytes) -> Image.Image:
     assert data[:4] == b"GST2"
     fmt = struct.unpack("<I", data[36:40])[0]
     assert fmt == 2, f"only lossless WebP ctex supported, got data_format {fmt}"
-    return Image.open(io.BytesIO(data[56:]))
+    size = struct.unpack("<I", data[52:56])[0]
+    return Image.open(io.BytesIO(data[56:56 + size]))
 
 
-def write_texture(stage: Path, rel: str, im: Image.Image, uid=None):
+def write_texture(stage: Path, rel: str, im: Image.Image, uid=None, mipmaps: bool = False):
     """rel：res:// 之后的路径（如 images/ui/top_panel/character_icon_regent.png）。写 png + .import + .ctex。"""
     src = stage / rel
     src.parent.mkdir(parents=True, exist_ok=True)
@@ -82,8 +99,11 @@ def write_texture(stage: Path, rel: str, im: Image.Image, uid=None):
     dest = f"{name}-{hashlib.md5(('res://' + rel).encode()).hexdigest()}.ctex"
     imp = stage / ".godot/imported"
     imp.mkdir(parents=True, exist_ok=True)
-    (imp / dest).write_bytes(ctex_bytes(im))
-    (stage / (rel + ".import")).write_text(IMPORT_TEMPLATE.format(uid_line=f'uid="uid://{uid}"\n' if uid else "", dest=dest, rel=rel))
+    (imp / dest).write_bytes(ctex_bytes(im, mipmaps))
+    text = IMPORT_TEMPLATE.format(uid_line=f'uid="uid://{uid}"\n' if uid else "", dest=dest, rel=rel)
+    if mipmaps:
+        text = text.replace("mipmaps/generate=false", "mipmaps/generate=true")
+    (stage / (rel + ".import")).write_text(text)
     return dest
 
 

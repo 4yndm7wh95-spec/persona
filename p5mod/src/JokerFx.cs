@@ -12,9 +12,9 @@ namespace P5Joker;
 
 /// <summary>
 /// 把 Joker 的骨骼动画和 HitFx 对上：在姿势图（art/p5/poses/final）上量好的点换算到屏幕，按动画里的时刻放特效。
-/// 时刻见 tools/p5/build_rig_p5.py：打击 attack / attack_chain / attack_from_ready 在 0.14s 出刀（刀光 0.13s 起扫，和出刀帧同一帧；
+/// 时刻见 tools/p5/build_rig_p5.py：打击 attack / attack_chain / attack_from_ready 在第 8 帧（0.133s）出刀（刀光提前约半帧起扫，和出刀帧同一帧；
 /// 转刀中途接上的 attack 要减去跳过的时间），
-/// 开枪 shiv / shiv_from_aim 在 0.18s 开火（转枪中途接上的 shiv 要减去跳过的时间）。
+/// 开枪 shiv / shiv_from_aim 在第 11 帧（0.183s）开火（转枪中途接上的 shiv 要减去跳过的时间）。
 /// </summary>
 public static class JokerFx
 {
@@ -34,12 +34,17 @@ public static class JokerFx
 			case "attack_chain":
 			case "attack_from_ready":
 				// 第四版：手绘刀光扫过（Vfx/KnifeFx.cs）
-				Fx.After(layer, Mathf.Max(0f, 0.13f - skipped), () => KnifeFx.Swing(layer, Joker.PosePoint(node, SwingFrom),
+				Fx.After(layer, Mathf.Max(0f, 0.125f - skipped), () => KnifeFx.Swing(layer, Joker.PosePoint(node, SwingFrom),
 					Joker.PosePoint(node, SwingTo), Joker.Facing(node)));
+				// 匕首雨：每挥一刀放一拨（第一下一扇飞刀 + 横切全体，第二下刀雨 + 斜切全体）；伤害在动作开始后约 0.15s
+				if (Batch3Fx.NextSprayVolley() is { } volley)
+				{
+					Batch3Fx.DaggerSprayVolley(layer, Joker.PosePoint(node, SwingTo), volley.Foes, Joker.Facing(node), volley.Index, Mathf.Max(0.05f, 0.15f - skipped));
+				}
 				break;
 			case "shiv":
 			case "shiv_from_aim":
-				Fx.After(layer, Mathf.Max(0f, 0.18f - skipped), () =>
+				Fx.After(layer, Mathf.Max(0f, 0.183f - skipped), () =>
 				{
 					GunFx.Muzzle(layer, Joker.Muzzle(node), new Vector2(Joker.Facing(node), 0.06f), Joker.Facing(node));   // 第四版枪口（Vfx/GunFx.cs）
 					if (node.Entity?.Player is { } p && MegaCrit.Sts2.Core.Context.LocalContext.IsMe(p) && AmmoPatch.Local is AmmoView ammo
@@ -76,6 +81,9 @@ public static class JokerFx
 
 	/// <summary>弹射：敌人节点 → (记下的时刻, 伤害数字要晚几秒)。</summary>
 	private static readonly Dictionary<ulong, (ulong At, float Delay)> NumberDelay = new();
+
+	/// <summary>这个敌人接下来的伤害数字晚 delay 秒再跳（群蛇形态：等蛇咬到它）。</summary>
+	public static void DelayNumber(NCreature target, float delay) => NumberDelay[target.GetInstanceId()] = (Time.GetTicksMsec(), delay);
 
 	/// <summary>这个敌人的伤害数字要晚几秒（刀扇弹射时，等子弹弹到它）。</summary>
 	public static float DamageNumberDelay(NCreature target) =>
@@ -120,7 +128,16 @@ public static class JokerFx
 				// 刀落下（attack_from_ready 0.14s、伤害 0.15s）之后锁环收紧
 				CardFx.Weaken(layer, t.VfxSpawnPosition, t.GetTopOfHitbox(), 0.12f);
 				break;
-			case "Outbreak":
+			case "Strangle" when t != null:
+				// 紧勒（0.9.49 审阅）：刀命中之后脖子上套上一圈绳、猛地收紧（Vfx/StrangleFx.cs）；之后每勒一次在 StrangleFlashPatch
+				{
+					Vector2 sf = Joker.PosePoint(joker, ReadyFx.Feet);
+					float st = (sf - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length();
+					StrangleFx.Bind(layer, Joker.FxLayer(back: true), t.VfxSpawnPosition, t.GetTopOfHitbox(), t.Hitbox.GetGlobalRect().Size.X, SkillPlay.Tint(t), 0.28f,
+						st, Joker.Facing(joker));
+				}
+				break;
+			case "Outbreak" when PoisonDamage.HasImmediateTrigger:
 			{
 				// 第四版：稀有召唤（眼神特写 + 舞台 + 新亚森，Aim）→ 亚森出手，咒怨光束扇形射向每个敌人（PoisonApplyPatch）
 				// → 牌效果「立即触发中毒」时所有敌人的咒火一起引爆（PoisonFx.Blast）。0.7 的深处之手（DepthGrip）停用。
@@ -153,6 +170,13 @@ public static class JokerFx
 					}
 				}
 				ShivFx.FanOfKnives(layer, Joker.PosePoint(joker, ReadyFx.GunGrip), enemies);
+				// 0.9.49 审阅（金卡，转枪之外没特效）→ 2026-11-18 第二版「弹巢灌红」（SkillRedo10.FanOfKnives11），弹巢整圈转一下
+				SkillCtx fc = SkillPlay.Ctx(joker, null, layer, Joker.FxLayer(back: true), room) with { Hand = Joker.PosePoint(joker, ReadyFx.GunGrip) };
+				SkillRedo5.FanOfKnives11(fc, Joker.Muzzle(joker));
+				if (joker.Entity?.Player is { } fp && MegaCrit.Sts2.Core.Context.LocalContext.IsMe(fp) && AmmoPatch.Local is AmmoView av && GodotObject.IsInstanceValid(av.Root))
+				{
+					Fx.After(layer, 0.05, () => av.Charge());
+				}
 				break;
 			}
 			case "BouncingFlask":
@@ -163,20 +187,37 @@ public static class JokerFx
 				// 第四版：0.7 的亚森之手（Grip）停用；施毒特效走 PoisonApplyPatch → PoisonFx
 				break;
 			}
+			case "KnifeTrap" when t != null:
+			{
+				// 用户 2026-11-13：原来太简单 → 敌人四周亮起一圈红光弹（数量 = 要打出的小刀），之后每发小刀打中收一颗扎进去（KnifeTrapFx）
+				int n = MegaCrit.Sts2.Core.Entities.Cards.PileType.Exhaust.GetPile(card.Owner).Cards.Count(c => c.Tags.Contains(CardTag.Shiv));
+				Rect2 box = t.Hitbox.GetGlobalRect();
+				// 第三版「时钟陷阱」（0.9.49 审阅）：场景褪灰、敌人身后展开透明大表盘、表盘边上挂着预告信（= 小刀张数，最多显示 24），每一枪打爆一张、表盘加速
+
+				Vector2 jf = Joker.PosePoint(joker, ReadyFx.Feet);
+				KnifeTrapFx.Begin(layer, Joker.FxLayer(back: true) ?? layer, Joker.Muzzle(joker), box.GetCenter(), box.Size.Y, box.Size.X, n, t.Visuals,
+					Joker.Chest(joker), (jf - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length());
+				break;
+			}
 			case "Snakebite" when t != null:
 			{
-				// 用户 2026-11-11：复用群蛇形态的扑咬——敌人斜上方一团咒烟里冒出一条蛇咬下去；上毒（PoisonApplyPatch → PoisonFx）等到咬合那一刻
-				HideBiteUntil = Time.GetTicksMsec() + 3000;
+				// 用户 2026-11-16：原来的亚森光带 + 敌人那里烟里冒小蛇配合不好 → 推倒重做（SnakebiteFx）：不召唤亚森、直接挥手，
+				// 一条蛇影贴地游过去、昂头扑起、毒牙合拢咬住；上毒等到咬合那一刻（原来的落点不变，不从亚森爪尖甩光束）
+				HideBiteUntil = Time.GetTicksMsec() + 4000;
 				Control back = Joker.FxLayer(back: true) ?? layer;
-				float tall = (Joker.PosePoint(joker, ReadyFx.Feet) - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length();
+				Vector2 jf = Joker.PosePoint(joker, ReadyFx.Feet);
+				float tall = (jf - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length();
 				float face = Joker.Facing(joker);
-				float lead = SkillPlay.Moment(joker);                          // 扶面具施法里手甩出去的那一帧（cast 0.4s / 从扶面具接 0.23s）
-				float biteIn = lead + SerpentMantle.BiteDelay;
-				Aim.HoldCast(joker, biteIn);
+				const float start = 0.1f;                                // 挥手（cast_wave）手伸直的时刻：蛇从伸直的手里钻出来
+				float biteIn = start + SnakebiteFx.BiteDelay + 0.03f;   // 上毒（带顿帧）落在咬合之后一点：先结算会把蛇的咬合拖到顿帧之后
+
+				PoisonFx.NoBeamUntil = Stage.NowMs() + (ulong)((biteIn + 0.6f) * 1000f);
 				NCreature tn = t;
-				Fx.After(layer, lead, () =>
+				Fx.After(layer, start, () =>
 				{
-					if (GodotObject.IsInstanceValid(tn)) SerpentMantle.Bite(layer, back, tn.Hitbox.GetGlobalRect().GetCenter(), tn.Visuals, tall, face);
+					if (!GodotObject.IsInstanceValid(tn)) return;
+					Rect2 box = tn.Hitbox.GetGlobalRect();
+					SnakebiteFx.Play(layer, back, jf, tall, face, box.GetCenter(), tn.Visuals);
 				});
 				break;
 			}

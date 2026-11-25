@@ -1,0 +1,18 @@
+{
+  "cards": [
+    {
+      "name": "furnace",
+      "prompt": "Use case: precise-object-edit. VERY SMALL local change to attached furnace candidate. User rejects tarot moltenstream/new tongs/new sword redesign. LOCK ALL existing hammer, steel head with gold inset, navy wrapped right handle, orange molten stream, yellow-white hammer contact flash, long cyan-bordered redhot blade mould, purple background, composition and dimensions EXACTLY. Change ONLY the UPPERLEFT POURING CRUCIBLE outer vessel surface: retain its original curved silhouette, lip, scale and position and reddish hot interior, but outer curved wall becomes deep NAVY enamel with thin silver edging and ONE small engraved ivory crescent-moon framed tarot motif, no text/numbers. The motif is embedded into vessel material, not floating tarot cards. Add modest original-style hard celshaded enamel bevel and warm orange bounce. All rest unchanged. NO visible tarot cards/fragments, NO tongs, no new swordhilt, no people/creatures, no added particles or symbols outside vessel. Opaque1000x760 horizontal fullbleed no frame/watermark/text.",
+      "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-4a64fefd-11a0-4728-84ca-e6a4223a1f72.png",
+      "status": "awaiting_user_review",
+      "saved_file": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\outputs\\original_local_edits_batch06_revision02\\furnace.png"
+    },
+    {
+      "name": "hammer_time",
+      "prompt": "Use case: precise-object-edit. MINIMAL LOCAL CLEANUP of attached earlier hammer_time, NOT redesign. User rejects vise/new sword/rearranged hammer. LOCK original image composition: keep both existing white Jack Frost hands and their blue cuffs EXACTLY, same grip/size/positions, preserve both diagonal brown shaft shapes and original orange-brown hammer head, preserve original lower-right cyan impact flash and shard-filled cyan blade and purple background. ONLY REMOVE residual Regent armored hand below middle white hand: orange-brown knuckle/finger cluster at approximately x30-60%, y65-87%, and blue school/Regent sleeve shape along bottom-left x0-45%, y78-100%. This is old hand residue NOT hammerhead: keep the large solid angular brown pointed HAMMERHEAD extending to right, do not erase it. Restore existing purple background behind removed flesh/blue sleeve. Keep existing shaft/hammer edges continuous where residue overlapped. No vise, no clamps, no extra tool, no replacement sword, no new scene. Exact same overall illustration with tiny localized cleanup. Crisp original hardcelshade. Opaque horizontal1000x760 no text/frame/watermark.",
+      "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-af813254-0dc2-4458-be06-2bf40f5ce984.png",
+      "status": "awaiting_user_review",
+      "saved_file": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\outputs\\original_local_edits_batch06_revision02\\hammer_time.png"
+    }
+  ]
+}

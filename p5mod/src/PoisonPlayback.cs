@@ -1,158 +1,152 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
+using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
-using MegaCrit.Sts2.Core.GameActions.Multiplayer;
-using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Cards;
 using MegaCrit.Sts2.Core.Models.Powers;
+using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
-using MegaCrit.Sts2.Core.ValueProps;
 
 namespace P5Joker;
 
-/// <summary>Card-local rendezvous: applying poison completes before the hand is allowed to crush.</summary>
-public sealed class OutbreakPlayback
-{
-	// Key by the individual play, not the card model: repeats/canceled plays must never consume another clip.
-	private static readonly ConditionalWeakTable<CardPlay, OutbreakPlayback> Pending = new();
-	public static readonly AsyncLocal<OutbreakPlayback?> Current = new();
-	public readonly CutInPlayback Clip;
-	private readonly TaskCompletionSource _crushed = new();
-	private bool _visualStarted;
-
-	private OutbreakPlayback(float splitAt) { Clip = new CutInPlayback(splitAt, crush: true) { Ready = false }; }
-	public static OutbreakPlayback? Prepare(CardPlay cardPlay)
-	{
-		if (cardPlay.Card is not Outbreak || Joker.FxLayer(back: true) == null) return null;
-		return Pending.GetValue(cardPlay, p => new OutbreakPlayback(Aim.HitFor(p.Card) - 0.04f));
-	}
-	public static OutbreakPlayback? Take(CardPlay cardPlay)
-	{
-		if (!Pending.TryGetValue(cardPlay, out var play)) return null;
-		Pending.Remove(cardPlay);
-		return play;
-	}
-	public void Started(Node owner)
-	{
-		_visualStarted = true;
-		Clip.Start();
-		owner.TreeExiting += () => _crushed.TrySetCanceled();
-	}
-	public void Crush() => _crushed.TrySetResult();
-
-	public async Task Run(Outbreak card, PlayerChoiceContext context)
-	{
-		var previous = Current.Value;
-		Current.Value = this;
-		try
-		{
-			var combat = card.CombatState ?? throw new InvalidOperationException("Outbreak has no combat state");
-			// Do not wait for the old full cast delay and THEN apply poison enemy by enemy.
-			await CreatureCmd.TriggerAnim(card.Owner.Creature, "Cast", 0f);
-			foreach (Creature target in combat.HittableEnemies.ToArray())
-				await PowerCmd.Apply<PoisonPower>(context, target, card.DynamicVars.Poison.BaseValue, card.Owner.Creature, card);
-			Clip.Ready = true;
-			if (Joker.FxLayer(back: true) is Control back)
-			{
-				// A failed visual setup must not leave a card waiting forever.
-				Fx.After(back, 0.1, () => { if (!_visualStarted) _crushed.TrySetResult(); });
-				await _crushed.Task;
-			}
-			// Start all targets before awaiting any target. Keep each vanilla Trigger, including
-			// Accelerant repeats, decrement, damage hooks and death handling; no Task.Run/thread pool.
-			// User 2026-11-08: each target's tick waits for the curse streak thrown from the fist to reach it
-			// (PoisonFx.Crushed / ArrivalDelay, 0.05-0.18 s of game time, so the crush hit-stop holds it too).
-			SceneTree? tree = Engine.GetMainLoop() as SceneTree;
-			NCombatRoom? room = NCombatRoom.Instance;
-			Task[] ticks = combat.HittableEnemies.ToArray()
-				.Select(c => (Creature: c, Power: c.GetPower<PoisonPower>()))
-				.Where(x => x.Power != null)
-				.Select(x => Land(tree, room?.GetCreatureNode(x.Creature) is { } n ? PoisonFx.ArrivalDelay(n.VfxSpawnPosition) : 0f, x.Power!))
-				.ToArray();
-			await Task.WhenAll(ticks);
-		}
-		finally { Clip.Ready = true; Current.Value = previous; }
-	}
-
-	private static async Task Land(SceneTree? tree, float delay, PoisonPower power)
-	{
-		if (delay > 0f && tree != null)
-			await tree.ToSignal(tree.CreateTimer(delay), SceneTreeTimer.SignalName.Timeout);
-		await power.Trigger();
-	}
-}
-
-/// <summary>
-/// 毒性爆发的毒伤结算（用户 2026-11-08：原版受击声很普通、很平淡）：原版每次扣血都放怪物的受击声（SfxCmd.PlayDamage），
-/// 这段时间关掉，换成 PoisonFx.Blast 里的咒怨引爆声。怪物自己的叫声（HurtSfx）不动。
-/// </summary>
-[HarmonyPatch(typeof(SfxCmd), nameof(SfxCmd.PlayDamage))]
-public static class OutbreakHitSfxPatch
-{
-	public static bool Prefix() => OutbreakPlayback.Current.Value == null || PoisonDamage.Current.Value == null;
-}
-
-[HarmonyPatch(typeof(Outbreak), "OnPlay")]
-public static class OutbreakTogetherPatch
-{
-	public static bool Prefix(Outbreak __instance, PlayerChoiceContext choiceContext, CardPlay cardPlay, ref Task __result)
-	{
-		if (!Joker.OwnsCard(__instance) || OutbreakPlayback.Take(cardPlay) is not { } play) return true;
-		__result = play.Run(__instance, choiceContext);
-		return false;
-	}
-}
-
-/// <summary>Tag the real PoisonPower damage call, not a guessed 1.5-second "recent hit" window.</summary>
+/// <summary>Tag native poison ticks and record the local crush cue across the game's own awaits.</summary>
 public static class PoisonDamage
 {
-	public static readonly AsyncLocal<PoisonPower?> Current = new();
-	public static async Task<IEnumerable<DamageResult>> Apply(PlayerChoiceContext context, Creature target,
-		decimal amount, ValueProp props, CardModel? cardSource, CardPlay? cardPlay, PoisonPower power)
-	{
-		var previous = Current.Value;
-		Current.Value = power;
-		try { return await CreatureCmd.Damage(context, target, amount, props, cardSource, cardPlay); }
-		finally { Current.Value = previous; }
-	}
+	internal static readonly MethodInfo? TriggerMethod = AccessTools.Method(typeof(PoisonPower), "Trigger", Type.EmptyTypes);
+	internal static bool HasImmediateTrigger => TriggerMethod != null;
+	internal static readonly AsyncLocal<PoisonPower?> Current = new();
 }
 
 [HarmonyPatch]
 public static class PoisonDamageContextPatch
 {
-	public static MethodBase TargetMethod() => AccessTools.Method(
-		AccessTools.Method(typeof(PoisonPower), nameof(PoisonPower.Trigger))
-			.GetCustomAttribute<AsyncStateMachineAttribute>()!.StateMachineType, "MoveNext");
-	public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, MethodBase original)
+	public static MethodBase TargetMethod() => PoisonDamage.TriggerMethod
+		?? AccessTools.DeclaredMethod(typeof(PoisonPower), "AfterSideTurnStart");
+
+	public static void Prefix(PoisonPower __instance, out PoisonPower? __state)
 	{
-		FieldInfo owner = AccessTools.Field(original.DeclaringType, "<>4__this");
-		MethodInfo tagged = AccessTools.Method(typeof(PoisonDamage), nameof(PoisonDamage.Apply));
-		var output = new List<CodeInstruction>();
-		int count = 0;
-		foreach (var instruction in instructions)
-		{
-			if (instruction.operand is MethodInfo m && m.DeclaringType == typeof(CreatureCmd)
-				&& m.Name == nameof(CreatureCmd.Damage) && m.GetParameters() is { Length: 6 } p
-				&& p[1].ParameterType == typeof(Creature) && p[2].ParameterType == typeof(decimal))
-			{
-				output.Add(new CodeInstruction(OpCodes.Ldarg_0).MoveLabelsFrom(instruction).MoveBlocksFrom(instruction));
-				output.Add(new CodeInstruction(OpCodes.Ldfld, owner));
-				output.Add(new CodeInstruction(OpCodes.Call, tagged));
-				count++;
-			}
-			else output.Add(instruction);
-		}
-		if (count != 1 || owner == null) throw new InvalidOperationException($"PoisonPower.Trigger layout changed ({count} damage calls); no patch applied");
-		return output;
+		__state = PoisonDamage.Current.Value;
+		PoisonDamage.Current.Value = __instance;
+		if (OutbreakVisualPatch.Current is { } cue)
+			Stage.Safe("outbreak hold health", () => cue.HoldHealth(__instance.Owner));
 	}
+
+	public static void Finalizer(PoisonPower? __state) => PoisonDamage.Current.Value = __state;
+}
+
+/// <summary>Present the health change and poison damage number at the hand's impact on each enemy.</summary>
+public sealed class OutbreakCue
+{
+	private static readonly ConditionalWeakTable<CardPlay, OutbreakCue> Plays = new();
+	private static readonly ConditionalWeakTable<Creature, HealthHold> Health = new();
+	private static readonly ConditionalWeakTable<NCombatRoom, RoomImpacts> Impacts = new();
+	private sealed class RoomImpacts { public int Pending; }
+	private sealed class HealthHold(OutbreakCue cue, NCombatRoom room, RoomImpacts impacts)
+	{
+		public OutbreakCue Cue { get; } = cue;
+		public NCombatRoom Room { get; } = room;
+		public RoomImpacts Impacts { get; } = impacts;
+		public HashSet<NHealthBar> Bars { get; } = new();
+	}
+	private readonly List<Action> _pending = new();
+	private double? _crushedAt;
+	private readonly double _fallbackAt;
+
+	private OutbreakCue(float hit) => _fallbackAt = HitStop.VisualSeconds() + hit + 0.3;
+
+	internal static OutbreakCue? Prepare(CardPlay play) =>
+		play.Card is Outbreak && PoisonDamage.HasImmediateTrigger && Joker.FxLayer(back: true) != null
+			? Plays.GetValue(play, p => new OutbreakCue(Aim.HitFor(p.Card))) : null;
+
+	internal static OutbreakCue? Find(CardPlay play) => Plays.TryGetValue(play, out var cue) ? cue : null;
+
+	internal static bool HasPendingImpact(NCombatRoom room) =>
+		Impacts.TryGetValue(room, out var impacts) && impacts.Pending > 0;
+
+	internal void HoldHealth(Creature target)
+	{
+		if (target.IsPlayer || NCombatRoom.Instance is not { } room || !Fx.Active(room)) return;
+		if (Health.TryGetValue(target, out var previous))
+		{
+			if (previous.Cue == this) return;
+			previous.Cue.ReleaseHealth(target);
+		}
+		RoomImpacts impacts = Impacts.GetOrCreateValue(room);
+		var hold = new HealthHold(this, room, impacts);
+		Health.Add(target, hold);
+		impacts.Pending++;
+
+		// Release even if the native popup is unavailable or its visual layer leaves.
+		double limit = Math.Max(0.4, _fallbackAt - HitStop.VisualSeconds() + 1.0);
+		room.GetTree().CreateTimer(limit, ignoreTimeScale: true).Timeout += () => ReleaseHealth(target);
+		if (Joker.FxLayer() is Control layer && room.GetCreatureNode(target) is { } node && Fx.Active(node))
+			Show(layer, node.VfxSpawnPosition, () => ReleaseHealth(target));
+	}
+
+	internal static bool DeferHealth(NHealthBar bar, Creature target)
+	{
+		if (!Health.TryGetValue(target, out var hold) || NCombatRoom.Instance != hold.Room) return false;
+		hold.Bars.Add(bar);
+		return true;
+	}
+
+	internal void ReleaseHealth(Creature target)
+	{
+		if (!Health.TryGetValue(target, out var hold) || hold.Cue != this) return;
+		Health.Remove(target);
+		hold.Impacts.Pending--;
+		foreach (NHealthBar bar in hold.Bars)
+			if (Fx.Active(bar)) Stage.Safe("outbreak refresh health", bar.RefreshValues);
+	}
+
+	internal void Crush()
+	{
+		_crushedAt = HitStop.VisualSeconds();
+		foreach (Action play in _pending.ToArray()) Stage.Safe("outbreak hit", play);
+		_pending.Clear();
+	}
+
+	internal void Show(Control layer, Vector2 at, Action play)
+	{
+		if (_crushedAt is double crush)
+		{
+			float delay = (float)Math.Max(0, crush + PoisonFx.ArrivalDelay(at) - HitStop.VisualSeconds());
+			Fx.After(layer, delay, play);
+			return;
+		}
+
+		void AtCrush() => Fx.After(layer, PoisonFx.ArrivalDelay(at), play);
+		_pending.Add(AtCrush);
+		Fx.After(layer, Math.Max(0, _fallbackAt - HitStop.VisualSeconds()), () =>
+		{
+			if (_pending.Remove(AtCrush)) play();
+		});
+	}
+}
+
+[HarmonyPatch(typeof(Outbreak), "OnPlay")]
+public static class OutbreakVisualPatch
+{
+	private static readonly AsyncLocal<OutbreakCue?> Visual = new();
+	internal static OutbreakCue? Current => Visual.Value;
+
+	public static void Prefix(CardPlay cardPlay, out OutbreakCue? __state)
+	{
+		__state = Visual.Value;
+		Visual.Value = OutbreakCue.Find(cardPlay);
+	}
+
+	public static void Finalizer(OutbreakCue? __state) => Visual.Value = __state;
+}
+
+[HarmonyPatch(typeof(SfxCmd), nameof(SfxCmd.PlayDamage))]
+public static class OutbreakHitSfxPatch
+{
+	public static bool Prefix() => OutbreakVisualPatch.Current == null || PoisonDamage.Current.Value == null;
 }

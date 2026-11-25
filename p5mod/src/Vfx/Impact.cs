@@ -36,8 +36,9 @@ public static class Impact
 		Weight.Light => new Spec(1, 0, 2.0f, 12f, 0f, 0f, 0f, 0f, 0.12f),
 		Weight.Medium => new Spec(2, 1, 2.6f, 26f, 0f, 0f, 0f, 0f, 0.2f),
 		Weight.Heavy => new Spec(3, 2, 3.0f, 42f, 1f, 0.07f, 6f, 0.25f, 0.4f),
-		Weight.Kill => new Spec(3, 2, 0f, 0f, 1f, 0.07f, 6f, 0.28f, 0.4f),
-		_ => new Spec(4, 3, 0f, 0f, 1f, 0.28f, 10f, 0.45f, 0.6f),
+		// 用户 2026-11-16：击败敌人最后一击的屏幕闪烁去掉 → 击杀 / 结束不再有全屏冲击帧、色散、径向模糊，只留顿帧和震屏
+		Weight.Kill => new Spec(3, 2, 0f, 0f, 0f, 0f, 0f, 0f, 0.4f),
+		_ => new Spec(4, 3, 0f, 0f, 0f, 0f, 0f, 0f, 0.6f),
 	};
 
 	/// <summary>
@@ -182,7 +183,7 @@ public static class Impact
 	/// </summary>
 	public static Shader FrameShader => _frame ??= new Shader { Code = @"
 shader_type canvas_item;
-uniform sampler2D screen_tex : hint_screen_texture, filter_linear_mipmap;
+uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
 uniform float ink = 0.0;
 uniform float chroma = 0.0;
 uniform vec2 dir = vec2(1.0, 0.0);

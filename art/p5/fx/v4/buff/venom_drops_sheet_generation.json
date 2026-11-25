@@ -1,0 +1,152 @@
+{
+  "group": "buff",
+  "name": "venom_drops_sheet",
+  "w": 2048,
+  "h": 2048,
+  "prompt": "Use case: stylized-concept. Asset type: stand-alone hand-painted 2D sprites for buff VFX in a Persona 5 Joker Slay the Spire 2 game mod. Match the visual vocabulary of the project's slash_thin and slash_cross sprites: sharply tapered brushwork; bright white specular cores, vivid scarlet rims near #E5191C, and sparse strands of rich burgundy and ink-black dry-brush marks. The game's shader reads luminance, so keep crisp, separated white, red, and dark values. Fine hand-drawn irregularity and soft antialiasing at the actual silhouette; no heavy cartoon outline, halftone, large flat color patches, flames, or black smoke. Use real RGBA transparency (alpha zero anywhere outside the asset); do not paint checkerboard, gray, white or black backdrops, mist or colored haze. No text, watermark, logo, characters, ground, frame, or axes.\nComposition and canvas: Target 2048×2048 pixels, exact square 4×4 sprite atlas for fixed 512×512 cells. Use invisible equal-size rows and columns, with the four center coordinates on each axis at 12.5%, 37.5%, 62.5%, 87.5%. Exactly one isolated sprite at each center, exactly sixteen, in four straight rows and four straight columns. Do not draw guides, labels or grid borders. Maintain fully transparent gutters so no part of a sprite enters another cell.\nPrimary request: 16 visually different isolated droplets of glossy black-red venom, each centered and occupying at most about 55% of its cell width and height. The silhouettes are varied but coherent: row one rounded drops (spherical, pear, bean, domed); row two stretched drops (hanging teardrop, bent diagonal tear, needle-tail drop, short thick dash); row three small single connected splashes (three lobes, asymmetric crown, off-center fork, hook puddle); row four stringy pieces (thin bent filament, tapered comma, looping stem with no extra droplet, fine fishhook thread). Each has one clear localized white wet highlight, sharp scarlet or dark crimson rim, oxblood and near-black depth. No shadows, bubbles drifting outside the 16 sprites, or floating extras.",
+  "description": "4×4 独立毒滴，含圆滴、拖长液滴、飞溅块和细丝。",
+  "method": "imagegen (built-in)",
+  "transparent_background": true,
+  "generation_count": 1,
+  "redraw_count": 0,
+  "rejected": false,
+  "raw_image": "venom_drops_sheet_raw.png",
+  "raw_sha256": "2784c49d94d199f9350c2dd0f6e37a7d7592267469b771300a77929797046b71",
+  "raw_size": [
+    1254,
+    1254
+  ],
+  "delivery_size": [
+    2048,
+    2048
+  ],
+  "mode": "RGBA",
+  "style_references_reviewed": [
+    "art/p5/fx/v4/slash/slash_thin.png",
+    "art/p5/fx/v4/slash/slash_cross.png"
+  ],
+  "processing": "保留原始 4×4 布局，等比重采样至 2048×2048；原始图为 1254×1254，非原生 2048。 清零 alpha≤2 的边缘残点和全透明区域的 RGB；未做抠底。",
+  "checks": {
+    "alpha_range": [
+      0,
+      255
+    ],
+    "alpha_bbox_xyxy": [
+      88,
+      66,
+      1973,
+      1985
+    ],
+    "transparent_pixels": 3604513,
+    "soft_alpha_pixels": 589362,
+    "transparent_outer_border": true,
+    "grid": [
+      4,
+      4
+    ],
+    "cell_size": [
+      512,
+      512
+    ],
+    "occupied_cells": 16,
+    "minimum_cell_edge_gap_px": 46,
+    "cell_alpha_bboxes_local_xyxy": [
+      [
+        127,
+        150,
+        416,
+        436
+      ],
+      [
+        124,
+        66,
+        393,
+        459
+      ],
+      [
+        108,
+        127,
+        416,
+        441
+      ],
+      [
+        95,
+        200,
+        424,
+        422
+      ],
+      [
+        162,
+        46,
+        359,
+        459
+      ],
+      [
+        79,
+        79,
+        437,
+        431
+      ],
+      [
+        95,
+        75,
+        430,
+        450
+      ],
+      [
+        87,
+        205,
+        437,
+        340
+      ],
+      [
+        105,
+        140,
+        418,
+        408
+      ],
+      [
+        88,
+        133,
+        435,
+        397
+      ],
+      [
+        83,
+        130,
+        433,
+        408
+      ],
+      [
+        76,
+        113,
+        430,
+        392
+      ],
+      [
+        88,
+        113,
+        439,
+        413
+      ],
+      [
+        134,
+        71,
+        383,
+        449
+      ],
+      [
+        77,
+        94,
+        403,
+        409
+      ],
+      [
+        135,
+        54,
+        352,
+        427
+      ]
+    ]
+  }
+}

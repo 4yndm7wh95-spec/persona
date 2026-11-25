@@ -30,14 +30,14 @@ public partial class Preview : Node2D
 	{
 		("Footwork", "cast_guard", 0.08, 1.2), ("Accuracy", "cast_glove", 0.25, 1.3), ("Envenom", "cast_glove", 0.25, 1.5),
 		("NoxiousFumes", "cast_glove", 0.25, 2.0), ("Tracking", "cast_glove", 0.25, 1.4), ("Burst", "cast_glove", 0.25, 1.4),
-		("SerpentForm", "cast_big", 0.4, 2.2), ("WraithForm", "cast_big", 0.4, 2.0),
+		("SerpentForm", "cast_wave", 0.08, 2.2), ("WraithForm", "cast_wave", 0.08, 2.0),
 	});
 
 	private static void Cards2(Preview p, string[]? only) => RunCards(p, only, new (string, string, double, double)[]
 	{
 		("Shadowmeld", "cast_glove", 0.25, 1.6), ("Blur", "cast_guard", 0.08, 1.2), ("Afterimage", "cast_glove", 0.25, 1.5),
 		("ShadowStep", "cast_glove", 0.25, 1.7), ("BulletTime", "aim_in", 0.1, 1.8), ("Flanking", "cast_glove", 0.25, 1.3),
-		("Malaise", "cast", 0.4, 1.8), ("LegSweep", "cast_guard", 0.08, 1.4),
+		("Malaise", "cast_wave", 0.08, 1.8), ("LegSweep", "cast_guard", 0.08, 1.4),
 	});
 
 	private static void Cards3(Preview p, string[]? only) => RunCards(p, only, new (string, string, double, double)[]
@@ -48,10 +48,55 @@ public partial class Preview : Node2D
 		("Adrenaline", "cast_glove", 0.25, 1.4),
 	});
 
-	private static void RunCards(Preview p, string[]? only, (string Card, string Anim, double Lead, double Gap)[] seq)
+	/// <summary>假手牌（5 张灰牌）at0 时出现，at1 / at2（&lt;0 = 不要）时放「保留手牌」的封。</summary>
+	private static void RetainDemo(Preview p, double at0, double at1, double at2)
+	{
+		var bodies = new List<Control>();
+		p.At(at0, () =>
+		{
+			for (int i = 0; i < 5; i++)
+			{
+				float k = i - 2f;
+				var holder = new Control { Position = new Vector2(960f + k * 175f, 1010f + Mathf.Abs(k) * 12f), Rotation = k * 0.05f, Scale = Vector2.One * 0.62f };
+				p._front.AddChild(holder);
+				// 同游戏的 NCard：牌身（CardContainer）是 0 大小、原点在牌正中的 Control，牌面往四周偏 ±150 / ±211
+				var container = new Control { Position = new Vector2(0f, -211f) };
+				holder.AddChild(container);
+				var body = new Panel { Size = new Vector2(300f, 422f), Position = new Vector2(-150f, -211f) };
+				var sb = new StyleBoxFlat { BgColor = new Color(0.16f, 0.12f, 0.14f), CornerRadiusTopLeft = 22, CornerRadiusTopRight = 22, CornerRadiusBottomLeft = 22, CornerRadiusBottomRight = 22, BorderColor = new Color(0.5f, 0.45f, 0.4f), BorderWidthBottom = 6, BorderWidthTop = 6, BorderWidthLeft = 6, BorderWidthRight = 6 };
+				body.AddThemeStyleboxOverride("panel", sb);
+				container.AddChild(body);
+				bodies.Add(container);
+			}
+		});
+		foreach (double at in new[] { at1, at2 })
+		{
+			if (at < 0) continue;
+			p.At(at, () => { Sfx.Take("gx_card_slide", 0.08f); Sfx.Take("gx_card_stack", 0.1f, 0.2f); for (int i = 0; i < bodies.Count; i++) RetainFx.Play(bodies[i], 0.08f * i); });
+		}
+	}
+
+	private static void RunCards(Preview p, string[]? only, (string Card, string Anim, double Lead, double Gap)[] seq, double start = 0.3)
+	{
+		SkillCtx Ctx() => CtxOf(p);
+		double at = start;
+		foreach (var (card, anim, lead, gap) in seq)
+		{
+			if (only != null && Array.IndexOf(only, card) < 0) continue;
+			string a = anim, cd = card;
+			int cnt = -1;                                   // 「牌名#3」= 这次特效表现 3 张牌（SkillCtx.Count，游戏里由 SkillPlay.FxCount 给）
+			if (cd.IndexOf('#') is int hash and >= 0) { cnt = int.Parse(cd[(hash + 1)..]); cd = cd[..hash]; }
+			if (a.Length > 0) p.At(at, () => p._joker?.Play(a));
+			p.At(at + lead, () => (cd == "AfterimageTick" ? SkillRedo5.AfterimageTick : CardSkillFx.Cards[cd])(Ctx() with { Count = cnt }));
+			at += gap;
+		}
+	}
+
+	/// <summary>预览里的 SkillCtx（Joker 站位、三个敌人）。</summary>
+	private static SkillCtx CtxOf(Preview p)
 	{
 		float tall = (JokerFeet - Pose(815f, 120f)).Length();
-		SkillCtx Ctx() => new(p._front, p._back, JokerFeet, Pose(1010f, 330f), Pose(1010f, 410f), Pose(1010f, 215f), tall, 1f,
+		return new(p._front, p._back, JokerFeet, Pose(1010f, 330f), Pose(1010f, 410f), Pose(1010f, 215f), tall, 1f,
 			c => p._joker!.Modulate = c, new List<SkillFx.Victim>
 			{
 				new(new Vector2(Enemy2.X, 830f), Enemy2 + new Vector2(0f, -170f), 230f, c => p._enemies[Enemy2].Modulate = c),
@@ -61,16 +106,8 @@ public partial class Preview : Node2D
 		{
 			CopyBody = BodyAura.CloneBody,
 			Region = new Rect2(JokerFeet + new Vector2(-tall * 0.75f, -tall * 1.15f), new Vector2(tall * 1.5f, tall * 1.3f)),
+			BodyMaterial = m => p._joker!.Material = m,
 		};
-		double at = 0.3;
-		foreach (var (card, anim, lead, gap) in seq)
-		{
-			if (only != null && Array.IndexOf(only, card) < 0) continue;
-			string a = anim, cd = card;
-			p.At(at, () => p._joker?.Play(a));
-			p.At(at + lead, () => (cd == "AfterimageTick" ? SkillRedo4.AfterimageTick : CardSkillFx.Cards[cd])(Ctx()));
-			at += gap;
-		}
 	}
 
 	private SpinePlayer? _joker;
@@ -91,6 +128,85 @@ public partial class Preview : Node2D
 				0.04f + SummonStage.EvokeAt + spec.AttackAt, 1f, c => p._enemies[Enemy].Modulate = c, ownImpact: true));
 		},
 
+		// 选人界面（Vfx/CharSelectScene.cs）：藏掉假战斗场景，整屏换成选人背景；第二遍（6s）切走再选一次看不带切入的常驻
+		["charselect"] = p => CharSelect(p),
+		// 出发过场（Vfx/EmbarkTransition.cs）：选人画面 2.6s 后点出发 → 门合拢、预告信、飞刀钉住 → 盖住时把底下换成假战斗场景（代替进局）→
+		// 钉着预告信的那一帧停 0.6s（加载）→ 展开
+		// 总攻击（p5mod/src/Vfx/AllOut.cs）：最后一刀砍中 → 截三只怪物的剪影 → 总攻击
+		["allout"] = p =>
+		{
+			AllOut.LoadText = name =>
+			{
+				string f = ProjectSettings.GlobalizePath($"res://../../../p5mod/pck_stage/p5joker/allout/{name}");
+				return System.IO.File.Exists(f) ? System.IO.File.ReadAllText(f) : null;
+			};
+			AllOutFinale.LoadData = () =>
+			{
+				string f = ProjectSettings.GlobalizePath("res://../../../p5mod/pck_stage/p5joker/allout/hero.bin");
+				return System.IO.File.Exists(f) ? System.IO.File.ReadAllBytes(f) : null;
+			};
+			p.Strike(0.3, Enemy, 99);
+			p.At(0.46, () =>
+			{
+				var foes = new List<AllOut.Foe>();
+				Vector2[] es = { Enemy2, Enemy, Enemy3 };
+				int left = es.Length;
+				void Done(AllOut.Foe? foe)
+				{
+					if (foe != null) foes.Add(foe);
+					if (--left == 0) AllOut.Play(p, foes);
+				}
+				foreach (Vector2 e in es)
+				{
+					if (p._enemies[e] is not SpinePlayer sp || !Monsters.TryGetValue(e, out var mon))
+					{
+						Done(null);
+						continue;
+					}
+					float k = mon.Scale / 0.55f;
+					Rect2 region = new(e.X - 300f * k, 870f - 520f * k, 600f * k, 520f * k);
+					AllOut.Snap(p, region, parent =>
+					{
+						string monDir = ProjectSettings.GlobalizePath("res://.mon");
+						string src = ProjectSettings.GlobalizePath("res://") + "../../../research/sts2_preview_scene/recovered/animations/monsters";
+						SpinePlayer c = SpinePlayer.Load($"{monDir}/{mon.Name}.json", $"{src}/{mon.Name}/{mon.Name}.atlas", $"{src}/{mon.Name}/{mon.Name}.png");
+						c.Transform = sp.GetGlobalTransformWithCanvas();
+						parent.AddChild(c);
+						c.PlayFrom(sp.Current, sp.Time);
+						return true;
+					}, Done);
+				}
+			});
+		},
+		["embark"] = p =>
+		{
+			List<Node> charSelect = CharSelect(p);
+			CanvasLayer top = new() { Layer = 50 };
+			p.AddChild(top);
+			Control host = new() { Size = new Vector2(1920f, 1080f), MouseFilter = Control.MouseFilterEnum.Ignore };
+			top.AddChild(host);
+			p.At(2.6, () =>
+			{
+				EmbarkTransition.Curtain? curtain = null;
+				curtain = EmbarkTransition.Out(host, () =>
+				{
+					foreach (Node n in charSelect) n.QueueFree();
+					foreach (Node c in p._world.GetChildren())
+					{
+						if (c is CanvasItem ci && !charSelect.Contains(c)) ci.Visible = true;
+					}
+					p.At(0.6, () => curtain?.Open());
+				});
+			});
+		},
+		// 抽牌堆界面（p5mod/src/Vfx/PileDraw.cs）：0.5s 打开 → 假牌格子依次飞入 → 2.2s / 3.2s 碰到一张牌（预告信踢转）→ 4.4s 关闭
+		["pile_draw"] = p => PileDrawPreview(p, false),
+		// 消耗堆界面（p5mod/src/Vfx/PileExhaust.cs，P5R SKILL 页）
+		["pile_exhaust"] = p => PileDrawPreview(p, true),
+		// 弃牌堆界面（p5mod/src/Vfx/PileDiscard.cs，P5R ITEM 页，2026-11-23）
+		["pile_discard"] = p => PileDrawPreview(p, true, true),
+		// 牌组界面（p5mod/src/Vfx/PileDeck.cs，P5R EQUIP 页，2026-11-24）
+		["pile_deck"] = p => PileDrawPreview(p, true, false, true),
 		["damage"] = p =>
 		{
 			p.Strike(0.3, Enemy, 7);
@@ -180,6 +296,8 @@ public partial class Preview : Node2D
 			foreach (double t in new[] { 2.6, 3.4, 4.3, 4.32, 4.34 })
 			{
 				p.At(t, () => CorrosiveFx.OnDraw(p._front, JokerFeet, 1f, targets));
+				foreach (Vector2 e in new[] { Enemy2, Enemy, Enemy3 })
+					p.Poison(t + CorrosiveFx.HitTime, e, 3);           // 游戏里上毒推迟到拍中那一刻（CorrosiveDrawPatch）
 			}
 		},
 		// 毒性爆发（稀有）：完整召唤 + 伊邪那岐大神转杖 + 万物真言 + 咒怨毒火，打全体
@@ -237,6 +355,23 @@ public partial class Preview : Node2D
 			p.At(1.89, () => { Sfx.Play(Sfx.PersonaFlame, 0.8f); Persona.Show(spec, p._back, JokerFeet, tall); });   // 同 Aim：没有舞台时自己放蓝焰声
 			p.At(1.85, () => Grip.Play(p._front, 1ul, Persona.ChestOf(spec, JokerFeet, tall) + new Vector2(0.22f * tall, -0.12f * tall), Enemy, 170f,
 				0.04f + spec.AttackAt, 1f, c => p._enemies[Enemy].Modulate = c, ownImpact: true));
+		},
+		// 致命毒药 / 咕嘟冒泡（2026-11-16）：挥手召唤亚森 → 亚森出手的那一刻 PoisonFx.Apply 走爪尖光束（同游戏）
+		["poison_beam"] = p =>
+		{
+			Persona.Spec spec = Persona.ArseneSpec with { Linger = 1.1f };
+			float tall = (JokerFeet - Pose(815f, 120f)).Length() * 1.35f;
+			for (int k = 0; k < 2; k++)
+			{
+				double t0 = 0.3 + 2.4 * k;
+				p.At(t0, () => p._joker?.Play("cast_wave"));
+				p.At(t0 + 0.1, () => { Sfx.Play(Sfx.PersonaFlame, 0.8f); Persona.Show(spec, p._back, JokerFeet, tall); });
+				p.At(t0 + 0.1 + spec.AttackAt + 0.02, () =>
+				{
+					p._enemies.TryGetValue(Enemy, out Node2D? body);
+					PoisonFx.Apply(p._front, Enemy + new Vector2(0f, -170f), Enemy + new Vector2(0f, -340f), 220f, body, 3);
+				});
+			}
 		},
 		// 防御（设计说明 docs/p5/FX_DESIGN_HITS.md 方案 A：菱形光格）：选中防御牌 → 打出，再来一次
 		["guard"] = p =>
@@ -394,6 +529,8 @@ public partial class Preview : Node2D
 			foreach (double t in new[] { 2.6, 3.4, 4.3, 4.32, 4.34 })
 			{
 				p.At(t, () => CorrosiveFx.OnDraw(p._front, JokerFeet, 1f, targets));
+				foreach (Vector2 e in new[] { Enemy2, Enemy, Enemy3 })
+					p.Poison(t + CorrosiveFx.HitTime, e, 3);           // 游戏里上毒推迟到拍中那一刻（CorrosiveDrawPatch）
 			}
 		},
 		// 毒性爆发（稀有）：眼神特写 + 舞台 + 新亚森 → 出手，咒怨光束扇形射向三个敌人（各 9 层）→ 立即触发中毒：全场咒火一起引爆
@@ -414,7 +551,7 @@ public partial class Preview : Node2D
 		},
 		["outbreak_hand"] = p =>
 		{
-			Persona.Spec spec = Persona.ArseneSpec with { First = 18, Linger = CrushHand.CrushAfter + 0.5f };   // 同 Aim.PersonaFor("Outbreak")
+			Persona.Spec spec = Persona.ArseneSpec with { First = 18, Linger = CrushHand.CrushAfter + 0.4f };   // 同 Aim.PersonaFor("Outbreak")
 			float emerge = 0.3f + spec.AttackAt;                                                  // 同 Aim.OutbreakEmerge
 			float hit = 0.04f + emerge + CrushHand.CrushAfter;                                    // 同 Aim.HitFor
 			float tall = (JokerFeet - Pose(815f, 120f)).Length() * 1.35f;
@@ -510,6 +647,76 @@ public partial class Preview : Node2D
 			}
 		},
 		// 第四版毒组：致命毒药（5 层）→ 弹跳药瓶（3 跳随机）→ 一次加 9 层 → 回合开始三个敌人各结算一轮毒伤
+		// 2026-11-13（B 方案）：蛇咬召唤亚森 → 一挥手、蛇形光带游到敌人斜上方、咒烟鼓起 → 蛇窜出来咬 → 咬合时上毒（原来的落点）
+		// 蛇咬第三版（2026-11-16 推倒重做）：挥手 → 蛇影贴地游过去 → 昂头扑起 → 毒牙合拢（SnakebiteFx）
+		["snakebite3"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			Vector2[] es = { Enemy2, Enemy, Enemy3 };   // 近、中、远三个敌人：绕圈的路线按敌人位置算
+			for (int k = 0; k < 3; k++)
+			{
+				double t0 = 0.3 + 1.6 * k;
+				Vector2 e = es[k];
+				p.At(t0, () => p._joker?.Play("cast_wave"));
+				p.At(t0 + 0.1, () => { p._enemies.TryGetValue(e, out Node2D? n); SnakebiteFx.Play(p._front, p._back, JokerFeet, tall, 1f, e + new Vector2(0f, -60f), n); });
+				p.Poison(t0 + 0.1 + SnakebiteFx.BiteDelay + 0.03, e, 7);
+			}
+		},
+		["snakebite_arsene"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			float atk = Persona.ArseneSpec.AttackAt;
+			Vector2 fb = JokerFeet + new Vector2(-tall * 0.3f, -tall * 1.2f);
+			foreach ((Vector2 e, double t0) in new[] { (Enemy, 0.3), (Enemy3, 2.6) })
+			{
+				p.At(t0, () => { p._joker?.Play("cast"); PoisonFx.NoBeamUntil = Stage.NowMs() + 2000; });   // 同 JokerFx：毒走原来的落点
+				p.At(t0 + 0.04, () => ArseneFx.Show(p._back, JokerFeet, tall * 1.35f, 1f, atk, atk + 0.9f));
+				p.At(t0 + 0.04 + atk, () =>
+				{
+					Vector2 at = e + new Vector2(0f, -10f);
+					p._enemies.TryGetValue(e, out Node2D? n);
+					Vector2 hand = Persona.ChestOf(Persona.ArseneSpec, JokerFeet, tall * 1.35f, 1f) + new Vector2(tall * 0.37f, -tall * 0.41f);
+					ArseneFx.WhenClaw(p._front, fb, _ =>
+					{
+						Vector2 claw = hand;
+						SnakeSummonFx.Play(p._front, p._back, claw, at, tall, 1f);
+						p.At(SnakeSummonFx.Lag, () => SerpentMantle.Bite(p._front, p._back, at, n, tall, 1f));   // At 是从现在算
+					});
+				});
+				p.Poison(t0 + 0.04 + atk + SnakeSummonFx.Lag + SerpentMantle.BiteDelay, e, 7);
+			}
+		},
+		// 2026-11-13：刀刃陷阱 —— 敌人四周亮起一圈光弹，之后每发小刀打中收一颗
+		["knife_trap"] = p =>
+		{
+			p.At(0.2, () => p._joker?.Play("twirl_in"));
+			p.At(0.77, () => p._joker?.Play("twirl_loop", true));   // 用户 2026-11-19：开枪前一直转枪
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.At(0.35, () => { p._enemies.TryGetValue(Enemy, out Node2D? n); KnifeTrapFx.Begin(p._front, p._back, Muzzle, Enemy + new Vector2(0f, -10f), 285f, 260f, 10, n, Pose(820f, 600f), tall); });
+			for (int i = 0; i < 10; i++)
+			{
+				double at = 0.35 + KnifeTrapFx.EntryTime + 0.25 + 0.24 * i;
+				bool lastShot = i == 9;
+				string anim = i == 0 ? "shiv" : "shiv_from_aim";      // 第一枪从转枪接上（游戏里 Aim 把 shiv 跳到转枪那一段）
+				p.At(at - 0.18, () => p._joker?.Play(anim));
+				p.At(at - 0.02, () => GunFx.Muzzle(p._front, Muzzle, (Enemy - Muzzle).Normalized()));
+				p.At(at, () => GunFx.Shot(p._front, Muzzle, Enemy + new Vector2(Fx.Rand(-20f, 20f), Fx.Rand(-30f, 30f)), lastShot));
+			}
+		},
+		// 刀刃陷阱：小刀超过 24 张（26）→ 显示 24 张，前两枪各补一张
+		["knife_trap26"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.At(0.2, () => p._joker?.Play("aim_in"));
+			p.At(0.35, () => { p._enemies.TryGetValue(Enemy, out Node2D? n); KnifeTrapFx.Begin(p._front, p._back, Muzzle, Enemy + new Vector2(0f, -10f), 285f, 260f, 26, n, Pose(820f, 600f), tall); });
+			for (int i = 0; i < 4; i++)
+			{
+				double at = 0.35 + KnifeTrapFx.EntryTime + 0.25 + 0.24 * i;
+				p.At(at - 0.18, () => p._joker?.Play("shiv_from_aim"));
+				p.At(at - 0.02, () => GunFx.Muzzle(p._front, Muzzle, (Enemy - Muzzle).Normalized()));
+				p.At(at, () => GunFx.Shot(p._front, Muzzle, Enemy + new Vector2(Fx.Rand(-20f, 20f), Fx.Rand(-30f, 30f)), false));
+			}
+		},
 		["poison_v4"] = p =>
 		{
 			p.At(0.2, () => p._joker?.Play("cast"));
@@ -594,7 +801,12 @@ public partial class Preview : Node2D
 			var es = new List<ShivFx.Target> { new(Enemy2, 180f), new(Enemy, 230f), new(Enemy3, 180f) };
 			p.At(1.2, () => { p._joker?.Play("aim_out"); ShivFx.FanOfKnives(p._front, Pose(1275f, 345f), es); });
 		},
-		["warmup"] = p => p.At(0.1, () => Warmup.Run(p._front, 1ul)),
+		["warmup"] = p => p.At(0.1, () =>
+		{
+			Warmup.IdleContext = () => "preview";
+			Warmup.RequestJoker();
+			Warmup.StartMenu();
+		}),
 		["monsters"] = p => { },
 		["attack_pose"] = p => p.At(0.3, () => p._joker?.Play("attack")),
 		// 出刀刀光单独看（和动作对齐）
@@ -685,6 +897,13 @@ public partial class Preview : Node2D
 			p.At(2.8 + 1.63, () => HexGuard.Play(p._front, Chest, tall, 1f, 12, Pose(885f, 310f)));
 		},
 		// 华丽收场 = 大罪穿甲弹（用户 2026-11-08）：场景 + 子弹预览，撒旦耶尔第 2 版立绘还没到，枪口先放在 Joker 身后上方
+		// 2026-11-13：群蛇形态下打华丽收场 → 群蛇的场景整个藏起来，演完放回来
+		["combo_sinful"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.At(0.0, () => SerpentMantle.Start(p._front, p._back, () => (JokerFeet, tall, 1f), live: true, intro: false));
+			Scenarios["sinful_shell"](p);
+		},
 		["sinful_shell"] = p =>
 		{
 			// 选中华丽收场：扶面具的架势（面具蓝焰）→ 打出：攥面具、手顺着弧线放下直接转枪（cast_sinful_from_mask）；面具不再冲出两道蓝焰（用户 2026-11-09）
@@ -697,6 +916,8 @@ public partial class Preview : Node2D
 				OnJokerShoot = () => p._joker?.Play("shiv_from_aim"),
 				OnPierce = i => Popups.Damage(p._front, (ulong)(i + 1), new[] { Enemy2, Enemy, Enemy3 }[i], 50, true),
 				Actors = new List<CanvasItem> { p._joker!, p._enemies[Enemy], p._enemies[Enemy2], p._enemies[Enemy3] },
+				Shadows = new List<(Vector2, float)> { (JokerFeet, (JokerFeet - Pose(1010f, 215f)).Length() * 0.55f),
+					(new Vector2(Enemy2.X, 830f), 240f), (new Vector2(Enemy.X, 830f), 240f), (new Vector2(Enemy3.X, 830f), 240f) },
 			}));
 		},
 		// 技能 / 能力牌特效（Vfx/SkillFx.cs，用户 2026-11-10）。a：抽牌 → 弃牌 → 装弹 → 蓝 / 红 / 咒怨三种增益
@@ -757,8 +978,308 @@ public partial class Preview : Node2D
 			p.At(5.25, () => SkillFx.Draw(p._front, Pose(1010f, 410f), 2));
 			p.At(6.7, () => TimeStop.StopCurrent());
 		},
-		["redo4"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.6), ("Afterimage", "cast_big", 0.4, 1.6), ("Blur", "cast_guard", 0.08, 1.2), ("Flanking", "cast_glove", 0.25, 1.4), ("Malaise", "cast", 0.4, 1.6) }),
-		["redo4b"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.8), ("Afterimage", "cast_big", 0.4, 1.4), ("AfterimageTick", "attack", 0.2, 0.7), ("AfterimageTick", "cast_guard", 0.15, 0.7), ("AfterimageTick", "attack", 0.2, 1.0), ("Malaise", "cast", 0.4, 1.8) }),
+		// 0.9.49 审阅修改（2026-11-17）：每批 5 张连着放
+		["fix1"] = p =>
+		{
+			RunCards(p, null, new (string, string, double, double)[] { ("Accuracy", "cast_glove", 0.25, 2.0), ("Backflip", "cast_guard", 0.08, 2.0), ("Reflex", "cast_glove", 0.25, 2.0), ("LegSweep", "cast_guard", 0.08, 2.0), ("Envenom", "cast_glove", 0.25, 2.6) });
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			foreach (double g in new[] { 2.3 + 0.2, 6.3 + 0.2 })   // 后空翻、扫腿的格挡：游戏里走 GainBlockPatch 的蜂巢护盾
+				p.At(g, () => HexGuard.Play(p._front, Chest, tall, 1f, 5, Pose(885f, 310f)));
+		},
+		["fix1b"] = p =>
+		{
+			// 第一遍精准只为让着色器先编译好（预览里第一次用到的着色器要编译几帧才显示），出视频时剪掉前 2s
+			RunCards(p, null, new (string, string, double, double)[] { ("Accuracy", "cast_glove", 0.25, 2.0), ("Accuracy", "cast_glove", 0.25, 2.0), ("Backflip", "cast_guard", 0.08, 2.0) });
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.At(4.3 + 0.2, () => HexGuard.Play(p._front, Chest, tall, 1f, 5, Pose(885f, 310f)));
+		},
+		// 第二批：先把五张各放一遍让着色器编译好（剪掉前 7.5s）
+		["fix2"] = p => RunCards(p, null, new (string, string, double, double)[] {
+			("Tracking", "cast_glove", 0.25, 1.3), ("Abrasive", "cast_glove", 0.25, 1.3), ("Accelerant", "cast_glove", 0.25, 1.3), ("Malaise", "cast", 0.25, 1.3), ("MasterPlanner", "cast_glove", 0.25, 2.0),
+			("Tracking", "cast_glove", 0.25, 2.2), ("Abrasive", "cast_glove", 0.25, 2.2), ("Accelerant", "cast_glove", 0.25, 2.2), ("Malaise", "cast", 0.25, 2.2), ("MasterPlanner", "cast_glove", 0.25, 2.4) }),
+		// 第二批第二轮（2026-11-18）：磨蚀（磨刃火花）、触媒（毒心加速双跳）、萎靡（预告信夺力），先各放一遍让着色器编译好（剪掉前 4.4s）
+		["fix2b"] = p => RunCards(p, null, new (string, string, double, double)[] {
+			("Abrasive", "cast_glove", 0.25, 1.2), ("Accelerant", "cast_glove", 0.25, 1.2), ("Malaise", "cast", 0.25, 1.6),
+			("Abrasive", "cast_glove", 0.25, 2.0), ("Accelerant", "cast_glove", 0.25, 2.2), ("Malaise", "cast", 0.25, 2.6) }),
+		["mal3"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Malaise", "cast", 0.25, 1.6), ("Malaise", "cast", 0.25, 2.4) }),
+		// 0.9.49 审阅第三批（2026-11-18）：牌数跟着实际手牌 / 抽牌数走
+		["b3cards"] = p => RunCards(p, null, new (string, string, double, double)[] {
+			("CalculatedGamble#3", "cast_glove", 0.25, 2.2), ("CalculatedGamble#8", "cast_glove", 0.25, 2.4),
+			("Expertise#2", "cast_glove", 0.25, 1.8), ("Expertise#3", "cast_glove", 0.25, 2.0) }),
+		// 刀扇：转枪 + 刀扇开合（Batch3Fx）
+		["b3fan"] = p =>
+		{
+			var es = new List<ShivFx.Target> { new(Enemy2, 180f), new(Enemy, 230f), new(Enemy3, 180f) };
+			foreach (double t0 in new[] { 0.2, 2.2 })
+			{
+				p.At(t0, () => { p._joker?.Play("aim_in"); p._joker?.Queue("aim_loop", true); });
+				p.At(t0 + 1.0, () => { p._joker?.Play("aim_out"); ShivFx.FanOfKnives(p._front, Pose(1275f, 345f), es); SkillRedo5.FanOfKnives11(CtxOf(p) with { Hand = Pose(1275f, 345f) }, Muzzle); });
+			}
+		},
+		// 匕首雨：攻击动作（第一下伤害 0.15s，第二下紧跟），一扇飞刀 + 一刀切全体 + 刀雨
+		["b3spray"] = p =>
+		{
+			// 两下：每一下重放攻击动作（游戏里 _playOnEveryHit），动作开始约 0.15s 后伤害；第二下动作大约在第一下伤害后 0.25s 开始
+			var foes = new List<Batch3Fx.Foe> { new(Enemy2, Enemy2 + new Vector2(0f, -170f), 230f), new(Enemy, Enemy + new Vector2(0f, -170f), 260f), new(Enemy3, Enemy3 + new Vector2(0f, -150f), 230f) };
+			foreach (double t0 in new[] { 0.3, 2.2 })
+			{
+				for (int k = 0; k < 2; k++)
+				{
+					int kk = k;
+					double a = t0 + 0.4 * k;
+					p.At(a, () => { p._joker?.Play("attack"); Batch3Fx.DaggerSprayVolley(p._front, Pose(1376f, 450f), foes, 1f, kk, 0.15f); });
+					foreach (Vector2 e in new[] { Enemy2, Enemy, Enemy3 })
+						p.At(a + 0.15, () => KnifeFx.Hit(p._front, e, 1f));
+				}
+			}
+		},
+		// 0.9.49 审阅第四批（装弹一组）：刀刃之舞（共用装弹 + 新音效）、隐秘匕首（弃牌新音效）、刀刃交响曲、钢铁风暴（手牌 6 张）
+		["b4"] = p =>
+		{
+			Vector2 hand = Pose(1010f, 410f);
+			p.At(0.3, () => p._joker?.Play("cast_glove"));
+			p.At(0.55, () => SkillFx.Load(p._front, hand, 3, 1f));
+			p.At(2.1, () => p._joker?.Play("cast_glove"));
+			p.At(2.35, () => SkillFx.Discard(p._front, hand, 2, 1f));
+			p.At(2.65, () => SkillFx.Load(p._front, hand, 2, 1f));
+			RunCards(p, null, new (string, string, double, double)[] { ("BladeSymphony#3", "cast_glove", 0.25, 2.0), ("StormOfSteel#6", "cast_glove", 0.25, 2.4) }, 4.0);
+		},
+		["b4ink"] = p => RunCards(p, null, new (string, string, double, double)[] { ("BladeOfInk#2", "cast_glove", 0.25, 2.0), ("BladeOfInk#3", "cast_glove", 0.25, 2.0) }),
+		// 0.9.49 审阅第五批（多段攻击）：终结技（5 下）、飞镖（4 下）、连续反弹（4 下随机）、回响斩击（打死一个 → 回响一次）
+		["b5"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			var view = new Batch5Fx.NCreatureView(Pose(1010f, 410f), Pose(820f, 600f), tall, 1f);
+			void Swing(double t) { p.At(t, () => p._joker?.Play("attack")); p.At(t + 0.13, () => KnifeFx.Swing(p._front, Pose(600f, 850f), Pose(1376f, 450f))); }
+			void Multi(double t0, string card, Vector2[] targets, float gap)
+			{
+				Swing(t0);
+				p.At(t0, () => Batch5Fx.Begin(card, targets.Length));
+				for (int i = 0; i < targets.Length; i++)
+				{
+					Vector2 e = targets[i];
+					p.At(t0 + 0.15 + gap * i, () => Batch5Fx.Hit(p._front, card, view, e, 170f, null));
+				}
+			}
+			Multi(0.3, "Finisher", new[] { Enemy, Enemy, Enemy, Enemy, Enemy }, 0.13f);
+			Multi(2.0, "Flechettes", new[] { Enemy, Enemy, Enemy, Enemy }, 0.09f);
+			Multi(3.4, "Ricochet", new[] { Enemy2, Enemy3, Enemy, Enemy2 }, 0.17f);
+			var foes = new List<(Vector2, Vector2, float)> { (Enemy2, Enemy2 + new Vector2(0f, -170f), 230f), (Enemy, Enemy + new Vector2(0f, -170f), 260f), (Enemy3, Enemy3 + new Vector2(0f, -150f), 230f) };
+			Swing(5.2);
+			p.At(5.2, () => Batch5Fx.BeginEcho());
+			p.At(5.34, () => { Batch5Fx.EchoWave(p._front, foes, 1f); Batch5Fx.EchoWave(p._front, foes, 1f); });
+		},
+		// 紧勒：出刀命中 → 套上绳圈收紧；之后打三张牌，每张勒一次
+		["strangle"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			Vector2 top = Enemy + new Vector2(0f, -170f);
+			System.Action<Color> tint = c => p._enemies[Enemy].Modulate = c;
+			p.At(0.3, () => p._joker?.Play("attack"));
+			p.At(0.43, () => KnifeFx.Swing(p._front, Pose(600f, 850f), Pose(1376f, 450f)));
+			p.At(0.45, () => KnifeFx.Hit(p._front, Enemy, 1f));
+			p.At(0.45, () => StrangleFx.Bind(p._front, p._back, Enemy, top, 260f, tint, 0.28f, tall, 1f));
+			foreach (double t in new[] { 2.4, 3.2 })
+			{
+				p.At(t - 0.3, () => p._joker?.Play("cast_glove"));
+				p.At(t, () => StrangleFx.Cinch(p._front, p._back, Enemy, top, 260f, tint, tall, 1f));
+			}
+		},
+		// 压制「三重锁压」：出刀命中（伤害结算那一刻）→ 三道锁环扣上 → 四道 V 光 → 巨大的 V 重压
+		["b6sup"] = p =>
+		{
+			Vector2 top = Enemy + new Vector2(0f, -170f);
+			System.Action<Color> tint = c => p._enemies[Enemy].Modulate = c;
+			p.At(0.3, () => p._joker?.Play("attack"));
+			p.At(0.43, () => KnifeFx.Swing(p._front, Pose(600f, 850f), Pose(1376f, 450f)));
+			p.At(0.45, () => SuppressFx.Play(p._front, p._back, Enemy, top, 260f, 1f, tint));
+		},
+		// 狩猎「夺宝」：出刀命中 → 斩杀（敌人倒下）→ 拿到额外奖励：世界褪灰，猎物身上抽出预告信，被他一把抢进手里
+		["b6hunt"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.At(0.3, () => p._joker?.Play("attack"));
+			p.At(0.43, () => KnifeFx.Swing(p._front, Pose(600f, 850f), Pose(1376f, 450f)));
+			p.At(0.45, () => HuntFx.Hit(p._front, Enemy, 170f, 1f, Pose(1010f, 410f), Pose(820f, 600f), tall));
+			p.At(0.55, () => p._enemies[Enemy].CreateTween().TweenProperty(p._enemies[Enemy], "modulate", new Color(1f, 1f, 1f, 0f), 0.6));
+			p.At(0.62, () => HuntFx.Reward(p._front));
+		},
+		["b6tools"] = p => RunCards(p, null, new (string, string, double, double)[] { ("ToolsOfTheTrade", "cast_glove", 0.25, 1.8) }),
+		// 群蛇形态在大房间（镜头拉远、人物变小，敌人在 7 倍身高以外 / 更高）：扑咬的蛇不能被画布切断
+		["serpentfar"] = p =>
+		{
+			// 人物缩到 0.5 倍（= 大房间镜头拉远）：旧画布右边到 430 + 7T ≈ 1725、上边到 830 - 2.9T ≈ 294；
+			// 第一口咬画面最右边（1830，旧画布外），第二口咬高处飞着的（y 250，旧画布上沿外）
+			// 正常大小：咬场上的敌人（和改画布之前同样的写法）
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.At(0.1, () => SerpentMantle.Start(p._front, p._back, () => (JokerFeet, tall, 1f), live: true, intro: true));
+			p.At(1.6, () => { p._enemies.TryGetValue(Enemy, out Node2D? b); SerpentMantle.Current?.Strike(Enemy + new Vector2(0f, -170f), b); });
+			p.At(2.3, () => { p._enemies.TryGetValue(Enemy3, out Node2D? b); SerpentMantle.Current?.Strike(Enemy3 + new Vector2(0f, -150f), b); });
+		},
+		// 腐蚀波连抽（用户 2026-11-18）：一次抽 4 张 → 只有第一张放完整的浪，后面三张在浪尾上各一下快速咬蚀、各挂一次毒
+		["corrosive4"] = p =>
+		{
+			var targets = new List<CorrosiveFx.Target>();
+			p.At(0.05, () =>
+			{
+				foreach (Vector2 e in new[] { Enemy2, Enemy, Enemy3 })
+				{
+					p._enemies.TryGetValue(e, out Node2D? n);
+					targets.Add(new CorrosiveFx.Target(e, e - new Vector2(0f, 120f), 230f, n));
+				}
+			});
+			double t = 0.3;
+			p.At(t, () => CorrosiveFx.OnDraw(p._front, JokerFeet, 1f, targets));
+			t += CorrosiveFx.HitTime;
+			foreach (Vector2 e in new[] { Enemy2, Enemy, Enemy3 }) p.Poison(t, e, 3);
+			for (int i = 1; i <= 3; i++)
+			{
+				int ii = i;
+				t += 0.16;                                     // 下一张抽上来
+				p.At(t, () => CorrosiveFx.Erode(p._front, 1f, targets, ii));
+				foreach (Vector2 e in new[] { Enemy2, Enemy, Enemy3 }) p.Poison(t + 0.1, e, 3);
+				t += 0.1;
+			}
+		},
+		["accel"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Accelerant", "cast_glove", 0.25, 1.4) }),
+		// 选卡界面「夺宝」（RewardFx）：仿原版选牌界面（暗色遮罩 + 居中一排三张牌），打开 → 依次停在第一 / 第二 / 第三张 → 选中第二张；重抽一次
+		// 2026-11-19：战斗开始 + 回合横幅（Vfx/BattleUiFx.cs）
+		["battleui"] = p =>
+		{
+			string repo = ProjectSettings.GlobalizePath("res://") + "../../../";
+			P5Ui.Load = path =>
+			{
+				FontFile f = new();
+				string file = path == P5Ui.Barlow ? repo + "tools/ui/fonts/BarlowCondensed-900Italic.ttf" : path == P5Ui.BarlowBold ? repo + "tools/ui/fonts/BarlowCondensed-700Italic.ttf" : path;
+				return f.LoadDynamicFont(file) == Error.Ok ? f : null;
+			};
+			p.At(0.2, () => BattleUiFx.BattleStart(p._back));
+			p.At(2.8, () => BattleUiFx.TurnBanner(p._back, true, 1, false));   // 原版：战斗开始横幅播完约 2.6s 才出第 1 回合
+			p.At(4.2, () => BattleUiFx.TurnBanner(p._back, false, 0, false));
+			p.At(5.6, () => BattleUiFx.TurnBanner(p._back, true, 12, false));
+			p.At(7.0, () => BattleUiFx.TurnBanner(p._back, true, 12, true));
+		},
+		["reward"] = p =>
+		{
+			Vector2 view = p._front.GetViewportRect().Size;
+			Control? screen = null, row = null;
+			TextureRect? skipImg = null;
+			var cards = new List<Control>();
+			var finals = new List<Vector2>();
+			Rect2 RectOf(Control c) => c.GetChild<Control>(0).GetGlobalRect();
+			void Build()
+			{
+				foreach (Control c in cards) c.QueueFree();
+				cards.Clear(); finals.Clear();
+				string[] names = { "致命毒药", "刀刃陷阱", "夜魇" };
+				for (int i = 0; i < 3; i++)
+				{
+					Control w = new() { FocusMode = Control.FocusModeEnum.All };
+					row!.AddChild(w);
+					ColorRect face = new() { Size = new Vector2(300f, 420f), Position = new Vector2(-150f, -210f), Color = new Color(0.16f, 0.14f, 0.15f), MouseFilter = Control.MouseFilterEnum.Ignore };
+					w.AddChild(face);
+					face.AddChild(new ColorRect { Size = new Vector2(280f, 200f), Position = new Vector2(10f, 60f), Color = new Color(0.32f, 0.08f, 0.1f) });
+					P5Ui.Text(face, names[i], P5Ui.Font(P5Ui.CjkBold), 30, Colors.White, new Vector2(20f, 12f));
+					cards.Add(w);
+					finals.Add(Vector2.Left * 350f + Vector2.Right * 350f * i);
+				}
+			}
+			p.At(0.2, () =>
+			{
+				screen = new Control { Size = view, MouseFilter = Control.MouseFilterEnum.Ignore };
+				p._front.AddChild(screen);
+				screen.AddChild(new ColorRect { Size = view, Color = new Color(0f, 0f, 0f, 0.6f), MouseFilter = Control.MouseFilterEnum.Ignore });
+				row = new Control { Position = new Vector2(view.X * 0.5f, view.Y * 0.52f), MouseFilter = Control.MouseFilterEnum.Ignore };
+				screen.AddChild(row);
+				Build();
+				RewardFx.Open(screen, row, cards, finals, true, RectOf);
+				// 原版横幅 / 跳过按钮的替身（结构照游戏：横幅底图 + Label；按钮 Image + Label）
+				TranslationServer.SetLocale("zh_CN");
+				Control banner = new() { Position = new Vector2(view.X * 0.5f - 400f, view.Y * 0.13f - 60f), Size = new Vector2(800f, 120f), MouseFilter = Control.MouseFilterEnum.Ignore };
+				screen.AddChild(banner);
+				banner.AddChild(new TextureRect { Texture = Fx.Tex("reward_band"), Size = banner.Size, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, Modulate = new Color(0.9f, 0.8f, 0.6f) });
+				Label bl = new() { Text = "选择一张牌", Size = banner.Size, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+				banner.AddChild(bl);
+				RewardFx.SkinBanner(banner, bl);
+				Control skip = new() { Position = new Vector2(view.X * 0.5f - 130f, view.Y * 0.86f - 45f), Size = new Vector2(260f, 90f), MouseFilter = Control.MouseFilterEnum.Ignore };
+				screen.AddChild(skip);
+				skipImg = new TextureRect { Size = skip.Size, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize };
+				skip.AddChild(skipImg);
+				Label sl = new() { Text = "跳过", Size = skip.Size, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+				skip.AddChild(sl);
+				RewardFx.SkinButton(skip, skipImg, sl);
+			});
+			p.At(2.0, () => RewardFx.SkinButtonHover(skipImg!, true));
+			p.At(2.25, () => RewardFx.SkinButtonHover(skipImg!, false));
+			p.At(1.0, () => cards[0].GrabFocus());
+			p.At(1.4, () => cards[1].GrabFocus());
+			p.At(1.8, () => cards[2].GrabFocus());
+			p.At(2.3, () => { Build(); RewardFx.Open(screen!, row!, cards, finals, false, RectOf); });   // 重抽
+			p.At(3.0, () => cards[1].GrabFocus());
+			p.At(3.5, () => RewardFx.Pick(screen!, row!, cards[1], RectOf));
+		},
+		["b6nm"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Nightmare", "cast_glove", 0.25, 2.0) }),
+		["redo4"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.6), ("Afterimage", "cast_glove", 0.25, 1.6), ("Blur", "cast_guard", 0.08, 1.2), ("Flanking", "cast_glove", 0.25, 1.4), ("Malaise", "cast_wave", 0.08, 1.6) }),
+		["redo4b"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.8), ("Afterimage", "cast_glove", 0.25, 1.4), ("AfterimageTick", "attack", 0.2, 0.7), ("AfterimageTick", "cast_guard", 0.15, 0.7), ("AfterimageTick", "attack", 0.2, 1.0), ("Malaise", "cast_wave", 0.08, 1.8) }),
+		["redo5"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.9), ("Shadowmeld", "cast_glove", 0.25, 1.9) }),
+		["redo6"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Afterimage", "cast_glove", 0.25, 1.6), ("AfterimageTick", "attack", 0.2, 0.7), ("AfterimageTick", "cast_guard", 0.15, 0.7), ("AfterimageTick", "attack", 0.2, 1.0), ("Malaise", "cast_wave", 0.08, 2.1), ("Malaise", "cast_wave", 0.08, 2.1) }),
+		// 2026-11-13：群蛇形态的场景下打融入暗影、子弹时间（结束时不该露出原版场景）
+		["combo_serpent"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.At(0.3, () => SerpentMantle.Start(p._front, p._back, () => (JokerFeet, tall, 1f), live: true, intro: true));
+			RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 2.0), ("BulletTime", "cast_glove", 0.25, 1.0) });
+			p.At(4.6, () => TimeStop.StopCurrent());
+		},
+		// 2026-11-13：群蛇 → 子弹时间（钟 / 卡要在群蛇场景上面），4s 起反过来：子弹时间 → 群蛇
+		["combo_bt"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.At(0.2, () => SerpentMantle.Start(p._front, p._back, () => (JokerFeet, tall, 1f), live: true, intro: false));
+			RunCards(p, null, new (string, string, double, double)[] { ("BulletTime", "cast_glove", 0.25, 1.0) });
+			p.At(3.0, () => TimeStop.StopCurrent());
+		},
+		["combo_bt2"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			RunCards(p, null, new (string, string, double, double)[] { ("BulletTime", "cast_glove", 0.25, 1.0) });
+			p.At(1.4, () => SerpentMantle.Start(p._front, p._back, () => (JokerFeet, tall, 1f), live: true, intro: false));
+			p.At(3.4, () => TimeStop.StopCurrent());
+		},
+		["redo7"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.9) }),
+		["haze"] = p =>
+		{
+			// 2026-11-16：迷雾改扶面具（带面具火）→ 打出时只放下手（mask_out）
+			p.Ready(0.1, Stance.Mask, "mask", "mask_out", play: true);
+			RunCards(p, null, new (string, string, double, double)[] { ("Haze", "", 0.05, 2.6) }, 1.7);
+		},
+		["adrenaline"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Adrenaline", "cast_glove", 0.25, 1.6), ("Adrenaline", "cast_glove", 0.25, 1.6) }),
+		["shadowstep"] = p => RunCards(p, null, new (string, string, double, double)[] { ("ShadowStep", "cast_glove", 0.25, 1.8), ("ShadowStep", "cast_glove", 0.25, 1.8) }),
+		// 幽魂形态：打出 → 被打两次 → 无实体结束（Vfx/WraithVeil.cs）
+		["wraith"] = p =>
+		{
+			RunCards(p, null, new (string, string, double, double)[] { ("WraithForm", "cast_wave", 0.08, 1.0) });
+			p.At(2.0, () => p._joker?.Play("attack"));
+			p.At(3.0, () => WraithVeil.Current?.Hit());
+			p.At(3.9, () => WraithVeil.Current?.Hit());
+			p.At(5.0, () => WraithVeil.StopCurrent());
+		},
+		["retain"] = p => RetainDemo(p, 0.1, 0.6, 2.2),
+		// 计划妥当：打一次 → 回合结束保留手牌的「封」（RetainFx，每回合都会出现）
+		["buffs1"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Anticipate", "cast_guard", 0.08, 1.3), ("Sidestep", "cast_guard", 0.08, 1.4), ("Abrasive", "cast_glove", 0.25, 1.7), ("Speedster", "cast_glove", 0.25, 2.0), ("Accelerant", "cast_glove", 0.25, 1.4) }),
+		// 速行者：打出 → 之后每抽一张牌，所有敌人身上一下轻的伤害特效（SpeedsterTick）
+		["speedster"] = p =>
+		{
+			RunCards(p, null, new (string, string, double, double)[] { ("Speedster", "cast_glove", 0.25, 2.0) });
+			foreach (double t in new[] { 2.2, 2.55, 2.9, 3.6 })
+				p.At(t, () => { int i = 0; foreach (Vector2 e in new[] { Enemy2, Enemy, Enemy3 }) SkillRedo5.SpeedsterTick(p._front, e + new Vector2(0f, -150f), 300f, 0.03f * i++); });
+		},
+		["plans"] = p =>
+		{
+			RunCards(p, null, new (string, string, double, double)[] { ("WellLaidPlans", "cast_glove", 0.25, 2.2) });
+			RetainDemo(p, 2.4, 2.9, -1);
+		},
+		["fumes"] = p => RunCards(p, null, new (string, string, double, double)[] { ("NoxiousFumes", "cast_glove", 0.25, 7.5) }),
 		["redo"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Acrobatics", "cast_glove", 0.25, 1.7), ("Acrobatics", "cast_glove", 0.25, 1.7) }),
 		["redo3"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Survivor", "cast_guard", 0.08, 1.2), ("CalculatedGamble", "cast_glove", 0.25, 1.9), ("Tactician", "cast_glove", 0.25, 1.2), ("Adrenaline", "cast_glove", 0.25, 1.4), ("ShadowStep", "cast_glove", 0.25, 1.4) }),
 		["redo2"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Prepared", "cast_glove", 0.25, 1.5), ("Expertise", "cast_glove", 0.25, 1.7), ("Reflex", "cast_glove", 0.25, 1.1), ("Backflip", "cast_guard", 0.08, 1.3), ("EscapePlan", "cast_guard", 0.08, 1.3) }),
@@ -773,11 +1294,20 @@ public partial class Preview : Node2D
 			p.At(0.05, () => { o = new Orochi(p._back, JokerFeet, tall); });
 			p.Every(() =>
 			{
-				t0 += 1.0 / 30.0;
+				t0 += 1.0 / RecFps;
 				float tt = (float)t0;
 				float ltn = Mathf.Exp(-Mathf.Pow((tt - 1.6f) / 0.05f, 2f)) + 0.6f * Mathf.Exp(-Mathf.Pow((tt - 1.8f) / 0.04f, 2f));
 				o?.Set(tt, ltn, Mathf.Min(1f, tt / 0.3f));
 			});
+		},
+		// 2026-11-19：群蛇回到旧版 + 獠牙 + 拉开散开；出场后只看常驻，最后咬两口
+		["serpent_idle"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.At(0.3, () => p._joker?.Play("cast_glove"));
+			p.At(0.55, () => SerpentMantle.Start(p._front, p._back, () => (JokerFeet, tall, 1f), live: true, intro: true));
+			p.At(7.4, () => { p._enemies.TryGetValue(Enemy, out Node2D? body); SerpentMantle.Current?.Strike(Enemy + new Vector2(0f, -170f), body); });
+			p.At(8.0, () => { p._enemies.TryGetValue(Enemy2, out Node2D? body); SerpentMantle.Current?.Strike(Enemy2 + new Vector2(0f, -150f), body); });
 		},
 		["serpent_form"] = p =>
 		{
@@ -788,12 +1318,14 @@ public partial class Preview : Node2D
 			{
 				SerpentMantle.Start(p._front, p._back, () => (JokerFeet, tall, 1f), live: true, intro: true);
 			});
-			(Vector2 E, float Up)[] hits = { (Enemy, 170f), (Enemy2, 150f), (Enemy3, 140f), (Enemy, 170f), (Enemy2, 150f) };
-			double[] when = { 3.4, 4.3, 4.55, 4.8, 6.0 };
+			// 2026-11-13：快速连出牌 —— 同一个敌人被连咬（方向轮换）、几条蛇同时在咬
+			(Vector2 E, float Up)[] hits = { (Enemy, 170f), (Enemy, 170f), (Enemy2, 150f), (Enemy, 170f), (Enemy3, 140f), (Enemy, 170f), (Enemy, 170f), (Enemy2, 150f) };
+			double[] when = { 3.0, 3.25, 3.5, 3.7, 3.9, 4.1, 4.3, 4.5 };
 			for (int i = 0; i < hits.Length; i++)
 			{
 				var (e, up) = hits[i];
 				p.At(when[i], () => { p._enemies.TryGetValue(e, out Node2D? body); SerpentMantle.Current?.Strike(e + new Vector2(0f, -up), body); });
+				p.At(when[i] - 0.12, () => { Sfx.Muted = true; HitFx.Slash(p._front, e + new Vector2(0f, -up), 1f); Sfx.Muted = false; });   // 静音：视频里只听咬合声   // 同时打出的打击牌的命中特效（看蛇会不会被挡住）
 			}
 		},
 		["buffs"] = p =>
@@ -948,7 +1480,7 @@ public partial class Preview : Node2D
 		});
 	}
 
-	private void ShotC(double t, Vector2 enemy, int amount, Weight w, bool dies = false)
+	public void ShotC(double t, Vector2 enemy, int amount, Weight w, bool dies = false)
 	{
 		At(t - 0.2, () => _joker?.Play("shiv"));
 		At(t - 0.02, () => HitFx.Muzzle(_front, Muzzle));
@@ -1044,6 +1576,54 @@ public partial class Preview : Node2D
 		}
 	});
 
+	/// <summary>选人界面（Vfx/CharSelectScene.cs）：藏掉假战斗场景，整屏换成选人背景。返回加进去的节点（出发过场全黑时删掉）。</summary>
+	private static List<Node> CharSelect(Preview p)
+	{
+		List<Node> made = new();
+		foreach (Node c in p._world.GetChildren())
+		{
+			if (c is CanvasItem ci) ci.Visible = false;
+		}
+		// 字体：mod 自带的 Barlow 读仓库里的文件，游戏自带的中文字体换成系统的 Noto Sans CJK
+		string repo = ProjectSettings.GlobalizePath("res://") + "../../../";
+		P5Ui.Load = path =>
+		{
+			string file = path switch
+			{
+				P5Ui.Barlow => repo + "tools/ui/fonts/BarlowCondensed-900Italic.ttf",
+				P5Ui.BarlowBold => repo + "tools/ui/fonts/BarlowCondensed-700Italic.ttf",
+				P5Ui.CjkBold => "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
+				P5Ui.CjkMedium => "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+				_ => path,
+			};
+			FontFile f = new();
+			return f.LoadDynamicFont(file) == Error.Ok ? f : null;
+		};
+		// 游戏里场景根的本地 (0, ScreenTop) 是屏幕左上角：预览里把根往下挪同样的量，录出来的画面和游戏一致
+		Control bg = new() { Size = new Vector2(CharSelectScene.W, CharSelectScene.H), MouseFilter = Control.MouseFilterEnum.Ignore,
+			Position = new Vector2(0f, -CharSelectScene.ScreenTop) };
+		p._world.AddChild(bg);
+		made.Add(bg);
+		CharSelectScene.Build(bg, true);
+		// 原版信息面板的替身（介绍板的坐标以原版面板左上角为原点；位置按结城理 mod 的排版推算）+ 假数据
+		Control panel = new() { Position = new Vector2(256f, 260f), MouseFilter = Control.MouseFilterEnum.Ignore };
+		p._world.AddChild(panel);
+		made.Add(panel);
+		p.At(CharSelectScene.InfoPanelDelay, () => CharSelectInfoPanel.Build(panel, new CharSelectInfoPanel.Data("70/70", "99", "蛇之戒指",
+			"在每场战斗开始时，额外抽 [color=#ffd24a]2[/color] 张牌。", Fx.Tex("cs_card"))));
+		// --mockui：画出原版底部 UI 的位置（按用户 2026-11-17 的结城理 mod 实机截图量的），只用来自查排版
+		if (System.Array.IndexOf(OS.GetCmdlineUserArgs(), "--mockui") >= 0)
+		{
+			foreach (Rect2 box in new[] { new Rect2(0f, 763f, 144f, 87f), new Rect2(605f, 757f, 480f, 106f), new Rect2(624f, 888f, 672f, 130f), new Rect2(1776f, 739f, 144f, 87f) })
+			{
+				ColorRect mock = new() { Position = box.Position, Size = box.Size, Color = new Color(0.2f, 0.25f, 0.3f, 0.55f), MouseFilter = Control.MouseFilterEnum.Ignore };
+				p._world.AddChild(mock);
+				made.Add(mock);
+			}
+		}
+		return made;
+	}
+
 	public override void _Ready()
 	{
 		string scenario = "damage";
@@ -1053,6 +1633,11 @@ public partial class Preview : Node2D
 			{
 				scenario = a["--scenario=".Length..];
 			}
+			if (a == "--measure")
+			{
+				_measure = true;
+				RenderingServer.ViewportSetMeasureRenderTime(GetViewport().GetViewportRid(), true);
+			}
 		}
 		string texDir = ProjectSettings.GlobalizePath("res://.tex");
 		Stage.LoadTexture = name =>
@@ -1060,14 +1645,17 @@ public partial class Preview : Node2D
 			string path = $"{texDir}/{name}.png";
 			if (!FileAccess.FileExists(path))
 				path = ProjectSettings.GlobalizePath($"res://../../../p5mod/pck_stage/p5joker/fx/{name}.png");
-			return FileAccess.FileExists(path) ? ImageTexture.CreateFromImage(Image.LoadFromFile(path)) : null;
+			if (!FileAccess.FileExists(path)) return null;
+			Image img = Image.LoadFromFile(path);
+			if (name.StartsWith("pile_") || name.StartsWith("m3d_")) img.GenerateMipmaps();   // 同游戏里打包时带的 mipmap（tools/pck/godot_tex.py）
+			return ImageTexture.CreateFromImage(img);
 		};
 		Stage.Report = (where, e) => GD.PrintErr($"[P5Joker] {where}: {e}");
 		Stage.NowMs = () => (ulong)(_clock * 1000.0);
-		HitStop.RealSeconds = () => _frames / 30.0;
+		HitStop.RealSeconds = () => _frames / RecFps;
 		string sfxLog = ProjectSettings.GlobalizePath("res://") + $"out/{scenario}/sfx.txt";
 		System.IO.File.WriteAllText(sfxLog, "");
-		Sfx.Recorder = (name, vol) => System.IO.File.AppendAllText(sfxLog, $"{_frames / 30.0:0.000} {name} {vol:0.00}\n");                 // 顿帧按录像帧数计时（不受时间流速影响）
+		Sfx.Recorder = (name, vol) => System.IO.File.AppendAllText(sfxLog, $"{_frames / RecFps:0.000} {name} {vol:0.00}\n");                 // 顿帧按录像帧数计时（不受时间流速影响）
 		Stage.PlayEvent = (e, vol) => Sfx.Recorder?.Invoke(e, vol);   // 游戏自带的 FMOD 事件：记下事件名，mix.py 用解出来的原版样本（tools/p5/fxpreview/game_sfx.py）
 		GD.Seed(52029);
 		Stage.Shake = s => { _shake = s; _shakeLeft = 0.25f; _shakeDir = null; };
@@ -1107,10 +1695,28 @@ public partial class Preview : Node2D
 	private Vector2? _shakeDir;
 	private long _frames;
 
+	/// <summary>录像帧率（render.sh 的 FPS，默认 30）：音效日志、顿帧时钟都按它把帧数换成秒。</summary>
+	private static readonly double RecFps = double.TryParse(System.Environment.GetEnvironmentVariable("FPS"), out double f) && f > 0 ? f : 30.0;
+
+	private bool _measure;
+	private double _mGpu, _mCpu; private int _mN, _mSec;
+
 	public override void _Process(double delta)
 	{
 		_clock += delta;
 		_frames++;
+		if (_measure)
+		{
+			// --measure：每 0.5s（场景时间）打印主视口平均渲染耗时（GPU / CPU 毫秒）
+			Rid vp = GetViewport().GetViewportRid();
+			_mGpu += RenderingServer.ViewportGetMeasuredRenderTimeGpu(vp); _mCpu += RenderingServer.ViewportGetMeasuredRenderTimeCpu(vp); _mN++;
+			if ((int)(_clock * 2) != _mSec)
+			{
+				_mSec = (int)(_clock * 2);
+				GD.Print($"[measure] t={_clock:F1} gpu={_mGpu / _mN:F2}ms cpu={_mCpu / _mN:F2}ms n={_mN}");
+				_mGpu = _mCpu = 0; _mN = 0;
+			}
+		}
 		foreach (Action a in _every)
 		{
 			Stage.Safe("every", a);
@@ -1238,5 +1844,144 @@ public partial class Preview : Node2D
 		n.AddChild(new Polygon2D { Polygon = pts, Color = new Color("4b2f5c") });
 		n.AddChild(new Polygon2D { Polygon = Fx.Circle(16f * k, 16), Color = new Color("f2d14a"), Position = new Vector2(-45f, -60f) * k });
 		n.AddChild(new Polygon2D { Polygon = Fx.Circle(16f * k, 16), Color = new Color("f2d14a"), Position = new Vector2(20f, -66f) * k });
+	}
+
+	private static void PileDrawPreview(Preview p, bool exhaust, bool discard = false, bool deck = false)
+	{
+		TranslationServer.SetLocale("zh_CN");          // 预览按中文版（字图走 _zh）
+		CanvasLayer top = new() { Layer = 50 };
+		p.AddChild(top);
+		Control host = new() { Size = new Vector2(1920f, 1080f), MouseFilter = Control.MouseFilterEnum.Ignore };
+		top.AddChild(host);
+		// 游戏顶栏（血量 / 金币 / 地图那一条，1080p 下约 80px 高）盖在牌堆界面上面：预览里画一条，看排版有没有被挡
+		CanvasLayer barLayer = new() { Layer = 60 };
+		p.AddChild(barLayer);
+		barLayer.AddChild(new ColorRect { Size = new Vector2(1920f, 80f), Color = new Color(0.17f, 0.22f, 0.25f, 0.85f), MouseFilter = Control.MouseFilterEnum.Ignore });
+		// 顶栏下面那排遗物（实机截图：y 85–143，三个）
+		for (int r = 0; r < 3; r++)
+			barLayer.AddChild(new ColorRect { Position = new Vector2(18f + 66f * r, 87f), Size = new Vector2(54f, 54f), Color = new Color(0.25f, 0.6f, 0.35f, 0.8f), MouseFilter = Control.MouseFilterEnum.Ignore });
+		p.At(0.5, () =>
+		{
+			// 弃牌堆：攻击 5（升级 2）/ 技能 5（升级 1）/ 能力 2，同排版图
+			var dstats = (12, 3, new Dictionary<string, (int N, int Up)> { ["attack"] = (5, 2), ["skill"] = (5, 1), ["power"] = (2, 0) });
+			var kstats = (20, 4, new Dictionary<string, (int N, int Up)> { ["attack"] = (8, 2), ["skill"] = (9, 2), ["power"] = (2, 0), ["curse"] = (1, 0) });
+			IPileDecor draw = deck ? new PileDeck(host, new Vector2(1920f, 1080f), kstats) : discard ? new PileDiscard(host, new Vector2(1920f, 1080f), dstats) : exhaust ? new PileExhaust(host, new Vector2(1920f, 1080f), 12) : new PileDraw(host, new Vector2(1920f, 1080f), 23);
+			IPileDecor L = draw;
+			// 假牌：攻击 7 / 技能 9 / 能力 3（灰卡 + 类型色块），按 PileDraw 的版式排
+			Control cards = new() { MouseFilter = Control.MouseFilterEnum.Ignore };
+			host.AddChild(cards);
+			var items = new List<(Control C, Vector2 At, float Born)>();
+			var heads = new List<(Node2D N, Vector2 At)>();
+			Color[] tint = { new(0.72f, 0.19f, 0.16f), new(0.16f, 0.38f, 0.63f), new(0.77f, 0.59f, 0.16f) };
+			int[] counts = deck ? new[] { 8, 9, 2 } : discard ? new[] { 5, 5, 2 } : exhaust ? new[] { 4, 6, 2 } : new[] { 7, 9, 3 };
+			string[] en = { "ATTACK", "SKILL", "POWER" }, zh = { "攻击", "技能", "能力" };
+			float y = 0f, born = L.CardsStart;
+			for (int g = 0; g < 3; g++)
+			{
+				Node2D head = new() { Modulate = new Color(1f, 1f, 1f, 0f) };
+				cards.AddChild(head);
+				string[] keys = { "attack", "skill", "power" };
+				float tx = 16f;
+				tx += PileText.Exact(head, keys[g], new Vector2(tx, 8f), 40f, new Color(0.94f, 0.94f, 0.94f)) + 10f;
+				tx += PileText.Exact(head, keys[g] + "_zh", new Vector2(tx, 15f), 28f, new Color(0.9f, 0.1f, 0.11f)) + 12f;
+				tx += PileText.Number(head, "×" + counts[g], new Vector2(tx, 12f), 34f, new Color(0.94f, 0.94f, 0.94f)) + 14f;
+				var po = PileDraw.Poly(head, new[] { new Vector2(-4f, 2f), new Vector2(tx + 4f, -4f), new Vector2(tx + 12f, 56f), new Vector2(2f, 62f) }, new Color(0.94f, 0.94f, 0.94f));
+				var pi = PileDraw.Poly(head, new[] { new Vector2(0f, 5f), new Vector2(tx, 0f), new Vector2(tx + 8f, 52f), new Vector2(6f, 58f) }, new Color(0.04f, 0.04f, 0.04f));
+				head.MoveChild(po, 0); head.MoveChild(pi, 1);
+				heads.Add((head, new Vector2(L.GridX - 6f, L.GridTop + y)));
+				y += 70f;
+				for (int i = 0; i < counts[g]; i++)
+				{
+					Control c = new() { Size = new Vector2(L.CardW, L.CardW * 1.406f), PivotOffset = new Vector2(L.CardW, L.CardW * 1.406f) * 0.5f, Modulate = new Color(1f, 1f, 1f, 0f) };
+					cards.AddChild(c);
+					c.AddChild(new ColorRect { Size = c.Size, Color = new Color(0.82f, 0.82f, 0.82f) });
+					c.AddChild(new ColorRect { Position = new Vector2(3f, 3f), Size = c.Size - new Vector2(6f, 6f), Color = new Color(0.11f, 0.1f, 0.12f) });
+					c.AddChild(new ColorRect { Position = new Vector2(10f, 22f), Size = new Vector2(L.CardW - 20f, 84f), Color = tint[g] });
+					Vector2 at = new(L.GridX + (i % L.Cols) * L.CellW + L.CellW * 0.5f, L.GridTop + y + (i / L.Cols) * L.CellH + L.CellH * 0.5f);
+					items.Add((c, at, born));
+					born += 0.022f;
+				}
+				y += Mathf.Ceil(counts[g] / (float)L.Cols) * L.CellH + 16f;
+			}
+			// 排列切换（和游戏里同一个 PileModeSwitch）：2.75s 切到「原版顺序」，牌按原版牌堆的顺序（假的：打乱的类型交错）重排成一段
+			Node2D swNode = new() { Name = "PileHead", Modulate = new Color(1f, 1f, 1f, 0f) };
+			host.AddChild(swNode);
+			PileModeSwitch sw = PileModeSwitch.Build(swNode, Vector2.Zero, 1f, false);
+			Node2D orderHead = new() { Modulate = new Color(1f, 1f, 1f, 0f) };
+			cards.AddChild(orderHead);
+			{
+				float tx = 16f;
+				tx += PileText.Exact(orderHead, deck ? "deck" : discard ? "discard" : exhaust ? "exhaust" : "draw", new Vector2(tx, 8f), 40f, new Color(0.94f, 0.94f, 0.94f)) + 12f;
+				tx += PileText.Number(orderHead, "×" + items.Count, new Vector2(tx, 12f), 34f, new Color(0.94f, 0.94f, 0.94f)) + 14f;
+				var po = PileDraw.Poly(orderHead, new[] { new Vector2(-4f, 2f), new Vector2(tx + 4f, -4f), new Vector2(tx + 12f, 56f), new Vector2(2f, 62f) }, new Color(0.94f, 0.94f, 0.94f));
+				var pi = PileDraw.Poly(orderHead, new[] { new Vector2(0f, 5f), new Vector2(tx, 0f), new Vector2(tx + 8f, 52f), new Vector2(6f, 58f) }, new Color(0.04f, 0.04f, 0.04f));
+				orderHead.MoveChild(po, 0); orderHead.MoveChild(pi, 1);
+			}
+			Vector2 orderHeadAt = new(L.GridX - 6f, L.GridTop);
+			int[] perm = { 3, 9, 0, 14, 6, 11, 1, 16, 7, 4, 12, 2, 18, 8, 13, 5, 17, 10, 15 };
+			var orderAt = new Vector2[items.Count];
+			int slot = 0;
+			foreach (int src in perm)
+			{
+				if (src >= items.Count) continue;
+				orderAt[src] = new Vector2(L.GridX + (slot % L.Cols) * L.CellW + L.CellW * 0.5f, L.GridTop + 70f + (slot / L.Cols) * L.CellH + L.CellH * 0.5f);
+				slot++;
+			}
+			var orderIndex = new int[items.Count];
+			{ int o = 0; foreach (int src in perm) if (src < items.Count) orderIndex[src] = o++; }
+			const float SwitchAt = 2.75f;
+			bool switched = false;
+			int hovered = -1;
+			float exitAt = -1f, last = 0f;
+			Fx.Animate(host, 0, 6.0, t =>
+			{
+				float now = t * 6f, dt = Mathf.Max(0f, now - last);
+				last = now;
+				if (exitAt < 0f && now >= 4.4f) { exitAt = now; draw.BeginExit(now); }
+				if (!switched && now >= SwitchAt) { switched = true; sw.Set(true); }
+				int want = now >= 1.7f && now < 2.45f ? 1 : now >= 3.35f && now < 4.1f ? 8 : -1;
+				if (want != hovered) { hovered = want; if (want >= 0) { draw.Kick(); } }
+				draw.Update(now, dt);
+				float ex = exitAt < 0f ? 0f : Mathf.Clamp((now - exitAt) / L.ExitTime, 0f, 1f);
+				float sIn = Mathf.Clamp((now - L.CardsStart) / 0.3f, 0f, 1f);
+				swNode.Position = L.SwitchAt + new Vector2(-80f * (1f - Ease5.OutExpo(sIn)) - 260f * Ease5Ext.InCubic(ex), 0f);
+				swNode.Modulate = new Color(1f, 1f, 1f, sIn * (1f - ex));
+				float swT = Mathf.Clamp((now - SwitchAt) / 0.15f, 0f, 1f);
+				foreach (var (n, at) in heads)
+				{
+					float a = Mathf.Clamp((now - L.CardsStart) / 0.25f, 0f, 1f) * (1f - ex) * (1f - swT);
+					n.Position = at + new Vector2(-80f * (1f - Ease5.OutExpo(Mathf.Clamp((now - L.CardsStart) / 0.3f, 0f, 1f))) - 260f * Ease5Ext.InCubic(ex) - 120f * Ease5Ext.InCubic(swT), 0f);
+					n.Modulate = new Color(1f, 1f, 1f, a);
+				}
+				float hIn = Mathf.Clamp((now - SwitchAt - 0.18f) / 0.25f, 0f, 1f);
+				orderHead.Position = orderHeadAt + new Vector2(-80f * (1f - Ease5.OutExpo(hIn)) - 260f * Ease5Ext.InCubic(ex), 0f);
+				orderHead.Modulate = new Color(1f, 1f, 1f, hIn * (1f - ex));
+				for (int i = 0; i < items.Count; i++)
+				{
+					var (c, at0, b) = items[i];
+					float mt = Ease5Ext.InOutCubic(Mathf.Clamp((now - SwitchAt - Mathf.Min(0.3f, orderIndex[i] * 0.014f)) / 0.35f, 0f, 1f));
+					Vector2 at = at0.Lerp(orderAt[i], mt);
+					float bt = Mathf.Clamp((now - b) / 0.38f, 0f, 1f);
+					float pop = Ease5.OutBack(bt);
+					Vector2 pos = at + L.EnterOffset * (1f - pop);
+					float lift = i == hovered ? 1f : 0f;
+					float sc = (0.85f + 0.15f * pop) * (1f + 0.26f * lift);
+					float alpha = Mathf.Clamp(bt * 3f, 0f, 1f);
+					alpha *= Mathf.Clamp((L.GridBottom - (at.Y - c.Size.Y * 0.5f)) / (c.Size.Y * 0.8f), 0f, 1f);   // 同游戏：格子区下边以外的牌淡出（牌组页下面要露出枪）
+					if (ex > 0f)
+					{
+						float r = Ease5Ext.InCubic(Mathf.Clamp((ex - Mathf.Min(0.35f, i * 0.012f)) / 0.65f, 0f, 1f));
+						pos += L.ExitOffset * r;
+						sc *= 1f - 0.12f * r;
+						alpha *= 1f - r;
+					}
+					c.Position = pos + new Vector2(0f, -14f * lift) - c.Size * 0.5f;
+					c.Scale = Vector2.One * sc;
+					float dim = hovered >= 0 && i != hovered ? 0.55f : 1f;
+					c.Modulate = new Color(dim, dim, dim, alpha);
+					if (lift > 0f) cards.MoveChild(c, cards.GetChildCount() - 1);
+				}
+			});
+		});
 	}
 }

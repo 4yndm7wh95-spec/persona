@@ -89,7 +89,7 @@ public static class HitFx
 	/// </summary>
 	public static void Muzzle(Control layer, Vector2 muzzle, float facing = 1f)
 	{
-		Sfx.Play(Sfx.Gun, 0.85f);
+		Sfx.Play(Sfx.Ricochet, 0.6f);   // 和小刀牌同一声枪（用户 2026-11-13 选的 P5R gun_00）
 		Node2D root = Fx.Root(layer, muzzle, "P5Muzzle", 0.6);
 		Node2D flash = new() { Scale = new Vector2(facing, 1f) };
 		root.AddChild(flash);

@@ -42,6 +42,7 @@ public static class SpineHooks
 		}
 		body.ConnectAnimationEvent(Callable.From<GodotObject, GodotObject, GodotObject, GodotObject>((_, _, _, ev) =>
 			ModEntry.Safe("spine event", () => OnEvent(node, new MegaEvent(ev).GetData().GetEventName()))));
+		ModEntry.Safe("pose ghost attach", () => PoseGhost.Attach(body));
 	}
 
 	private static void OnEvent(NCreature node, string name)

@@ -39,6 +39,15 @@ public static class Sfx
 		KnifeRing = "sword_sheath",     // 收刀入鞘的金属「锵」（#48）：转刀落回手里握住的那一下（用户 2026-11-02：转刀声像空转、没分量）
 		Hit = "damage_enemy",           // 打中敌人（#22）
 		AllOut = "battle_all_out_atk",  // 总攻击斩击（#24，第一刀叠上去）
+		AoaHit1 = "battle_all_out_atk", // 总攻击乱斗（Vfx/AllOut.cs）：打击 #24–26、斩击 #27–29，原版同一组 cue 的六个变体
+		AoaHit2 = "aoa_hit_2",
+		AoaSplatter = "aoa_splatter",   // 原版总攻击收尾的喷溅声（SYSTEM.ACB cue 1074 battle_all_out_atk_finish_b）：怪物剪影喷血，起音 0.05s
+		AoaCrack = "aoa_crack",         // 总攻击裂纹蔓延（P3R 镜子裂开 + 玻璃受力的咯吱声拼成，art/sfx_p5/aoa_crack.md）
+		AoaZoom = "aoa_zoom",           // 总攻击蓄势（P3R Snd_FX_Btl_Allout_Zoom，P3 mod 同款）：0.65s 冲到高潮 = 碎开
+		AoaHit3 = "aoa_hit_3",
+		AoaSlash1 = "aoa_slash_1",
+		AoaSlash2 = "aoa_slash_2",
+		AoaSlash3 = "aoa_slash_3",
 		Gun = "gun_10",                 // 枪声（用户 2026-11-03：gun_07 像激光枪 → 试听选 D = gun_10，#38）。原来的说明：（#37：起音 0.2ms、带 0.5s 回响的干脆手枪声。原来的 #32 gun_02 起音慢、尾音短，
 		                                //  被命中声一盖听起来像打击声——用户 2026-11-02 指出；#33 是 10 连发的机关枪）
 		Ricochet = "gun_00",            // 跳弹（#30 gun_00 / talk_ricochet）
@@ -47,6 +56,10 @@ public static class Sfx
 		Wing = "wing_large",            // 大翅膀扇动（#64：亚森）
 		Slam = "punch_taiman",          // 重拳砸中（#46：咒怨之手砸下去）
 		Crack = "crash_object",         // 东西碎开（#176：手从地里钻出来）
+		MenuWhoosh = "camp_whoosh",     // 菜单的「唰」（#224，偏暖的低频风声，峰值在 0.21s）：出发过场两扇门滑进来 / 滑开
+		// 出发过场：P5R 切日历的原版音效（SYSTEM.AWB 流 37 / 82，Codex 从用户本机资源库解出、和原版演示互相关核对过：research/p5r/audio/calendar）
+		DoorSlam = "calendar_change",   // 日期「30」砸下来的那一声 → 两扇门合拢
+		KnifeStab = "stab_knife",       // 飞刀钉住：插入的低频闷响 + 4.27/6.13kHz 的金属长余响，同一条 cue
 		PoisonTick = "continuas_damage",// 持续伤害（#20：每轮毒伤）
 		SubBoom = "sub_boom",           // 合成的低频重击（art/sfx_p5/sub_boom.ogg：P5 原声缺低频，垫在冲击层底下）
 		OutbreakBurst = "outbreak_burst", // 毒性爆发毒伤结算（用户 2026-11-08：原版受击声太平淡）：P5R SKILLSE 0406（咒怨系候选，起音 0.01s、偏暗），
@@ -116,8 +129,8 @@ public static class Sfx
 	/// 文件已经按演示的音量混好，播放音量用 1.33（抵消 Play 里的 ×0.75）。
 	/// </summary>
 	public static readonly string[] GunShots = { "gun_shot_1", "gun_shot_2", "gun_shot_3", "gun_shot_4" };
-	private static int _gunShot;
-	public static string NextGunShot() => GunShots[_gunShot++ % GunShots.Length];
+	/// <summary>用户 2026-11-13：连打小刀时四个变体轮流换，听着每一枪都不一样、很怪 → 固定用第一发。</summary>
+	public static string NextGunShot() => GunShots[0];
 	public const float DemoMixVolume = 1.33f;                // 合成的「捏碎」：几下密集的碎裂咔嚓 + 一记闷响（art/sfx_p5/crush.ogg，手捏爆用）           // 合成的低频重击（art/sfx_p5/sub_boom.ogg：P5 原声缺低频，垫在冲击层底下）
 
 	/// <summary>
@@ -128,7 +141,7 @@ public static class Sfx
 	{
 		[Parry] = 0.068f, [Slam] = 0.1f, [PoisonTick] = 0.078f, [CutIn] = 0.083f, [PersonaFlame] = 0.13f, [Wing] = 0.023f,
 		[Crack] = 0.019f, [SwishHeavy] = 0.005f, [KnifeRing] = 0.048f, [SinfulFire] = 0.12f, [SinfulShot] = 0.02f,
-		[CardCut] = 0.29f, [CardDraw] = 0.046f, [SmokePuff] = 0.012f, [RetainLock] = 0.013f,   // 游戏音效样本里主冲击的位置（2026-11-12 量的）
+		[CardCut] = 0.29f, [DoorSlam] = 0.03f, [KnifeStab] = 0.09f, [CardDraw] = 0.046f, [SmokePuff] = 0.012f, [RetainLock] = 0.013f,   // 游戏音效样本里主冲击的位置（2026-11-12 量的）
 	};
 
 	/// <summary>在 delay 秒后的那一帧「打中」：按起音提前量提前开始播。</summary>
@@ -167,21 +180,16 @@ public static class Sfx
 	/// 预热：把 res://p5joker/sfx/ 里所有音效都读进来解码好（用户 2026-11-03：第一次打出打击都会卡一下——
 	/// 预热时音效被静音、一次都没加载过，第一次播放才现读现解码）。每帧解几个，不在一帧里全做完。
 	/// </summary>
-	public static void PreloadAll(Node anchor)
+	internal static void Preload(string name) => Load(name);
+
+	internal static IEnumerable<string> PreloadNames()
 	{
-		var names = new System.Collections.Generic.List<string>();
+		var names = new HashSet<string>();
 		foreach (string f in DirAccess.GetFilesAt(Dir))
 		{
 			string n = f.Replace(".import", "").Replace(".remap", "");
-			if (n.EndsWith(".ogg") && !names.Contains(n[..^4]))
-			{
-				names.Add(n[..^4]);
-			}
-		}
-		for (int i = 0; i < names.Count; i++)
-		{
-			string n = names[i];
-			Fx.After(anchor, 0.05 + 0.03 * (i / 3), () => Load(n));
+			if (n.EndsWith(".ogg", StringComparison.Ordinal) && names.Add(n[..^4]))
+				yield return n[..^4];
 		}
 	}
 
@@ -249,11 +257,17 @@ public static class Sfx
 		int k = (int)(Fx.Rand(0f, n - 0.001f));
 		if (n > 1 && k == last) k = (k + 1) % n;
 		_lastTake[name] = k;
-		Play(name + "_" + k, volume, delay);
+		Play(name + "_" + k, volume * TakeBoost, delay);
 	}
 
-	/// <summary>技能牌音效整体再压一档（用户 2026-11-12：音效真的不用太明显，现在太大声）。</summary>
-	public const float SkillQuiet = 0.5f;
+	/// <summary>
+	/// 音色板样本整体提响（用户 2026-11-13：新加的音效明显比原版自带的小）。样本本身已经和原版样本一样响（峰值 -6 dBFS），
+	/// 但调用处给的音量是 0.1～0.3，算下来比原版低 12～18 dB；×4 ≈ +12 dB，主拍接近原版、很轻的「嗒」仍然轻。
+	/// </summary>
+	public const float TakeBoost = 4f;
+
+	/// <summary>技能牌音效（游戏事件）的整体倍数（2026-11-12 压过一档 0.5；2026-11-13 用户嫌比原版小，回到 1）。</summary>
+	public const float SkillQuiet = 1f;   // 2026-11-13 用户：新加的音效比原版自带的小 → 不再额外压一档
 
 	private static readonly Dictionary<string, (string? Event, float Gain)> GameSfx = new()
 	{
@@ -288,6 +302,24 @@ public static class Sfx
 		[SerpentRise] = (E + "characters/defect/defect_dark_channel", 0.6f),
 		[SerpentMaw] = (E + "enemy/enemy_attacks/scroll_of_biting/scroll_of_biting_bite", 0.55f),
 	};
+
+	/// <summary>
+	/// 大演出用（总攻击）：走 Master 总线（战斗结束时 SFX 总线可能被游戏压低，P3 mod 同样的做法），gain 可以到 2.5（+8dB）。
+	/// </summary>
+	public static void PlayLoud(string name, float gain) => Stage.Safe("sfx " + name, () =>
+	{
+		if (Muted || Engine.GetMainLoop() is not SceneTree tree) return;
+		Recorder?.Invoke(name, gain);
+		if (Load(name) is not AudioStreamOggVorbis stream) return;
+		AudioStreamPlayer p = new() { Stream = stream, Bus = new StringName("Master"), VolumeDb = Mathf.LinearToDb(Mathf.Clamp(gain, 0.0001f, 2.5f)) };
+		tree.Root.AddChild(p);
+		p.Finished += p.QueueFree;
+		p.Play();
+		tree.CreateTimer(stream.GetLength() + 2.0, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () =>
+		{
+			if (GodotObject.IsInstanceValid(p)) p.QueueFree();
+		};
+	});
 
 	/// <summary>播放；同一音效 45ms 内不重复叠加。volume 0～1.4。</summary>
 	public static void Play(string name, float volume = 1f, float delay = 0f) => Stage.Safe("sfx " + name, () =>

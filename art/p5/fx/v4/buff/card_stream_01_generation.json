@@ -1,0 +1,44 @@
+{
+  "group": "buff",
+  "name": "card_stream_01",
+  "w": 2048,
+  "h": 512,
+  "prompt": "Use case: stylized-concept. Asset type: stand-alone hand-painted 2D sprites for buff VFX in a Persona 5 Joker Slay the Spire 2 game mod. Match the visual vocabulary of the project's slash_thin and slash_cross sprites: sharply tapered brushwork; bright white specular cores, vivid scarlet rims near #E5191C, and sparse strands of rich burgundy and ink-black dry-brush marks. The game's shader reads luminance, so keep crisp, separated white, red, and dark values. Fine hand-drawn irregularity and soft antialiasing at the actual silhouette; no heavy cartoon outline, halftone, large flat color patches, flames, or black smoke. Use real RGBA transparency (alpha zero anywhere outside the asset); do not paint checkerboard, gray, white or black backdrops, mist or colored haze. No text, watermark, logo, characters, ground, frame, or axes.\nComposition and canvas: Target 2048×512 pixels, ultra-wide landscape 4:1. Center the shape, keep it entirely within the central horizontal strip with about 3–4% clear side margins and 9–13% clear top and bottom margins on the intended 4:1 canvas. If a taller working canvas is used, put all visible artwork in one centered ultra-wide 4:1 strip and leave the extra space fully transparent.\nPrimary request: A hand-painted stream of seven to eight simple red playing-card rectangles being flicked across space, arranged along one low rising arc. On the right at the lead, clearly separate three foreshortened red blank card faces, with thin white rim highlights, crisp small specular strokes and wine-black undersides. To the left behind, successive smaller and nearly edge-on red card silhouettes carry directional streaks that fade to clear alpha. No pips, suits, letters, numbers, illustrations or decoration on the cards. Do not connect the individual cards into a long ribbon; keep distinctive transparent gaps and motion smear implied by alpha fade only.",
+  "description": "沿浅弧飞出的红牌列，右端清楚、左端逐渐淡散。",
+  "method": "imagegen (built-in)",
+  "transparent_background": true,
+  "generation_count": 1,
+  "redraw_count": 0,
+  "rejected": false,
+  "raw_image": "card_stream_01_raw.png",
+  "raw_sha256": "51807b72f5d8ee5757535e2d62d5fe99bb3ccb65b7fa343bc950b2e1c29dac1a",
+  "raw_size": [
+    2172,
+    724
+  ],
+  "delivery_size": [
+    2048,
+    512
+  ],
+  "mode": "RGBA",
+  "style_references_reviewed": [
+    "art/p5/fx/v4/slash/slash_thin.png",
+    "art/p5/fx/v4/slash/slash_cross.png"
+  ],
+  "processing": "仅去除多余透明留白，等比缩放后居中补透明画布至 4:1；保留柔和 alpha 边缘。 清零 alpha≤2 的边缘残点和全透明区域的 RGB；未做抠底。",
+  "checks": {
+    "alpha_range": [
+      0,
+      255
+    ],
+    "alpha_bbox_xyxy": [
+      28,
+      47,
+      2020,
+      465
+    ],
+    "transparent_pixels": 842542,
+    "soft_alpha_pixels": 205968,
+    "transparent_outer_border": true
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "batch": 6,
+  "tool": "built-in image_gen",
+  "original_root": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/research/regent_assets/images/packed/card_portraits/regent/",
+  "approval": "User alone reviews. Generation paused by user.",
+  "cards": [
+    {
+      "name": "beat_into_shape",
+      "prompt": "Use case: precise-object-edit. Image1 ORIGINAL edit target. Preserve exact original background palette/broad shapes, scene composition, original core objects and magical effect hues/positions. Local replacement only. Rich hard celshade, nearblack contact shadows, clear material thickness, folds and small purposeful details. P3R creatures canonical colors. Remove entire replaced Regent head/armor, no remnants as props. No Makoto. Opaque landscape1000x760 fullbleed crop-safe no text/frame/watermark. Replace Regent behind foreground tool with JACK-O-LANTERN craftsman: attached orange ribbed pumpkin head carved happy black grin/eyes, purple floppy witchhat and cloak, complete upperbody. Keep original two translucent CYAN starfilled magical hands and arms gripping original circular gold/grey tool EXACT shapes/colors/positions, they are magical constructs in front of pumpkin creature, not human fingers. Keep central circular cracked metal piece and gold curved loop original materials, original maroon/rust background. Pumpkin head occupies old uppercenter head location with hat naturally cropped upperedge, no old gold starhead. Purple cloth has rich folds and cyan bounce.",
+      "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-6923e5ad-5f13-4df8-bf3d-dbcd0283126b.png",
+      "status": "awaiting_user_review",
+      "saved_file": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\outputs\\original_local_edits_batch06\\beat_into_shape.png"
+    },
+    {
+      "name": "hammer_time",
+      "prompt": "Use case: precise-object-edit. Image1 ORIGINAL edit target. Preserve exact original background palette/broad shapes, scene composition, original core objects and magical effect hues/positions. Local replacement only. Rich hard celshade, nearblack contact shadows, clear material thickness, folds and small purposeful details. P3R creatures canonical colors. Remove entire replaced Regent head/armor, no remnants as props. No Makoto. Opaque landscape1000x760 fullbleed crop-safe no text/frame/watermark. Replace ONLY two armored hands/forearms at upperleft and center gripping original diagonal hammer shaft with JACK FROST white rounded mittenlike hands and short white arms, blue jester collar/cuff at offcanvas edges. Exactly two connected visible forearms enter original edges; no human skin/uniform or gold gauntlets. Keep original brown angular hammer head at lowerright and its original cyan impact flare, dark brown shaft angled lowerleft to upperright, original magenta/purple background and other metal fittings exactly. Same closeup tool-working action, no face/body added. Whitehands lavender shadowplanes cyan rim, retain rich shaft woodgrain bevels and shadow.",
+      "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-96ddc9a5-5841-4346-9219-e0d5f20ee186.png",
+      "status": "awaiting_user_review",
+      "saved_file": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\outputs\\original_local_edits_batch06\\hammer_time.png"
+    },
+    {
+      "name": "furnace",
+      "prompt": "Use case: precise-object-edit. Image1 ORIGINAL edit target. Preserve exact original background palette/broad shapes, scene composition, original core objects and magical effect hues/positions. Local replacement only. Rich hard celshade, nearblack contact shadows, clear material thickness, folds and small purposeful details. P3R creatures canonical colors. Remove entire replaced Regent head/armor, no remnants as props. No Makoto. Opaque landscape1000x760 fullbleed crop-safe no text/frame/watermark. Change original central working HAMMER material into Velvet Room-inspired forged SILVER STEEL hammer: same hammer-head shape, orientation/contact point and shaft silhouette, steelgrey broad planes, charcoal recessed side, small BRASS inset fourpoint emblem instead of orange inset, navy leather wrapping on right-extending handle. Preserve ORIGINAL orange-red molten pour and upperleft crucible exactly, long blade/mould with its original cyan edges/redorange heated interior exactly, yellowwhite contact sparks, original purple background. Add steel bevel thickness, small rivet joins and dark seam details; no characters, no extra symbols or text. Orange hot bounce on steel underside, restrained cool reflection upperedge, not global blue filter.",
+      "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-0cde7480-00bb-4a8c-a7bc-7ef51e1dc807.png",
+      "status": "awaiting_user_review",
+      "saved_file": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\outputs\\original_local_edits_batch06\\furnace.png"
+    },
+    {
+      "name": "pale_blue_dot",
+      "prompt": "Use case: precise-object-edit. Image1 ORIGINAL edit target. Preserve exact original background palette/broad shapes, scene composition, original core objects and magical effect hues/positions. Local replacement only. Rich hard celshade, nearblack contact shadows, clear material thickness, folds and small purposeful details. P3R creatures canonical colors. Remove entire replaced Regent head/armor, no remnants as props. No Makoto. Opaque landscape1000x760 fullbleed crop-safe no text/frame/watermark. Replace central seated Regent with compact JACK FROST, attached white snowman face/blue threepoint jesterhat and whitepompoms, blue collar, white little arms crossed in original central seated pose. Replace FOUR cloaked side servants with FOUR small PIXIE fairies in same symmetrical near/far grouping, short darkblue hair pointed ears violet outfits translucent lavenderwings light natural skin, attentive inward poses, clean complete anatomy. Keep original bright CYAN WHITE ORB centered below Frost crossed arms, TWO huge cyan glowing cardbacks in foreground exact positions/borderline patterns, original GREEN/teal upperbackground transitioning deepblue at bottom. Creature side figures softly recede behind cards like original, no extra cards or symbols. No Regent head or hooded old faces remain.",
+      "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-8c446f4f-ded0-439c-ae46-c8936df8cca1.png",
+      "status": "awaiting_user_review",
+      "saved_file": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\outputs\\original_local_edits_batch06\\pale_blue_dot.png"
+    },
+    {
+      "name": "monologue",
+      "prompt": "Use case: precise-object-edit. Image1 ORIGINAL edit target. Preserve exact original background palette/broad shapes, scene composition, original core objects and magical effect hues/positions. Local replacement only. Rich hard celshade, nearblack contact shadows, clear material thickness, folds and small purposeful details. P3R creatures canonical colors. Remove entire replaced Regent head/armor, no remnants as props. No Makoto. Opaque landscape1000x760 fullbleed crop-safe no text/frame/watermark. Replace large Regent with expressive JACK-O-LANTERN telling a story, orange ribbed pumpkin head with carved happy black eyes/open grin, purple witchhat and cloak, grey rounded hand at lowerleft holding original tiny tan mechanical skull puppet in same pose/scale. Puppet is original small object, preserve tan plates black cavities and red tiny eye rather than replacing it. Remove all gold Regent starhead/armor/chain. Keep original GOLD abstract angular speech glyph shapes between mouth and puppet, no new written words, original navy/cobalt background and lighter diagonal blue shape. Pumpkin head same upperright closeup, hand lowerleft continuous from cloak sleeve, original red outline around puppet preserved. Detailed hat stitching and pumpkin groove planes, restrained gold bounce.",
+      "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-bd5835bb-dab1-435a-a281-cf529fda999e.png",
+      "status": "awaiting_user_review",
+      "saved_file": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\outputs\\original_local_edits_batch06\\monologue.png"
+    }
+  ]
+}

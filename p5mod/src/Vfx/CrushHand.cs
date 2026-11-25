@@ -279,7 +279,7 @@ void fragment() {
 	// 用户 2026-11-03：亚森还是要出来 → 亚森照常召唤现身，他往前出手的那一下（emergeAt）巨手从横幅里冲出来（这只手就是他的咒怨）。
 	// 下面的时刻都从手冲出来那一刻算；CrushAfter = 冲出来到捏碎 = 眼神特写碎开 = 游戏结算毒伤 = 所有敌人咒火引爆。
 
-	public const float ArriveAfter = 0.14f, GrabAfter = 0.2f, FistAfter = 0.34f, CrushAfter = 0.62f, FadeTime = 0.45f;   // 用户 2026-11-03：太拖沓 → 压紧
+	public const float ArriveAfter = 0.14f, GrabAfter = 0.2f, FistAfter = 0.34f, CrushAfter = 0.5f, FadeTime = 0.38f;   // 用户 2026-11-03：太拖沓 → 压紧；2026-11-13：捏爆再快一点（攥拳到捏碎 0.28 → 0.16s）
 	private const float Focal = 1.25f;
 
 	/// <summary>手的一个姿态（着色器参数）。</summary>

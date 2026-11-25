@@ -1,5 +1,9 @@
 # P5Joker（静默猎手换皮）
 
+## 0.9.22：杀戮尖塔 2 v0.113.0 适配
+
+命中特效和伤害数字接入新版的伤害目标结构，兼容旧版伤害入口。技能特效只在需要时读取牌数，并处理没有 `Cards` 变量的卡牌。
+
 ## 0.5.8：眼神特写复用 P5R 原版数据
 
 召唤时的眼神特写改为播放原版 `BCT_P_SUMMON.GMD` + `BCT_P_SUMMON_BT.GMD` 转出的几何、UV 和材质关键帧，使用现有 Joker `eyes.png`。原版裂缝、白边、红纸收拢、碎片、双感叹号及其破碎均随源数据播放，替换 0.5.6 的程序近似。转换数据嵌入 DLL，贴图和既有召唤触发点继续复用。
@@ -18,7 +22,8 @@ PCK（骨骼动画 + 特效贴图）+ DLL（特效代码，p5mod/src）：战斗
 `dotnet build -c Release`（在 p5mod 目录），产物 `bin/Release/net9.0/P5Joker.dll`。云端只能做类型检查。
 
 ## 打包安装（本地）
-`gdre_tools --headless --pck-create=<p5mod/pck_stage 的副本> --output=P5Joker.pck --pck-version=3 --pck-engine-version=4.5.1`，
+先运行 `gdre_tools --headless --pck-create=<p5mod/pck_stage 的副本> --output=P5Joker-base.pck --pck-version=3 --pck-engine-version=4.5.1`。
+再运行 `python p5mod/pack_portraits.py "<游戏目录>/SlayTheSpire2.pck" P5Joker-base.pck P5Joker.pck`，让 SkinChanger 可以识别 Joker 的选人头像和顶栏头像。
 把 `P5Joker.json`、`P5Joker.dll` 和 `P5Joker.pck` 放进 `游戏目录/mods/P5Joker/`。
 
 ## 第一版的限制

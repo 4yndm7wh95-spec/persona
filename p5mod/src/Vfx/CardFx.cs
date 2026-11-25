@@ -237,6 +237,7 @@ void fragment() {
 				Size = new Vector2(hw, hh), Position = new Vector2(-hw / 2f, -hh / 2f), MouseFilter = Control.MouseFilterEnum.Ignore,
 				Material = new ShaderMaterial { Shader = Haze },
 			};
+			haze.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });   // 读屏前先刷新（同 HazeRect）
 			haze.AddChild(hz);
 			Fx.Clock(hz);
 			Fx.Animate(hz, 0, 0.9, t => ((ShaderMaterial)hz.Material).SetShaderParameter("alpha", Mathf.Sin(Mathf.Min(1f, t * 1.2f) * Mathf.Pi)));
@@ -502,6 +503,9 @@ void fragment() {
 			Size = new Vector2(w, h), Position = center - new Vector2(w / 2f, h / 2f), MouseFilter = Control.MouseFilterEnum.Ignore,
 			Material = new ShaderMaterial { Shader = Haze },
 		};
+		// 先拷一份此刻的画面再扭（用户 2026-11-13：毒性爆发时面具蓝焰上方偶尔露出一块绿的战斗场景
+		// —— 热浪读到的是眼神特写盖上去之前的旧拷贝）
+		parent.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });
 		parent.AddChild(hz);
 		Fx.Clock(hz);
 		((ShaderMaterial)hz.Material).SetShaderParameter("strength", strength);

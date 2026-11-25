@@ -73,6 +73,17 @@ public sealed class AmmoView
 
 	public void Set(int count) => _target = Mathf.Clamp(count, 0, Chambers);
 
+	/// <summary>刀扇打出（之后每一发都打全体）：弹巢整圈转一下、装着的每一发都弹一下、整体一亮。</summary>
+	public void Charge()
+	{
+		_flash = 1f;
+		_spinTarget -= Mathf.Tau;
+		for (int i = 0; i < Chambers; i++)
+		{
+			if (_loaded[i]) _pop[i] = 1f;
+		}
+	}
+
 	/// <summary>Joker 开火那一刻：正上方那发打掉、转一格。</summary>
 	public void Fire()
 	{

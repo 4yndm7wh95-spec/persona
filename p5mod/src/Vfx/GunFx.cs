@@ -19,7 +19,7 @@ public static class GunFx
 	/// <summary>开火那一帧（动画 0.18s）：枪口火焰 + 暖白光 + 抛弹壳 + 枪声。dir = 射击方向（没有目标时用朝向）。</summary>
 	public static void Muzzle(Control layer, Vector2 muzzle, Vector2 dir, float facing = 1f)
 	{
-		Sfx.Play(Sfx.NextGunShot(), Sfx.DemoMixVolume);                // Five Cards 演示的枪声（枪 + 弹壳轻响），连射轮流换四个变体
+		Sfx.Play(Sfx.Ricochet, 0.6f);   // 用户 2026-11-13 试听 8 种后选 C：P5R 原作的 gun_00（演示的像抽鞭子、gun_10 也不好听）；每一枪都用这一个
 		dir = dir.LengthSquared() > 0.001f ? dir.Normalized() : new Vector2(facing, 0f);
 		float rot = dir.Angle();
 		int i = Fx.Rng.Next(CoreX.Length);
@@ -47,6 +47,7 @@ public static class GunFx
 
 	public static void Hit(Control layer, Vector2 at, Vector2 dir, bool final = false)
 	{
+		KnifeTrapFx.OnHit(at);   // 刀刃陷阱：收一颗光弹
 		// 命中声照 Five Cards 演示（用户 2026-11-09）：升调压低的命中；打死目标的那一发用收尾的重命中（加低频重击）
 		Sfx.Play(final ? Sfx.GunHitFinal : Sfx.GunHit, Sfx.DemoMixVolume);
 		Paint.Pop(layer, "muzzle_front", at, Fx.Rand(-3.1f, 3.1f), 0.2f, Lut5.Muzzle, 0.01f, 0.1f, 0.6f, 0f, 1.2f);

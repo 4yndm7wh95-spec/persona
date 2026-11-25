@@ -1,20 +1,45 @@
-[gd_resource type="SpineSkeletonDataResource" load_steps=5 format=3]
+[gd_resource type="SpineSkeletonDataResource" load_steps=10 format=3]
 
 [ext_resource type="SpineAtlasResource" path="res://p3makoto/rig/characters/regent.atlas" id="1_atlas"]
 [ext_resource type="SpineSkeletonFileResource" path="res://p3makoto/rig/characters/regent.spine-json" id="2_skel"]
 
-[sub_resource type="SpineAnimationMix" id="mix_idle_hurt"]
-from = "idle_loop"
-to = "hurt"
-mix = 0.03
-
-[sub_resource type="SpineAnimationMix" id="mix_hurt_die"]
-from = "hurt"
-to = "die"
+[sub_resource type="SpineAnimationMix" id="mix_aim_loop_aim_out"]
+from = "aim_loop"
+to = "aim_out"
 mix = 0.1
+
+[sub_resource type="SpineAnimationMix" id="mix_aim_loop_sovereign_from_aim"]
+from = "aim_loop"
+to = "sovereign_from_aim"
+mix = 0.1
+
+[sub_resource type="SpineAnimationMix" id="mix_ready_sword_loop_sword_out"]
+from = "ready_sword_loop"
+to = "sword_out"
+mix = 0.08
+
+[sub_resource type="SpineAnimationMix" id="mix_idle_loop_low_health_loop"]
+from = "idle_loop"
+to = "low_health_loop"
+mix = 0.2
+
+[sub_resource type="SpineAnimationMix" id="mix_low_health_loop_idle_loop"]
+from = "low_health_loop"
+to = "idle_loop"
+mix = 0.2
+
+[sub_resource type="SpineAnimationMix" id="mix_idle_loop_relaxed_loop"]
+from = "idle_loop"
+to = "relaxed_loop"
+mix = 0.2
+
+[sub_resource type="SpineAnimationMix" id="mix_relaxed_loop_idle_loop"]
+from = "relaxed_loop"
+to = "idle_loop"
+mix = 0.2
 
 [resource]
 atlas_res = ExtResource("1_atlas")
 skeleton_file_res = ExtResource("2_skel")
-default_mix = 0.1
-animation_mixes = [SubResource("mix_idle_hurt"), SubResource("mix_hurt_die")]
+default_mix = 0.0
+animation_mixes = [SubResource("mix_aim_loop_aim_out"), SubResource("mix_aim_loop_sovereign_from_aim"), SubResource("mix_ready_sword_loop_sword_out"), SubResource("mix_idle_loop_low_health_loop"), SubResource("mix_low_health_loop_idle_loop"), SubResource("mix_idle_loop_relaxed_loop"), SubResource("mix_relaxed_loop_idle_loop")]

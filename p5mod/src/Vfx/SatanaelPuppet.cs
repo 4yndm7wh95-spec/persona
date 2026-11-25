@@ -57,6 +57,7 @@ uniform float alpha = 1.0;
 uniform vec4 point_light = vec4(0.0, 0.0, 300.0, 0.0);
 uniform float flash = 0.0;
 uniform float dim = 0.0;
+uniform vec4 paint = vec4(0.0);   // 华丽收场开枪的冲击帧：整个刷成一个颜色（剪影 / 被枪光打亮）
 uniform float haze = 0.4;
 uniform float ghost_len = 400.0;
 uniform float ghost_amt = 0.0;
@@ -91,6 +92,7 @@ void fragment() {
 		uv = (root_px + vec2(cos(th), sin(th)) * r) * TEXTURE_PIXEL_SIZE;
 	}
 	vec4 c = texture(TEXTURE, uv);
+	if (c.a <= 0.0) discard; // Transparent pixels have no inner rim or dissolve contribution.
 	vec2 sp = SCREEN_UV * sres;
 	float l = dot(c.rgb, vec3(0.3, 0.59, 0.11));
 	// 夜光：压低饱和度（金色变成淡银金）、乘冷蓝环境光；越往下越暗（隐入深渊）
@@ -144,7 +146,7 @@ void fragment() {
 	float fa = c.a * max(vis, band);
 	vec3 oc = vec3(0.55, 0.88, 1.0) * 1.25;
 	float mvis = smoothstep(0.0, 60.0, mask_r - length((sp - mask_o) * vec2(1.0, 1.25)) + (noise(sp / 110.0) - 0.5) * 120.0);   // 场景圆
-	COLOR = vec4(mix(oc, g, fa / (fa + oa + 1e-4)), max(fa, oa) * alpha * ma * mvis);
+	COLOR = vec4(mix(mix(oc, g, fa / (fa + oa + 1e-4)), paint.rgb, paint.a), max(fa, oa) * alpha * ma * mvis);
 }" };
 
 	/// <summary>
@@ -178,6 +180,7 @@ float bolt(vec2 p, float x0, float y0, float y1, float lean, float salt, float w
 	return (exp(-pow(d / width, 2.0)) * 1.6 + exp(-d / (width * 9.0)) * 0.45) * taper;
 }
 void fragment() {
+	if (strike <= 0.0) discard;
 	vec2 p = UV * sres;
 	float b = bolt(p, cx, -20.0, sres.y * 1.05, 0.05, 0.0, 2.6);
 	// 两条分叉：从主干上一个随机高度往斜下方岔出去
@@ -249,6 +252,7 @@ render_mode blend_mix;
 uniform float spin = 0.0;
 uniform float glow = 1.0;
 uniform float alpha = 1.0;
+uniform vec4 paint = vec4(0.0);
 void fragment() {
 	vec2 p = (UV - 0.5) * 2.0;
 	float r = length(p), a = atan(p.y, p.x) + spin;
@@ -265,7 +269,7 @@ void fragment() {
 	float halo = exp(-abs(r - 0.6) * 9.0) * 0.25;
 	vec3 c = ring > 0.5 ? vec3(0.06, 0.07, 0.14) : col;
 	float aa = max(ring, blade);
-	COLOR = vec4(c * glow + vec3(0.3, 0.6, 1.0) * halo * glow, max(aa, halo * 0.6) * alpha);
+	COLOR = vec4(mix(c * glow + vec3(0.3, 0.6, 1.0) * halo * glow, paint.rgb, paint.a), max(aa, halo * 0.6) * alpha);
 }" };
 
 	/// <summary>远处的云海：盖在人格面具的大腿以下（他从云里升起来），顶线是翻滚的云头，越往下越实；冷蓝、顶上一道天光。cloud_y 是屏幕上的顶线。</summary>
@@ -277,6 +281,7 @@ uniform float blast_x = 0.0;
 uniform float blast_t = -1.0;
 uniform float clock = 0.0;
 uniform float alpha = 1.0;
+uniform vec4 paint = vec4(0.0);
 // 场景圈（SinfulShell 的烧穿圈）：圈外不画云，场景收回时云跟着一起缩回 Joker 脚下（用户 2026-11-09）
 uniform vec2 mask_origin = vec2(0.0);
 uniform float mask_r = 1e6;
@@ -314,7 +319,7 @@ void fragment() {
 	vec3 col = body + vec3(0.42, 0.6, 0.85) * rim * 1.1 + vec3(0.1, 0.16, 0.26) * (puff - 0.7) * near;
 	col = mix(col, vec3(0.16, 0.24, 0.40), haze * (1.0 - near));
 	float inside = 1.0 - smoothstep(mask_r - 70.0, mask_r - 30.0, length((px - mask_origin) * vec2(1.0, 1.25)));
-	COLOR = vec4(col, dens * alpha * inside);
+	COLOR = vec4(mix(col, paint.rgb, paint.a), dens * alpha * inside);
 }" };
 
 	private readonly Dictionary<string, Sprite2D> _sprites = new();
@@ -328,6 +333,14 @@ void fragment() {
 	{
 		_mat.SetShaderParameter(name, value);
 		foreach (ShaderMaterial m in _wingMats.Values) m.SetShaderParameter(name, value);
+	}
+
+	/// <summary>开枪的冲击帧（华丽收场第二版）：身体、翅膀、光环刷成 body，云海刷成 cloud（a = 程度，0 = 原样）。</summary>
+	public void Paint(Color body, Color cloud)
+	{
+		SetMat("paint", body);
+		_haloMat?.SetShaderParameter("paint", body);
+		_cloudMat.SetShaderParameter("paint", cloud);
 	}
 
 	/// <summary>各翅膀层的弯曲：(摆幅 弧度, 速度, 相位, 扇形相位系数, 细抖)。三组翼错开相位；翼根羽毛摆得小、抖得碎。</summary>
@@ -378,6 +391,11 @@ void fragment() {
 	private float _lastG = -1f;
 	private float _embersHalf;
 	private Transform2D _root = Transform2D.Identity, _muzzleXf = Transform2D.Identity;
+
+	internal static IEnumerable<string> TextureNames()
+	{
+		foreach (Layer layer in Layers) yield return "sat_" + layer.Name;
+	}
 
 	public static bool Available => Fx.Tex("sat_body") != null && Fx.Tex("sat_arm_fore_gun") != null;
 

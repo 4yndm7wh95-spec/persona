@@ -1,0 +1,20 @@
+{
+  "tool": "imagegen",
+  "prompt": "Create an original abstract 2D ink texture for a game VFX sprite atlas. Genuine transparent RGBA PNG, alpha 0 outside the art, no solid backdrop or drawn checkerboard. Japanese sumi ink material with near-black ink #0B0205, restrained #E5191C reflections on edges and dry skips, tiny white wet specular accents. Fine irregular bristle fibers and natural ink density. No text, symbols, letters, labels, grid lines, halftone, cartoon outlines, smoke, flames, green or blue. No character, weapon, or object other than ink. 2048x2048 square sprite atlas arranged in exactly 4 columns and 4 rows of equal 512 px cells. One isolated distinct ink drop per cell, 16 total, independently centered with ample transparent margins. Variety: small round blobs, asymmetric teardrops, elongated falling drops and curved wet ink filaments. White glint in each and subtle red on edges. No visible borders or labels.",
+  "attempts": 1,
+  "raw": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA"
+  },
+  "delivery": {
+    "size": [
+      2048,
+      2048
+    ],
+    "mode": "RGBA",
+    "sizing": "等比适配目标透明画布"
+  }
+}

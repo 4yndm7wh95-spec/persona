@@ -1,0 +1,44 @@
+{
+  "group": "buff",
+  "name": "thorn_vine_02",
+  "w": 2048,
+  "h": 512,
+  "prompt": "Use case: stylized-concept. Asset type: stand-alone hand-painted 2D sprites for buff VFX in a Persona 5 Joker Slay the Spire 2 game mod. Match the visual vocabulary of the project's slash_thin and slash_cross sprites: sharply tapered brushwork; bright white specular cores, vivid scarlet rims near #E5191C, and sparse strands of rich burgundy and ink-black dry-brush marks. The game's shader reads luminance, so keep crisp, separated white, red, and dark values. Fine hand-drawn irregularity and soft antialiasing at the actual silhouette; no heavy cartoon outline, halftone, large flat color patches, flames, or black smoke. Use real RGBA transparency (alpha zero anywhere outside the asset); do not paint checkerboard, gray, white or black backdrops, mist or colored haze. No text, watermark, logo, characters, ground, frame, or axes.\nComposition and canvas: Target 2048×512 pixels, ultra-wide landscape 4:1. Center the shape, keep it entirely within the central horizontal strip with about 3–4% clear side margins and 9–13% clear top and bottom margins on the intended 4:1 canvas. If a taller working canvas is used, put all visible artwork in one centered ultra-wide 4:1 strip and leave the extra space fully transparent.\nPrimary request: One continuous left-to-right vine, with a clear long low S-shaped sweep: one shallow upward bend in the left half, one downward turn in the right half. Thick twisted stem at the left tapering towards a fine right tip, with long and short backward-curving needle thorns on both sides. Subtle twisting fibers, scarlet on the edges and white glints following the curves. Its narrow plant-like silhouette stays clearly separate from a cloth ribbon or slash.",
+  "description": "横向 S 形荆棘藤，弯折处有扭转高光。",
+  "method": "imagegen (built-in)",
+  "transparent_background": true,
+  "generation_count": 1,
+  "redraw_count": 0,
+  "rejected": false,
+  "raw_image": "thorn_vine_02_raw.png",
+  "raw_sha256": "36c1055305f02346963e1ce848a3fa2516eac813e1301b28b4c5a65c3b87ebf7",
+  "raw_size": [
+    2172,
+    724
+  ],
+  "delivery_size": [
+    2048,
+    512
+  ],
+  "mode": "RGBA",
+  "style_references_reviewed": [
+    "art/p5/fx/v4/slash/slash_thin.png",
+    "art/p5/fx/v4/slash/slash_cross.png"
+  ],
+  "processing": "仅去除多余透明留白，等比缩放后居中补透明画布至 4:1；保留柔和 alpha 边缘。 清零 alpha≤2 的边缘残点和全透明区域的 RGB；未做抠底。",
+  "checks": {
+    "alpha_range": [
+      0,
+      255
+    ],
+    "alpha_bbox_xyxy": [
+      28,
+      29,
+      2020,
+      483
+    ],
+    "transparent_pixels": 895961,
+    "soft_alpha_pixels": 152563,
+    "transparent_outer_border": true
+  }
+}

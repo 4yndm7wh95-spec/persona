@@ -70,6 +70,9 @@ public static class PoisonFx
 	public static void Apply(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, int amount, bool? outbreak = null) =>
 		Apply(layer, at, top, width, body, amount, 6, outbreak ?? InOutbreak);
 
+	public static void CorrosiveImpact(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, int amount) =>
+		Impact(layer, at, top, width, body, amount, new Vector2(1f, 0.6f), false);
+
 	private static void Apply(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, int amount, int retry, bool outbreak)
 	{
 		// 弹跳烧瓶：咒怨火球落到这个敌人身上（SnakeFx.Throw 飞过来，落地 = 这一刻）
@@ -92,34 +95,50 @@ public static class PoisonFx
 			Fx.After(layer, 0.05, () => Apply(layer, at, top, width, body, amount, retry - 1, outbreak));
 			return;
 		}
-		if (CorrosiveFx.Suppressing && !ArseneFx.TryClaw(out _))
-		{
-			return;                                                   // 腐蚀波：抽牌带来的上毒由贴地的咒火浪表现（CorrosiveFx.Wave）
-		}
-		if (ArseneFx.TryClaw(out Vector2 claw))
+		if (Stage.NowMs() >= NoBeamUntil && ArseneFx.TryClaw(out Vector2 claw))
 		{
 			Vector2 d = at - claw;
 			float len = d.Length();
 			if (len > 40f)
 			{
-				// slash_thrust（打包后 1024×512）：宽的起爆在爪尖、细线伸向敌人；比枪的弹道粗、用咒怨 LUT
-				float sx = len / 940f;
-				Vector2 center = claw + d * 0.5f + d.Normalized() * (512f - 530f) * sx;
-				Paint.Sweep(layer, "slash_thrust", center, d.Angle(), new Vector2(sx, 0.42f), Lut5.Curse, 0.08f, 0.04f, 0.22f, 0f, 0f, 1.4f);
-				for (int i = 1; i <= 3; i++)
+				// 用户 2026-11-13：原来的贴图光束（slash_thrust）偏硬、很贴图 → 换成着色器画的咒怨光带（CurseBeam）
+				// 手边一亮（看得出是他放出来的）
+				// 用户 2026-11-19：实机里整套太大 → 致命毒药 / 咕嘟冒泡这条路上的所有尺寸 × PersonaScale
+				const float S = PersonaScale;
+				Glow.Flash(layer, claw, new Color(1f, 0.9f, 0.88f), 110f * S, 0.14f);
+				Glow.Flash(layer, claw, new Color(0.9f, 0.1f, 0.16f), 260f * S, 0.28f);
+				// 2026-11-16 第三次（用户：光束太直白，换一种表达）：不再是一道光带 —— 爪尖一甩，一群咒怨光点划着各自的弧飞向敌人
+				//（细的红 / 白疾光，前后错开，越靠后越小），几乎同时扎进去（致命毒药 / 咕嘟冒泡共用）
+				// 2026-11-16 第六版（用户：光束太直白；光点 / 光尘砸过去很丑）：不再从爪尖往敌人发东西 —— 亚森一挥爪，
+				// 敌人身上同一刻被三道咒怨爪痕撕开（打击牌命中的那套手绘笔触：沿走向扫出、溶解，换咒怨的黑红 LUT），咒火从脚下冲起
+				// 2026-11-18（用户：爪击不错，但少了从人物 / 人格面具到怪物的关系表达；光束、光点、连绳子都太直白）：
+				// 亚森爪前和敌人身上同时被「划开」一模一样的咒怨裂隙，爪痕从敌人那道里撕出来（CurseRift）——这一爪穿过空间抓到了他
+				float rf = d.X >= 0f ? 1f : -1f;
+				float rot = 0.62f * rf + Fx.Rand(-0.06f, 0.06f);
+				Vector2 rAlong = Vector2.FromAngle(rot);
+				float rk = Mathf.Clamp(width / 240f, 0.7f, 1.3f) * S;
+				// 爪前那道在爪子挥下去的前方（爪子伸进去）；敌人那道在爪痕的起点（敌人靠亚森那侧的上方，爪子从里面撕出来、往下划过敌人），不被爪痕和咒火盖住
+				Vector2 riftA = claw + rAlong * 80f * rk;
+				CurseRift.Open(layer, riftA, rot + Mathf.Pi * 0.5f, 270f * rk, 0f, 1f, 0.06f, 0.24f, 0.2f);
+				// 爪子伸进裂口：三道小爪痕划向爪前那道裂口、在口子上收住（和敌人身上撕出来的三道同一套笔触）
+				Vector2 rAcross = rAlong.Orthogonal();
+				for (int i = 0; i < 3; i++)
 				{
-					Vector2 p = claw + d * (0.25f * i);
-					Paint.Rise(layer, "curse_soul", p, 70f, 0.4f, Lut5.Curse, 0.5f, 0.03f * i);
+					float sc = 0.2f * rk;
+					Vector2 ci = riftA - rAlong * 1024f * sc * 0.36f + rAcross * (i - 1) * 26f * rk;
+					Paint.Sweep(layer, "slash_thin", ci, rot, new Vector2(sc * rf, sc * 0.9f), Lut5.Blood, 0.04f, 0.03f, 0.16f, 14f, 0.012f * i, 1.3f);
 				}
+				CurseRift.Open(layer, at - rAlong * width * 0.62f * S, rot + Mathf.Pi * 0.5f, Mathf.Max(width * 1.05f * S, 260f * rk), 0f, -1f, 0.06f, 0.24f, 0.2f);
+				ClawRake(layer, at, width, d, rot, S);
 			}
-			_beamLand = Stage.NowMs() + 80;
+			_beamLand = Stage.NowMs() + (ulong)(RakeAt * 1000f);
 			// 毒性爆发：光束命中只留「标记」，不炸（用户 2026-11-03：太花、几个高潮挤在一起）——唯一的高潮留给引爆
 			if (outbreak)
 			{
-				Fx.After(layer, 0.08, () => Mark(layer, at, top, width, body));
+				Fx.After(layer, RakeAt, () => Mark(layer, at, top, width, body));
 				return;
 			}
-			Fx.After(layer, 0.08, () => Impact(layer, at, top, width, body, amount, d, true));
+			Fx.After(layer, RakeAt, () => Impact(layer, at, top, width, body, amount, d, true, PersonaScale));
 			return;
 		}
 		if (outbreak)
@@ -163,11 +182,15 @@ public static class PoisonFx
 	}
 
 	/// <summary>咒怨打中：顿帧 + 沿来向的震屏 + 一下红白闪 + 空间扭曲 + 黑红咒火从脚下冲起 + 怨灵飘散 + 目标被染暗。</summary>
-	private static void Impact(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, int amount, Vector2 dir, bool persona)
+	/// <summary>致命毒药 / 咕嘟冒泡（亚森出手那条路：裂隙、爪痕、咒火）整体缩放（用户 2026-11-19：实机里太大）。</summary>
+	private const float PersonaScale = 0.62f;
+
+	private static void Impact(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, int amount, Vector2 dir, bool persona, float scale = 1f)
 	{
 		float h = Mathf.Max(80f, (at - top).Length());
 		Vector2 foot = at + new Vector2(0f, h * 0.75f);
-		float k = Mathf.Clamp(width / 240f, 0.55f, 1.3f);
+		float k = Mathf.Clamp(width / 240f, 0.55f, 1.3f) * scale;
+		width *= scale;
 		bool big = amount >= 6;
 		Sfx.Play(Sfx.CurseSoft, persona ? 0.55f : 0.4f);              // 用户 2026-11-03：重拳声像打击，不符合咒怨 → 咒怨闷响
 		Sfx.Play(Sfx.SubBoom, persona ? 0.5f : 0.3f);
@@ -186,7 +209,7 @@ public static class PoisonFx
 			CurseFlame(layer, Vanilla.FireRight, foot + new Vector2(0.3f * width, 0f), 0.7f * k * f, 0.09f);
 		}
 		Vanilla.Burst(layer, Vanilla.Embers, foot, 0f, 1.1f * k, Lut5.Curse);
-		Vanilla.Burst(layer, Vanilla.Specks, at, dir.Angle(), 0.9f, Lut5.Curse, amount: 18);
+		Vanilla.Burst(layer, Vanilla.Specks, at, dir.Angle(), 0.9f * scale, Lut5.Curse, amount: 18);
 		Paint.Rise(layer, "curse_soul", at + new Vector2(Fx.Rand(-0.25f, 0.25f) * width, 0.1f * h), 190f * k, 0.95f * k, Lut5.Curse, 0.8f, 0.06f);
 		if (big || persona)
 		{
@@ -274,12 +297,136 @@ public static class PoisonFx
 
 	public static bool InOutbreak => Stage.NowMs() < _outbreakUntil;
 
+	/// <summary>这段时间里的上毒走普通落点（不从亚森爪尖甩光束）：蛇咬召唤了亚森，但毒是蛇咬上的（用户 2026-11-13：蛇咬原来的毒特效保留）。</summary>
+	public static ulong NoBeamUntil;
+
+	private static Shader? _beam;
+
+	/// <summary>
+	/// 咒怨光带（亚森爪尖 → 敌人）：ColorRect 沿着两点放（UV.x 0 起点 → 1 终点，UV.y 横向）。整条按 bend 拱起一道弧；
+	/// 头 head 从起点冲到终点，两头都是圆的（宽度平滑收起来，没有尖角）；里面的纹理和细丝往终点方向流（flow）；
+	/// 白热芯、暗红身、外面一圈柔光；thin 0 → 1 变细淡掉。
+	/// </summary>
+	private static Shader BeamShader => _beam ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform float head = 1.0;
+uniform float tail = 0.0;
+uniform float thin = 0.0;
+uniform float flow = 0.0;
+uniform float bend = 0.2;
+uniform float waves = 1.0;     // 1 = 一道弧；> 1 = 像蛇一样弯几道（越往终点摆得越小）
+uniform float aspect = 8.0;
+uniform float seed = 0.0;
+uniform float alpha = 1.0;
+uniform float wk = 1.0;   // 粗细倍率（真实宽度模式：width * 3 / quad 高）
+float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+float noise(vec2 p) {
+	vec2 i = floor(p), f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
+}
+void fragment() {
+	float x = UV.x;
+	// 弧：中间拱起（UV.y 0.5 是直线，quad 上下留了余量）
+	bool snake = waves > 1.0;
+	// 蛇形（waves > 1）：波沿着光带往前游（flow 推相位），两端摆幅收到 0、中间最大；一道弧（waves = 1）就是静止的拱
+	float env = snake ? pow(max(sin(x * 3.14159), 0.0), 0.8) : 1.0;
+	float y = (UV.y - 0.5) * 2.0 + bend * sin(x * 3.14159 * waves - (snake ? flow * 0.55 : 0.0)) * 2.0 * env;
+	// 两头圆：在头、尾附近宽度平滑收起来
+	float span = max(head - tail, 0.001);
+	float capL = 0.45 / aspect;   // 圆头的长度 ≈ 光带半宽
+	float body = smoothstep(tail, tail + capL, x) * (1.0 - smoothstep(head - capL, head, x));
+	float w = (0.42 + 0.12 * sin(x * 18.0 - flow * 1.3 + seed)) * body * (1.0 - 0.75 * thin) * wk;
+	if (snake) w *= mix(0.3, 1.0, smoothstep(0.0, 0.8, x));   // 靠手那头细、往前变粗
+	float n = noise(vec2(x * aspect * 1.6 - flow * 2.0, y * 3.0 + seed));
+	float n2 = noise(vec2(x * aspect * 4.0 - flow * 3.5, y * 9.0 - seed));
+	float wl = max(w, 1e-3);
+	float d = abs(y) / wl;
+	float glow = exp(-d * d * 0.9) * body;
+	float bodyA = smoothstep(1.0, 0.55, d + (n - 0.5) * 0.4);
+	float core = smoothstep(0.42, 0.0, d + (n2 - 0.5) * 0.25) * (1.0 - thin * 0.6);
+	// 细丝：顺着方向流
+	float fil = pow(1.0 - abs(noise(vec2(x * aspect * 2.2 - flow * 4.0, y * 14.0 + seed)) * 2.0 - 1.0), 8.0) * smoothstep(1.2, 0.3, d);
+	vec3 deep = vec3(0.32, 0.0, 0.06);
+	vec3 red = vec3(0.92, 0.06, 0.16);
+	vec3 col = mix(deep, red, smoothstep(0.9, 0.3, d) * (0.6 + 0.4 * n));
+	col = mix(col, vec3(1.0, 0.92, 0.9), core);
+	col += vec3(1.0, 0.45, 0.45) * fil * 0.6 * body;
+	float a = max(bodyA * body * (0.75 + 0.25 * n), glow * 0.35) + fil * 0.3 * body;
+	// 蛇头：最前面一团亮的
+	if (snake) {
+		float hd = exp(-pow((x - head + 0.035) / 0.035, 2.0)) * exp(-pow(y / max(w * 1.6, 0.05), 2.0)) * (1.0 - thin);
+		col = mix(col, vec3(1.0, 0.85, 0.82), hd * 0.8);
+		a = max(a, hd);
+	}
+	a = clamp(a, 0.0, 1.0) * alpha;
+	if (a <= 0.003) discard;
+	COLOR = vec4(col, a);
+}" };
+
+	/// <summary>亚森挥爪到爪痕落在敌人身上（= 命中）的秒数。</summary>
+	internal const float RakeAt = 0.05f;
+
+	/// <summary>三道咒怨爪痕：斜着（从亚森那边往下撕）并排扫过敌人，一道接一道（0.025s），白芯黑红边，扫完溶解。</summary>
+	internal static void ClawRake(Control layer, Vector2 at, float width, Vector2 dir, float? rotIn = null, float scale = 1f)
+	{
+		float facing = dir.X >= 0f ? 1f : -1f;
+		float rot = rotIn ?? 0.62f * facing + Fx.Rand(-0.06f, 0.06f);   // 从左上往右下撕（朝左时镜像）
+		Vector2 along = Vector2.FromAngle(rot), across = along.Orthogonal();
+		float k = Mathf.Clamp(width / 240f, 0.7f, 1.3f) * scale;
+		for (int i = 0; i < 3; i++)
+		{
+			Vector2 c = at + across * (i - 1) * 52f * k + along * (i - 1) * 16f * k;
+			float w = (i == 1 ? 0.6f : 0.5f) * k;
+			Paint.Sweep(layer, "slash_thin", c, rot, new Vector2(w * facing, w * 0.9f), Lut5.Blood, 0.05f, 0.05f, 0.28f, 36f, RakeAt - 0.03f + 0.025f * i, 1.3f);
+		}
+		Fx.After(layer, RakeAt, () =>
+		{
+			Glow.Flash(layer, at, new Color(1f, 0.82f, 0.8f), 220f * k, 0.12f);
+			Glow.Ripple(layer, at, 380f * k, 0.38f, 0.025f);
+		});
+		// 火星（打击牌命中同一套原版粒子；暗烟那个转过来像一根尖刺，不用）
+		Vanilla.Burst(layer, Vanilla.Specks, at, rot, scale, Lut5.Curse, amount: 24, delay: RakeAt);
+	}
+
+	/// <summary>
+	/// 从 from 到 to 的一道咒怨光带：grow 秒冲过去，停一下，再 fade 秒变细淡掉。bend 拱起的程度（相对长度），width 光带粗细（像素）。
+	/// </summary>
+	public static void Beam(Control layer, Vector2 from, Vector2 to, float bend, float grow, float width, float hold = 0.06f, float fade = 0.2f, float waves = 1f, bool trueWidth = false)
+	{
+		Vector2 dv = to - from;
+		float len = dv.Length();
+		if (len < 10f) return;
+		float hgt = width * 3f + Mathf.Abs(bend) * len * 2.6f;   // 上下留出弧的余量（2026-11-13：留少了，摆到顶被切成直边）
+		Node2D root = Fx.Root(layer, from, "P5CurseBeam", grow + hold + fade + 0.1);
+		root.Rotation = dv.Angle();
+		ShaderMaterial m = new() { Shader = BeamShader };
+		m.SetShaderParameter("aspect", len / hgt);
+		m.SetShaderParameter("waves", waves);
+		m.SetShaderParameter("wk", trueWidth ? width * 3f / hgt : 1f);   // 老调用：粗细随弧高的 quad 走（拱得越高越粗）
+		m.SetShaderParameter("seed", Fx.Rand(0f, 30f));
+		// bend 是相对 quad 半高的：拱起 bend*len 像素 → 换算
+		m.SetShaderParameter("bend", bend * len / hgt * (dv.X >= 0f ? 1f : -1f));   // 往上拱（朝左时 quad 是倒过来的）
+		ColorRect q = new() { Size = new Vector2(len, hgt), Position = new Vector2(0f, -hgt / 2f), Material = m, MouseFilter = Control.MouseFilterEnum.Ignore };
+		root.AddChild(q);
+		float total = grow + hold + fade;
+		Fx.Animate(root, 0, total, t =>
+		{
+			float s = t * total;
+			m.SetShaderParameter("head", Ease5.OutQuint(Mathf.Min(1f, s / grow)) * 1.02f);
+			m.SetShaderParameter("tail", Fx.InCubic(Ease5.Seg(s, grow + hold * 0.5f, fade + hold * 0.5f)) * 1.02f);
+			m.SetShaderParameter("thin", Ease5.Seg(s, grow + hold, fade));
+			m.SetShaderParameter("flow", s * 12f);
+			m.SetShaderParameter("alpha", 1f - Ease5.Seg(s, grow + hold + fade * 0.6f, fade * 0.4f));
+		});
+	}
+
 	/// <summary>捏碎时的拳心（全局坐标）：引爆时敌人被往远离拳心的方向打退；没捏碎过为空。</summary>
 	private static Vector2? _crushFrom;
 
 	/// <summary>
 	/// 捏碎（用户 2026-11-08：捏爆那一下和敌人身上的伤害要连上）：从拳心朝每个敌人甩出一道咒怨，ArrivalDelay 秒后打到 =
-	/// 那个敌人结算毒伤、引爆（OutbreakPlayback.Run 按同一个时刻等）。全场定格（HitStop）期间这些都停着，定格一松开才飞。
+	/// 为该敌人播放原版结算的伤害数字和咒怨引爆。
 	/// </summary>
 	public static void Crushed(Control layer, Vector2 from, IEnumerable<Vector2> targets)
 	{

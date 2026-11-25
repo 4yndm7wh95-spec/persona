@@ -35,7 +35,7 @@ public static class SkillRedo4
 	/// 冻住的一帧 Joker 剪影（同 SkillFx.Ghosts 的做法：复制此刻的 Joker 画进离屏画面、定格、填纯色），返回剪影贴图的父节点（放在 back 层、区域左上角）。
 	/// 拿到以后自己加若干 Sprite2D（Silhouette 材质）摆位置、淡入淡出。
 	/// </summary>
-	private static (Node2D Root, Texture2D Tex)? Freeze(SkillCtx c, Control layer, double life)
+	internal static (Node2D Root, Texture2D Tex)? Freeze(SkillCtx c, Control layer, double life)
 	{
 		if (c.CopyBody == null || !GodotObject.IsInstanceValid(layer)) return null;
 		Rect2 region = c.Region;

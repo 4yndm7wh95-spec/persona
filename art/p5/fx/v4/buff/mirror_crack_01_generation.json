@@ -1,0 +1,44 @@
+{
+  "group": "buff",
+  "name": "mirror_crack_01",
+  "w": 1024,
+  "h": 1024,
+  "prompt": "Use case: stylized-concept. Asset type: stand-alone hand-painted 2D sprites for buff VFX in a Persona 5 Joker Slay the Spire 2 game mod. Match the visual vocabulary of the project's slash_thin and slash_cross sprites: sharply tapered brushwork; bright white specular cores, vivid scarlet rims near #E5191C, and sparse strands of rich burgundy and ink-black dry-brush marks. The game's shader reads luminance, so keep crisp, separated white, red, and dark values. Fine hand-drawn irregularity and soft antialiasing at the actual silhouette; no heavy cartoon outline, halftone, large flat color patches, flames, or black smoke. Use real RGBA transparency (alpha zero anywhere outside the asset); do not paint checkerboard, gray, white or black backdrops, mist or colored haze. No text, watermark, logo, characters, ground, frame, or axes.\nComposition and canvas: Target 1024×1024 pixels, square. Full uncropped sprite, apportion clear transparent margins on all four sides.\nPrimary request: One floating glass impact crack: a tiny central shattered point, about seven hairline jagged radial white fractures of varied lengths, with smaller forked hairlines and one thin irregular swept arc linking a few fractures near the outer reaches. Most long lines branch on the upper left and lower right. Use bright white hairlines with tiny scarlet reflected accents only on select fracture lips, and very fine dark strokes. Draw only the cracks and the tiny struck center. The voids between every line are transparent; no pane color, no filled glass facets, no glass frame, no sunburst or lightning.",
+  "description": "细白裂线由中心碎点扩散，外缘有一道残缺弧形裂缝。",
+  "method": "imagegen (built-in)",
+  "transparent_background": true,
+  "generation_count": 1,
+  "redraw_count": 0,
+  "rejected": false,
+  "raw_image": "mirror_crack_01_raw.png",
+  "raw_sha256": "d4193d5968e7625ee1e600f8d8de39f558e13e54e9a680f0b11e904d8ceb9bb3",
+  "raw_size": [
+    1254,
+    1254
+  ],
+  "delivery_size": [
+    1024,
+    1024
+  ],
+  "mode": "RGBA",
+  "style_references_reviewed": [
+    "art/p5/fx/v4/slash/slash_thin.png",
+    "art/p5/fx/v4/slash/slash_cross.png"
+  ],
+  "processing": "按原始构图等比重采样至 1024×1024，保留外围透明空间。 清零 alpha≤2 的边缘残点和全透明区域的 RGB；未做抠底。",
+  "checks": {
+    "alpha_range": [
+      0,
+      255
+    ],
+    "alpha_bbox_xyxy": [
+      66,
+      106,
+      941,
+      972
+    ],
+    "transparent_pixels": 1008606,
+    "soft_alpha_pixels": 39963,
+    "transparent_outer_border": true
+  }
+}

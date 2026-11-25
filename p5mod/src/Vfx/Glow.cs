@@ -71,7 +71,7 @@ void fragment() {
 	/// <summary>折射冲击波：把后面的画面沿环扭一下，带 RGB 色散和一层红色高光。</summary>
 	private static Shader Refract => _refract ??= new Shader { Code = @"
 shader_type canvas_item;
-uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
+uniform sampler2D screen_tex : hint_screen_texture, filter_linear, repeat_disable;
 uniform vec4 tint : source_color = vec4(1.0, 0.35, 0.35, 1.0);
 uniform float radius = 0.3;
 uniform float width = 0.12;
@@ -80,11 +80,14 @@ uniform float alpha = 1.0;
 void fragment() {
 	vec2 uv = UV * 2.0 - 1.0;
 	float d = length(uv);
+	if (d >= 1.0 || alpha <= 0.0) discard;
 	float x = (d - radius) / max(width, 0.0001);
 	float edge = smoothstep(1.0, 0.72, d);
-	float k = exp(-x * x * 2.5) * edge;
+		float envelope = exp(-x * x * 2.5);
+		float k = envelope * edge;
+	if (k <= 0.0) discard;
 	vec2 dir = d > 0.0001 ? uv / d : vec2(0.0);
-	vec2 off = dir * (-x * exp(-x * x * 2.5)) * edge * strength * alpha;
+		vec2 off = dir * (-x * envelope) * edge * strength * alpha;
 	float r = texture(screen_tex, SCREEN_UV - off * 1.12).r;
 	float g = texture(screen_tex, SCREEN_UV - off).g;
 	float b = texture(screen_tex, SCREEN_UV - off * 0.88).b;
@@ -269,11 +272,30 @@ void fragment() {
 		_ripples++;
 		Node2D root = Fx.Root(layer, at, "P5Ripple", duration + delay + 0.1);
 		root.TreeExiting += () => _ripples--;
+		// 先把此刻的画面拷一份再读（用户 2026-11-13：群蛇形态的红色场景下，波纹里露出没染红的绿色场景，像一圈盖掉场景颜色的怪光
+		// —— 读到的是这一层之前的旧拷贝）
+		var capture = new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Rect };
+		root.AddChild(capture);
 		ColorRect q = Quad(root, Refract, size, squashY);
+		Vector2 sampleSize = new(size, size * squashY);
+		// 1.12 * max(abs(x * exp(-2.5*x*x))) < 0.305.
+		float offset = 0.305f * Mathf.Abs(strength);
+		Fx.FitScreenCopy(capture, sampleSize, offset);
+		q.VisibilityChanged += () =>
+		{
+			if (GodotObject.IsInstanceValid(capture)) capture.Visible = q.IsVisibleInTree();
+		};
+		capture.Visible = delay <= 0f;
 		Set(q, "strength", strength);
 		Set(q, "alpha", 0f);
 		Fx.Animate(q, delay, duration, t =>
 		{
+			if (t >= 1f)
+			{
+				q.Hide();
+				return;
+			}
+			Fx.FitScreenCopy(capture, sampleSize, offset);
 			float e = Fx.OutCubic(t);
 			Set(q, "radius", Mathf.Lerp(0.02f, 0.9f, e));
 			Set(q, "width", Mathf.Lerp(0.16f, 0.07f, e));

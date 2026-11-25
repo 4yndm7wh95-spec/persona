@@ -28,6 +28,7 @@ float vnoise(vec2 p) {
 	{
 		Vector2 screen = Fx.Screen(layer);
 		ColorRect r = new() { Size = screen, MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = shader } };
+		root.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });   // 读屏前先刷新
 		root.AddChild(r);
 		((ShaderMaterial)r.Material).SetShaderParameter("res", screen);
 		return r;

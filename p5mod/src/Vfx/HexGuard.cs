@@ -113,7 +113,7 @@ void fragment() {
 
 	private static Shader Refract => _refract ??= new Shader { Code = @"
 shader_type canvas_item;
-uniform sampler2D screen_tex : hint_screen_texture, filter_linear_mipmap;
+uniform sampler2D screen_tex : hint_screen_texture, filter_linear, repeat_disable;
 uniform float strength = 0.012;
 " + Common + @"
 uniform float facing = 1.0;
@@ -124,11 +124,13 @@ void fragment() {
 	float d = panel(uv);
 	float shown = smoothstep(order(uv) - 0.12, order(uv) + 0.02, on * 1.05) * (1.0 - smoothstep(1.0 - order(uv) - 0.12, 1.0 - order(uv) + 0.02, off * 1.05));
 	float ell = 1.0 - smoothstep(0.55, 1.0, d);
+	float coverage = ell * shown * 0.8;
+	if (coverage <= 0.0) discard;
 	vec2 off2 = -vec2(uv.x / hw * facing, uv.y) * d * strength * shown;
 	vec3 bg = vec3(textureLod(screen_tex, SCREEN_UV + off2 * 1.2, 0.0).r, textureLod(screen_tex, SCREEN_UV + off2, 0.0).g,
 		textureLod(screen_tex, SCREEN_UV + off2 * 0.8, 0.0).b);
 	bg = mix(bg, bg * vec3(1.15, 0.85, 0.88) + vec3(0.03, 0.0, 0.005), 0.25);
-	COLOR = vec4(bg, ell * shown * 0.8);
+	COLOR = vec4(bg, coverage);
 }" };
 
 	/// <param name="chest">Joker 胸口（全局坐标）：盾立在它前面</param>
@@ -157,6 +159,10 @@ void fragment() {
 		rm.SetShaderParameter("facing", facing);
 		ColorRect refract = new() { Size = size, Position = -size / 2f, Material = rm, MouseFilter = Control.MouseFilterEnum.Ignore };
 		ColorRect face = new() { Size = size, Position = -size / 2f, Material = fm, MouseFilter = Control.MouseFilterEnum.Ignore };
+		// Each axis of the panel coordinate is below one where refraction is visible.
+		var copy = new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Rect };
+		root.AddChild(copy);
+		Fx.FitScreenCopy(copy, size, 0.012f * 1.2f);
 		root.AddChild(refract);
 		root.AddChild(face);
 
@@ -184,6 +190,7 @@ void fragment() {
 		Fx.Animate(root, 0, life + shoot, t =>
 		{
 			float s = t * (life + shoot) - shoot;
+			Fx.FitScreenCopy(copy, size, 0.012f * 1.2f);
 			float on = Mathf.Clamp(s / appear, 0f, 1f) * 1.25f;
 			float off = Mathf.Clamp((s - appear - hold) / vanish, 0f, 1f) * 1.25f;
 			foreach (ShaderMaterial mat in new[] { rm, fm })

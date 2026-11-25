@@ -30,8 +30,8 @@ dotnet build -nologo -v q FxPreview.csproj | grep -E " error " && { echo "build 
 [ -d .godot/imported ] && [ images/vfx/light.png -ot .godot/imported ] || xvfb-run -a "$GODOT" --headless --path . --import >/dev/null 2>&1 || true
 rm -rf "out/$S"; mkdir -p "out/$S"
 xvfb-run -a -s "-screen 0 1920x1080x24" "$GODOT" --path . --rendering-driver opengl3 \
-  --write-movie "out/$S/f.png" --fixed-fps 30 --quit-after $((SEC * 30)) -- --scenario="$S" >"out/$S/log.txt" 2>&1 || true
+  --write-movie "out/$S/f.png" --fixed-fps ${FPS:-30} --quit-after $((SEC * ${FPS:-30})) -- --scenario="$S" ${PREVIEW_ARGS:-} >"out/$S/log.txt" 2>&1 || true
 grep -E "ERROR|Exception|\[P5Joker\]" "out/$S/log.txt" | head -20 || true
-ffmpeg -loglevel error -y -framerate 30 -i "out/$S/f%08d.png" \
+ffmpeg -loglevel error -y -framerate ${FPS:-30} -i "out/$S/f%08d.png" \
   -vf "scale=960:-1:flags=lanczos,split[a][b];[a]palettegen=stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4" "out/$S.gif"
 echo "out/$S.gif"

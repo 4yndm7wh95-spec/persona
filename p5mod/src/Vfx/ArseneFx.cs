@@ -34,6 +34,13 @@ public static class ArseneFx
 	};
 
 	private static readonly Vector2 ClawTip = new(1250f, 610f);
+	internal static System.Collections.Generic.IEnumerable<string> TextureNames()
+	{
+		foreach (Part part in Parts) yield return part.Tex;
+		yield return "arsene_arm_reach_fist";
+		yield return "arsene_arm_reach_extend";
+	}
+	private static Vector2 _hand;
 
 	private static Shader? _shader;
 
@@ -162,6 +169,17 @@ void fragment() {
 	private static Vector2 _claw;
 	private static ulong _clawAt;
 
+	/// <summary>
+	/// 等到亚森出手、爪尖位置记下来再执行（每 0.03s 看一次，最多等 maxWait 秒；还没有就用 fallback）。
+	/// 用户 2026-11-13：蛇咬的光带从亚森头上出来 —— 那一刻爪尖还没记下、用了估的点 → 等爪尖。
+	/// </summary>
+	public static void WhenClaw(Node anchor, Vector2 fallback, Action<Vector2> act, float maxWait = 0.25f)
+	{
+		if (TryClaw(out Vector2 c) && Stage.NowMs() - _clawAt < 200) { act(c); return; }
+		if (maxWait <= 0f || !GodotObject.IsInstanceValid(anchor)) { act(TryClaw(out c) ? c : fallback); return; }
+		Fx.After(anchor, 0.03, () => WhenClaw(anchor, fallback, act, maxWait - 0.03f));
+	}
+
 	/// <summary>亚森刚出过手（0.6s 内）：返回爪尖位置，PoisonFx 从这里甩出咒怨。</summary>
 	public static bool TryClaw(out Vector2 claw)
 	{
@@ -189,6 +207,9 @@ void fragment() {
 		(float FistAt, float CrushAt)? clench = NextClench;
 		NextClench = null;
 		_attackPendingUntil = Stage.NowMs() + (ulong)((attackAt + 0.3f) * 1000f);
+		// 出手的特效都从他抬到下巴的那只手放出（用户 2026-11-13：原来的爪尖点在这个姿势下落在帽子后面，看着像从头上冒出来）
+		float tallJ = height / 1.35f;
+		_hand = Persona.ChestOf(Persona.ArseneSpec, feet, height, facing) + new Vector2(facing * tallJ * 0.37f, -tallJ * 0.41f);
 		float k = height / (BodyToe - BodyTop);                // 全图像素 → 屏幕
 		// 飘在 Joker 左后方、离开一段距离，脚尖大约在 Joker 腰的高度（沿用用户对 0.7 版亚森站位的意见：别太近、别太高、再往左）
 		Vector2 toeScreen = feet + new Vector2(-0.62f * height * facing, -0.3f * height);   // v7 两翼垂着、扑出去时别压到 Joker 身上
@@ -328,7 +349,7 @@ void fragment() {
 				}
 				if (time >= attackAt && time < crushAt + 0.3f)
 				{
-					_claw = display.GlobalPosition + armR.GetGlobalTransform() * (ClawTip - Parts[4].Pivot);
+					_claw = _hand;
 					_clawAt = Stage.NowMs();
 				}
 			}
@@ -376,12 +397,12 @@ void fragment() {
 				}
 				if (u < 0.3f)
 				{
-					_claw = display.GlobalPosition + armR.GetGlobalTransform() * (ClawTip - Parts[4].Pivot);   // 爪尖：离屏画面坐标 → 屏幕
+					_claw = _hand;   // 爪尖：离屏画面坐标 → 屏幕
 					_clawAt = Stage.NowMs();
 				}
 			}
 			body.Position = Parts[3].Pivot + pos;
-			body.Rotation = lean;
+			body.Rotation = 0f * lean;   // 用户 2026-11-16：亚森施法时身体不要前倾（蓄 / 扑 / 捏碎都不再转身体，手臂和翅膀照旧）
 			body.Scale = new Vector2(scale * (1f + 0.1f * stretch), scale * (1f - 0.05f * stretch));
 			armR.Rotation = reach;
 			armB.Rotation = -reach * 0.35f + Mathf.Sin(time * 2.6f) * 0.04f;

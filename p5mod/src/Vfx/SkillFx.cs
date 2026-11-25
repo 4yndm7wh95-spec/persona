@@ -566,7 +566,8 @@ void fragment() {
 			{
 				if (sound && k == 0)
 				{
-					Sfx.Play(Sfx.CardBurn, 0.55f);
+					// 用户 2026-11-17 审阅（隐秘匕首）：弃牌音效太难听 → 合成的「嘶 + 噼啪」换成游戏自带的翻牌声
+					Sfx.Take("gx_card_slide", 0.2f);
 				}
 				CardNode c = MakeCard(layer, hand, size, life + 0.1);
 				bool ember = false;
@@ -681,6 +682,10 @@ void fragment() {
 		Glow.Sparks(layer, hand, 12, 200f, 560f, 0.3f, new[] { new Color(1f, 0.96f, 0.85f), new Color(1f, 0.65f, 0.3f), new Color(0.8f, 0.3f, 0.1f) }, 600f,
 			0.025f * unit, 0.06f * unit, Vector2.Up, 50f);
 		float lastAt = 0f;
+		if (sound)
+		{
+			Sfx.Take("gx_whoosh", 0.07f);   // 用户 2026-11-17 审阅（刀刃之舞）：加简单克制的音效反馈 —— 抛起一声很轻的挥动
+		}
 		for (int i = 0; i < n; i++)
 		{
 			int k = i;
@@ -737,19 +742,92 @@ void fragment() {
 			{
 				if (sound)
 				{
-					Sfx.Play(Sfx.BulletLoad, 0.34f);
+					Sfx.Take("gx_tick", 0.14f);       // 每发入膛一声脆的「嗒」（游戏样本）
 				}
 				Glow.Flash(layer, dest, new Color(1f, 0.9f, 0.8f), 110f * unit, 0.09f);
 				Glow.Sparks(layer, dest, 7, 120f, 380f, 0.22f, new[] { new Color(1f, 0.95f, 0.85f), new Color(1f, 0.6f, 0.3f) }, 500f, 0.02f * unit, 0.055f * unit,
 					Vector2.Up, 90f);
 			});
 		}
-		// 最后一发入膛：弹巢一圈光环弹开
+		// 最后一发入膛：弹巢一圈光环弹开，一声低一点的「咔」（弹巢扣上）
 		Fx.After(layer, lastAt + 0.02f, () =>
 		{
+			if (sound)
+			{
+				Sfx.Take("gx_tock", 0.16f);
+			}
 			Glow.Shockwave(layer, dest, new Color(1f, 0.7f, 0.4f), 300f * unit, 0.3f);
 			Glow.Flash(layer, dest, new Color(1f, 0.75f, 0.5f), 260f * unit, 0.22f);
 		});
+	}
+
+	/// <summary>
+	/// 刀刃交响曲的装弹：子弹按节拍（beat 秒一发）一发一发从手里弹起，落在一道往上扬的弧线上（像一串往上走的音符），每发一声「叮」、一点星光；
+	/// 最后一发站定后停一拍，全部一齐俯冲进弹巢（带拖尾），最后一下「和弦」：白闪 + 一声「咔」。返回全部入膛的时刻。
+	/// </summary>
+	public static float LoadArc(Control layer, Vector2 hand, int n, float facing, float beat = 0.13f)
+	{
+		n = Mathf.Clamp(n, 1, 6);
+		float unit = Unit(layer), len = 52f * unit;
+		float popUp = 0.16f, all = beat * (n - 1) + popUp + beat * 1.2f, dive = 0.15f;
+		for (int i = 0; i < n; i++)
+		{
+			int k = i;
+			float x = n == 1 ? 0.5f : k / (n - 1f);
+			Vector2 apex = hand + new Vector2((40f + 210f * x) * facing, -(150f + 150f * x - 40f * x * x)) * unit;
+			float t0 = beat * k, life = all + dive;
+			float rot0 = Fx.Rand(0f, 6f), turns = Fx.Rand(1.4f, 2f) * (k % 2 == 0 ? 1f : -1f);
+			Node2D root = Fx.Root(layer, hand, "P5Note", life + 0.1);
+			root.Visible = false;
+			ColorRect q = Quad(root, Bullet, new Vector2(len * 1.6f, len * 1.6f));
+			Line2D trail = new()
+			{
+				Width = len * 0.22f, Material = Fx.Additive, TopLevel = true, Antialiased = true, WidthCurve = new Curve(),
+				Gradient = new Gradient { Offsets = new[] { 0f, 1f }, Colors = new[] { new Color(1f, 0.3f, 0.3f, 0f), new Color(1f, 0.9f, 0.85f, 0.85f) } },
+			};
+			trail.WidthCurve.AddPoint(new Vector2(0f, 0f));
+			trail.WidthCurve.AddPoint(new Vector2(1f, 1f));
+			root.AddChild(trail);
+			var path = new List<Vector2>();
+			Fx.Animate(root, t0, life - t0, t =>
+			{
+				root.Visible = true;
+				float s = t0 + t * (life - t0);
+				Vector2 p;
+				bool flying = s >= all;
+				if (s < t0 + popUp) p = hand.Lerp(apex, Ease5.OutQuint((s - t0) / popUp));
+				else if (!flying) p = apex + new Vector2(0f, -4f * unit * Mathf.Sin((s - t0) * 9f + k));
+				else p = apex.Lerp(hand, Fx.InCubic((s - all) / dive));
+				root.GlobalPosition = p;
+				root.Rotation = flying ? (hand - apex).Angle() : rot0 + turns * Mathf.Tau * Ease5.OutQuint(Mathf.Min(1f, (s - t0) / (popUp + beat)));
+				Set(q, "glint", flying ? 1f : Mathf.Pow(Mathf.Abs(Mathf.Sin(root.Rotation * 1.5f + k)), 6f));
+				Set(q, "alpha", 1f);
+				if (flying)
+				{
+					path.Add(p);
+					if (path.Count > 9) path.RemoveAt(0);
+					trail.GlobalTransform = Transform2D.Identity;
+					trail.Points = path.ToArray();
+				}
+			});
+			// 站定：一声「叮」、星光、柔闪
+			Fx.After(layer, t0 + popUp * 0.8f, () =>
+			{
+				Sfx.Take("gx_ping", 0.12f + 0.03f * k);
+				Glow.Glint(layer, apex, 0.55f + 0.1f * k);
+				Glow.Flash(layer, apex, new Color(1f, 0.3f, 0.35f), 120f * unit, 0.25f);
+			});
+		}
+		Fx.After(layer, all - 0.02f, () => Sfx.Take("gx_whoosh", 0.1f));
+		Fx.After(layer, all + dive, () =>
+		{
+			Sfx.Take("gx_tock", 0.18f);
+			Glow.Flash(layer, hand, new Color(1f, 0.95f, 0.9f), 150f * unit, 0.1f);
+			Glow.Flash(layer, hand, new Color(1f, 0.2f, 0.28f), 320f * unit, 0.3f);
+			SkillRedo5.Cross(layer, hand, 220f * unit);
+			Phantom.Shards(layer, hand, 10, 200f * unit, 520f * unit, Vector2.Up, 80f, 0.3f, 400f * unit, 14f * unit);
+		});
+		return all + dive;
 	}
 
 	// ───────────────────────── 能量涌动 ─────────────────────────

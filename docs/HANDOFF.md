@@ -2,6 +2,504 @@
 
 协作规则见 `docs/COLLAB_RULES.md`（草案，用户还没最终确认）。用户说过：交接文档**只在用户要求交接时写**，不用每次做完都写。
 
+> **常驻规则（用户 2026-11-18）：Codex 生图任务单不要让它自我审查、不要让它重新生成、不要要求写报告 / 检查图，生成完直接提交推送。** 详见 `docs/COLLAB_RULES.md` 第 7 条。
+
+---
+
+## 2026-11-23 · 会话 E 交接（总览，最新）—— 分支 `claude/confirm-next-tasks-k5wu6t`，等合并
+
+### 分支状态
+- `claude/confirm-next-tasks-k5wu6t` @ `f1cd1b56`（加上这条交接），已推送、工作区干净、`bash tools/p5/cloud/check.sh` 通过。
+- 它已经包含 `codex/p5-0951-integration`（555c06c0）、`claude/p5-pile-ui`（c9eff0b9）、`claude/confident-hypatia-nropgi`（17d16253）、`claude/exciting-babbage-lm8ubb`：
+  这四个都是它的祖先 → 合进 integration 是**快进**，没有冲突。
+- 版本号没动（`P5Joker.json` 0.9.72）。**出包前跑 `tools/p5/charselect_assets.py` + `tools/p5/stage_p5.py`**（新贴图 `reward_* / icon_top* / battle_* / hud_* / pile_dc_* / pile_dc3d_*` 都没提交进 pck_stage）。
+
+### 本会话做完的（按时间，细节见下面各条）
+1. 选卡界面「夺宝」：剪报素材、TREASURE 在横幅下、STOLEN 印章延迟交结果、原版横幅 / 跳过按钮换皮、入场整体放慢 + 每个部件都有切入（`Vfx/RewardFx.cs`）。
+2. Joker 头像（顶栏 / 战绩 / 联机）、选人按钮图。
+3. 战斗开始「TAKE YOUR HEART!」/ 回合横幅 / ONE MORE!（左上角剪报纸条，`Vfx/BattleUiFx.cs`）；能量球、结束回合按钮换皮（`Vfx/HudSkin.cs`）。
+4. 实机修正：总攻击立绘分辨率 + 4×MSAA、出牌击杀时剪影（去材质 / 套运行时 Spine 皮）、扫腿格挡、商店 Joker 0.75 倍、华丽收场光效硬边框。
+5. 群蛇形态：用户定稿 = 另一会话改动之前的版本 + 獠牙更明显 + 鳞片（加重 80%）。**分布别再改。**
+6. 弃牌堆 = ITEM 页（`Vfx/PileDiscard.cs`）：排版 v4、左边类型列表（真实张数 / 已升级）、右下斜带压在牌上面、3D Joker 逐帧入场 → 切 2D 立绘。
+
+### 全部只在预览里看过、没进游戏的
+选卡界面入场新动画、战斗横幅 / HUD 的最终大小、商店缩放、华丽收场去边框、群蛇鳞片强度、**弃牌堆整页**（另外两页牌堆也没进过游戏，见牌堆会话交接）。
+
+### 没做完 / 可以接着做
+- **弃牌堆入场不是逐帧精确拟合**：动作 main_0010 + 拟合的末帧机位 + 粗量的推近路径（`tools/p5/menu3d/item_entrance.py` 文件头有结论）。要更像原版，照 `tools/p5/menu3d/fit/README.md` 第 3 步逐帧量眼睛解机位。
+- 弃牌堆的排列切换开关是正的，没跟着斜带歪（用户还没说要不要改）。
+- 牌组（EQUIP 页）还走原版；线索在 `tools/p5/menu3d/fit/README.md`（原版序号约 233–243，立绘 CAMPEQUIP_2D01/02/03）。
+- 用户问过但没定的：能量球大小（这次没缩）。
+
+---
+
+## 2026-11-23 · 会话 E：弃牌堆（ITEM 页）做进游戏代码 —— 接手牌堆会话的「进行中」，合了 `claude/p5-pile-ui`
+
+- 用户在本会话改了排版（v3：左边列表收窄、右缘斜直边 + 白边 + 内侧红条、每行跟着斜边错开；v4：右下斜带往下压、牌区多约一排），定稿 `docs/p5/preview/pile_discard_layout_v4.png`；
+  牌堆会话的三个问题用户说「就现在这样」：图标照排版图、消耗堆不加左边列表、弃牌堆 3 列。
+- 实现：`p5mod/src/Vfx/PileDiscard.cs`（IPileDecor）。静态部分 `tools/p5/pile/export_discard.py` 从排版脚本分层导出到 `art/p5/ui/pile_discard`（stage 成 `pile_dc_*`，原尺寸 1080p）：
+  黑块 + 星纹条、撞色立绘、标题牌、COMMAND、每行头像底 / 图标、两个标签、原版大 / 小数字和下划线。运行时：红底、面板斜边、每行的张数 / 已升级数和文字（按真实弃牌堆统计，`PileScreen.DiscardStats`，0 张的行半透明）、
+  右下斜带和它下面的红底（下一帧挪到牌上面，PileHead 再挪到它上面）、入场 / 退场。改排版图以后要重跑 export_discard.py。
+- `PileScreen`：弃牌堆接上（`Enabled` 加 Discard）；手掌砸下的声音只给另两页；排列方式单独记 `P5Settings.DiscardOrder`。牌在立绘上面一层，所以 GridX 右移到 1100、CellW 182。
+- **入场的 3D Joker 逐帧**（用户：立绘要有每一帧的动画，同另两页）：`tools/p5/menu3d/item_entrance.py` 渲 10 帧到 `research/p5r/menu3d_item`（stage 成 `pile_dc3d_*`）。
+  artfit 对 29 个片段末帧拟合立绘剪影没有明显赢家（立绘左上举起的手都对不上，结论在脚本文件头），所以动作用 main_0010（转身、手扫过），
+  最后一帧用拟合的机位，前面沿视线拉远 + 平移到原版那一帧头的位置（粗量）。代码里 `PileDiscard.M3dAt` / `Map`，3D 帧也套斜线撞色（SlantShader），CutAt 硬切 2D 立绘。
+  **不是 SKILL 页那种逐帧精确拟合**；要更像原版，按 `tools/p5/menu3d/fit/README.md` 第 3 步逐帧量眼睛再解机位。
+- 预览场景 `pile_discard`（`docs/p5/preview/pile_discard_v2.mp4`）。**没进过游戏**。牌组（EQUIP）还走原版。
+
+---
+
+## 2026-11-23 · 牌堆界面会话（`claude/p5-pile-ui`）交接 —— 抽牌堆、消耗堆做完（只在预览里看过），弃牌堆在排版阶段等用户回复
+
+### 分支和状态
+- 分支 **`claude/p5-pile-ui`**（用户要求单独开：「这个 UI 改动我还没那么快推出」），已推送、工作区干净，`bash tools/p5/cloud/check.sh` 通过。
+  从 `codex/p5-0951-integration`（`555c06c0`）开出来，integration 之后没有新提交 → 合回去是快进。
+- 版本号没动（`P5Joker.json` 0.9.72）。**牌堆界面一次都没进过游戏**，全部只在预览里看过。
+- 总计划和各页结论：`docs/p5/PILE_PLAN.md`（对应关系：抽牌堆 = 主菜单、消耗堆 = SKILL、弃牌堆 = ITEM、牌组 = EQUIP）。
+
+### 已完成
+1. **骨架**（照搬 P3 的 PileFx）：`p5mod/src/PilePatches.cs`（`NCardPileScreen._Ready` 后置；`AfterCapstoneClosed` 前置，先播退场再关）+ `p5mod/src/PileScreen.cs`
+   （复用原版 `NGridCardHolder`：悬停名牌、点击翻牌特写 + 查看升级、手柄 / 键盘、滚动、出错回滚到原版）。
+   现在**只接抽牌堆和消耗堆**（`PileScreen.Enabled`），弃牌堆 / 牌组走原版。设置开关「牌堆界面（P5R 菜单风格）」（`P5Settings.Option.Pile`）。
+   每页的装饰 / 版式 / 入场退场是一个 `IPileDecor`（定义在 `Vfx/PileText.cs`）。
+2. **抽牌堆 = 主菜单**（`Vfx/PileDraw.cs`）：用户在预览里认可（`docs/p5/preview/pile_draw_v5.mp4`）。
+   原版红星纹底（`CAMPBGSTARANIME.DAT` 49 颗星，着色器画）、原版菜单 3D Joker 入场（`pile_m3d_*`）、原版立绘 CAMPTOP 手掌拍下
+   （`SlamAt = 0.488`，和 camp_open 那声「啪」、重击声、预告信落下同一刻）、掌心真 3D 预告信（正面原版 P5_CARD02，背面每次随机一封原版预告信正文，碰牌加速转）。
+3. **消耗堆 = SKILL 页**（`Vfx/PileExhaust.cs`）：排版和入场用户都认可（`pile_exhaust_v7.mp4`，逐帧对照 `pile_exhaust_entrance_vs_p5r.jpg`）。
+   入场逐帧还原原版 frame 113–125：Codex 导出逐帧顶点（`research/p5r/menu3d_data`）后在云端拟合机位（`tools/p5/menu3d/skill_entrance.py`，结论在文件头），
+   渲出 11 帧（`research/p5r/menu3d_skill`）。定格姿势 main_0016 = 2D 立绘的姿势和机位，切立绘不跳。
+   P 系列撞色（用户讲的）：白板里 Joker 是白的；黑色区域从立绘白腿那条直边往右扫开（同心圆、半径逐帧变大，`BackBufferCopy` + 读屏着色器），区域里白板变黑、腿变白。
+4. **排列切换「原版顺序 / 按类型」**（`Vfx/PileSwitch.cs`）：每个牌堆分开记（`P5Settings.DrawOrder / ExhaustOrder`）；原版顺序直接读原版网格 `NCardGrid._cards`。
+   用户以为忘了做——其实一直有，只是之前预览用假牌没放进去；v7 预览 2.75 秒处演示了。
+5. 固定文字全是 P5 字图（`art/p5/ui/pile_text`，Codex 生的；数字用原版字图），卡牌名用游戏字体。
+
+### 进行中：弃牌堆 = ITEM 页（排版图 v2 已发，等用户回三个问题）
+- `docs/p5/preview/pile_discard_layout_v2.png`（和原版对照 `pile_discard_layout_v2_vs_p5r.jpg`），脚本 `tools/p5/pile/mock_discard.py`；块面形状是从原版 frame 194–206 描的。
+- 用户提的：立绘左半边原版是被队伍列表挡住的（只有入场时露出来）→ v2 左边放**原版队伍列表样式的类型列表**，零件全是原版
+  （阶梯白边黑长条、CAMP.PLG 头像锯齿底、标签牌 00253、斜体大数字、HP / SP 那样的青 / 粉两行；第一行原版 Joker 头像 + 总张数；类型行用原版属性图标）。
+- **等用户回答**：① 图标对应（物理 = 攻击、疾风 = 技能、电击 = 能力、念动 = 状态、咒怨 = 诅咒）行不行；
+  ② 消耗堆要不要也加同样的左边列表（原版 SKILL 页也有，我建议加）；③ 弃牌堆牌格子 3 列（留原版右边红边，一屏 7–8 张）还是 4 列。
+- 定下来以后：`Vfx/PileDiscard.cs`（IPileDecor）——撞色斜线（立绘在线右边黑 → 浅灰、白描边 → 黑）用着色器；PLG 多边形导成运行时数据；
+  牌只在黑色窗口里显示（从浅灰身体 / 右下斜带下面钻过去）；排列切换放右下浅灰斜带上（原版这里是「消耗品 ●○○ Q/E」）；
+  左边列表点一行跳到那一段（我向用户提的，还没确认）；`P5Settings.DiscardOrder`；`PileScreen.Enabled` 加弃牌堆。
+  入场按 `tools/p5/menu3d/fit/README.md` 拟合原版 ITEM 入场（3D Joker + 撞色），砸中时左边列表滑进来（同原版）。之后是牌组 = EQUIP 页（没开始）。
+
+### 出包 / 实机
+- 牌堆贴图在 `p5mod/pck_stage/p5joker/fx/pile_*`（已提交）。改了 `stage_p5.py` 的 `pile_textures()` 后**只重写 pile_* 那几张**：
+  `python3 -c "import sys; sys.path[:0]=['tools/p5','tools/pck']; import stage_p5 as s; from godot_tex import write_texture; [write_texture(s.STAGE, f'p5joker/fx/{n}.png', im) for n, im in s.pile_textures() if n.startswith('pile_sk3d_')]"`
+  （前缀按需要改）。**别整个重跑 `stage_p5.py` 的 main**，会改动 540 个已提交的文件。
+- 实机要看：清晰度 / 锯齿（大图都按显示宽 ×1.34 离线预缩）、帧率（消耗堆入场有读屏反色、11 张大贴图）、手柄、出错回滚。
+
+### 用户在这个会话定的规矩（后面两页照做）
+- 能用原版素材就用原版，没有的再让 Codex 生图；UI 文字用 P5 字图。
+- **还原原版**：入场动作对着原版逐帧比，交付前自己出「原版 vs 我们同一时刻」的对照图检查过再发；**放大到 100% 查局部**
+  （这次弃牌堆排版图出过「立绘贴了两次」的重影，就是只看缩小图漏掉的）。用户原话：「请你仔细去做 自己仔细和原版对照 不要随随便便就交一版上来了」。
+- 不露立绘截边（靠大小 / 排版解决）；背景不透明（红星纹）；入场干脆不拖沓；牌格子别太紧凑。
+- 预览 854 宽、带声音，旧版删掉；回复用中文。
+- Codex 任务单：遇到问题不要停下，按自己理解做完最后报告（`docs/codex/README.md`），安全清单照旧；生图任务不自审、不重生、不写报告。
+  GFD 相关的活交给 Codex（云端从下载的源码编 GFD-Studio 被安全分类器拦了，别绕）。
+
+### 工具
+- `tools/p5/menu3d/fit/`：逐帧拟合工具 + 流程说明（README）；`reg2d.py` 立绘配准、`artfit.py` 找定格姿势和机位、`fitlib.py` 按脸部特征点解机位、
+  `rast.py` 剪影、`render.py` Godot 渲染 + 叠原版、`compare.py` 交付前对照图、`grid.py` 量点；`skill_example/` 是 SKILL 页实际用的做法。
+- 预览：`GODOT=… bash tools/p5/fxpreview/render.sh pile_draw|pile_exhaust 6`，再 `python3 tools/p5/fxpreview/mix.py <场景>` 出带声 mp4（预览场景在 `Preview.cs` 的 `PileDrawPreview`）。
+- 静态排版图：`tools/p5/pile/mock_draw.py / mock_exhaust.py / mock_discard.py`。
+
+---
+
+## 2026-11-19 · 会话 E 收尾：待合并总览（用户：可以了，整理好等其他会话合并）
+
+- 分支 **`claude/confirm-next-tasks-k5wu6t`**（`ccd94646`，已推送、工作区干净、类型检查通过）。比 `codex/p5-0951-integration`（`f513007b`）多 14 个提交（其中 6 个是合进来的 `claude/confident-hypatia-nropgi` 华丽收场第二～七版）；
+  和 `codex/p5-0951-integration`、`claude/exciting-babbage-lm8ubb`、`claude/confident-hypatia-nropgi` 试合并都**无冲突**。
+- 这批相对 integration 新增的：选卡界面色带切入放慢（`RewardFx`）；商店里 Joker 缩到 0.75（`JokerMerchantScalePatch`）；
+  华丽收场第二～七版（另一会话）+ 本会话修硬边框（`SinfulImpact` / `SinfulShell`）；群蛇形态最终版（旧版 + 獠牙 + 鳞片，见下一条）。
+- 更早已进 integration 的本会话内容（选卡界面换皮、头像 / 选人按钮、战斗开始 / 回合横幅、能量球 / 结束回合换皮、总攻击锯齿 / 剪影、扫腿格挡）见下面各条。
+- **出包前跑 `tools/p5/charselect_assets.py` + `tools/p5/stage_p5.py`**（`reward_header_* / reward_skip_* / icon_top* / battle_* / hud_*` 这些新贴图没提交进 pck_stage）。
+- **群蛇形态的分布用户已定，别再改**；`claude/confident-hypatia-nropgi` 那边的群蛇第二～四版作废（已被覆盖）。
+
+---
+
+## 2026-11-19 · 会话 E 续六：群蛇形态由本会话接手（另一会话 claude/confident-hypatia-nropgi 的群蛇改动作废）
+
+- **最终（用户定的）**：`SerpentMantle.cs` = 另一会话改动之前一直用的版本（636d1e65 的上一版），只多两样：
+  獠牙更明显（着色器：更长更粗、象牙色、一点暖红反光）；鳞片（着色器：沿身体一排排错开的圆鳞、鳞缝略暗、朝上一侧一点随游动闪的暖红反光；头顶 / 后脑小一号、力度七成）。
+  分布、轨迹、蛇巢都没动。鳞片后来按用户要求加重约 80%（鳞缝 0.3 → 0.54、深浅差 0.2 → 0.36、反光 0.2 → 0.36）。
+- 华丽收场实机有硬边框（用户 2026-11-19 照片）：命中光 Flood / 开场 Burst 的外圈在画布边上还很亮被切掉 → 改成从中间就开始软淡出；
+  烟 / 波纹的边缘淡出放宽；子弹画布前面多留 1.3 倍弹宽、两头 / 上下的淡出按像素给足（新 uniform quad_h，子弹本身大小不变）。
+中间试过拉开散开、尾巴落地、露尾巴、几种布局草图（`docs/p5/preview/serpent_layout_options.png`），用户都不要，**别再改群蛇的分布**。
+- 合并了 `claude/confident-hypatia-nropgi`（华丽收场第七版等），**它的群蛇第二～四版已被上面覆盖**；那边会话不要再改群蛇。
+- 预览场景 `serpent_idle`（`serpent_form_v26_scales.mp4` 是中间拉开散开的那版，分布不是最终的）。
+
+---
+
+## 2026-11-19 · 会话 E 续五：实机反馈修正，待合并
+
+- 总攻击立绘锯齿：`AllOutFinale` 的离屏画面原来全压在 1280×720 + 2×MSAA 再放大 → 人物 / 碎星 / 竖排字改成屏幕原分辨率（最高 2560×1440）+ 4×MSAA，平涂红底板仍 1280×720。显存 / 开销会比之前高一些，实机注意一下卡不卡。
+- 总攻击怪物剪影（用牌击杀时是一堆方块或没有，控制台 win 正常）：`AllOutPatches.Clone` 复制出来的身体去掉材质 / 粒子（`Plain`），并把本体运行时换的 Spine 皮套到复制品上（`CopySkin`；BowlbugEgg 等十几种怪是运行时换皮，复制节点会落回默认皮）。**根因是推断的，没在实机复现过**，请用原来的复现方法再试一次。
+- 回合横幅 / 战斗开始横幅缩到约 2/3（字 38–44、纸牌 66），结束回合按钮纸板缩到原版按钮的 0.84。
+- 商店里的 Joker 太大：`JokerMerchantScalePatch`（NMerchantCharacter._Ready 后，silent_merchant 场景的骨骼再乘 0.75）。选卡界面色带切入放慢（0.42s OutQuart，`docs/p5/preview/reward_screen_v4.mp4`）。
+- 扫腿防御特效：`GainBlockPatch` 里有专属特效的牌不放蜂巢盾，扫腿的专属特效只管虚弱 → 加进例外（同模糊）。
+
+---
+
+## 2026-11-19 · 会话 E 续四：能量球 / 结束回合按钮换皮 + 横幅换上正式素材，待合并
+
+- `Vfx/HudSkin.cs` + `Patches.cs` 末尾 `JokerEnergySkinPatch / JokerEndTurnSkinPatch`（照 P3 mod 的 HudSkin / EndTurnSkin：原版节点、逻辑照常，只把原版图层藏掉，装饰每帧判断要不要显示，别的角色自动恢复原版）。
+  能量：黑色剪纸圆片 + 红星芒（用完换熄灭版）+ 慢转纸环，拼贴数字「当前」大、「/上限」小；涨能量数字弹一下。
+  结束回合：黑纸板 + 拼贴字「结束回合 / END TURN」，回合数小纸片贴右上角；原版发光提示时渐变成红纸板；悬停放大；不能点跟原版变灰；联机「取消」等其他文字照常显示在纸板上。
+- 素材：Codex `art/p5/ui/hud`（任务单 `docs/codex/codex_p5_hud_art.md`）→ `hud_*`；回合横幅素材 `art/p5/ui/battle` 也到了（正式字母 / 数字 / 底板已替换占位）。**出包前跑 `stage_p5.py`。**
+- 这次用户说不用预览；能量球 / 按钮的大小位置是按原版节点尺寸估的（P3 的能量圆半径 60），**实机要看一眼**。
+
+---
+
+## 2026-11-19 · 会话 E 续三：战斗开始 / 回合横幅，待合并
+
+- `Vfx/BattleUiFx.cs` + `Patches.cs` 末尾 `JokerCombatStartBannerPatch / JokerPlayerTurnBannerPatch / JokerEnemyTurnBannerPatch`（只在本机玩家是 Joker 时）。照 P3 mod：原版「战斗开始」横幅只藏画面、节点照常跑（它负责生成第 1 回合横幅）；回合横幅 Create 返回 null、换成自己的。
+- 全部放左上角顶栏下方、画在人物后面（用户：TAKE YOUR HEART 不要放屏幕中间）：战斗开始 = 红色剪报纸带 +「TAKE YOUR HEART!」；我方回合 = 黑纸条 + 红纸牌拼贴数字 +「YOUR TURN」；额外回合「ONE MORE!」（1 MORE 原声）；敌人回合 = 红纸条 +「!」+「ENEMY TURN」。
+- 素材任务单 `docs/codex/codex_p5_battle_ui_art.md`（art/p5/ui/battle：字母纸片 / 数字 / 底板），`stage_p5.py` 打包成 `battle_*`。**素材没到时是代码画的纸片占位**，到了自动换上，不用改代码。
+- 预览：`docs/p5/preview/battle_ui_v1.mp4`（场景 `battleui`）。
+
+---
+
+## 2026-11-19 · 会话 E 再续：选卡界面实机修正 + Joker 头像 / 选人按钮，待合并
+
+- 实机反馈修正：TREASURE 原来在左上被顶栏挡 → 现在**居中放在「选择一张牌」横幅下面**（横幅和牌之间），去掉 TAKE YOUR PICK；STOLEN! 之前没出来（原版 SelectCard 立刻关界面）→ `RewardPickPatch` 拦下点击，印章演完 `RewardFx.PickHold`（0.45s）再反射调原版 SelectCard。
+- 原版横幅、跳过按钮换皮（Codex 素材 `art/p5/ui/reward/header_* / skip_*`，任务单 `docs/codex/codex_p5_reward_screen_art2.md`）：`RewardFx.SkinBanner / SkinButton / SkinButtonHover`，挂在 `RewardOpenPatch` 里 + `RewardSkipFocusPatch / RewardSkipUnfocusPatch`。横幅：原版底图透明掉、文字节点留着；中文时文字换成拼贴字图，其他语言显示原文字在纸条上。跳过按钮：去掉原版 HSV 着色器，悬停换红纸板；文字是「跳过 / Skip」时换拼贴字图，其他备选按钮留原文字。**横幅节点结构是按源码猜的（没有场景文件），实机要看一眼原版米色底图有没有藏干净。**
+- Joker 头像（Codex `art/p5/ui/icons/joker_top_icon.png`，任务单 `docs/codex/codex_p5_joker_icons_art.md`）：`stage_p5.py` 出 `icon_top`（256）+ `icon_top_outline`（白色剪影描边）；`JokerIconTexturePatch / JokerIconOutlinePatch`（`CharacterModel.IconTexture / IconOutlineTexture`，战绩 / 联机 / 继续游戏 / 先古对话用）+ `JokerTopBarPortraitPatch`（左上角顶栏是实例化的 silent_icon 场景，把里面的贴图换掉）。
+- 选人按钮：`tools/p5/charselect_assets.py` 改用 Codex 的 `art/p5/ui/icons/joker_select_button.png`（缩到 132×195 → `cs_button`）。**出包要重跑 charselect_assets.py + stage_p5.py。**
+- 预览：`docs/p5/preview/reward_screen_v3.mp4`（模拟界面里加了横幅 / 跳过按钮的替身）。
+- **已经把 `codex/p5-0951-integration`（0.9.53，用户本地的优化：RewardRun / Recover / Settle、按 CardModel 配格子、RewardHidePatch 等）合并进本分支并解决了冲突**：选卡界面以 0.9.53 的守卫 / 恢复逻辑为准，在上面加回「延迟 PickHold 再交结果」（0.9.53 的 RewardPickPatch 是立刻 return true，印章看不到）、横幅 / 按钮换皮、标题居中。所以本分支合回 integration 应该是快进 / 无冲突。
+- 0.9.53 把 `pck_stage/p5joker/fx/reward_*` 提交进了仓库；这次新增的 `reward_header_* / reward_skip_* / icon_top*` 没提交到 pck_stage，**出包前跑一次 `stage_p5.py`**。
+
+---
+
+## 2026-11-19 · 会话 E：选卡界面「夺宝」（用户：可以了），待合并
+
+- 分支 **`claude/confirm-next-tasks-k5wu6t`**（已推送、工作区干净、类型检查通过）。比 `codex/p5-0951-integration` 多 **10 个提交**（下面「会话 E 续」的 6 个 + 选卡界面 3 个 + 本条交接）；和它、和 `claude/exciting-babbage-lm8ubb` 试合并都**无冲突**。
+- 选卡界面：`Vfx/RewardFx.cs` + `Patches.cs` 末尾的 `RewardOpenPatch` / `RewardPickPatch`（只在本机玩家是 Joker 时接管原版 `NCardRewardSelectionScreen` 的滑入补间）：
+  牌从右边甩进来（0.3s 内到位、一开始就能点，0.8s 兜底摆回原版位置）、剪报纸带色带、左上角 TREASURE 字母一片片拍上来 + TAKE YOUR PICK、悬停红纸板、选中盖 STOLEN! 印章。补间绑在界面上、每帧确认格子还在这一排（对象池，P3 踩过的坑）。
+- 素材：Codex 画的 `art/p5/ui/reward/`（17 张，任务单 `docs/codex/codex_p5_reward_screen_art.md`），`tools/p5/stage_p5.py` 打包成 `res://p5joker/fx/reward_*.png`（半尺寸）。**出包时要跑 stage_p5.py 才会带上**；「夺宝」中文字素材有但没用（用户定了 TREASURE）。
+- 预览：`docs/p5/preview/reward_screen_v2.mp4`（预览场景 `reward` 是仿原版界面的模拟，牌是占位）。实机要看：色带高度、标题大小是按模拟界面估的。
+
+---
+
+## 2026-11-19 · 会话 E 续：0.9.51 集成之后又改的 6 个提交，待合并
+
+- 分支仍是 **`claude/confirm-next-tasks-k5wu6t`**（已推送、工作区干净，类型检查通过）。
+- Codex 的 **`codex/p5-0951-integration`**（已到 0.9.52）合到了本分支的 `20bb9edb`（触媒只拉手套 / 腐蚀波连抽）为止；**之后这 6 个提交还没进去**，在临时 worktree 里试合并 **无冲突**（和 `claude/exciting-babbage-lm8ubb` 也无冲突）：
+  1. 致命毒药 / 咕嘟冒泡整体缩到 0.62 倍（实机太大；`PoisonFx.PersonaScale`，只影响亚森出手那条路）
+  2. 夜魇攥紧强反馈：读屏收缩 / 弹回冲击 + 色散、加重顿帧震屏、指缝火星；音效换成吸气冷声 → crush + sub_boom + 咒怨尾音
+  3. 必备工具牌流配光带（`Line2D` 加法暗红晕 + 亮红芯，不用白色）+ 弹出 / 落下 / 弧顶火星；刀刃陷阱卡三维翻 + 自旋（翻到侧面淡掉）、表盘一直慢转、每枪全部加速
+  4. 夜魇三张复制改成一起出来
+  5. **刀刃陷阱开枪前一直转枪**：人物骨骼新增动作 `twirl_in` / `twirl_loop`（`tools/p5/build_rig_p5.py` 重新生成 `art/p5/rig/joker.spine-json`，并同步到 `p5mod/pck_stage/animations/characters/silent/silent.spine-json`；其他动作和贴图逐像素不变，PNG 没动）；`Aim.HoldAim` 播转枪，第一枪 `shiv` 从转枪段（0.07s）接上
+  6. 夜魇捏住即出三张（0.09s 甩到位）+ 钉住的入场特效、音效
+- 重新生成骨骼要 `pip install opencv-python-headless`（`tools/p5/tween.py` 用 cv2）。
+- 预览：`docs/p5/preview/deadly_poison_smaller.mp4`、`nightmare_grab*.mp4`、`tools_knifetrap_v2.mp4`、`knife_trap_twirl.mp4`。用户都已认可（最后一句：可以了，整理好等其他会话合并）。
+- 实机待确认：转枪循环接第一枪是否顺（预览工具不能跳进动作中段，只能在游戏里看）。
+
+---
+
+## 2026-11-18 · 会话 E（`claude/confirm-next-tasks-k5wu6t`）交接：0.9.49 审阅第六批重做 + 第七批，待合并
+
+### 分支和状态（给负责合并的会话）
+- 分支 **`claude/confirm-next-tasks-k5wu6t`**，已全部推送，工作区干净。它包含 `claude/confident-hypatia-nropgi` 和 `claude/character-animation-smoothness-dearur` 的全部提交（直接接在会话 D 后面）。
+- 和 **`claude/exciting-babbage-lm8ubb`**（总攻击第九～十三版，21 个提交）互不包含；试合并过（临时 worktree，`git merge --no-commit`）**没有冲突**，两边都动过的只有 `tools/p5/fxpreview/Preview.cs`、`tools/p5/stage_p5.py`，自动合得上。
+- 代码版本号仍是 **0.9.50**；这些改动**都没进过游戏**。合并后出包升 **0.9.51**（照 `docs/codex/codex_p5_build_0.9.50.md`）。类型检查 `bash tools/p5/cloud/check.sh` 通过。
+
+### 做了什么（审阅表 `docs/p5/review_0.9.49.md` 已逐条标注）
+- **第六批第三版（用户：可以了）**：紧勒「咒烟绞索」（`Vfx/StrangleFx.cs` + 新的 `Vfx/CurseForm.cs`）、夜魇「梦魇之手」（`Vfx/NightmareFx.cs`，复用 `CrushHand`/`CrushHandFrame` + 漩涡）、压制「三重锁压」（`Vfx/SuppressFx.cs`，重压音效 crush + sub_boom）、狩猎「夺宝」（`Vfx/HuntFx.cs`）、必备工具「弹牌」（`Vfx/ToolsFx.cs`）；删掉了 `Vfx/Batch6Fx.cs`。尖啸打出不放声音（`SkillPlay.cs`）。
+- **第七批（等用户确认）**：致命毒药 / 咕嘟冒泡「咒怨裂隙」（新 `Vfx/CurseRift.cs`，接在 `PoisonFx.Apply`）；群蛇形态画布每帧按蛇的范围重算（`SerpentMantle.FitCanvas`，修大房间断开）；刀刃陷阱「时钟陷阱」整个重写（`Vfx/KnifeTrapFx.cs`：褪灰、透明大表盘一枪一格、预告信最多显示 24 张超出补位；`JokerFx.cs` 的调用和 `Aim.HoldCast` 改了）。
+- 预览视频：`docs/p5/preview/fix_batch6_v3.mp4`、`fix_batch6_v4.mp4`、`suppress_press_sfx.mp4`、`fix_batch7.mp4`、`fix_batch7b.mp4`、`serpent_form_check.mp4`。
+- 经验写进了 `docs/p5/TODO.md`（拉黑清单下面）。
+
+### 合并 / 出包后要实机看的
+- 群蛇形态在大房间里还断不断（预览只能近似）。
+- 刀刃陷阱在真实开枪节奏下的表盘步进、24 张以上补位。
+- 夜魇巨手张开时指尖会不会被顶栏挡住。
+
+---
+
+## 2026-11-18 · 会话 D（`claude/confident-hypatia-nropgi`）交接：0.9.49 审阅意见逐批修改（已做 10 张）
+
+### 分支和状态
+- 工作分支 `claude/confident-hypatia-nropgi`，已推送。代码版本号 **0.9.50**：用户另一个会话在 `claude/character-animation-smoothness-dearur` 做了局内人物动作平滑（补间帧、重新打包骨骼），出了 0.9.50 并**已装进用户游戏**；11-18 交接后才合进本分支（这一轮一开始漏合了，用户提醒的）。0.9.49 是选人界面 / 出发过场（报告 `docs/codex/reports/p5_build_0.9.49.md`）。
+- **游戏现在是 v0.113.1**（0.9.49 报告：装进了桌面版和 G 盘版两处，DLL / JSON / PCK 已做 SHA-256 比对）。之前说的「游戏是 0.111」已过时。
+- 下面两批审阅修改**不在用户游戏里的 0.9.50 里**（0.9.50 是从动作分支出的），都没实机看过。下次出包升 **0.9.51**：照 `docs/codex/codex_p5_build_0.9.50.md` 改版本号；网络出错的重试写法参考 `codex_p5_build_0.9.48.md`。
+- **教训**：开工前 `git for-each-ref --sort=-committerdate refs/remotes/origin` 看一眼别的分支有没有新版本，用户会在别的会话出版本。
+- 用户在本地 Codex 也在做优化，推送前一定先 `git fetch` + merge。
+
+### 现在在做什么
+- 用户用自己的工作台审完 92 张牌，意见原文 + 进度在 **`docs/p5/review_0.9.49.md`**（「✅ 已改」是进度标记）。37 张待改，已改 10 张，剩 27 张。
+- 用户定的做法：**一批 5 张，做完出一个视频同时展示 5 张**，放 `docs/p5/preview/fix_batchN.mp4`，左上角标「牌名 · 大改/中改/小改」，推送后给路径，并说清每张是大改还是小改。用户说「之前说的工作台不用做了」。
+- 已交付：
+  - 第一批 `fix_batch1.mp4`：精准、后空翻、本能反应、扫腿、涂毒；
+  - 第一批第二轮 `fix_batch1b.mp4`：精准改成「准星锁定后收进手里」（用户：精准是小刀 buff，不要刀锋）、后空翻只留一道弧；
+  - 第二批 `fix_batch2.mp4`：跟踪、磨蚀、触媒、萎靡、谋划专家（在 `Vfx/SkillRedo10.cs`，`CardSkillFx` 里最后注册 `RegisterBatch10`）。
+  - 用户对第一批的反馈已处理，后空翻「像锅一样的音效」已去掉（判断是 `gx_whoosh`，没完全确认）。**第二批还没反馈。**
+- 下一批原计划：计算下注、独门技术（特效里的牌数要等于实际手牌数 / 抽牌数，要从游戏侧把数量传进来，`SkillPlay.Count` 那套）、刀扇、腐蚀波、匕首雨。
+
+### 要注意的风险
+- **磨蚀第二批用了 `Vortex`（风刃绕身转）当主体**。11-14 交接里写过用户把「环绕光圈 / 刀光绕身转圈」拉黑、最多当点缀。这次是我没翻到那条就做了，用户看了视频没表态前别再往这个方向加；如果被否，换思路。
+- 触媒、萎靡的火是新写的着色器 `RedFlame`（ArseneFx 觉醒火的形状，红 / 暗红配色）。第一版硬边分层的大火柱会碎成一条条细刺 → 已改成低频噪声 + 平滑过渡。用户还没看。
+
+### 这轮的技术坑
+- **`Fx.Animate(owner, delay>0, ...)` 会在等待期间把 owner 藏起来**。owner 传成图层（`c.Front`）就会把整层特效藏掉（精准第一版里身上红光就这么写的，整层消失约 0.3s）。要延迟就写 `Fx.After(layer, d, () => Fx.Animate(layer, 0, ...))`。
+- 预览里第一次用到的着色器要编译几帧才显示 → 批量场景先把每张放一遍（`fix1b` / `fix2`），出视频时用 ffmpeg `-ss` 剪掉前面。
+- 预览的 `p.At` 时间线会随顿帧慢慢漂（一批下来约 0.4s），声音和画面一起漂，不是 bug；视频标签时间要按 `out/<场景>/sfx.txt` 校一下。
+- 视频标签：ffmpeg `drawtext`，字体 `/usr/share/fonts/opentype/unifont/unifont.otf`（容器里唯一的中文字体）。
+- 格挡牌（后空翻、扫腿）的格挡盾在游戏里走 `GainBlockPatch` → `HexGuard.Play`，牌特效里不用再加；预览场景里要手动补 `HexGuard.Play` 才像游戏。
+- `CardSkillFx.Cards` 后注册的覆盖先注册的；同一张牌可能在 CardSkillFx / CardSkillFx2 / 3 / SkillRedo / SkillRedo4 / SkillRedo5 里都有旧版，改之前先 grep `cards["牌名"]` 找最后注册的那个。
+- 蛇咬第八版（绕圈路线，`SerpentMantle` 的 `BuildSolo` / `SoloPose` / 身后咒烟 `WakeSerpent`）用户审阅时判了过关。
+
+---
+
+## 2026-11-16 · 会话 D（`claude/confident-hypatia-nropgi`）交接：增益牌第一批、毒系三张、动作和若干修正
+
+### 分支和状态
+- 工作分支 `claude/confident-hypatia-nropgi`，已推送，工作区干净。代码版本号仍是 **0.9.47**；0.9.47 之后的改动**都还没编译进游戏**，下次出包升 0.9.48（复制 `docs/codex/codex_p5_build_0.9.47.md` 改版本号）。
+- **游戏实际版本是 v0.111.0，不是 0.113**（Codex 0.9.47 报告第 67 行）。`research/libs` 的三个 DLL 仍是 11 月 2 日的旧版，Codex 这次没推上来。0.113 适配和优化用户说交给 Codex，后面再让 Claude 核对钩子。
+- 下面所有特效**只在预览里看过，都没进游戏**。
+- 做特效前必读：`docs/p5/FX_STYLE_GUIDE.md`、`docs/p5/TODO.md`、本文件「教训」各段。
+
+### 这一轮做了什么（预览文件在 `docs/p5/preview/`）
+- **幽魂形态**（`WraithVeil.cs` + `WraithPlay.cs`）、**计划妥当**（`SkillRedo8.cs`）：用户说「可以了」。
+- **保留手牌特效**（`RetainFx.cs`）：实机「位置或大小不对」→ 修了。原因：牌身 `CardContainer` 是 0 大小、原点在牌中心的 Control，代码当成左上角原点。预览假牌已改成同结构（`retain_v2.mp4`），**要实机再看**。
+- **增益牌第一批**（`SkillRedo9.cs`，`buffs1_v17.mp4`，用户还在逐张提意见）：
+  - 预判：镜面裂纹一闪碎成会折射的碎玻璃（碎片翻转着迸开、化成星光，不往下掉）。
+  - 侧步：两缕红丝带残光 + 预告信翻到头顶再收进胸口（拖尾改成两头尖的疾光）。
+  - 磨蚀：两道月牙刀光（不对称 + 副刃 + 小月牙），节奏已收紧。用户认可前几版都不行（荆棘贴图、尖刺被否），这版没明确表态。
+  - 速行者：「节奏加速」，红白闪光 + 尖头疾光散在他周围空中，越来越密，最后一下最亮。用户说创意不错。
+  - 触媒：手掌两下暗红脉冲 + 第二下疾光碎光火星（动作只挥手）。用户说过「过于简单」后加了特效，没再表态。
+  - 新贴图（Codex 生，`art/p5/fx/v4/buff/`，已进打包 `stage_p5.py` 和 `pck_stage`）：荆棘、镜面裂纹、丝带、牌流、毒液、毒纹、光点。用户觉得贴图感太强，现在只有预判的裂纹、侧步的丝带还在用。
+- **迷雾**（`HazeFx.cs`，`haze_1116.mp4`）：雾吹得更远更宽、起点渐浓；**动作改扶面具带面具火**（`Cast.MaskOff`），出手特效在面具前。
+- **致命毒药 / 咕嘟冒泡**（`PoisonFx.Apply` 亚森爪尖那段，`poison_beam_1116.mp4`）：不再从爪尖发射东西，改成亚森挥爪时敌人身上三道爪痕（`ClawRake`，打击牌命中那套笔触），咒火照旧。**刚发给用户，没反馈。**
+- **蛇咬**（`SnakebiteFx.cs` → `SerpentMantle.Lunge`，`snakebite_v3.mp4`）：不召唤亚森、直接挥手；群蛇形态那条咒烟蛇在身边显形 → 窜出化烟 → 敌人斜上方聚形 → 咬。加了 `ember` 着色器参数让暗背景下看得清（群蛇形态本身不受影响）。**刚发给用户，没反馈。**
+- **群蛇形态日轮**（`SerpentEclipse.cs`）：边缘改软、半径起伏、去掉锯齿日珥；又提亮一次（太糊看不出）。
+- **动作**：
+  - 不要「扶面具 → 挥手」的复合动作：原来扶面具 / 撕面具甩手的牌一律改直接挥手（`Aim.StanceFor` / `Aim.Waves`）；召唤照旧（`Aim.MaskCard`）。毒性爆发、华丽收场的专用动作没动。
+  - 触媒、蛇咬 = 挥手；磨蚀 = 扯手套；迷雾 = 扶面具带面具火（打出只放下手）。
+  - 亚森施法时身体不前倾（`ArseneFx` 的 `body.Rotation` 置 0）。
+- **击杀最后一击的全屏闪烁去掉**（`Impact.cs` 的 Kill / Finale 不再有冲击帧、色散、径向模糊）。
+
+### 用户这一轮的口味（新增）
+- 特效好看最重要，**但也要能看出想表达的意思**（「纯特效、没意思」被否过），可以弱一些。
+- **不要用道具 / 图案直白地表达**（弹巢、药瓶被否）；**不要和敌人联动**的增益牌（速行者、触媒）。
+- **贴图感**是最常见的否决理由：整张贴图摆着、平面形状、硬边光带、月牙堆叠、大量小光点都算。光束「太直白」。
+- 增益牌不要复用刀光（刀光是攻击的画面）；攻击类（亚森爪击）用打击牌那套笔触可以。
+- 「没有明确轮廓、纯靠渲染」的标杆：毒性爆发巨手（`CrushHand`）、群蛇形态咒烟蛇（`SerpentMantle`）。
+- 稀有度低的不用很华丽但不能差；节奏要有起伏（慢快慢），不要一味快。
+- 用户说「按你想法来，不用给我挑选」——他看不出文字方案能做到什么程度，直接做出来给他看。
+
+### 教训
+- 这一轮在毒系和磨蚀上来回改了很多版：每次只换零件（光带 → 光点 → 光尘 → 怨灵 → 月牙），都被否。卡住时先回头翻交接里的老教训和用户认可过的实现，用现成的、被认可的渲染方式，比再发明一个新零件靠谱。
+- 自查截图要看「整体读起来是什么」，不只是「看不看得见」：细疾光拼不出弯（`DashFly` 是直的矩形）；一排圆柔光就是「点点」。
+- 预览工程里没有 `Joker` 类，Vfx 里要拿背景层用 `Stage.Back ?? layer`（游戏里 `Stage.Back` 为空）。
+- 用户的意见常在做事中途插进来，用任务列表记下来逐条做，做完一起汇报。
+
+### 剩下的
+- 等用户看：蛇咬第四版、致命毒药爪痕、保留手牌实机、增益牌几张的最终意见。
+- 还没专属特效：消影、调制（多人牌）；谋划专家、必备工具、手上技法、夜魇。待优化：咕嘟冒泡（现在和致命毒药共用）、刀刃陷阱。
+- 大块：选人界面、开始过场、Boss / 精英最后一击总攻击、战斗结束选牌界面（见 `TODO.md`）。
+
+---
+
+## 2026-11-14 · 会话 D（`claude/confident-hypatia-nropgi`）交接：幽魂形态四版都没过，计划妥当还要再优化
+
+### 分支和状态
+- 工作分支 `claude/confident-hypatia-nropgi`，已推送，工作区干净。版本 **0.9.46**。
+- 任务单 `docs/codex/codex_p5_build_0.9.46.md` 已写好；下次升版就复制一份改版本号。
+- **Codex 也往这个分支推报告**，推送前先 `git fetch` 再 merge。
+- 仓库里 Codex 的编译报告只到 0.9.28：0.9.29～0.9.46 有没有编译、装进游戏，要问用户。
+- 用户自己在本地用 Codex 做事，推的是 `codex/...` 分支，比如 `codex/p5-finale-perf-handoff-20261114`。
+  - 用户让合的时候，先审它的 diff 和 README，再合。这一次已经合入，内容是华丽收场的 GPU 优化，说明在 `docs/codex/reports/p5_finale_perf_handoff_20261114/README.md`。
+- 待办清单见 `docs/p5/TODO.md`，最下面记着用户拉黑的手法。**动手前先读它。**
+- 特效方向和「为什么老是不过关」的总结见 `docs/p5/FX_STYLE_GUIDE.md`（会话 A 写，2026-11-14）。**做特效前先读它。**
+
+### 每次升版给用户的 Codex 提示词（只换版本号 X）
+> 读仓库 4yndm7wh95-spec/persona 分支 claude/confident-hypatia-nropgi 上的 docs/codex/codex_p5_build_X.md 并严格照做：把 P5Joker X 编译、打包 PCK、装进游戏 mods\P5Joker\，写报告 docs/codex/reports/p5_build_X.md 推回同一分支。仓库副本在 C:\Users\kkk\sts2_tools\p5_build\repo，先 fetch 这个分支（任务单第 2 步有完整命令）再读任务单。任何一步报错就停下来写报告，不要自己改代码。
+
+### 游戏 0.113 兼容（要盯）
+- Codex 做的 0.113 适配在 0.9.22 合入：伤害入口能接 `DamageTargetData`，`SkillPlay.Count` 也做了兼容。
+- 云端类型检查用的 `research/libs/sts2.dll` **还是旧版**。
+  - 从 0.9.44 起，任务单第 4.5 步让 Codex 把游戏里 0.113 的 `sts2.dll`、`0Harmony.dll`、`GodotSharp.dll` 复制进 `research/libs/` 推上来。
+  - 推上来以后，`check.sh` 就是对着 0.113 检查。然后要逐个核对下面这些按名字挂的钩子（名字变了编译照过，但游戏里会挂不上）：
+    - `SerpentFormPower.AfterCardPlayed`、`Cmd.CustomScaledWait`（群蛇形态）
+    - `NoxiousFumesPower.AfterSideTurnStart`（毒雾）
+    - `VfxCmd.PlayOnCreature` / `PlayOnCreatureCenter` / `PlayFullScreenInCombat`（屏蔽猎人原版特效）
+    - `NHealthBar.RefreshValues` 和私有字段 `_poisonForeground` / `_creature` / `_hpLabel`（毒条）
+    - `Hook.AfterFlush`（保留手牌，新加的）
+- 补丁是一个类一个类应用的。挂不上的那个只会在日志里打一行 `[P5Joker] patch XXX failed`，不影响别的补丁。
+
+### 用户这两天定下的规矩（`docs/p5/TODO.md` 也有）
+- **拉黑**：
+  - 红色网格网点：网点光晕 `HalftoneBurst` / `SoftBurst`，身体化成网点等。用户原话：「太丑了，不要那么 low」。
+  - **环绕光圈 / 光环 / 刀光绕身转圈**，即 `Vortex`、`Sweep`/`RingSweep`、卡绕敌人转圈：不能当主体，最多做次要点缀。
+- **已经满意的牌里用到的网点不用换**，用户说「不用」：融入暗影「影刃旋风」、余像、迷雾、蛇咬召唤。
+- **要延续已满意特效的风格**。用户原话：「就不能延续一下我们之前做好的已经满意的特效的风格吗」。这套风格是：
+  - 压暗透红：`Dim` / `Grade`，是调色，不是烟；
+  - 二十来道细光线往胸口收：`Glow.TaperPoly` + `TaperPts`，见 `Shadowmeld` 和 `WraithFormV2`；
+  - 柔光光芒 `Flare`、十字光 `Cross`；
+  - 疾光 `DashFly` / `Streak`（圆头的拖尾）；
+  - 贴身红残影 `RedEcho`：贴身，不要拉开分身；
+  - `Glow.Flash` 的柔闪、`Glow.Sparks` 碎光、`Glitter` 往上飘的光粒；
+  - 卡牌用 `Phantom.Card`。
+- 之前的规矩照旧：
+  - 回复中文；做一点就提交推送一次；
+  - 预览放 `docs/p5/preview/`，854 宽带声音，用 SendUserFile 发，先自己逐帧看过；
+  - 不要火焰、塑料感、阴暗黑烟、贴图感、细线圈、有棱有角的形状；
+  - 人物不能消失，前后遮挡要清楚；
+  - 音效只用游戏样本（`Sfx.Take("gx_*")` / `Sfx.Play` / FMOD 事件），没合适的就不要；
+  - 每次升版都写 Codex 任务单并给提示词；交接只在用户要求时写。
+
+### 幽魂形态（不过关，下一个会话的第一件事）
+- 代码在 `p5mod/src/Vfx/SkillRedo6.cs` 的 `WraithFormV2`，`SkillRedo5.Register` 里写着 `cards["WraithForm"] = WraithFormV2`。
+- 预览场景 `wraith`：`render.sh wraith 3`。施法动作是 `cast_big`。
+- 被否的版本，**别在这些方向上修补**：
+  0. 最早的旧版在 `CardSkillFx.WraithForm`：紫色漩涡、细圈、亡魂贴图。
+  1. v2：三层红残影从身上剥离、往左 / 右 / 后上方飘开再合回。用户：「真的做三个剪影拉出来会很奇怪」。
+  2. v3：三道宽红弧光从脚下往上裹住他（像斗篷），加刀光旋涡。用户：环绕光圈当主体不好看。
+  3. 第三版半路改过一次：身体从脚往上化成红网点、往上飘（`DotBody` 着色器，已删）。用户：「红色网格网点也要拉黑，太丑了」。
+  4. v4（现在的代码）「相位虚化」：
+     - 压暗、光线往胸口收、身后柔光气柱；
+     - 人褪成半透明淡红白，一层贴身红残影左右急抖、拖横向影纹；
+     - 主拍是长横向光芒加十字光、碎光、重震；之后一排疾光从他身上穿过去，表示无实体、打不中。
+     - 用户：「不过关」，没说具体原因。**接手先问用户哪里不行、想要什么感觉**，别再猜着改。
+- 卡牌效果：获得「无实体」，这一回合受到的伤害变成 1。
+- 一个时间上的坑：`cast_big` 动作大约在效果开始后 0.6～0.7 秒手放下、换姿势。用 `RedEcho` / `SkillRedo4.Freeze` 冻住的身形要在那之前淡掉，不然会和人对不上。
+
+### 计划妥当（用户：还能再优化）
+- 代码在 `SkillRedo6.cs` 的 `WellLaidPlans`。预览场景 `plans`：`render.sh plans 4`，打两次。
+- 现在的版本 v3（0.9.46）：
+  - 周围压暗；五张大卡从手里迸出，转着在他头顶排成扇面，每张落位时柔闪、碎光；
+  - 疾光沿着扇面扫过，牌从左到右依次亮起；背后柔光，往上喷碎光；
+  - 五张牌绕着手旋进来，叠成一摞，柔闪、十字光、纸屑、轻震，再缩进手里。
+- 用户只说「打出的时候可以再华丽一些」「还能再优化」。没说具体哪里，可以问，也可以按满意的风格加料。别用网点、别用环绕光圈当主体。
+- 时间限制：`cast_glove` 的手大约在开始后 0.7 秒放下。那一摞牌要在手放下前缩掉，现在 `fold = 0.6`，收在 `fold + 0.36` 左右。
+- **保留手牌特效**（用户要求做的，配合计划妥当）：
+  - 代码在 `Vfx/RetainFx.cs`，负责画；`RetainPatch.cs` 里的 `RetainFlushPatch` 挂 `Hook.AfterFlush` 的前缀，按类型取参数里的 `Player` 和最后一个 `IReadOnlyCollection<CardModel>`，也就是被保留的牌。
+  - 效果：本地 Joker 被保留的手牌从左到右，每张错开 0.07 秒，各「封」一下：
+    - 牌边一圈柔红描边亮起，亮度沿边不均匀；
+    - 一道白高光斜扫过牌面，右上角 `Glint`，牌顶几粒光点；
+    - 每张约 0.9 秒，整次一声很轻的 `gx_card_stack`。
+  - 用户要求：每回合都会出现，所以不要花哨，但要好看。
+  - 预览场景 `retain` 用的是灰色假牌，**没进游戏验证过**：要确认牌节点用 `NCard.Body` 定位对不对，以及 0.113 下钩子能不能挂上。
+
+### 其他这次做的、等用户意见的
+- **刀刃陷阱**（`Vfx/KnifeTrapFx.cs`，0.9.46）：
+  - 有几张小刀，敌人头顶两侧就排几张预告信，排成一道月牙，**不转圈**；
+  - 每一枪：一张卡往后一缩、被切开散掉，射出一道带弯的光矛扎进敌人；最后一张收官。
+  - 走过的版本：
+    - v1 太简单；v2 光弹太小太胆小；v3 光点不该从 Joker 出来；
+    - v4 卡冲过去撞敌人，用户说怪；
+    - v5 卡绕敌人转圈：踩了环绕光圈的雷，0.9.46 改成月牙。
+  - 0.9.46 的月牙版用户还没表态。
+- **肾上腺素**、**暗影步**（`SkillRedo6.cs`）：用户说「还算可以」。0.9.46 把里面的网点换成了柔光，别的没动。
+- 预览：`docs/p5/preview/*_046.mp4`。
+
+### 还要做的（按顺序）
+1. 幽魂形态：先问用户要什么，再做。
+2. 计划妥当：再加强。
+3. 增益牌：预判、侧步、磨蚀、消影、速行者、触媒、调制。鬼祟用户说没问题，不动。
+4. 谋划牌：谋划专家、必备工具、手上技法、夜魇。
+5. 咕嘟冒泡：小优化。
+6. 大块的：选人界面重构、开始后的过场、Boss / 精英最后一击的总攻击（参考 P3 mod）、战后选牌界面小改。
+7. 0.113 的库同步上来以后，核对上面列的钩子。
+
+### 预览工具（这个容器）
+- 渲染：在 `tools/p5/fxpreview` 下，先 `export GODOT=/opt/tools/Godot_v4.5.1-stable_mono_linux_x86_64/Godot_v4.5.1-stable_mono_linux.x86_64`，再 `bash render.sh <场景> <秒数>`。
+  - 秒数必须是**整数**，写 4.6 会报错。
+  - 一次大约 1～2 分钟，命令要给够超时。
+- 出视频：
+  - `python3 mix.py <场景>` 生成 `out/<场景>.mp4`，带游戏样本音效；
+  - 再 `ffmpeg -i out/<场景>.mp4 -vf scale=854:-2 -c:a copy docs/p5/preview/<名字>.mp4` 缩到 854 宽。
+- 看关键帧：`python3 tools/p5/fxpreview/mont.py out/<场景> <输出.png> 帧,帧,帧 [x0,y0,x1,y1]`。默认裁到 Joker 周围，看敌人用 `700,150,1920,1000`。帧率 30。
+- 类型检查：`bash tools/p5/cloud/check.sh`。
+- `p5mod/src/Vfx/` 下的文件会被预览工程编译，**不能引用游戏类型**（MegaCrit、Harmony）。要挂游戏的代码放在 `p5mod/src/` 下，参考 `RetainPatch.cs`。
+- 预览场景都在 `tools/p5/fxpreview/Preview.cs`：
+  - `RunCards(...)` 打卡牌；
+  - `knife_trap` 自己写了开枪的时间线；
+  - `p.At` 的时间相对于「现在」，回调里面再套 `At` 要注意。
+- 写给别的文件用的公开包装在 `SkillRedo5c.cs` 末尾：`Cross`、`Streak`、`SoftBurst`、`RingSweep`、`Whirl`、`Motes`、`HazeVortex`。后三个和网点都属于拉黑或只能做次要的手法，慎用。
+
+---
+
+## 2026-11-13 · 会话 C（`claude/blissful-clarke-rgwshm`）交接 —— 融入暗影重做到「网点融影 v2」，等用户回复；余像 / 萎靡和后面的牌都还没做
+
+### 分支和状态
+- 工作分支 `claude/blissful-clarke-rgwshm`，已推送，工作区是干净的。开始时合并了会话 A 的 `claude/epic-archimedes-m9an69`，A 的东西都在这个分支里，包括子弹时间、第四批和 A 的交接。最后一个代码提交是 `d4023427`。
+- 版本号还是 **0.9.19**。这一轮的改动没有出包，也没有进游戏实测，只在预览里看过。`bash tools/p5/cloud/check.sh` 通过。下次出包升到 0.9.20。
+
+### 融入暗影（正在做，等用户对 v2 的意见）
+- 代码在 `p5mod/src/Vfx/SkillRedo5.cs`。它在 `CardSkillFx` 静态构造里最后注册（`SkillRedo5.Register(Cards);`），所以会覆盖 `SkillRedo4` 的融入暗影。
+- 预览场景是 `redo5`，打两次。视频在 `docs/p5/preview/`。
+- 这一轮走过的路（按时间顺序，用户的评价写在后面）：
+  1. 斗篷：用户说「太难做了，弄点特效不好吗」，否了。
+  2. 暗火：`shadowmeld_darkflame_v2/v3.mp4`，红黑火焰贴着轮廓。
+     - 用户先要求分布均匀、脚下不要有横条，还要有出场和退场动画。
+     - 最后结论是「用火焰做特效很 low，塑料感，我想要更华丽的」。`BodyAura`（`Vfx/Aura.cs`）为暗火加了调色板、`even`、`peel`、`Surge()`、`PeelUp()`，现在没在用。蓝色面具火没变。
+  3. 水晶环：`shadowmeld_crystal_v1~v3.mp4`，一圈玻璃水晶围着他升起、闪一下、碎掉。
+     - 用户说特效少了一点，要多一些衬托，还要理清水晶和人物的前后遮挡。我按这两点改了。
+     - v2 脚下加过玻璃地面，用户说「质感很差，不要；我要的是特效，不是这些」，v3 已删。
+  4. 用户定的方向（原话）：「水晶碎片最多算次要特效，更多应该做一种**融入暗影**的感觉……比如一团黑色或灰黑浓烟盖到人物身上——只是举例，不要真这么做，有点黑暗。」
+  5. 网点融影 v1：`shadowmeld_halftone_v1.mp4`。用户说「有点创意，但是**不能让人物真的消失了**」。
+  6. **网点融影 v2**：`shadowmeld_halftone_v2.mp4`，现在的版本，已发给用户，还没回复。
+- **v2 怎么做的**（`SkillRedo5.Shadowmeld`）：
+  - **主效果：网点剪影漫过他。**
+    - 用 `CopyBody` 复制一份离屏剪影，0.06 秒后定格。
+    - `Dots` 着色器负责画：半透明黑底（`fill = 0.45`）、45° 红网点和锐利的红边。
+    - `dis` 控制从脚往上一格一格化掉，化开的那条线是亮的。
+    - 时间点：`melt0 = 0.12`，`melt1 = 0.62`，`back0 = breakAt - 0.06` 时聚回来，聚回时白闪。
+  - **人始终不透明**，融入暗影时只是变暗成暗紫灰：`Lerp(白, (0.42, 0.34, 0.42), gone)`，`A = 1`。
+  - 化开时往上飘红、黑、白三色的小点。
+  - **次要的水晶**：
+    - 10 个角度槽位，从远到近排序，他身体正前方不放。椭圆半径 `rx = h·0.44`，`ry = h·0.15`。
+    - 后排放在 back 层，前排放在 front 层，根节点下有 `BackBufferCopy`。**不要用 `TopLevel`**：它会让后排画到人物前面。
+    - `Crystal` 着色器负责画：读屏折射、两个面和一条棱、菲涅尔白边、暗红芯、根部的红网点、高光扫过。
+    - 时间点：`OutBack` 错峰升起，`flashAt = 0.35` 时转一点并闪光，`breakAt = 0.85` 时碎掉。
+  - **衬托**：每个水晶根部有一团白芯红光，尖端闪光和火星，身后有柔的暗红背光（`P5CrystalGlow`），往上飘光点，主拍有闪光和轻震，碎的时候闪一层很淡的 `Ghosts` 剪影。
+  - **音效**：`gx_freeze` 配升起，`gx_ping` 配主拍，`gx_glass` 配碎裂。
+- 预览的假象：预览复制的是待机姿势，所以剪影和施法动作对不上；游戏里会跟着当前姿势。
+- **接手先做**：问用户 v2 行不行。
+  - 不行就按他说的改，别在被否的方向上修补。
+  - 行就做余像和萎靡。
+
+### 还要做的
+1. **余像**：打出时的特效，加上之后每出一张牌的反馈。
+   - 反馈只是 1 点格挡，要有，但不用明显。
+   - 只要一层红剪影，贴身，不要大。
+   - 挂钩已经接好：`AfterimagePlay.cs` → `SkillPlay.AfterimageTick` → 现在调 `SkillRedo4.AfterimageTick`。换成新特效时改这里就行。
+2. **萎靡**：一定要**看得出和 Joker 有关联**（是他做的）。
+3. 剩下的牌，一批 5 张，每批做完给预览：
+   - 扫腿；
+   - 增益：预判、侧步、鬼祟、磨蚀、消影、速行者、触媒、调制；
+   - 生成小刀：刀刃之舞、斗篷与匕首、墨之刃、袖里乾坤、刀刃交响曲、隐秘匕首、钢铁风暴、无尽刀刃、幻影之刃；
+   - 谋划：谋划专家、计划妥当、必备工具、手上技法、夜魇；
+   - 暴露、刀刃陷阱、尖啸。
+4. 会话 A 第四批里的模糊、夹击：用户没点名否，算默认通过。最好顺便问一句。
+5. 更早的待办：肾上腺素、暗影步（金色）可能还要更华丽；毒雾常驻；幽魂形态重做。
+6. 出 0.9.20 包，进游戏验证：
+   - 子弹时间：敌人放慢，回合结束恢复；
+   - 余像的挂钩；
+   - 融入暗影的前后遮挡，以及剪影是否跟着当前姿势；
+   - 0.9.19 之后的蛇咬、亚森收紧、残影改淡。
+
+### 用户这一轮的要求 / 教训（接手照做）
+- 特效要细，不要粗糙，细节要多。
+- 不要塑料感，不要用火焰，不要一整片阴暗的黑烟，不要贴图感，不要细线圆圈或 UI 图标，不要玻璃地面这类「表面」，用户要的是特效。
+- 金色牌不用做到华丽收场那么大，在人物周围有一些稍微帅一点的特效就够了。
+- 人物不能真的消失；人物和特效的前后遮挡要理清。
+- 用户否了一个方向就换思路，别在旧代码上修修补补。用户说「看你来做」时自己拿主意。
+- 做完先自己逐帧看几张关键帧，过关了再发。
+- 音效用游戏样本（`Sfx.Take("gx_*")` / `Sfx.GameSfx`），每个效果 2～3 拍，很轻，**不要合成音效**。
+- 回复中文。做一点推一点。预览放 `docs/p5/preview/`，854 宽，带声音，用 SendUserFile 发。交接只在用户要求时写。
+
+### 环境（这个容器里）
+- Godot：`/opt/tools/Godot_v4.5.1-stable_mono_linux_x86_64/Godot_v4.5.1-stable_mono_linux.x86_64`。
+  - 新容器要重新下：GitHub releases 的 `Godot_v4.5.1-stable_mono_linux_x86_64.zip`。
+  - 还要装：`apt-get install -y dotnet-sdk-8.0`，`pip install scipy numpy pillow`。
+- 预览：`cd tools/p5/fxpreview && GODOT=… bash render.sh redo5 <整数秒> && python3 mix.py redo5`。日志在 `out/<场景>/log.txt`，查 `SHADER ERROR`。
+- 着色器小坑：`TEXTURE` 不能在自定义函数里直接用，要当 `sampler2D` 参数传进去。
+
 ---
 
 ## 2026-11-12（晚）· 会话 A（`claude/epic-archimedes-m9an69`）交接 —— 子弹时间做完、用户认可；第四批里融入暗影 / 余像 / 萎靡改了三版全部不过关
