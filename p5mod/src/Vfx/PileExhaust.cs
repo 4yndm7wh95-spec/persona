@@ -91,7 +91,7 @@ public sealed class PileExhaust : IPileDecor
 	/// <summary>黑板底边直线（原版 122 起定格的那条，原版屏幕坐标：红板左边缘上的一点 → 屏幕右边）；下面那条细白线落定后就是它的延长。</summary>
 	private static readonly Vector2 LoA = new(1561f, 858f), LoB = new(1919f, 745f);
 	/// <summary>上面那条：L（x = 834 − 0.625·(y − 500)，原版坐标）往右的偏移，u = 7…9（原版 119 在 L 右边约 34px、120 起贴在 L 上，118 还没有）；
-	/// 画 y = −20 … 470 那一段。宽约 7px（原版量的亮边 7–8px），下面那条细一些（4–5px）。</summary>
+	/// 从屏幕顶一直画到底（用户 2026-11-24：要接到左下那块白色区域上，它的左边就是 L）。宽约 7px（原版量的亮边 7–8px），下面那条细一些（4–5px）。</summary>
 	private static readonly float[] HiOffset = { 34f, 1f, 0f };
 	private static float Lx(float y) => 834f - 0.625f * (y - 500f);
 	private const float LoW = 4.5f, HiW = 7f;
@@ -303,21 +303,39 @@ void fragment() {
 	/// <summary>白板左边缘在 t 时刻的两点（原版屏幕坐标）：先从右边扫进来，112–117 按原版逐帧插值，117→118 跳到直线 L。</summary>
 	private static (Vector2 A, Vector2 B) Edge(float t)
 	{
+		// 关键帧之间 Catmull-Rom（用户 2026-11-24：不够丝滑——之前每段 InOutCubic，每到一个原版帧都停一下）
 		float u = U(t);
 		int i = Mathf.Min((int)u, EdgeKeys.Length - 1);
 		if (i >= EdgeKeys.Length - 1) return EdgeKeys[^1];
-		float f = Ease5Ext.InOutCubic(u - i);
-		return (EdgeKeys[i].A.Lerp(EdgeKeys[i + 1].A, f), EdgeKeys[i].B.Lerp(EdgeKeys[i + 1].B, f));
+		float f = u - i;
+		int i0 = Mathf.Max(i - 1, 0), i3 = Mathf.Min(i + 2, EdgeKeys.Length - 1);
+		return (Cr(EdgeKeys[i0].A, EdgeKeys[i].A, EdgeKeys[i + 1].A, EdgeKeys[i3].A, f), Cr(EdgeKeys[i0].B, EdgeKeys[i].B, EdgeKeys[i + 1].B, EdgeKeys[i3].B, f));
 	}
 
-	/// <summary>黑色反色区半径（原版屏幕坐标）：117 之前 0，之后按原版逐帧插值。</summary>
+	private static Vector2 Cr(Vector2 p0, Vector2 p1, Vector2 p2, Vector2 p3, float t) =>
+		0.5f * (2f * p1 + (p2 - p0) * t + (2f * p0 - 5f * p1 + 4f * p2 - p3) * t * t + (3f * p1 - p0 - 3f * p2 + p3) * t * t * t);
+
+	/// <summary>
+	/// 黑色反色区半径（原版屏幕坐标）：117 之前 0，之后过原版逐帧的值。单调三次插值（Fritsch–Carlson）：
+	/// 之前逐段直线，速度在每个原版帧突变（117→118 一大跳、119–120 很慢、121 又快），看着一顿一顿的；现在速度连续、也不会往回缩。
+	/// </summary>
 	private static float Radius(float t)
 	{
 		float u = U(t) - 5f;
 		if (u <= 0f) return 0f;
-		int i = Mathf.Min((int)u, RRadius.Length - 1);
-		if (i >= RRadius.Length - 1) return RRadius[^1];
-		return Mathf.Lerp(RRadius[i], RRadius[i + 1], u - i);
+		int n = RRadius.Length;
+		if (u >= n - 1) return RRadius[^1];
+		int i = (int)u;
+		float s = u - i;
+		float M(int j)
+		{
+			if (j <= 0) return RRadius[1] - RRadius[0];
+			if (j >= n - 1) return RRadius[n - 1] - RRadius[n - 2];
+			float d0 = RRadius[j] - RRadius[j - 1], d1 = RRadius[j + 1] - RRadius[j];
+			return d0 * d1 <= 0f ? 0f : 2f / (1f / d0 + 1f / d1);   // 调和平均：单调、不过冲
+		}
+		float h00 = 2 * s * s * s - 3 * s * s + 1, h10 = s * s * s - 2 * s * s + s, h01 = -2 * s * s * s + 3 * s * s, h11 = s * s * s - s * s;
+		return h00 * RRadius[i] + h10 * M(i) + h01 * RRadius[i + 1] + h11 * M(i + 1);
 	}
 
 	/// <summary>凸多边形按半平面裁剪（Sutherland–Hodgman）：保留直线 a→b 右侧（屏幕 x 更大的一侧）。</summary>
@@ -468,44 +486,59 @@ void fragment() {
 		int j = Mathf.Min((int)uh, HiOffset.Length - 2);
 		float off = uh >= HiOffset.Length - 1 ? HiOffset[^1] : Mathf.Lerp(HiOffset[j], HiOffset[j + 1], Mathf.Clamp(uh - j, 0f, 1f));
 		// 线的中心在亮边中间（L 往右半个线宽）
-		Vector2 h0 = Map(new Vector2(Lx(-20f) + off + HiW * 0.5f, -20f)), h1 = Map(new Vector2(Lx(470f) + off + HiW * 0.5f, 470f));
+		// 一直画到屏幕底外：下半截压在白板 / 白腿上（白上白看不出），上半截就是白色区域左边那条斜边往上的延长，中间不断开
+		Vector2 h0 = Map(new Vector2(Lx(-20f) + off + HiW * 0.5f, -20f)), h1 = Map(new Vector2(Lx(1120f) + off + HiW * 0.5f, 1120f));
 		SetLine(_lineHi, h0, h1, HiW);
 	}
 
-	/// <summary>下面那条线的起点（白板 / 黑区分界碰到右侧分区折线的点）和朝外的方向；还没有黑区时返回 false。</summary>
+	/// <summary>
+	/// 下面那条线的起点和朝外的方向；还没有黑区时返回 false。
+	/// A：弧扫过顶边时，起点 = 弧和顶边的交点，方向 = 弧的切线（线是白板弧边的延长）；
+	/// B：弧快到拐点时（离拐点 60px 起，半径再长 LoBlend），起点沿红板边滑到黑板底边那一点、方向转到底边直线的方向（原版 120→121 是两帧之间直接跳，
+	///    用户要丝滑，这里摊开三四帧）；C：之后就是黑板底边直线的延长（原版定格）。
+	/// </summary>
 	private bool LoLine(out Vector2 e, out Vector2 dir)
 	{
 		e = dir = Vector2.Zero;
 		float r = Radius(_tNow) * MapK;
 		if (r <= 0f) return false;
 		Vector2 c = Map(RCenter);
-		// 圆和折线（顶边、红板左边缘）的交点，取最靠下的那个（圆从左上往右下扫）
-		bool found = false;
-		foreach (var (a, b) in new[] { (_top0, _vtx), (_vtx, _redB) })
-		{
-			Vector2 d = b - a, f = a - c;
-			float A = d.Dot(d), B = 2f * f.Dot(d), C = f.Dot(f) - r * r, disc = B * B - 4f * A * C;
-			if (disc < 0f) continue;
-			float sq = Mathf.Sqrt(disc);
-			foreach (float s in new[] { (-B - sq) / (2f * A), (-B + sq) / (2f * A) })
-			{
-				if (s < 0f || s > 1f) continue;
-				Vector2 q = a + d * s;
-				if (!found || q.Y > e.Y) { e = q; found = true; }
-			}
-		}
-		Vector2 n = (_lq - _lp).Normalized(); n = new Vector2(-n.Y, n.X); if (n.Y < 0f) n = -n;
-		if (!found || (e - _lp).Dot(n) > 0f)
-		{
-			// 弧已经越过黑板底边直线（或者圆已经盖满）：分界 = 那条直线，线就是它的延长（原版 122 起的定格）
-			if (!found && r < (_redB - c).Length()) return false;
-			e = _lp; dir = (_lp - _lq).Normalized();
-			return true;
-		}
-		Vector2 rad = (e - c).Normalized();
-		dir = new Vector2(-rad.Y, rad.X);
-		if (dir.X < 0f) dir = -dir;                                   // 朝右（伸进红底）
+		Vector2 fin = (_lp - _lq).Normalized();
+		float ra = (_vtx - c).Length() - 60f, rb = ra + LoBlend * MapK;
+		if (r >= rb) { e = _lp; dir = fin; return true; }
+		float rr = Mathf.Min(r, ra);
+		if (!ArcOnTop(c, rr, out Vector2 ea)) return false;
+		Vector2 rad = (ea - c).Normalized();
+		Vector2 tan = new(-rad.Y, rad.X);
+		if (tan.X < 0f) tan = -tan;                                   // 朝右（伸进红底）
+		if (r <= ra) { e = ea; dir = tan; return true; }
+		float w = (r - ra) / (rb - ra);
+		w = w * w * (3f - 2f * w);
+		// 起点先到拐点再顺着红板边下到底边那一点
+		Vector2 mid = _vtx;
+		e = w < 0.35f ? ea.Lerp(mid, w / 0.35f) : mid.Lerp(_lp, (w - 0.35f) / 0.65f);
+		dir = Vector2.FromAngle(Mathf.LerpAngle(tan.Angle(), fin.Angle(), w));
 		return true;
+	}
+
+	private const float LoBlend = 360f;
+
+	/// <summary>半径 r 的圆和顶边（_top0 → _vtx）的交点。</summary>
+	private bool ArcOnTop(Vector2 c, float r, out Vector2 q)
+	{
+		q = Vector2.Zero;
+		Vector2 a = _top0, d = _vtx - _top0, f = a - c;
+		float A = d.Dot(d), B = 2f * f.Dot(d), C = f.Dot(f) - r * r, disc = B * B - 4f * A * C;
+		if (disc < 0f) return false;
+		float sq = Mathf.Sqrt(disc);
+		bool ok = false;
+		foreach (float s in new[] { (-B - sq) / (2f * A), (-B + sq) / (2f * A) })
+		{
+			if (s < 0f || s > 1f) continue;
+			Vector2 p = a + d * s;
+			if (!ok || p.Y > q.Y) { q = p; ok = true; }
+		}
+		return ok;
 	}
 
 	private void Shake(float t)
