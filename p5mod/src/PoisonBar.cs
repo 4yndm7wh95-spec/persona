@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Reflection;
 using Godot;
 using HarmonyLib;
@@ -62,6 +63,9 @@ void fragment() {
 		ModEntry.Safe("PoisonBar", () =>
 		{
 			if (CreatureF.GetValue(__instance) is not Creature c || c.IsPlayer) return;
+			// 毒必杀标记（PoisonLethal.cs）：有 Joker 在场时，毒稳能在敌人回合开始毒死他 → 血条右端钉一张预告信
+			if (__instance.HpBarContainer is Control barBox && c.CombatState?.Players.Any(Joker.Is) == true)
+				LethalMark.Sync(barBox, PoisonLethal.Sure(c), c.CurrentHp <= 0);
 			PoisonPower? poison = c.GetPower<PoisonPower>();
 			bool joker = poison?.Applier?.Player is { } p && Joker.Is(p);
 			if (PoisonFg.GetValue(__instance) is CanvasItem fg)

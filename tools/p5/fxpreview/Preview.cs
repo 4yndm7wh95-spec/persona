@@ -345,6 +345,24 @@ public partial class Preview : Node2D
 				p.At(1.89 + spec.AttackAt + 0.35 + 0.3 * i, () => { Grip.OnTick(1ul); Popups.Damage(p._front, 1ul, Enemy, 9, false); });
 			}
 		},
+		// 毒必杀标记（LethalMark，2026-11-25）：假血条（红 + 毒的那段黑底红斜纹）；中间的怪毒必杀 → 钉预告信，右边的随后也必杀、再被解掉（翻走），最后中间的被毒死（炸开）
+		["lethal_mark"] = p =>
+		{
+			var bars = new Dictionary<Vector2, Control>();
+			foreach (Vector2 e in new[] { Enemy2, Enemy, Enemy3 })
+			{
+				var box = new Control { Size = new Vector2(220f, 18f), Position = new Vector2(e.X - 110f, 850f) };
+				box.AddChild(new ColorRect { Size = box.Size, Color = new Color(0.08f, 0.02f, 0.03f) });
+				box.AddChild(new ColorRect { Size = new Vector2(120f, 18f), Color = new Color(0.95f, 0.22f, 0.24f) });
+				box.AddChild(new ColorRect { Position = new Vector2(120f, 0f), Size = new Vector2(70f, 18f), Color = new Color(0.25f, 0.02f, 0.04f) });
+				p._front.AddChild(box);
+				bars[e] = box;
+			}
+			p.At(0.4, () => LethalMark.Sync(bars[Enemy], true, false));
+			p.At(1.3, () => LethalMark.Sync(bars[Enemy3], true, false));
+			p.At(2.3, () => LethalMark.Sync(bars[Enemy3], false, false));
+			p.At(2.9, () => LethalMark.Sync(bars[Enemy], false, true));
+		},
 		// 致命毒药（普通白卡，Tiers.Common）：选中 → 打出，不召唤，精简咒怨
 		["poison"] = p =>
 		{
