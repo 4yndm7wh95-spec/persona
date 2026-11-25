@@ -88,7 +88,7 @@ public sealed class PileExhaust : IPileDecor
 	/// · 上面那条 = 黑板左边缘直线 L 上的白描边（L 同时是星纹条的右边缘、立绘白腿的直边），118 跟着黑板出现、略偏右，121 收到 L 上，之后一直在；
 	///   画在立绘上面（原版压过头发和眼睛旁边）。
 	/// </summary>
-	private readonly AaPoly _lineLo, _lineHi;
+	private readonly AaPoly _lineLo, _lineHi, _legStrip;
 	/// <summary>黑板底边直线（原版 122 起定格的那条，原版屏幕坐标：红板左边缘上的一点 → 屏幕右边）；下面那条细白线落定后就是它的延长。</summary>
 	private static readonly Vector2 LoA = new(1561f, 858f), LoB = new(1919f, 745f);
 	/// <summary>上面那条：L（x = 834 − 0.625·(y − 500)，原版坐标）往右的偏移，u = 7…9（原版 119 在 L 右边约 34px、120 起贴在 L 上，118 还没有）；
@@ -124,7 +124,8 @@ public sealed class PileExhaust : IPileDecor
 		// 右侧分区照原版定格（用户 2026-11-24：之前右边只留了一个小红三角，细白线画不出「三分画面」）：黑板右边界 = 右上边 + 红板左边缘交成的「<」
 		Vector2 top0 = AtY(Map(TopA), Map(TopB), 0f), redB = AtY(Map(RedA), Map(RedB), 1080f), vtx = Cross(Map(TopA), Map(TopB), Map(RedA), Map(RedB));
 		// 黑板的下边 = 下面那条细白线往左的延长线（原版 122 起黑板底边是直的，白线就是它越过红板的延长；线下面是灰板，留着不反色）
-		Vector2 lp = Map(LoA), lq = AtY(lp, Map(LoB), 1080f);
+		// 黑板底边直线和红板左边缘的交点（白色楔形的尖角 = 细白线的起点，同一个点，中间不留红缝）
+		Vector2 lp = Cross(Map(LoA), Map(LoB), Map(RedA), Map(RedB)), lq = AtY(lp, Map(LoB), 1080f);
 		lq.X = Mathf.Max(lq.X, 560f);
 		_slabPts = new[] { R(560f, 0f), R(top0.X, 0f), R(vtx.X, vtx.Y), R(lp.X, lp.Y), R(lq.X, 1080f), R(560f, 1080f) };
 		// 入场白板的外轮廓 = 黑块往左延伸到 x=300（左边由白板边 / 直线 L 裁）：原版反色区一直贴着 L 到屏幕底，立绘白腿也越过 x=560
@@ -171,6 +172,19 @@ public sealed class PileExhaust : IPileDecor
 		if (_porSprite.Texture is Texture2D pt) _porScale = PorW * k / pt.GetWidth();
 		_porSprite.Scale = Vector2.One * _porScale;
 		_portrait.AddChild(_porSprite);
+		// 白腿左边那块楔形（用户 2026-11-24：上面那条线要接到白色区域上）：原版定格里星纹条边上的白线到领口下面开始变宽，
+		// 左边一直贴着直线 L，往下到原版 y≈545 宽到 33px、接上立绘白腿（立绘白腿的直边在 L 右边约 33px，中间原版是亮的、我们之前是黑大衣）。
+		// 挂在立绘精灵下面：跟着砸下的缩放和退场一起动
+		{
+			Vector2 home = (PorAt + new Vector2(PorW, PorW) * 0.5f) * k;
+			Vector2 W(float xo, float yo) => (Map(new Vector2(xo, yo)) * k - home) / _porScale;
+			_legStrip = new AaPoly
+			{
+				Color = Colors.White,
+				Polygon = new[] { W(Lx(460f), 460f), W(Lx(460f) + 7f, 460f), W(Lx(545f) + 35f, 545f), W(Lx(1130f) + 35f, 1130f), W(Lx(1130f), 1130f) },
+			};
+			_porSprite.AddChild(_legStrip);
+		}
 		// 线下面那块白板盖在立绘上面（原版定格：线下面整块是灰的，黑大衣不越过这条线；不然白板的边和细白线接不上）
 		root.MoveChild(_wedge, root.GetChildCount() - 1);
 
@@ -418,7 +432,7 @@ void fragment() {
 		}
 	}
 
-	private static readonly Color LineColor = new(0.86f, 0.86f, 0.85f);
+	private static readonly Color LineColor = Paper;   // 和白板 / 线下面那块同色，接上时看不出缝
 
 	/// <summary>直线 a→b 上 y 处的点。</summary>
 	private static Vector2 AtY(Vector2 a, Vector2 b, float y) => new(a.X + (b.X - a.X) * (y - a.Y) / (b.Y - a.Y), y);
@@ -603,6 +617,7 @@ void fragment() {
 		_lineLo.Modulate = _lineHi.Modulate = fade;
 		_por.SetShaderParameter("fill_color", Ink);
 		_por.SetShaderParameter("fill_amt", Fx.OutCubic(Mathf.Clamp(e / 0.3f, 0f, 1f)));
+		_legStrip.Modulate = new Color(1f, 1f, 1f, 1f - Fx.OutCubic(Mathf.Clamp(e / 0.3f, 0f, 1f)));   // 立绘退场先变黑剪影，楔形跟着淡掉
 		Vector2 home = (PorAt + new Vector2(PorW, PorW) * 0.5f) * k;
 		_portrait.Position = home + new Vector2(420f, -120f) * k * Ease5Ext.InCubic(Mathf.Clamp((e - 0.15f) / 0.75f, 0f, 1f));
 		_portrait.Modulate = new Color(1f, 1f, 1f, 1f - Mathf.Clamp((e - 0.7f) / 0.3f, 0f, 1f));
