@@ -8,7 +8,7 @@
 
 ## 2026-11-24 · 会话 E：牌堆实机 UI 问题（0.9.77）
 
-- **状态（用户：可以了，等合并）**：分支 `claude/confirm-next-tasks-k5wu6t` 已推送、工作区干净、类型检查通过。最终预览：`pile_draw_v12` / `pile_exhaust_v17` / `pile_discard_v14` / `pile_deck_v12`。
+- **状态（用户：可以了，等合并）**：分支 `claude/confirm-next-tasks-k5wu6t` 已推送、工作区干净、类型检查通过。最终预览：`pile_draw_v12` / `pile_exhaust_v17` / `pile_discard_v14` / `pile_deck_v13`（用户说头晕：中间机位往首尾直线路径拉 60%、去掉切立绘的界面震动）。
   实机要确认：牌堆底板 / 弃牌堆红底 / 消耗堆入场（AaPoly 改信号以后应该都好了）、预告信花屏、总攻击实验体三条命。卡面 Mod 1.0.1 交给 Codex（`docs/codex/codex_p5_cardart_build_1.0.1.md`）。
 
 - **根因（重要）**：`Vfx/AaPoly.cs`（牌堆会话加的抗锯齿多边形）重写了 `_Draw`，而 Mod 用普通 .NET SDK 编译，自定义节点的 Godot 虚方法在游戏里**不会被调用**

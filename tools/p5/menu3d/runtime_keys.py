@@ -47,6 +47,12 @@ def main():
         for idx, (f, cam) in sorted(json.load(open(fin)).items(), key=lambda kv: int(kv[0])):
             # 用户 2026-11-24 第五轮：原版 240、241 还是 3D（侧身、手臂水平伸出、左臂全藏住），242 才硬切立绘 + 枪口闪光 →
             # 233–241 全用原版逐帧拟合的机位（239–241：fit/equip_example/fit241.py、fit241b.py），不再往立绘的角度搬
+            # 用户 2026-11-24：看着头晕——机位先往右转 34° 再在最后 0.1s 甩回来（原版就这么拍，但压在 0.4s 里成了来回甩）。
+            # 中间帧往「首尾两帧之间的直线路径」拉 60%，摆动幅度剩四成；首尾两帧（原版 233 的角度、241 接立绘）不动
+            dk = json.load(open(fin)); ks = sorted(dk, key=int); i0, i1 = int(ks[0]), int(ks[-1])
+            if i0 < int(idx) < i1:
+                s = (int(idx) - i0) / (i1 - i0); c0, c1 = dk[ks[0]][1], dk[ks[-1]][1]
+                cam = [v + (c0[j] + (c1[j] - c0[j]) * s - v) * 0.6 for j, v in enumerate(cam)]
             lines += cs_key(int(idx) - 233, 'main_0005', f, 'main_0005', f, 0.0, cam)
         out.append(('Deck', '牌组（原版 EQUIP 页 233–241，241 之后硬切 2D 立绘；U = 原版帧 − 233）', lines))
     fin = ROOT / 'tools/p5/menu3d/fit/draw_example/final.json'

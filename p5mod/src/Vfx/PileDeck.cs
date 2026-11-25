@@ -334,7 +334,7 @@ void fragment() {
 		_portrait.Position = new Vector2(560f, 540f) * k * (1f - bump);
 		_armMat?.SetShaderParameter("arm", cut ? Mathf.Lerp(ArmFrom, 1f, PileShapes.OutCubic(Seg(t, PortraitAt + 0.03f, ArmTime))) : ArmFrom);
 		_portrait.Modulate = Colors.White;
-		_root.Position = cut ? new Vector2(Mathf.Sin((t - PortraitAt) * 44f) * 5f, Mathf.Cos((t - PortraitAt) * 34f) * 10f) * k * Mathf.Pow(Mathf.Max(0f, 1f - (t - PortraitAt) / 0.22f), 2f) : Vector2.Zero;
+		_root.Position = Vector2.Zero;   // 切立绘不震（用户 2026-11-24：头晕；枪口闪光已经够有冲击感）
 		// 列表一行行弹出（原版第 240 帧名单在一行行出来）
 		foreach (var (node, delay, alpha) in _rows)
 		{
