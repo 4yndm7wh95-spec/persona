@@ -385,6 +385,7 @@ public static class Aim
 			//   拍 2「出手」：人格面具出手 = 伤害 / 上毒结算（各张牌自己的命中特效带顿帧和冲击声）。
 			Persona.Spec spec = PersonaFor(card);
 			float evoke = tier == Tier.Rare ? SummonStage.EvokeAt : 0f;
+			Summoning[node.GetInstanceId()] = Time.GetTicksMsec() + (ulong)(HitFor(card) * 1000f);
 			if (outbreak)
 			{
 				OutbreakHand(node, back, outbreakCue);
@@ -462,6 +463,7 @@ public static class Aim
 		&& (Tiers.For(card) >= Tier.Uncommon || Grips(card.GetType().Name) || Commands(card.GetType().Name));
 
 	/// <summary>游戏结算这张牌（Cast 之后的等待）推迟 seconds 秒（蛇咬：等蛇咬下去再上毒）。</summary>
+	public static void HoldCast(NCreature node, float seconds) => Summoning[node.GetInstanceId()] = Time.GetTicksMsec() + (ulong)(seconds * 1000f);
 
 	/// <summary>这张牌召唤时人格面具出手的时刻（施法后几秒）：出牌特效对齐到这一刻。</summary>
 	public static float HitFor(CardModel card) => card.GetType().Name == "Outbreak"
@@ -531,6 +533,16 @@ public static class Aim
 			}, playback: clip);
 
 		});
+	}
+
+	/// <summary>正在召唤的 Joker：(到这个时刻为止的毫秒, 结算要推迟到施法后几秒)。</summary>
+	private static readonly Dictionary<ulong, ulong> Summoning = new();
+
+	/// <summary>这个 Joker 这次施法是 Persona 召唤吗：是就返回结算要推迟到几秒（TriggerAnimDelayPatch 用，用一次就清掉），不是返回 0。</summary>
+	public static float TakeSummon(NCreature node)
+	{
+		ulong now = Time.GetTicksMsec();
+		return Summoning.Remove(node.GetInstanceId(), out ulong due) && now < due ? (due - now) / 1000f : 0f;
 	}
 
 	/// <summary>游戏要播 cast，但 Joker 刚自己施过法：不重播。</summary>

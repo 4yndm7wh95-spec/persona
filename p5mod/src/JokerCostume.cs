@@ -14,11 +14,20 @@ internal static class JokerCostume
 	private const string ProviderId = "P5Joker";
 	private sealed record SkeletonSignature(bool IsJoker);
 	private static readonly ConditionalWeakTable<Resource, SkeletonSignature> Signatures = new();
-	private static readonly Lazy<Func<bool?>?> ManagerSelection = new(FindManagerSelection);
+	private static volatile Lazy<Func<bool?>?> _managerSelection = new(FindManagerSelection);
 	private static ulong _checkedFrame = ulong.MaxValue;
 	private static bool _hasStandaloneSkeleton;
 
-	internal static bool? ManagedSelection => ManagerSelection.Value?.Invoke();
+	static JokerCostume()
+	{
+		AppDomain.CurrentDomain.AssemblyLoad += (_, args) =>
+		{
+			if (args.LoadedAssembly.GetName().Name == SkinChangerSelect.ManagerId)
+				_managerSelection = new(FindManagerSelection);
+		};
+	}
+
+	internal static bool? ManagedSelection => _managerSelection.Value?.Invoke();
 	internal static bool Selected => ManagedSelection ?? HasStandaloneSkeleton;
 
 	internal static bool HasStandaloneSkeleton

@@ -13,24 +13,24 @@ namespace P5Joker;
 /// 入场（用户 2026-11-24：原版截图抠出来的区域不规则、乱 → 自己设计干净的色块碰撞，PileField 一个着色器画完）：
 /// 黑白星纹从右边扫进来（前沿红边）→ 一把扇形从撞色斜线的底端转上来（黑块里是黑、外面是红，黑的前沿一道红条），
 /// 同时左边的红底从左边撞到斜线上，星纹被两边挤成头顶那条星纹条 → 右下浅灰斜带从下面撞进黑块；
-/// 原版 3D Joker（177–185 逐帧拟合的动作，MenuJoker3DKeys.Discard）从第 0 帧连续播、斜带进来前就干脆地收进最后的姿势（MotionEnd），
-/// 在黑块里反色成浅灰（同立绘），别处是黑的；CutAt（0.40 秒）切成 2D 立绘 + 最终排版（色块位置不变），立绘压一下、左边面板滑进、六行弹出、
+/// 原版 3D Joker（177–185 逐帧拟合的动作 + 收尾「186」= 立绘的机位和姿势，MenuJoker3DKeys.Discard）从第 0 帧连续播，前快后收，
+/// 最后一段机位压低、脸抬起来看玩家，正好在 CutAt 落到立绘的样子；在黑块里反色成浅灰（同立绘），别处是黑的；CutAt（0.40 秒）切成 2D 立绘 + 最终排版（色块位置不变），立绘压一下、左边面板滑进、六行弹出、
 /// 标题牌 / COMMAND 压上、牌飞入。
 /// </summary>
 public sealed class PileDiscard : IPileDecor
 {
 	public float GridX => 1100f;   // 牌区右移一点：牌在立绘上面一层，第一列别压住浅灰身体和 COMMAND 的 D
-	public float GridTop => 170f;
+	public float GridTop => 232f;   // 让开右上角标题牌（用户 2026-11-24）
 	public float GridBottom => 1060f;
 	public int Cols => 3;
-	public float CardW => 158f;
-	public float CellW => 182f;
-	public float CellH => 252f;
+	public float CardW => 210f;   // 用户 2026-11-24：卡太小 → 放大约 30%、3 列
+	public float CellW => 238f;
+	public float CellH => 318f;
 	public float CardsStart => CutAt + 0.02f;
 	public float ExitTime => 0.32f;
 	public Vector2 FocusAt => new(560f, 540f);
 	public Vector2 InfoAt => new(980f, 300f);
-	public Vector2 SwitchAt => new(1440f, 836f);
+	public Vector2 SwitchAt => new(1100f, 168f);   // 牌放大以后右下角会压在牌上（用户 2026-11-24）→ 网格上方、标题牌左边
 	public Vector2 EnterOffset => new(70f, 30f);
 	public Vector2 ExitOffset => new(260f, 40f);
 
@@ -54,16 +54,21 @@ public sealed class PileDiscard : IPileDecor
 	// ── 入场：色块碰撞（PileField）+ 原版 177–185 的 3D Joker ──
 	/// <summary>原版立绘 = 缩放 0.5、左上 (0, 0)，我们的立绘 = 缩放 1500/3072、左上 (-80, 0)：3D 的取景按同一个变换放进来（3D → 2D 立绘的相对位置和原版一样）。</summary>
 	private const float MapK = 1500f / 3072f / 0.5f;
-	/// <summary>3D 关键帧数（原版 177–185）；CutAt 切成 2D 立绘（= 原版第 186 帧）。</summary>
+	/// <summary>3D 关键帧数（原版 177–185，185 = 立绘的姿势和机位）；CutAt 切成 2D 立绘（= 原版第 186 帧）。</summary>
 	private const int FrameCount = 9;
 	private const float CutAt = 0.40f;   // 斜带 0.384 秒到位，紧接着切
 	/// <summary>色块动画的节奏（用户 2026-11-24：切入别太拖沓）：Field 里的时间点按 0.52 秒的版本写，整体压到 0.8 倍。</summary>
 	private const float Pace = 0.8f;
 	/// <summary>
-	/// 3D 动作在这之前放完（用户 2026-11-24：之前一直拖到切 2D 那一刻，斜带进来时他已经差不多是最后的姿势了，手却还往外甩一下才切，像回弹、拖沓）：
-	/// 原版 183→185 只有三帧（约 0.1 秒），这里也是前快后收得干脆（power 2.2），斜带撞进来时手已经到位，剩下的时间定住等切。
+	/// 3D 动作放到切 2D 那一刻（MotionEnd = CutAt）：
+	/// 用户 2026-11-24 第一次：手往外甩一下才切，像回弹、拖沓 → 改成 0.29 秒收进 185 的姿势定住；
+	/// 第二次：动作早就到位了却迟迟不变成立绘，而且 185（俯拍、低头、眼睛被头发挡）和立绘（抬眼看玩家）对不上，切的时候跳。
+	/// 第三、四次：最后一段睁眼（镜头几乎不动、只有眼睛慢慢睁开）看着像停住等他眨眼 → 不要睁眼（185 用原版姿势），匀速（power 1）一直动到 CutAt，手扫过脸之后 0.1 秒就切。
 	/// </summary>
-	private const float MotionEnd = 0.29f, MotionPower = 2.2f;
+	private const float MotionEnd = CutAt, MotionPower = 1f;
+	/// <summary>183→185 是很小的动作（手放下、头微动），匀速也要占 0.1 秒以上、看着像停住：0 → FaceAt 匀速播到 183（手扫过脸、脸露出来），剩下 0.04 秒带过 184、185 就切。</summary>
+	private const float FaceAt = CutAt - 0.04f;
+	private static float MotionU(float t) => t < FaceAt ? 6f * Mathf.Clamp(t / FaceAt, 0f, 1f) : 6f + 2f * Mathf.Clamp((t - FaceAt) / (MotionEnd - FaceAt), 0f, 1f);
 	// 最终排版的块面（mock_discard.py / export_discard.py 的黑块、星纹条、斜带，1080p；伸出屏幕的边延长到画面外）：
 	// 撞色斜线 x = Lx(y) 是黑块的左边，也是星纹条的右边；黑块外面全是红底
 	private static float Lx(float y) => 1002.66f - 0.419f * y;
@@ -298,13 +303,13 @@ public sealed class PileDiscard : IPileDecor
 		float k = _k;
 		// 红星纹底：入场里由 PileField 画（同一套星星、同一个时间），切到最终排版时才露出来
 		_bg.SetShaderParameter("wipe", t >= CutAt ? 1e7f : 0f);
-		// 入场：色块碰撞 + 3D 从第 0 帧就开始连续播，MotionEnd 收进最后的姿势；CutAt 硬切成 2D 立绘 + 最终排版（同原版第 186 帧）
+		// 入场：色块碰撞 + 3D 从第 0 帧就开始连续播，一路连到收尾「186」（= 立绘）；CutAt 硬切成 2D 立绘 + 最终排版（同原版第 186 帧）
 		bool cut = t >= CutAt;
 		_entrance.Visible = !cut;
 		if (cut) _m3d?.Hide();
 		else
 		{
-			_m3d?.Show(MenuJoker3DKeys.Discard, PileReveal.Progress(t, MotionEnd, FrameCount - 1, MotionPower));
+			_m3d?.Show(MenuJoker3DKeys.Discard, MotionU(t));
 			_field.SetTime(t);
 			Field(t);
 		}

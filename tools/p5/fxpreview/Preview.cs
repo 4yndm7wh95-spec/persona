@@ -200,6 +200,12 @@ public partial class Preview : Node2D
 			});
 		},
 		// 抽牌堆界面（p5mod/src/Vfx/PileDraw.cs）：0.5s 打开 → 假牌格子依次飞入 → 2.2s / 3.2s 碰到一张牌（预告信踢转）→ 4.4s 关闭
+		// P3 君王之剑替代的蓝蝶（tools/p3/butterfly/SovereignButterfly.cs，2026-11-23）：人物用现成的 Joker 当站位
+		["p3_butterfly"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.At(0.2, () => P3Makoto.Vfx.SovereignButterfly.Start(p._front, p._back, () => (JokerFeet, tall)));
+		},
 		["pile_draw"] = p => PileDrawPreview(p, false),
 		// 消耗堆界面（p5mod/src/Vfx/PileExhaust.cs，P5R SKILL 页）
 		["pile_exhaust"] = p => PileDrawPreview(p, true),

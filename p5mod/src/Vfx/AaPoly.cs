@@ -31,7 +31,13 @@ public partial class AaPoly : Node2D
 	/// <summary>羽化宽度（屏幕像素）。</summary>
 	public float Feather { get; set; } = 1f;
 
-	public override void _Draw()
+	/// <summary>
+	/// 不重写 _Draw：Mod 用普通 .NET SDK 编译，自定义节点没有 Godot 的虚方法绑定，_Draw 在游戏里不会被调用（预览里会，所以之前没发现；
+	/// 用户 2026-11-24 实机：牌堆里所有这种多边形底板都没画出来，文字和背景融在一起）。改成订阅 draw 信号（信号在 Mod 里正常）。
+	/// </summary>
+	public AaPoly() { Draw += Paint; }
+
+	private void Paint()
 	{
 		int n = _pts.Length;
 		if (n < 3 || _color.A <= 0f) return;

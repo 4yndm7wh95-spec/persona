@@ -20,8 +20,8 @@ using MegaCrit.Sts2.Core.Settings;
 namespace P5Joker;
 
 /// <summary>
-/// Joker 在精英或 Boss 战中于敌人倒下时采集剪影，游戏确认胜利后才播放总攻击。
-/// 等本场在途剪影采集结束后播放，奖励界面等到收尾揭幕时再入栈。快速模式「瞬间」跳过。
+/// Joker 在精英或 Boss 战中于敌人倒下时采集剪影；最后一只倒下就开播总攻击（前半段慢放，0.9.58）。
+/// 等本场在途剪影采集结束后播放，奖励界面等到收尾揭幕时再入栈；战斗结束时还没开播就在那里补播。快速模式「瞬间」跳过。
 /// </summary>
 public static class AllOutGame
 {
@@ -93,6 +93,7 @@ public static class AllOutGame
 	/// <summary>敌人倒下时采集剪影，保留死亡动作前的形态。</summary>
 	public static void OnDeath(NCreature n)
 	{
+		if (!AllOut.Playing) AllOut.RestoreTime();
 		if (!Enabled || n.Entity is not { } e || !IsEnemySilhouette(e) || NCombatRoom.Instance is not { } room
 			|| !BigRoom(room) || !JokerHere(e.CombatState)) return;
 
@@ -100,7 +101,48 @@ public static class AllOutGame
 		if (batch.Started) return;
 		BeforeHit.TryGetValue(n, out SpinePose? pose);
 		BeforeHit.Remove(n);
+		// 0.9.58：倒下的是最后一只 → 剪影截好（Play 先等在途的截图）就立刻开播，最后一击的伤害数字一出来玻璃就碎、前半段慢放。
+		// 不等游戏确认胜利（那时候结算流程已经往下走了，慢放就没了）。
+		bool last = IsFinalBlow(e.CombatState);
+		try
+		{
+			// 会复活的（实验体前两条命）不截：它还会再倒下一次，截了收尾里就有好几个一样的剪影
+			if (WillStayDead(e)) CaptureFoe(n, room, batch, pose);
+		}
+		finally
+		{
+			if (last) batch.Playback ??= Play(room, batch);
+		}
+	}
 
+	/// <summary>
+	/// 这一下是不是真的赢了（2026-11-24 回归 bug：实验体三条命，打掉第一条命就播了总攻击）。照游戏自己的胜利判定（CombatManager.IsCombatEnding）：
+	/// 没有活着的主要敌人（小怪不算），并且没有谁拦着战斗结束 —— 实验体的 AdaptablePower、寄生、蒸汽爆发、存货、惊喜这类会复活 / 进下一阶段的
+	/// 都靠 ShouldStopCombatFromEnding 拦着（实验体第三形态时这个 power 已经移除，最后一条命才算）。判断出错就当不是，交给 OnCombatEnd 补播。
+	/// </summary>
+	private static bool WillStayDead(MegaCrit.Sts2.Core.Entities.Creatures.Creature e)
+	{
+		try { return e.CombatState is not { } cs || MegaCrit.Sts2.Core.Hooks.Hook.ShouldCreatureBeRemovedFromCombatAfterDeath(cs, e); }
+		catch (System.Exception) { return true; }
+	}
+
+	private static bool IsFinalBlow(MegaCrit.Sts2.Core.Combat.ICombatState? cs)
+	{
+		if (cs == null) return false;
+		try
+		{
+			if (cs.Enemies.Any(x => x != null && x.IsAlive && x.IsPrimaryEnemy)) return false;
+			return !MegaCrit.Sts2.Core.Hooks.Hook.ShouldStopCombatFromEnding(cs);
+		}
+		catch (System.Exception ex)
+		{
+			Stage.Report("allout final blow check", ex);
+			return false;
+		}
+	}
+
+	private static void CaptureFoe(NCreature n, NCombatRoom room, CaptureBatch batch, SpinePose? pose)
+	{
 		// Kaiser Crab's two targetable creatures are invisible. Both claws and
 		// the body are drawn by a single rig in the room background.
 		Node2D? crabRig = room.Background?.GetNodeOrNull<Node2D>("%KaiserCrab")?.GetNodeOrNull<Node2D>("%Visuals");
@@ -237,6 +279,8 @@ public static class AllOutGame
 
 	public static Task OnCombatEnd(CombatRoom room, ICombatState? cs)
 	{
+		// 慢放兜底：只在没在播总攻击时恢复（不打断正在慢放的前半段）
+		if (!AllOut.Playing) AllOut.RestoreTime();
 		if (!Enabled)
 		{
 			_batch = null;

@@ -6,6 +6,52 @@
 
 ---
 
+## 2026-11-24 · 会话 E：牌堆实机 UI 问题（0.9.77）
+
+- **状态（用户：可以了，等合并）**：分支 `claude/confirm-next-tasks-k5wu6t` 已推送、工作区干净、类型检查通过。最终预览：`pile_draw_v12` / `pile_exhaust_v17` / `pile_discard_v14` / `pile_deck_v13`（用户说头晕：中间机位往首尾直线路径拉 60%、去掉切立绘的界面震动）。
+  实机要确认：牌堆底板 / 弃牌堆红底 / 消耗堆入场（AaPoly 改信号以后应该都好了）、预告信花屏、总攻击实验体三条命。卡面 Mod 1.0.1 交给 Codex（`docs/codex/codex_p5_cardart_build_1.0.1.md`）。
+
+- **根因（重要）**：`Vfx/AaPoly.cs`（牌堆会话加的抗锯齿多边形）重写了 `_Draw`，而 Mod 用普通 .NET SDK 编译，自定义节点的 Godot 虚方法在游戏里**不会被调用**
+  （`docs/ART_SPEC.md` 1927 行早就记过 `_Process` 的同一个坑），预览里正常所以没发现。实机所有 `AaPoly` / `PileDraw.Poly` 都没画：
+  分区标题 / 排序开关 / 牌组高亮行的底板没了（文字和背景融在一起）；弃牌堆右下斜带的遮罩失效 → 整屏红星纹盖住所有东西（「切完只剩红底」）；
+  消耗堆的黑板 / 白板 / 反色层没了 → 入场 Joker 全黑、定格突然半身白。改成构造时订阅 `draw` 信号（`Draw += Paint`）。**以后 Mod 里别重写任何 `_Xxx` 虚方法，用信号。**
+- 预告信两面顶上红黑噪点 = 贴图面和厚度盒子深度冲突：SubViewport 相机 Near/Far 贴近卡片，盒子厚度往里收。
+- 牌放大约 30%（四页都 3 列，卡宽 210、格子 238×318）；牌组网格下移到标题牌下面（GridTop 250、GridBottom 990）；弃牌堆 GridTop 232、排序开关挪到网格上方。
+- 消耗堆：两条细白线（原版 SKILL 页 118–122）。逐帧看原版：黑色是一道弧形前沿扫过灰板，118–120 弯的，120 起绕右下一点（原版 (1434, 898)，120/121/122 的线都过它）顺时针转、越来越直，122 转到定格角度；**下面那条线就是这条前沿伸出灰板的那一截**。实现（`PileExhaust.Front` / `LoLine`）：一族连续的前沿（κ|p−Q|² < 2(p−Q)·n，着色器同一个式子），u≤8 是原来拟合的圆弧，之后 Q 收到转轴、切线角按原版 120/121/122 三次插值、曲率收到 0；线 = 前沿和灰板右边界折线的交点 + 切线，所以永远接在白色区域边上。上面那条 = 直线 L 上的白边（星纹条右边缘），从屏幕顶接到左下白色区域。右侧分区照原版定格改成「<」，定格时黑板底边 = 前沿最终那条直线、线下面留白板（盖在立绘上面）。白板边 Catmull-Rom、反色圆半径单调三次插值（之前一顿一顿）。定格时（用户 2026-11-24 圈出来的两处）：① 原版星纹条边上的白线到领口下面变成往下变宽的白色楔形（左边贴 L、宽到 33px 接上立绘白腿；立绘白腿直边在 L 右边约 33px，原版这条缝是亮的）→ `_legStrip` 挂在立绘精灵下面；② 线下面白色楔形的尖角 = 黑板底边直线和红板左边缘的交点 = 细白线起点（之前差 12px 留了一条红缝）。线颜色改成和白板同色。预览 `pile_exhaust_v17.mp4`。
+- 特写说明去掉「牌堆中 ×N」。预览：`docs/p5/preview/pile_draw_v12 / pile_exhaust_v14 / pile_discard_v14 / pile_deck_v12.mp4`（预览里本来就正常，修的是实机）。
+- 卡面 Mod 1.0.1（卡图柔化）：`docs/codex/codex_p5_cardart_build_1.0.1.md`。
+
+---
+
+## 2026-11-24 · 会话 E 收尾：牌堆三页入场 + 总攻击多条命（0.9.76，用户：可以了，等合并）
+
+- 分支 `claude/confirm-next-tasks-k5wu6t`（已推送、工作区干净、类型检查通过），已合入 `claude/p5-pile-ui`、`claude/p5-restore-fx`（这两个现在都是本分支的祖先）。
+- 细节、每一轮用户意见和做法：`docs/p5/HANDOFF_pile_3d_cut_allout.md`（末尾 1–8 条）。最终预览：`docs/p5/preview/pile_discard_v13.mp4`、`pile_deck_v11.mp4`、`pile_draw_v11.mp4`。
+  - **弃牌堆**：整段机位搬到立绘角度；0–0.36s 播到 183（手扫过脸），0.04s 带过 184/185 就切，不睁眼、不停顿。
+  - **牌组**：233–241 全对原版逐帧拟合（原版 240、241 还是 3D，左臂全藏住），241 后硬切立绘 + 枪口闪光（去掉了红边斜扫）。
+  - **抽牌堆**：52 后加「53」手臂抬起，白手掌从右边甩进来砸下（砸的时刻跟音效对齐没动）。
+  - **MenuJoker3D**：每个网格固定大包围盒（之前牌组的枪被视锥剔掉）；纯黑无贴图网格两面画（从下往上看领子不再透）。
+  - **总攻击**：`AllOutPatches.OnDeath` 和游戏 `IsCombatEnding` 同一判断，会复活的怪（实验体前两条命）不截剪影、不开播。云端没法实机验证，需要进游戏打一次实验体。
+- 注意：`tools/p5/menu3d/export_runtime.py` 现在重新生成的 mesh.bin 和仓库里的不一样（大小不同），没提交；以后重跑先查清楚。
+- **合并检查（2026-11-24）**：`codex/p5-status-list-touch`（Joker 状态列表，2 个提交）和本分支试合并**无冲突**（只加 `p5mod/src/StatusList.cs`）。
+  P3 的分支（`claude/admiring-knuth-lqj1x7`、`codex/p3-status-list-touch`）照旧不要整个合本分支，只拷蓝蝶那一个文件（见下一条）。
+
+---
+
+## 2026-11-24 · 会话 E 补充：P3 蓝蝶（用户认可，待合进 P3 mod）+ P5 卡面 Mod
+
+- **P3 君王之剑替代的蓝蝶**（用户：可以了）：`tools/p3/butterfly/SovereignButterfly.cs`，只依赖 Godot，**还没接进 P3 mod**，由 P3 那边的会话（`claude/admiring-knuth-lqj1x7`）合并：
+  整份搬进 `mod/src/Vfx`（命名空间已经是 `P3Makoto.Vfx`），在 `mod/src/Patches/ScenePatches.cs` 的 `SovereignBladeReskinPatch` 里 `BladeReskin.Hide(__instance)` 之后
+  `SovereignButterfly.Start(人物身前特效层, 人物身后特效层, () => (脚底, 身高))`，君王之剑节点释放（TreeExiting）时 `Stop()`。前景 / 背景两层按深度切换，蝴蝶会真的绕到人物身后。
+  预览 `docs/preview/p3_sovereign_butterfly_v3.mp4`（预览里用 Joker 站位），预览场景 `p3_butterfly`（`tools/p5/fxpreview/FxPreview.csproj` 额外编译了 tools/p3/butterfly）。
+- **P5CardArt 1.0.0**（独立卡面 Mod）：`p5cardart/`，92 张（静默猎手 91 + 小刀做成子弹），图来自审批台通过的第一 / 二轮；编译打包安装交给 Codex：`docs/codex/codex_p5_cardart_build_1.0.0.md`。
+- 牌堆界面：用户说不用这个会话管了（交还牌堆会话）。
+- **合并状态（2026-11-24 收尾）**：本分支 `claude/confirm-next-tasks-k5wu6t` 已推送、工作区干净、类型检查通过。
+  `codex/p5-0951-integration`、`claude/confident-hypatia-nropgi` 都是它的祖先（合回去是快进）；`claude/p5-pile-ui` 之后又多了 5 个提交，和本分支试合并**无冲突**（本会话改过弃牌堆，牌堆会话合并时以它那边为准再看一眼 `Vfx/PileDiscard.cs`）。
+  **P3 分支 `claude/admiring-knuth-lqj1x7` 不要整个合本分支**（会在 `mod/P3Makoto.json` 冲突，那是 P5 集成分支带过来的旧 P3 版本号，和这次无关）：P3 会话只拷 `tools/p3/butterfly/SovereignButterfly.cs` 一个文件。
+
+---
+
 ## 2026-11-23 · 会话 E 交接（总览，最新）—— 分支 `claude/confirm-next-tasks-k5wu6t`，等合并
 
 ### 分支状态

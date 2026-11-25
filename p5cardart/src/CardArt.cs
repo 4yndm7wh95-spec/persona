@@ -1,0 +1,126 @@
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Godot;
+using MegaCrit.Sts2.Core.Models;
+
+namespace P5CardArt;
+
+/// <summary>
+/// Standalone portrait replacements with cached textures and background deck prefetch.
+/// 1.0.2 (user: every illustration looks over-sharpened): cards draw the portrait at 250x190 (the vanilla
+/// card_atlas region; ancients 250x351), and the 1000x760 export was minified 4x by the GPU without mipmaps,
+/// aliasing the fine line work. &lt;card&gt;.jpg is now exported at exactly that size; &lt;card&gt;_big.jpg (2x)
+/// serves the 0.113 full-size inspection (BigPortrait) and loads only when that view opens.
+/// </summary>
+internal static class CardArt
+{
+	private const string Dir = "res://p5cardart/card_art/";
+	private static HashSet<string>? names;
+	private static readonly Dictionary<string, Texture2D> Textures = new(StringComparer.Ordinal);
+	private static readonly ConcurrentDictionary<string, Image> Decoded = new(StringComparer.Ordinal);
+	private static readonly ConcurrentDictionary<string, byte> Queued = new(StringComparer.Ordinal);
+	private static SceneTree? tree;
+	private static ulong nextDeckCheck;
+
+	private static bool Enabled => FileAccess.FileExists(Dir + "index.txt");
+
+	private static HashSet<string> Names
+	{
+		get
+		{
+			if (names != null) return names;
+			names = new HashSet<string>(StringComparer.Ordinal);
+			// index.txt is written by the export script; listing a directory inside a pck is not relied on.
+			if (FileAccess.FileExists(Dir + "index.txt"))
+				foreach (string line in FileAccess.GetFileAsString(Dir + "index.txt").Split('\n'))
+					if (line.Trim() is { Length: > 0 } id && FileAccess.FileExists(Dir + id + ".jpg")) names.Add(id);
+			GD.Print($"{ModEntry.Tag} card art: {names.Count} illustrations in pck");
+			return names;
+		}
+	}
+
+	/// <summary>The P5R illustration for this card, or null to keep the vanilla portrait.</summary>
+	internal static Texture2D? For(CardModel card, bool big = false)
+	{
+		if (!Enabled) return null;
+		string id = card.Id.Entry.ToLowerInvariant();
+		if (!Names.Contains(id)) return null;
+		// Older packs have no _big file: the inspection view then uses the normal one.
+		return big && FileAccess.FileExists(Dir + id + "_big.jpg") ? Get(id + "_big") : Get(id);
+	}
+
+	private static Texture2D? Get(string id)
+	{
+		if (Textures.TryGetValue(id, out Texture2D? tex)) return tex;
+		Image? image = Decoded.TryRemove(id, out Image? ready) ? ready : Decode(id);
+		if (image == null) return null;
+		tex = ImageTexture.CreateFromImage(image);
+		image.Dispose();
+		Textures[id] = tex;
+		return tex;
+	}
+
+	private static Image? Decode(string id)
+	{
+		string path = Dir + id + ".jpg";
+		if (!FileAccess.FileExists(path)) return null;
+		Image image = new();
+		if (image.LoadJpgFromBuffer(FileAccess.GetFileAsBytes(path)) == Error.Ok && !image.IsEmpty()) return image;
+		image.Dispose();
+		GD.PrintErr($"{ModEntry.Tag} card art {id}.jpg could not be decoded");
+		return null;
+	}
+
+	internal static void Watch()
+	{
+		if (tree != null || Engine.GetMainLoop() is not SceneTree t) return;
+		if (Enabled) _ = Names.Count;
+		tree = t;
+		t.ProcessFrame += () => TickSafely();
+	}
+
+	private static bool prefetchFailed;
+
+	private static void TickSafely()
+	{
+		if (prefetchFailed) return;
+		try { Tick(); }
+		catch (Exception e)
+		{
+			prefetchFailed = true;
+			GD.PrintErr($"{ModEntry.Tag} prefetch disabled; portraits still load on demand: {e.Message}");
+		}
+	}
+
+	private static void Tick()
+	{
+		// One upload per frame (~1 ms) for whatever the worker has finished.
+		foreach (KeyValuePair<string, Image> pair in Decoded)
+		{
+			if (Textures.ContainsKey(pair.Key)) { if (Decoded.TryRemove(pair.Key, out Image? dup)) dup.Dispose(); }
+			else Get(pair.Key);
+			break;
+		}
+		ulong now = Time.GetTicksMsec();
+		if (now < nextDeckCheck) return;
+		nextDeckCheck = now + 2000;
+		if (!Enabled) return;
+		var players = MegaCrit.Sts2.Core.Runs.RunManager.Instance?.DebugOnlyGetState()?.Players;
+		if (players == null || MegaCrit.Sts2.Core.Context.LocalContext.GetMe(players) is not { } me) return;
+		List<string>? todo = null;
+		foreach (CardModel card in me.Deck.Cards)
+		{
+			string id = card.Id.Entry.ToLowerInvariant();
+			if (!Names.Contains(id) || Textures.ContainsKey(id) || !Queued.TryAdd(id, 0)) continue;
+			(todo ??= new()).Add(id);
+		}
+		if (todo == null) return;
+		Task.Run(() =>
+		{
+			foreach (string id in todo)
+				if (Decode(id) is Image image && !Decoded.TryAdd(id, image)) image.Dispose();
+		});
+	}
+}

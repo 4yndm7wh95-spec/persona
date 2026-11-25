@@ -35,9 +35,11 @@ void fragment() {
 
 	public CrushHandFrame(Node2D owner, Control rear, Control front, Vector2 screen)
 	{
-		// Fixed quality, not a frame-rate throttle: the volumetric smoke updates
-		// every rendered frame. Only this effect is capped at 720p.
-		float k = Mathf.Min(1f, 720f / screen.Y);
+		// The smoke still advances every frame. Only the hand cache has a lower
+		// pixel budget on handheld ports and Godot's mobile renderer.
+		bool mobile = OS.HasFeature("mobile") || RenderingServer.GetCurrentRenderingMethod() == "mobile";
+		float heightLimit = mobile ? 480f : 720f;
+		float k = Mathf.Min(1f, heightLimit / screen.Y);
 		Vector2I size = new(Mathf.Max(1, Mathf.RoundToInt(screen.X * k)), Mathf.Max(1, Mathf.RoundToInt(screen.Y * k)));
 		_view = new SubViewport { Name = "P5HandCache", Size = size, TransparentBg = true, Disable3D = true,
 			UseHdr2D = true, RenderTargetUpdateMode = SubViewport.UpdateMode.Disabled };

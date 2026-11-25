@@ -1,0 +1,134 @@
+{
+  "batch": 1,
+  "status": "awaiting_user_review",
+  "skipped": [],
+  "cards": [
+    {
+      "card": "abrasive",
+      "zh": "磨蚀",
+      "idea": "Fox 握着结满 Goemon 冰刺的手臂",
+      "image1": "research/silent_assets/card_portraits/abrasive.png",
+      "refs": [
+        "art/p5/cards/refs/fox/",
+        "art/p5/cards/refs/goemon/"
+      ],
+      "batch": 1,
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL Slay the Spire 2 card illustration (a Silent card) and the strict EDIT TARGET. Reinterpret the replaced subject as a specific Persona 5 Royal moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, effects and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Wherever the Silent (the green-hooded huntress) appears, remove her completely with no remnants (no green hood, skull-like face, green cloak or pouches left) and refill the cleared area with the original background shapes, unless this prompt replaces her with someone. If the original composition cannot fit the idea literally, keep the composition and adapt the idea to it. Every named character MUST match the attached reference images exactly: face shape, eyes, hairstyle and hair color, mask, outfit, weapon; do not invent features or change their look; if a detail is unclear, keep it simple rather than guess. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness; no blur, no soft glow, no photoreal rendering. A SHADOW (P5R enemy, no reference image) is drawn as: a hunched black sludge-like body with drippy edges and a smooth white oval mask with two narrow slanted eye slits; keep it simple and consistent. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, the same size as Image1, no text, letters, numbers, frame, UI or watermark. Replace the hooded Silent with FOX in the same place and pose (his white fox mask facing the same way). The spiky thorn-covered arm she holds becomes FOX's arm encased in jagged pale-blue ice spikes (GOEMON's ice), same shape, size and angle; the glowing yellow-green of the thorns becomes icy cyan-white. Keep the teal background and the braid shapes as dark rope. Character designs (follow the attached references): [FOX] = FOX (Yusuke Kitagawa): dark blue straight hair, white fox mask with red markings, black bodysuit with blue sash and fox tail; a katana. [GOEMON] = GOEMON (Fox's Persona): a kabuki-faced figure in a giant ornate robe with a long pipe, ice element.",
+      "inputs": [
+        "research/silent_assets/card_portraits/abrasive.png",
+        "art/p5/cards/refs/fox/civilian.png",
+        "art/p5/cards/refs/fox/phantom.png",
+        "art/p5/cards/refs/goemon/official.png"
+      ],
+      "generated": "exec-d4cb4a88-f92e-4db8-b448-8d9b349bb517.png",
+      "output": "art/p5/cards/round1/batch_01/abrasive.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "tool": "built-in image_gen"
+    },
+    {
+      "card": "accelerant",
+      "zh": "触媒",
+      "idea": "武见的滴管往紫药瓶里滴一滴",
+      "image1": "research/silent_assets/card_portraits/accelerant.png",
+      "refs": [
+        "art/p5/cards/refs/takemi/"
+      ],
+      "batch": 1,
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL Slay the Spire 2 card illustration (a Silent card) and the strict EDIT TARGET. Reinterpret the replaced subject as a specific Persona 5 Royal moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, effects and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Wherever the Silent (the green-hooded huntress) appears, remove her completely with no remnants (no green hood, skull-like face, green cloak or pouches left) and refill the cleared area with the original background shapes, unless this prompt replaces her with someone. If the original composition cannot fit the idea literally, keep the composition and adapt the idea to it. Every named character MUST match the attached reference images exactly: face shape, eyes, hairstyle and hair color, mask, outfit, weapon; do not invent features or change their look; if a detail is unclear, keep it simple rather than guess. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness; no blur, no soft glow, no photoreal rendering. A SHADOW (P5R enemy, no reference image) is drawn as: a hunched black sludge-like body with drippy edges and a smooth white oval mask with two narrow slanted eye slits; keep it simple and consistent. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, the same size as Image1, no text, letters, numbers, frame, UI or watermark. Replace the green figure and its hands with TAKEMI's hands and white lab-coat sleeves (black nail polish) holding the same dropper over the same purple flask; the drop and the flask stay. The green-hooded body in the background becomes the blurred white coat and her dark bob, face cropped out of frame above. Character designs (follow the attached references): [TAKEMI] = TAE TAKEMI: a punk doctor with a short dark blue-black bob, black choker, black dress under a white lab coat.",
+      "inputs": [
+        "research/silent_assets/card_portraits/accelerant.png",
+        "art/p5/cards/refs/takemi/official.png"
+      ],
+      "generated": "exec-a5783286-f5b0-4d86-94f8-0e9d4e7ea6d9.png",
+      "output": "art/p5/cards/round1/batch_01/accelerant.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "tool": "built-in image_gen",
+      "revisions": [
+        {
+          "reason": "User requested head direction and head/body proportions correction",
+          "prompt": "Edit ONLY head and neck proportions of this exact card illustration of Tae Takemi. The current head is too small for shoulders and torso, and exposed neck too long. Enlarge her head and face about 25 percent relative to torso, move chin downward closer to the coat collar, shorten visible neck about 40 percent. Let the enlarged top of the bob remain cropped by upper edge. Natural adult anime proportions: believable jaw-to-neck connection, black studded choker close beneath jaw, chin close to collar, face looking down toward dropper, short blue-black bob. Preserve exact identity and restrained expression, preserve all foreground hand anatomy and size, both hand positions, dropper, yellow drop, purple bottle, body, shoulders, clothes, green background and hard angular cel shading. Do not enlarge hands or zoom entire image. Enlarge only head, redraw neck locally, preserve rest. Opaque full-bleed landscape.",
+          "edit_source": "exec-a096a7fd-91f0-4ef9-b0b8-cc49de850e6c.png",
+          "generated": "exec-a5783286-f5b0-4d86-94f8-0e9d4e7ea6d9.png",
+          "status": "awaiting_user_review"
+        }
+      ]
+    },
+    {
+      "card": "accuracy",
+      "zh": "精准",
+      "idea": "小刀正中靶心，靶上贴着预告信",
+      "image1": "research/silent_assets/card_portraits/accuracy.png",
+      "refs": [],
+      "batch": 1,
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL Slay the Spire 2 card illustration (a Silent card) and the strict EDIT TARGET. Reinterpret the replaced subject as a specific Persona 5 Royal moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, effects and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Wherever the Silent (the green-hooded huntress) appears, remove her completely with no remnants (no green hood, skull-like face, green cloak or pouches left) and refill the cleared area with the original background shapes, unless this prompt replaces her with someone. If the original composition cannot fit the idea literally, keep the composition and adapt the idea to it. Every named character MUST match the attached reference images exactly: face shape, eyes, hairstyle and hair color, mask, outfit, weapon; do not invent features or change their look; if a detail is unclear, keep it simple rather than guess. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness; no blur, no soft glow, no photoreal rendering. A SHADOW (P5R enemy, no reference image) is drawn as: a hunched black sludge-like body with drippy edges and a smooth white oval mask with two narrow slanted eye slits; keep it simple and consistent. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, the same size as Image1, no text, letters, numbers, frame, UI or watermark. Keep the knives, target and red background. The knives become JOKER's combat knives (dark grip, short silver blade); the bullseye target gets a red-and-black calling card pinned at its center where the knife hits. No characters.",
+      "inputs": [
+        "research/silent_assets/card_portraits/accuracy.png"
+      ],
+      "generated": "exec-b620a94c-f80a-4b78-ad09-75d849d8257e.png",
+      "output": "art/p5/cards/round1/batch_01/accuracy.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "tool": "built-in image_gen"
+    },
+    {
+      "card": "acrobatics",
+      "zh": "杂技",
+      "idea": "Panther 甩鞭荡过半空",
+      "image1": "research/silent_assets/card_portraits/acrobatics.png",
+      "refs": [
+        "art/p5/cards/refs/panther/"
+      ],
+      "batch": 1,
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL Slay the Spire 2 card illustration (a Silent card) and the strict EDIT TARGET. Reinterpret the replaced subject as a specific Persona 5 Royal moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, effects and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Wherever the Silent (the green-hooded huntress) appears, remove her completely with no remnants (no green hood, skull-like face, green cloak or pouches left) and refill the cleared area with the original background shapes, unless this prompt replaces her with someone. If the original composition cannot fit the idea literally, keep the composition and adapt the idea to it. Every named character MUST match the attached reference images exactly: face shape, eyes, hairstyle and hair color, mask, outfit, weapon; do not invent features or change their look; if a detail is unclear, keep it simple rather than guess. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness; no blur, no soft glow, no photoreal rendering. A SHADOW (P5R enemy, no reference image) is drawn as: a hunched black sludge-like body with drippy edges and a smooth white oval mask with two narrow slanted eye slits; keep it simple and consistent. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, the same size as Image1, no text, letters, numbers, frame, UI or watermark. Replace the Silent with PANTHER in the same mid-air acrobatic pose and place; the blades in her hands become her whip unfurling in a long arc; the magenta streaks stay. Character designs (follow the attached references): [PANTHER] = PANTHER (Ann Takamaki): blonde twin tails, glossy red full-body catsuit with cat ears and a tail, pink-red cat mask; a whip.",
+      "inputs": [
+        "research/silent_assets/card_portraits/acrobatics.png",
+        "art/p5/cards/refs/panther/civilian.png",
+        "art/p5/cards/refs/panther/phantom.png"
+      ],
+      "generated": "exec-d0968de9-cc6d-47fb-bcce-f3088b78297e.png",
+      "output": "art/p5/cards/round1/batch_01/acrobatics.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "tool": "built-in image_gen"
+    },
+    {
+      "card": "adrenaline",
+      "zh": "肾上腺素",
+      "idea": "心电波形变成「1 MORE」的红闪",
+      "image1": "research/silent_assets/card_portraits/adrenaline.png",
+      "refs": [
+        "art/p5/cards/refs/joker/"
+      ],
+      "batch": 1,
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL Slay the Spire 2 card illustration (a Silent card) and the strict EDIT TARGET. Reinterpret the replaced subject as a specific Persona 5 Royal moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, effects and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Wherever the Silent (the green-hooded huntress) appears, remove her completely with no remnants (no green hood, skull-like face, green cloak or pouches left) and refill the cleared area with the original background shapes, unless this prompt replaces her with someone. If the original composition cannot fit the idea literally, keep the composition and adapt the idea to it. Every named character MUST match the attached reference images exactly: face shape, eyes, hairstyle and hair color, mask, outfit, weapon; do not invent features or change their look; if a detail is unclear, keep it simple rather than guess. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness; no blur, no soft glow, no photoreal rendering. A SHADOW (P5R enemy, no reference image) is drawn as: a hunched black sludge-like body with drippy edges and a smooth white oval mask with two narrow slanted eye slits; keep it simple and consistent. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, the same size as Image1, no text, letters, numbers, frame, UI or watermark. Keep the jagged waveform and its shape, but recolor the line to P5 red and black with a white core, and put a small close-up of JOKER's eyes behind his white mask glinting in the dark gap below the peaks. Background becomes deep red-black instead of blue-purple. No text. Character designs (follow the attached references): [JOKER] = JOKER (Ren Amamiya, P5R protagonist): messy black curly hair, white domino mask with black edging, black high-collared long tailcoat over a grey vest, bright red gloves, dark trousers, brown boots; a short combat knife and a black pistol.",
+      "inputs": [
+        "research/silent_assets/card_portraits/adrenaline.png",
+        "art/p5/cards/refs/joker/civilian.png",
+        "art/p5/cards/refs/joker/front_unmasked.png",
+        "art/p5/cards/refs/joker/phantom.png"
+      ],
+      "generated": "exec-675a0143-bb9e-4599-ac1f-b7e22d6a0a7b.png",
+      "output": "art/p5/cards/round1/batch_01/adrenaline.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "tool": "built-in image_gen"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "batch": 19,
+  "status": "generated_unreviewed",
+  "review_gate": "User requested all remaining cards generated and pushed without batch review stops",
+  "skipped": [],
+  "cards": [
+    {
+      "card": "wraith_form",
+      "zh": "幽魂形态",
+      "idea": "Arsène 的幽影在绿光里展开",
+      "image1": "research/silent_assets/card_portraits/wraith_form.png",
+      "refs": [
+        "art/p5/cards/refs/arsene/"
+      ],
+      "batch": 19,
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL Slay the Spire 2 card illustration (a Silent card) and the strict EDIT TARGET. Reinterpret the replaced subject as a specific Persona 5 Royal moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, effects and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Wherever the Silent (the green-hooded huntress) appears, remove her completely with no remnants (no green hood, skull-like face, green cloak or pouches left) and refill the cleared area with the original background shapes, unless this prompt replaces her with someone. If the original composition cannot fit the idea literally, keep the composition and adapt the idea to it. Every named character MUST match the attached reference images exactly: face shape, eyes, hairstyle and hair color, mask, outfit, weapon; do not invent features or change their look; if a detail is unclear, keep it simple rather than guess. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness; no blur, no soft glow, no photoreal rendering. A SHADOW (P5R enemy, no reference image) is drawn as: a hunched black sludge-like body with drippy edges and a smooth white oval mask with two narrow slanted eye slits; keep it simple and consistent. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, the same size as Image1, no text, letters, numbers, frame, UI or watermark. Replace the ghostly figure with ARSENE in the same place, wings spread, translucent and wreathed in the green glow. Keep the green background. Character designs (follow the attached references): [ARSENE] = ARSENE (Joker's Persona): a tall dark demon gentleman with black wings, crimson-and-black tailored suit, a tall top hat, chains, glowing red-flame eyes.",
+      "inputs": [
+        "research/silent_assets/card_portraits/wraith_form.png",
+        "art/p5/cards/refs/arsene/official.png"
+      ],
+      "generation_inputs": [
+        "research/silent_assets/card_portraits/wraith_form.png",
+        "art/p5/cards/refs/arsene/official.png"
+      ],
+      "generated": "exec-d29e7582-1392-4559-8c1a-7098dbc8ac60.png",
+      "output": "art/p5/cards/round1/batch_19/wraith_form.png",
+      "size": [
+        606,
+        852
+      ],
+      "status": "generated_unreviewed",
+      "tool": "built-in image_gen"
+    }
+  ]
+}
