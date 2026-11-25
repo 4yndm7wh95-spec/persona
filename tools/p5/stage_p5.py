@@ -146,8 +146,6 @@ V4_TEX = [("slash", n, 0.5) for n in ("slash_thin", "slash_heavy", "slash_cross"
 # P5R sound effects (research/p5r/audio): published name -> file (names in p5mod/src/Vfx/Sfx.cs)
 P5SFX = ROOT / "research/p5r/audio/sfx"
 SFX = {
-    **{name: ROOT / f"art/p5/merchant/sfx/{name}.ogg" for name in
-       ("shop_buy", "shop_buy_04", "shop_buy_05", "shop_exit")},
     "battle_onemore": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0012.ogg",      # weakness / 1 MORE eye cut-in
     "cutin": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0178.ogg",
     "persona_flame": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0044.ogg",
