@@ -65,10 +65,11 @@ public sealed class PileExhaust : IPileDecor
 	private readonly float _k, _rx;
 	private readonly ShaderMaterial _bg, _por, _coverMat, _invertMat;
 	private readonly AaPoly _slab, _wedge, _plate, _cover, _invert;
-	/// <summary>黑板底边那条直线（屏幕坐标）：线上一点、朝下的法线；反色圆只在线上面起作用，线下面一直是白板。</summary>
-	private readonly Vector2 _lowA, _lowN;
 	/// <summary>右侧分区的折线（我们排版的 1080p 坐标，未加 _rx）：顶边 _top0 → 拐点 _vtx → 底边 _redB；黑板底边直线 _lp → _lq。</summary>
 	private readonly Vector2 _top0, _vtx, _redB, _lp, _lq;
+	/// <summary>前沿 120–122 转动的轴（原版 (1434, 898)，120 / 121 / 122 三帧的线都过这一点；也在黑板底边直线上）。</summary>
+	private static readonly Vector2 Pivot = new(1434f, 898f);
+	private readonly Vector2 _p0 = Map(Pivot);
 	private readonly Vector2[] _slabPts, _platePts;
 	private readonly Node2D _band, _portrait;
 	private readonly AaPoly _bandEdge;
@@ -92,7 +93,7 @@ public sealed class PileExhaust : IPileDecor
 	private static readonly Vector2 LoA = new(1561f, 858f), LoB = new(1919f, 745f);
 	/// <summary>上面那条：L（x = 834 − 0.625·(y − 500)，原版坐标）往右的偏移，u = 7…9（原版 119 在 L 右边约 34px、120 起贴在 L 上，118 还没有）；
 	/// 从屏幕顶一直画到底（用户 2026-11-24：要接到左下那块白色区域上，它的左边就是 L）。宽约 7px（原版量的亮边 7–8px），下面那条细一些（4–5px）。</summary>
-	private static readonly float[] HiOffset = { 34f, 1f, 0f };
+	private static readonly float[] HiOffset = { 0f, 0f, 0f };   // 我们的星纹条右边缘一直在 L 上（原版 119 那一帧黑板边还在 L 右边 34px，这里星纹条不动，线贴着它）
 	private static float Lx(float y) => 834f - 0.625f * (y - 500f);
 	private const float LoW = 4.5f, HiW = 7f;
 	/// <summary>原版定格的右侧分区（原版坐标）：黑板右上边 (1539,0)→(1920,304)、红板左边缘 (1920,435)→(1391,1080)，两条交成「&lt;」。</summary>
@@ -132,11 +133,7 @@ public sealed class PileExhaust : IPileDecor
 		root.AddChild(_slab);
 		// 线下面那块灰板（原版入场白板剩下的部分，同色；切立绘以后接着留着）
 		_wedge = new AaPoly { Polygon = new[] { R(lq.X, 1080f), R(lp.X, lp.Y), R(redB.X, 1080f) }, Color = Paper, Visible = false };
-		_lowA = R(lp.X, lp.Y);
 		_top0 = top0; _vtx = vtx; _redB = redB; _lp = lp; _lq = lq;
-		Vector2 ld = (R(lq.X, 1080f) - _lowA).Normalized();
-		_lowN = new Vector2(-ld.Y, ld.X);
-		if (_lowN.Y < 0f) _lowN = -_lowN;                          // 法线朝下（线下面 = 正）
 		root.AddChild(_wedge);
 
 		// 3. 立绘 / 3D Joker 后面的黑白星纹斜带：裁在一个斜四边形里（clip_children）；入场时就在 Joker 身后（原版 112–117 头后面的星纹）
@@ -249,17 +246,18 @@ public sealed class PileExhaust : IPileDecor
 	internal static Shader InvertShader => _inv ??= new Shader { Code = @"
 shader_type canvas_item;
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
-uniform vec2 c = vec2(0.0);
-uniform float r = 0.0;
+uniform vec2 q = vec2(0.0);
+uniform vec2 nn = vec2(0.0);
+uniform float kap = 0.0;
 uniform float sum = 0.98;
 uniform float paper = 0.94;
-uniform vec2 la = vec2(0.0);
-uniform vec2 ln = vec2(0.0);
 varying vec2 lp;
 void vertex() { lp = VERTEX; }
 void fragment() {
-	float ca = 1.0 - smoothstep(r - 1.0, r + 1.0, distance(lp, c));
-	ca *= 1.0 - smoothstep(-1.0, 1.0, dot(lp - la, ln));   // 线下面不反色（ln = 0 时不起作用）
+	// 黑区 = 前沿圆内：κ|d|² < 2 d·n（d = p − Q，Q 在前沿上、n 指向黑区；κ = 0 时是半平面），边上按到前沿的距离抗锯齿
+	vec2 d = lp - q;
+	float f = kap * dot(d, d) - 2.0 * dot(d, nn);
+	float ca = smoothstep(-1.0, 1.0, -f / max(length(2.0 * kap * d - 2.0 * nn), 1e-4));
 	if (ca <= 0.0) discard;
 	vec3 s = texture(screen_tex, SCREEN_UV).rgb;
 	float a = COLOR.a;
@@ -270,15 +268,15 @@ void fragment() {
 	/// <summary>白板遮罩：盖在 3D Joker 上面的白板，圆内（黑色反色区）挖空，让下面的 Joker 被反色成白腿。</summary>
 	private static Shader CoverShader => _cov ??= new Shader { Code = @"
 shader_type canvas_item;
-uniform vec2 c = vec2(0.0);
-uniform float r = 0.0;
-uniform vec2 la = vec2(0.0);
-uniform vec2 ln = vec2(0.0);
+uniform vec2 q = vec2(0.0);
+uniform vec2 nn = vec2(0.0);
+uniform float kap = 0.0;
 varying vec2 lp;
 void vertex() { lp = VERTEX; }
 void fragment() {
-	float a = smoothstep(r - 1.0, r + 1.0, distance(lp, c));
-	a = max(a, smoothstep(-1.0, 1.0, dot(lp - la, ln)));     // 线下面白板不挖空
+	vec2 d = lp - q;
+	float f = kap * dot(d, d) - 2.0 * dot(d, nn);
+	float a = 1.0 - smoothstep(-1.0, 1.0, -f / max(length(2.0 * kap * d - 2.0 * nn), 1e-4));
 	if (a <= 0.0) discard;
 	COLOR.a *= a;
 }
@@ -319,24 +317,7 @@ void fragment() {
 	/// 黑色反色区半径（原版屏幕坐标）：117 之前 0，之后过原版逐帧的值。单调三次插值（Fritsch–Carlson）：
 	/// 之前逐段直线，速度在每个原版帧突变（117→118 一大跳、119–120 很慢、121 又快），看着一顿一顿的；现在速度连续、也不会往回缩。
 	/// </summary>
-	private static float Radius(float t)
-	{
-		float u = U(t) - 5f;
-		if (u <= 0f) return 0f;
-		int n = RRadius.Length;
-		if (u >= n - 1) return RRadius[^1];
-		int i = (int)u;
-		float s = u - i;
-		float M(int j)
-		{
-			if (j <= 0) return RRadius[1] - RRadius[0];
-			if (j >= n - 1) return RRadius[n - 1] - RRadius[n - 2];
-			float d0 = RRadius[j] - RRadius[j - 1], d1 = RRadius[j + 1] - RRadius[j];
-			return d0 * d1 <= 0f ? 0f : 2f / (1f / d0 + 1f / d1);   // 调和平均：单调、不过冲
-		}
-		float h00 = 2 * s * s * s - 3 * s * s + 1, h10 = s * s * s - 2 * s * s + s, h01 = -2 * s * s * s + 3 * s * s, h11 = s * s * s - s * s;
-		return h00 * RRadius[i] + h10 * M(i) + h01 * RRadius[i + 1] + h11 * M(i + 1);
-	}
+	private static float Radius(float t) => RadiusAt(U(t));
 
 	/// <summary>凸多边形按半平面裁剪（Sutherland–Hodgman）：保留直线 a→b 右侧（屏幕 x 更大的一侧）。</summary>
 	private static Vector2[] ClipRight(Vector2[] poly, Vector2 a, Vector2 b)
@@ -384,18 +365,14 @@ void fragment() {
 			bool show = poly.Length >= 3;
 			_plate.Visible = _cover.Visible = show;
 			if (show) _plate.Polygon = _cover.Polygon = _invert.Polygon = poly;
-			float r = Radius(t);
-			_invert.Visible = show && r > 0f;
-			Vector2 c = Map(RCenter) * k;
-			float rr = r * MapK * k;
-			_coverMat.SetShaderParameter("la", _lowA);
-			_coverMat.SetShaderParameter("ln", _lowN);
-			_invertMat.SetShaderParameter("la", _lowA);
-			_invertMat.SetShaderParameter("ln", _lowN);
-			_coverMat.SetShaderParameter("c", c);
-			_coverMat.SetShaderParameter("r", rr);
-			_invertMat.SetShaderParameter("c", c);
-			_invertMat.SetShaderParameter("r", rr);
+			bool front = Front(t, out Vector2 fq, out Vector2 fn, out float fk);
+			_invert.Visible = show && front;
+			foreach (ShaderMaterial m in new[] { _coverMat, _invertMat })
+			{
+				m.SetShaderParameter("q", front ? fq * k : new Vector2(-1e5f, -1e5f));
+				m.SetShaderParameter("nn", front ? fn : new Vector2(-1f, 0f));
+				m.SetShaderParameter("kap", front ? fk / k : 0f);
+			}
 			if (_m3d != null)
 			{
 				// 原版 112–122 的 3D Joker：从第 0 帧就开始连续播（u = 原版第几帧，小数在两帧之间插值）、HandAt 正好放到最后一帧；
@@ -492,53 +469,106 @@ void fragment() {
 	}
 
 	/// <summary>
-	/// 下面那条线的起点和朝外的方向；还没有黑区时返回 false。
-	/// A：弧扫过顶边时，起点 = 弧和顶边的交点，方向 = 弧的切线（线是白板弧边的延长）；
-	/// B：弧快到拐点时（离拐点 60px 起，半径再长 LoBlend），起点沿红板边滑到黑板底边那一点、方向转到底边直线的方向（原版 120→121 是两帧之间直接跳，
-	///    用户要丝滑，这里摊开三四帧）；C：之后就是黑板底边直线的延长（原版定格）。
+	/// 黑区前沿（我们排版的 1080p 坐标）：前沿上一点 Q、指向黑区的法线 n、曲率 κ（黑区 = κ|p − Q|² &lt; 2 (p − Q)·n，κ = 0 是半平面）。
+	/// 用户 2026-11-24 第三轮「重新去仔细看原版这两根线是怎么出来的」：原版 117–122 逐帧看——黑色是一道弧形前沿扫过灰板，
+	/// 118–120 是弯的；120 起前沿绕右下一点（原版 (1434, 898)：120、121、122 三帧的线都过这一点）顺时针转、同时越来越直，121 已经是直的，122 转到定格的角度。
+	/// 下面那条细白线就是这条前沿伸出灰板的那一截。所以这里用一族连续变化的前沿：u ≤ 8 就是原来拟合的圆弧（圆心 RCenter、半径 Radius），
+	/// 之后 Q 收到转轴上、切线方向按原版 120 / 121 / 122 转、曲率在 121 前收到 0；线（LoLine）取这条前沿和灰板右边界的交点和切线，永远接在白色区域边上。
+	/// </summary>
+	private bool Front(float t, out Vector2 q, out Vector2 n, out float kap)
+	{
+		q = n = Vector2.Zero; kap = 0f;
+		float u = U(t);                                                 // 原版第 112 + u 帧
+		Vector2 c = Map(RCenter), dir = (_p0 - c).Normalized();
+		if (u <= 8f)
+		{
+			float r = Radius(t) * MapK;
+			if (r <= 0f) return false;
+			q = c + dir * r; n = -dir; kap = 1f / r;
+			return true;
+		}
+		float r8 = RadiusAt(8f) * MapK;
+		Vector2 q8 = c + dir * r8;
+		float s = Mathf.Clamp((u - 8f) / 2f, 0f, 1f);
+		q = q8.Lerp(_p0, Mathf.SmoothStep(0f, 1f, Mathf.Clamp((u - 8f) / 1f, 0f, 1f)));
+		// 切线角：120 = 圆在转轴处的切线，121 / 122 = 原版的线；120 处速度从 0 起（接得上前面的圆弧），之后单调
+		float a8 = new Vector2(-(-dir).Y, (-dir).X).Angle(), a9 = Mathf.Atan2(567f - 720f, 1919f - 1695f), a10 = (Map(LoB) - Map(LoA)).Angle();
+		float a = Hermite3(a8, a9, a10, u - 8f);
+		Vector2 tan = Vector2.FromAngle(a);
+		n = new Vector2(tan.Y, -tan.X);                                 // 切线朝右上时，n 朝左上（黑区那边）
+		kap = 1f / Radius(t) / MapK * (1f - Mathf.SmoothStep(0f, 1f, Mathf.Clamp((u - 8f) / 1.2f, 0f, 1f)));
+		return true;
+	}
+
+	/// <summary>三个关键值（u = 0 / 1 / 2）的三次 Hermite：两头速度 0（接得上前面的圆弧、收进定格），中间速度取两段斜率的调和平均（单调、不过冲）。</summary>
+	private static float Hermite3(float y0, float y1, float y2, float u)
+	{
+		u = Mathf.Clamp(u, 0f, 2f);
+		float d0 = y1 - y0, d1 = y2 - y1;
+		float m1 = d0 * d1 <= 0f ? 0f : 2f / (1f / d0 + 1f / d1);
+		int i = u < 1f ? 0 : 1;
+		float s = u - i, pa = i == 0 ? y0 : y1, pb = i == 0 ? y1 : y2, ma = i == 0 ? 0f : m1, mb = i == 0 ? m1 : 0f;
+		float h00 = 2 * s * s * s - 3 * s * s + 1, h10 = s * s * s - 2 * s * s + s, h01 = -2 * s * s * s + 3 * s * s, h11 = s * s * s - s * s;
+		return h00 * pa + h10 * ma + h01 * pb + h11 * mb;
+	}
+
+	/// <summary>原版第 112 + u 帧时的反色圆半径（原版坐标），u 在关键帧之间单调三次插值（同 Radius）。</summary>
+	private static float RadiusAt(float u)
+	{
+		float v = u - 5f;
+		if (v <= 0f) return 0f;
+		int n = RRadius.Length;
+		if (v >= n - 1) return RRadius[^1];
+		int i = (int)v;
+		float s = v - i;
+		float M(int j)
+		{
+			if (j <= 0) return RRadius[1] - RRadius[0];
+			if (j >= n - 1) return RRadius[n - 1] - RRadius[n - 2];
+			float d0 = RRadius[j] - RRadius[j - 1], d1 = RRadius[j + 1] - RRadius[j];
+			return d0 * d1 <= 0f ? 0f : 2f / (1f / d0 + 1f / d1);
+		}
+		float h00 = 2 * s * s * s - 3 * s * s + 1, h10 = s * s * s - 2 * s * s + s, h01 = -2 * s * s * s + 3 * s * s, h11 = s * s * s - s * s;
+		return h00 * RRadius[i] + h10 * M(i) + h01 * RRadius[i + 1] + h11 * M(i + 1);
+	}
+
+	/// <summary>
+	/// 下面那条线：前沿和灰板右边界折线（顶边 _top0 → _vtx → 红板左边缘 _redB）的交点——沿折线从上往下第一次「黑 → 白」的地方，
+	/// 方向 = 前沿在这一点的切线、朝外（伸进红底）。前沿还没碰到折线时返回 false。
 	/// </summary>
 	private bool LoLine(out Vector2 e, out Vector2 dir)
 	{
 		e = dir = Vector2.Zero;
-		float r = Radius(_tNow) * MapK;
-		if (r <= 0f) return false;
-		Vector2 c = Map(RCenter);
-		Vector2 fin = (_lp - _lq).Normalized();
-		float ra = (_vtx - c).Length() - 60f, rb = ra + LoBlend * MapK;
-		if (r >= rb) { e = _lp; dir = fin; return true; }
-		float rr = Mathf.Min(r, ra);
-		if (!ArcOnTop(c, rr, out Vector2 ea)) return false;
-		Vector2 rad = (ea - c).Normalized();
-		Vector2 tan = new(-rad.Y, rad.X);
-		if (tan.X < 0f) tan = -tan;                                   // 朝右（伸进红底）
-		if (r <= ra) { e = ea; dir = tan; return true; }
-		float w = (r - ra) / (rb - ra);
-		w = w * w * (3f - 2f * w);
-		// 起点先到拐点再顺着红板边下到底边那一点
-		Vector2 mid = _vtx;
-		e = w < 0.35f ? ea.Lerp(mid, w / 0.35f) : mid.Lerp(_lp, (w - 0.35f) / 0.65f);
-		dir = Vector2.FromAngle(Mathf.LerpAngle(tan.Angle(), fin.Angle(), w));
-		return true;
-	}
-
-	private const float LoBlend = 360f;
-
-	/// <summary>半径 r 的圆和顶边（_top0 → _vtx）的交点。</summary>
-	private bool ArcOnTop(Vector2 c, float r, out Vector2 q)
-	{
-		q = Vector2.Zero;
-		Vector2 a = _top0, d = _vtx - _top0, f = a - c;
-		float A = d.Dot(d), B = 2f * f.Dot(d), C = f.Dot(f) - r * r, disc = B * B - 4f * A * C;
-		if (disc < 0f) return false;
-		float sq = Mathf.Sqrt(disc);
-		bool ok = false;
-		foreach (float s in new[] { (-B - sq) / (2f * A), (-B + sq) / (2f * A) })
+		if (!Front(_tNow, out Vector2 q, out Vector2 n, out float kap)) return false;
+		float F(Vector2 p) { Vector2 d = p - q; return kap * d.Dot(d) - 2f * d.Dot(n); }
+		foreach (var (a, b) in new[] { (_top0, _vtx), (_vtx, _redB) })
 		{
-			if (s < 0f || s > 1f) continue;
-			Vector2 p = a + d * s;
-			if (!ok || p.Y > q.Y) { q = p; ok = true; }
+			Vector2 d = b - a, f = a - q;
+			float A = kap * d.Dot(d), B = 2f * kap * f.Dot(d) - 2f * d.Dot(n), C = kap * f.Dot(f) - 2f * f.Dot(n);
+			var roots = new List<float>();
+			if (Mathf.Abs(A) < 1e-9f) { if (Mathf.Abs(B) > 1e-9f) roots.Add(-C / B); }
+			else
+			{
+				float disc = B * B - 4f * A * C;
+				if (disc >= 0f) { float sq = Mathf.Sqrt(disc); roots.Add((-B - sq) / (2f * A)); roots.Add((-B + sq) / (2f * A)); }
+			}
+			roots.Sort();
+			foreach (float s in roots)
+			{
+				if (s < 0f || s > 1f) continue;
+				Vector2 p = a + d * s, step = d.Normalized() * 0.5f;
+				if (F(p - step) < 0f && F(p + step) > 0f)
+				{
+					e = p;
+					Vector2 g = 2f * kap * (p - q) - 2f * n;
+					dir = new Vector2(g.Y, -g.X).Normalized();
+					Vector2 outward = new Vector2(d.Y, -d.X).Normalized();   // 折线往外（红底那边）
+					if (dir.Dot(outward) < 0f) dir = -dir;
+					return true;
+				}
+			}
 		}
-		return ok;
+		return false;
 	}
 
 	private void Shake(float t)
