@@ -555,7 +555,6 @@ public sealed class CallingCard
 	private float W = 276f, H = 198f, Thick = 6f;
 	private Vector2 Box = new(400f, 320f);                          // 显示框（1080p 像素），转到斜着也装得下
 	private const float BaseSpin = 36f, KickDeg = 120f, KickOmega = 9f;
-	private static readonly Dictionary<string, Texture2D> Mipped = new();
 
 	private SubViewport _vp = null!;
 	private TextureRect _view = null!;
@@ -596,17 +595,12 @@ public sealed class CallingCard
 		return c;
 	}
 
-	private static Texture2D? Mip(string name)
-	{
-		if (Mipped.TryGetValue(name, out Texture2D? t)) return t;
-		if (Fx.Tex(name) is not Texture2D src || src.GetImage() is not Image img) return null;
-		img = (Image)img.Duplicate();
-		if (img.IsCompressed()) img.Decompress();
-		img.GenerateMipmaps();
-		t = ImageTexture.CreateFromImage(img);
-		Mipped[name] = t;
-		return t;
-	}
+	/// <summary>
+	/// 预告函两面的贴图。pile_ 贴图打包时已经带 mipmap（tools/pck/godot_tex.py），直接用。
+	/// 之前这里把贴图从显卡读回来（GetImage）再生成 mipmap：贴图本身带 mipmap 以后，游戏里读回来的数据错位，
+	/// 前面约 1/3 被几层缩小图占掉 → 预告函上半截一片乱码（用户 2026-11-25 实机截图）；顺便也省掉一次显存回读的卡顿。
+	/// </summary>
+	private static Texture2D? Mip(string name) => Fx.Tex(name);
 
 	private static Shader? _face, _soft;
 	private static ShaderMaterial Face(Texture2D tex)
