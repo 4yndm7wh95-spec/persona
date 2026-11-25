@@ -11,7 +11,7 @@ namespace P5Joker;
 /// 运行时做：红星纹底（右下）、中间类型列表（原版「更换谁的装备？」名单的位置：类型名 + 原版斜体大数字，第一个有牌的类型垫青 / 红斜条）、入场 / 退场。
 /// 牌格子在原版装备栏的位置，4 列，画在立绘上面（枪在格子下面露出来）。
 /// 入场（用户 2026-11-24：原版截图抠出来的区域不规则、乱 → 自己设计干净的色块碰撞，PileField 一个着色器画完）：
-/// 黑底从左边斜扫进来 → 一道星纹笔触从左下劈到右上 → 左边星纹块、右边灰板、红底先后撞进来，停在最终排版的位置（L1 / L2 / 折线）；
+/// 黑底从左边斜扫进来 → 一道红色刀光从左下劈到右上 → 左边星纹块、右边灰板、红底先后撞进来，停在最终排版的位置（L1 / L2 / 折线）；
 /// 原版 3D Joker（233–239 逐帧拟合的动作和平滑后的机位 + 收尾「240」枪甩下来、头身对上立绘，MenuJoker3DKeys.Deck）从头到尾连续播，
 /// 在黑区里反色（白）、在星纹 / 灰 / 红上是黑的；PortraitAt（0.42 秒）前后一道红边斜线从左往右把 3D 扫成 2D 立绘 + 最终排版（背景色块不变），
 /// 立绘的枪往前一送、立绘压一下、列表一行行弹出、标题牌 / COMMAND 压上、牌飞入。
@@ -158,7 +158,7 @@ public sealed class PileDeck : IPileDecor
 	}
 
 	/// <summary>
-	/// 入场第 t 秒的色块（1080p 排版坐标）。层从下往上：黑底（盖子）→ 星纹块 → 星纹笔触 → 灰板 → 红底；运动中的前沿带一道描边，到位时收掉。
+	/// 入场第 t 秒的色块（1080p 排版坐标）。层从下往上：黑底（盖子）→ 星纹块 → 红色刀光 → 灰板 → 红底；运动中的前沿带一道描边，到位时收掉。
 	/// </summary>
 	private void Field(float t, float wipe = -1f)
 	{
@@ -184,10 +184,15 @@ public sealed class PileDeck : IPileDecor
 			Vector2 off = N1 * (-900f * (1f - PileShapes.OutBack(s, 1.0f)));
 			_field.Add(PileShapes.LeftOf(new Vector2(X1(-60f), -60f) + off, new Vector2(X1(1140f), 1140f) + off, 140f * (1f - s)), PileField.Kind.Star, 16f * (1f - PileShapes.OutCubic(s)));
 		}
-		// 3. 星纹笔触：从左下劈到右上（扫过 Joker 时他被压成黑的），头先快后慢、尾巴追上去
+		// 3. 一道红色刀光从左下劈到右上，头先快后慢、尾巴追上去。
+		//    实心红 + 中间一条细白芯（用户 2026-11-25：之前是星纹笔触，像在黑底上开了个窗透出星星背景，割裂）
 		float h = PileShapes.OutCubic(PileShapes.Seg(t, 0.05f, 0.12f)), tail = PileShapes.InQuad(PileShapes.Seg(t, 0.11f, 0.16f));
 		if (h > tail)
-			_field.Add(PileShapes.Stroke(new Vector2(-260f, 1150f), new Vector2(760f, 470f), new Vector2(W + 200f, 40f), tail, h, 96f), PileField.Kind.Star);
+		{
+			Vector2 sa = new(-260f, 1150f), sc = new(760f, 470f), sb = new(W + 200f, 40f);
+			_field.Add(PileShapes.Stroke(sa, sc, sb, tail, h, 70f), PileField.Kind.Solid, 0f, new Color(0.86f, 0.06f, 0.1f));
+			_field.Add(PileShapes.Stroke(sa, sc, sb, tail, h, 9f), PileField.Kind.Solid, 0f, new Color(1f, 0.93f, 0.9f));
+		}
 		// 4. 灰板从右下撞进来，停在 L2
 		float g = PileShapes.Seg(t, 0.23f, 0.2f);
 		if (g > 0f)
