@@ -10,6 +10,7 @@ OUT=$(mkdir -p "${1:?output dir}" && cd "$1" && pwd)
 VER=$(python3 -c "import json;print(json.load(open('$ROOT/p5mod/P5Joker.json'))['version'])")
 W=$(mktemp -d); mkdir -p "$W/P5Joker" "$W/empty"
 bash "$HERE/check.sh" "$W/P5Joker/P5Joker.dll"
+python3 "$HERE/stage_private_rig.py" "$ROOT/p5mod/pck_stage"
 (cd "$ROOT/p5mod/pck_stage" && find . -type f | sed 's|^\./||' | sort) > "$W/files.txt"
 (cd "$W/empty" && "$GODOT" --headless --script "$HERE/pack.gd" -- "$ROOT/p5mod/pck_stage" "$W/P5Joker/P5Joker.pck" "$W/files.txt" 2>&1 | tail -1)
 # 手机用的半分辨率骨骼小包（tools/p5/stage_mobile.py）：手机上自动挂载，PC 不用；没有 pck_stage_mobile 就跳过

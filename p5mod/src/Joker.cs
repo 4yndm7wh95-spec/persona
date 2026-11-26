@@ -17,9 +17,9 @@ public static class Joker
 		if (player?.Character is not Silent) return false;
 		bool? managed = JokerCostume.ManagedSelection;
 		if (managed == false) return false;
-		if (Node(player) is { } creature && Fx.Active(creature)
-			&& creature.Visuals?.GetCurrentBody() is Node2D body && Fx.Active(body))
-			return JokerCostume.OwnsBody(body) ?? managed ?? JokerCostume.HasStandaloneSkeleton;
+		if (Node(player) is { } creature && Fx.Active(creature))
+			return creature.Visuals?.GetCurrentBody() is Node2D body && Fx.Active(body)
+				&& JokerCostume.OwnsBody(body) == true;
 		return managed ?? JokerCostume.HasStandaloneSkeleton;
 	}
 

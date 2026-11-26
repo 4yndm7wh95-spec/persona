@@ -13,7 +13,7 @@ namespace P5Joker;
 public static class ModEntry
 {
 	public const string Tag = "[P5Joker]";
-	public const string Version = "0.9.84";
+	public const string Version = "0.9.85";
 
 	public static void Init()
 	{
@@ -107,6 +107,8 @@ public static class ModEntry
 		// 只认真正启用的 SkinChanger（在设置里被关掉的也会出现在 Mods 列表里，state = Disabled）。
 		bool skinChanger = ModManager.Mods.Any(m => m.manifest?.id == "Gurio.SkinChanger"
 			&& m.state is not (ModLoadState.Disabled or ModLoadState.DisabledDuplicate or ModLoadState.Failed));
+		// Mobile still uses the shared atlas overridden by P5Joker.mobile.pck.
+		JokerRig.Standalone = !skinChanger && !Perf.Mobile;
 		if (source?.manifest != null && skinChanger)
 			EnableLocalPackDiscovery(root);
 		if (ResourceLoader.Exists("res://p5joker/fx/curse_ghost.png"))

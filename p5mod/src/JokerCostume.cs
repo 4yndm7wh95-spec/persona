@@ -34,6 +34,7 @@ internal static class JokerCostume
 	{
 		get
 		{
+			if (JokerRig.Registered) return true;
 			ulong frame = Engine.GetProcessFrames();
 			if (_checkedFrame != frame)
 			{
@@ -51,6 +52,8 @@ internal static class JokerCostume
 		if (!body.HasMethod("get_skeleton_data_res")) return false;
 		if (body.Get("skeleton_data_res").AsGodotObject() is not Resource skeleton) return null;
 		if (Signatures.TryGetValue(skeleton, out SkeletonSignature? known)) return known.IsJoker;
+		if (!body.HasMethod("get_animation_state") || body.Call("get_animation_state").AsGodotObject() == null)
+			return null;
 		if (!skeleton.HasMethod("find_animation") || !skeleton.HasMethod("get_animations")
 			|| skeleton.Call("get_animations").AsGodotArray().Count == 0)
 			return null;

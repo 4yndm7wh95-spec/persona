@@ -80,6 +80,13 @@ public static class WarmupGame
 [HarmonyPatch(typeof(PreloadManager), nameof(PreloadManager.LoadRunAssets))]
 public static class WarmupRunAssetsPatch
 {
+	[HarmonyPriority(Priority.Last)]
+	public static void Prefix(IEnumerable<CharacterModel> __0)
+	{
+		if (JokerRig.Standalone && __0.Any(character => character is Silent))
+			ModEntry.Safe("Silent Spine resources", JokerRig.Register);
+	}
+
 	public static void Postfix(IEnumerable<CharacterModel> __0, Task __result)
 	{
 		try
@@ -100,6 +107,13 @@ public static class WarmupLoadingPatch
 		.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
 		.Where(method => method.Name is "LoadAssetSets" or "LoadCommonAndMainMenuAssets" or "LoadRoomAssets")
 		.Where(method => typeof(Task).IsAssignableFrom(method.ReturnType));
+
+	[HarmonyPriority(Priority.Last)]
+	public static void Prefix(MethodBase __originalMethod)
+	{
+		if (__originalMethod.Name == "LoadRoomAssets" && JokerRig.Registered)
+			ModEntry.Safe("Silent Spine resources", JokerRig.Register);
+	}
 
 	public static void Postfix(Task __result) => Warmup.WaitFor(__result);
 }
