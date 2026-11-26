@@ -653,11 +653,17 @@ public static class Aim
 		}
 		Node clock = new() { Name = "P5GripTremble" };
 		layer.AddChild(clock);
-		Vector2 home = body.Position;
+		Vector2 home = BodyRest.Hold(body);
+		bool held = true;
+		clock.TreeExiting += () =>
+		{
+			if (held && GodotObject.IsInstanceValid(body)) BodyRest.Release(body);
+			held = false;
+		};
 		float end = crushAt + 0.16f;
 		Fx.Animate(clock, 0, end, t =>
 		{
-			if (!GodotObject.IsInstanceValid(body))
+			if (!GodotObject.IsInstanceValid(body) || !held)
 			{
 				return;
 			}
@@ -674,7 +680,12 @@ public static class Aim
 				float u = (s - crushAt) / 0.16f;
 				off = new Vector2(0f, 7f * Mathf.Sin(Mathf.Min(u, 1f) * Mathf.Pi) * (1f - u * 0.5f));
 			}
-			body.Position = t >= 1f ? home : home + off;
+			body.Position = home + off;
+			if (t >= 1f)
+			{
+				held = false;
+				BodyRest.Release(body);
+			}
 		});
 		Fx.FreeAfter(clock, end + 0.2);
 	}

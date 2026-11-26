@@ -275,19 +275,15 @@ void fragment() {
 	private static void KnockBack(Node2D body, Vector2 offset, Node lifetime)
 	{
 		if (!GodotObject.IsInstanceValid(body)) return;
-		Vector2 home = body.Position;
+		Tween tw = BodyRest.Knock(body, out Vector2 home);
 		body.Position = home + offset * 0.55f;
-		Tween tw = body.CreateTween();
 		tw.TweenProperty(body, "position", home + offset, 0.06).SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
 		tw.TweenInterval(0.07);
 		tw.TweenProperty(body, "position", home, 0.55).SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.InOut);
+		BodyRest.EndKnock(tw, body);
 		lifetime.TreeExiting += () =>
 		{
-			if (GodotObject.IsInstanceValid(body) && tw.IsValid() && tw.IsRunning())
-			{
-				tw.Kill();
-				body.Position = home;
-			}
+			if (GodotObject.IsInstanceValid(body)) BodyRest.Abort(tw, body);
 		};
 	}
 }

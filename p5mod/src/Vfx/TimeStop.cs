@@ -688,12 +688,12 @@ public sealed class TimeStop
 	private void Jolt(Actor a)
 	{
 		Node2D body = a.Body;
-		Vector2 home = body.Position;
 		Vector2 dir = (a.At - _center).Normalized();
-		Tween tw = body.CreateTween().SetIgnoreTimeScale(true);
+		Tween tw = BodyRest.Knock(body, out Vector2 home).SetIgnoreTimeScale(true);
 		body.Position = home + dir * 22f * _tall / 360f;
 		tw.TweenInterval(0.04);
 		tw.TweenProperty(body, "position", home, 0.34).SetTrans(Tween.TransitionType.Elastic).SetEase(Tween.EaseType.Out);
+		BodyRest.EndKnock(tw, body);
 		BodyTint.Pulse(body, new Color(1.8f, 1.6f, 1.6f), 0.03, 0.22);
 	}
 

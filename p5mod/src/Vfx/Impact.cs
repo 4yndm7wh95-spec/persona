@@ -167,11 +167,11 @@ public static class Impact
 		{
 			return;
 		}
-		Vector2 home = body.Position;
-		Tween tw = body.CreateTween().SetIgnoreTimeScale(true);
+		Tween tw = BodyRest.Knock(body, out Vector2 home).SetIgnoreTimeScale(true);
 		body.Position = home + offset;
 		tw.TweenInterval(0.05);
 		tw.TweenProperty(body, "position", home, 0.32).SetTrans(Tween.TransitionType.Elastic).SetEase(Tween.EaseType.Out);
+		BodyRest.EndKnock(tw, body);
 	}
 
 	// ───────────────────────── 全屏冲击帧 ─────────────────────────
