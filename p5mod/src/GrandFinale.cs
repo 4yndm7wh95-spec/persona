@@ -87,9 +87,15 @@ public static class GrandFinaleImpactPatch
 }
 
 /// <summary>华丽收场里原版聚光灯的预备等待：换成等到子弹碰到第一个敌人。</summary>
-[HarmonyPatch(typeof(Cmd), nameof(Cmd.Wait), typeof(float), typeof(bool))]
+// 两个重载都挂：游戏版本之间重载签名会变（0.111 的转发版 / 带 CancellationToken 的那个），
+// 转发版只有一行，JIT 可能把它内联进调用方而绕过补丁。WaitTaken 保证只替换第一次等待，两个都挂也只生效一次。
+[HarmonyPatch]
 public static class GrandFinaleWaitPatch
 {
+	public static IEnumerable<System.Reflection.MethodBase> TargetMethods() =>
+		typeof(Cmd).GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
+			.Where(m => m.Name == nameof(Cmd.Wait) && m.GetParameters() is { Length: > 0 } ps && ps[0].ParameterType == typeof(float) && ps[0].Name == "seconds");
+
 	public static void Prefix(ref float seconds)
 	{
 		if (SinfulPlay.Current.Value is { WaitTaken: false } clip)

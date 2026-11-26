@@ -12,7 +12,7 @@ namespace P3Makoto;
 public static class ModEntry
 {
 	public const string Tag = "[P3Makoto]";
-	public const string Version = "0.15.45";
+	public const string Version = "0.15.46";
 
 	public static void Init()
 	{
@@ -95,7 +95,7 @@ public static class ModEntry
 		var source = candidates.FirstOrDefault(m => string.Equals(
 			Path.GetFullPath(m.path), directory, comparison));
 		if (source == null && candidates.Length == 1) source = candidates[0];
-		if (source?.modSource == ModSource.SteamWorkshop || source?.workshopId > 0
+		if (source?.modSource == ModSource.SteamWorkshop || WorkshopId(source) > 0
 			|| (source == null && directory?.Replace('\\', '/').Contains(
 				"/steamapps/workshop/content/2868840/", StringComparison.OrdinalIgnoreCase) == true))
 		{
@@ -117,13 +117,36 @@ public static class ModEntry
 		}
 		// Managers scan manifests before initializers. Advertise only this validated
 		// local installation on its next launch; the distributed manifest stays opt-out.
-		if (source?.manifest != null && ModManager.Mods.Any(m =>
-			m.manifest?.id == "Gurio.SkinChanger"))
+		// 只认真正启用的 SkinChanger（在设置里被关掉的也会出现在 Mods 列表里，state = Disabled）。
+		bool skinChanger = ModManager.Mods.Any(m => m.manifest?.id == "Gurio.SkinChanger"
+			&& m.state is not (ModLoadState.Disabled or ModLoadState.DisabledDuplicate or ModLoadState.Failed));
+		if (source?.manifest != null && skinChanger)
 			EnableLocalPackDiscovery(root);
 		if (ResourceLoader.Exists("res://p3makoto/ui/charselect_portrait.png")) return true;
+		// SkinChanger 已经按皮肤接管了这个包（json 里 has_pck = true，它故意不全局挂载，只在选中这套皮肤时按需挂）：
+		// 这时候自己再全局挂一次，会把原版角色的资源全局换掉，选别的皮肤也会混进来 → 交给 SkinChanger，不自己挂。
+		if (skinChanger && source?.manifest?.hasPck == true)
+		{
+			GD.Print($"{Tag} resource pack is managed by SkinChanger; not mounting it globally.");
+			return true;
+		}
 		if (ProjectSettings.LoadResourcePack(pack)) return true;
 		GD.PrintErr($"{Tag} Could not mount local resource pack: {pack}");
 		return false;
+	}
+
+	// Mod.workshopId 是 0.111 才有的字段：直接写 source.workshopId，0.107 上整个 MountLocalContent 一调用就抛
+	// MissingFieldException，mod 初始化失败、什么都不生效（用户 2026-11-26：0.107 的玩家装上没用）→ 反射读，读不到当 0。
+	private static decimal WorkshopId(Mod? mod)
+	{
+		if (mod == null) return 0;
+		try
+		{
+			const System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
+			object? value = typeof(Mod).GetField("workshopId", flags)?.GetValue(mod) ?? typeof(Mod).GetProperty("workshopId", flags)?.GetValue(mod);
+			return value == null ? 0 : Convert.ToDecimal(value);
+		}
+		catch (Exception) { return 0; }
 	}
 
 	private static void EnableLocalPackDiscovery(string root)
@@ -156,9 +179,13 @@ public static class ModEntry
 				why = "platform " + os;
 				return false;
 			}
-			if (!System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported || !System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeCompiled)
+			// iOS 移植端是解释执行（IsDynamicCodeCompiled = false），但 Harmony 一样能挂补丁 —— P5Joker 在 iOS 上就是这样跑的。
+			// 之前这里要求 IsDynamicCodeCompiled，iOS 上就把全部补丁和特效关掉了；现在只在完全不支持动态代码时才放弃，
+			// 其余情况逐个补丁类尝试，挂不上的单独记日志跳过（同 P5Joker）。
+			GD.Print($"{Tag} runtime: os={os} dynamicCode={System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported} compiled={System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeCompiled}");
+			if (!System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)
 			{
-				why = "no dynamic code (AOT)";
+				why = "no dynamic code";
 				return false;
 			}
 		}

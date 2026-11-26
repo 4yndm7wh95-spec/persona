@@ -9,7 +9,8 @@ namespace P5Joker;
 /// 不再必杀（被加了无实体、毒被清掉……）：翻面缩走；毒死了（血条刷新时已经没血）：一下胀开、碎成几片红黑碎片散掉。
 /// 挂在血条容器（%HpBarContainer）下面，跟着血条走、跟着血条一起隐藏。
 /// </summary>
-public sealed class LethalMark : Node2D
+// partial：mod 本身用 csc 编译不需要，但特效预览工具走 Godot 的源码生成器，少了 partial 会直接编不过（GD0001）
+public sealed partial class LethalMark : Node2D
 {
 	private const string NodeName = "P5LethalMark";
 	private enum State { In, Idle, Out, Burst }

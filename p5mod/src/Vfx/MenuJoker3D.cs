@@ -161,10 +161,12 @@ public sealed class MenuJoker3D
 		_k = view.Y / 1080f;
 		_s = scale;
 		_o = offset;
-		Vector2I px = new(Mathf.Max(2, Mathf.RoundToInt(view.X)), Mathf.Max(2, Mathf.RoundToInt(view.Y)));
+		// 手机上整屏 4 倍多重采样的 3D 太贵：降到 0.6 倍分辨率、2 倍多重采样，显示时拉回屏幕大小（Perf.cs）
+		float rs = Perf.OffscreenScale;
+		Vector2I px = new(Mathf.Max(2, Mathf.RoundToInt(view.X * rs)), Mathf.Max(2, Mathf.RoundToInt(view.Y * rs)));
 		_vp = new SubViewport
 		{
-			Name = "P5MenuJoker3D", Size = px, TransparentBg = true, OwnWorld3D = true, Msaa3D = Viewport.Msaa.Msaa4X,
+			Name = "P5MenuJoker3D", Size = px, TransparentBg = true, OwnWorld3D = true, Msaa3D = Perf.Mobile ? Viewport.Msaa.Msaa2X : Viewport.Msaa.Msaa4X,
 			RenderTargetUpdateMode = SubViewport.UpdateMode.Disabled, Disable3D = false,
 		};
 		parent.AddChild(_vp);
@@ -205,7 +207,8 @@ public sealed class MenuJoker3D
 				CustomAabb = new Aabb(new Vector3(-500f, -500f, -500f), new Vector3(1000f, 1000f, 1000f)) };
 			_vp.AddChild(_inst[i]);
 		}
-		Sprite = new Sprite2D { Name = "P5MenuJoker3DView", Texture = _vp.GetTexture(), Centered = false, Visible = false };
+		Sprite = new Sprite2D { Name = "P5MenuJoker3DView", Texture = _vp.GetTexture(), Centered = false, Visible = false,
+			Scale = new Vector2(view.X / px.X, view.Y / px.Y) };
 	}
 
 	private void Build(int i)

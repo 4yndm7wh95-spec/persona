@@ -288,7 +288,8 @@ def fx_textures():
     for f in sorted((ROOT / "art/p5/ui/hud").glob("*.png")):
         im = Image.open(f).convert("RGBA")
         yield "hud_" + f.stem, im.resize((round(im.width * 0.5), round(im.height * 0.5)), Image.LANCZOS)
-    # 左上角顶栏 / 战绩 / 联机里的角色头像（Codex，art/p5/ui/icons/joker_top_icon.png）+ 描边版（轮廓往外扩一圈的白色剪影）
+    # 左上角顶栏 / 战绩 / 联机里的角色头像（用户 2026-11-26 给的红底剪影头像，art/p5/ui/icons/joker_top_icon.png；旧的透明底版本是 joker_top_icon_v1.png）
+    # + 描边版（轮廓往外扩一圈的白色剪影）。新图是整块红底方图，没有透明边：裁边那一步对它不起作用，四周留 20px 透明边
     icon = ROOT / "art/p5/ui/icons/joker_top_icon.png"
     if icon.exists():
         im = Image.open(icon).convert("RGBA")

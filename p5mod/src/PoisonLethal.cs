@@ -24,6 +24,9 @@ internal static class PoisonLethal
 {
 	private const ValueProp Props = ValueProp.Unblockable | ValueProp.Unpowered;
 
+	/// <summary>0.107 的 Hook.ModifyDamage 参数不一样：第一次调用发现方法不存在就改用原版的 CalculateTotalDamageNextTurn（不含扣血阶段的减伤）。</summary>
+	private static bool _simple;
+
 	public static bool Sure(Creature c)
 	{
 		if (c.IsPlayer || !c.IsAlive || c.CurrentHp <= 0 || c.HpDisplay.IsInfinite()) return false;
@@ -31,6 +34,26 @@ internal static class PoisonLethal
 		var cs = c.CombatState;
 		var rs = cs?.RunState;
 		if (cs == null || rs == null) return false;
+		bool kills;
+		if (_simple) kills = poison.CalculateTotalDamageNextTurn() >= c.CurrentHp;
+		else
+		{
+			try { kills = Detailed(c, poison, cs, rs); }
+			catch (MissingMethodException)
+			{
+				_simple = true;
+				kills = poison.CalculateTotalDamageNextTurn() >= c.CurrentHp;
+			}
+		}
+		if (!kills) return false;
+		if (!Hook.ShouldDie(rs, cs, c, out _)) return false;
+		return Hook.ShouldCreatureBeRemovedFromCombatAfterDeath(cs, c);
+	}
+
+	// 单独一个方法、不内联：游戏版本里签名对不上时，JIT 编译它才失败，异常落在上面的 try 里。
+	[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+	private static bool Detailed(Creature c, PoisonPower poison, MegaCrit.Sts2.Core.Combat.ICombatState cs, MegaCrit.Sts2.Core.Runs.IRunState rs)
+	{
 		// 同 PoisonPower.TriggerCount（私有）：对面活着的人身上的加速剂层数之和 + 1，不超过毒层数
 		int accel = cs.GetOpponentsOf(c).Where(o => o.IsAlive).Sum(o => o.GetPowerAmount<AccelerantPower>());
 		int triggers = Math.Min(poison.Amount, 1 + accel);
@@ -44,8 +67,6 @@ internal static class PoisonLethal
 			lost += loss;
 			hp -= loss;
 		}
-		if (hp > 0m) return false;
-		if (!Hook.ShouldDie(rs, cs, c, out _)) return false;
-		return Hook.ShouldCreatureBeRemovedFromCombatAfterDeath(cs, c);
+		return hp <= 0m;
 	}
 }
