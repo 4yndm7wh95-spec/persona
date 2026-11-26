@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Concurrent;
+using System.IO;
+using System.Linq;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Modding;
@@ -10,16 +12,15 @@ namespace P3Makoto;
 public static class ModEntry
 {
 	public const string Tag = "[P3Makoto]";
-	public const string Version = "0.15.23";
+	public const string Version = "0.15.45";
 
 	public static void Init()
 	{
-		GD.Print($"{Tag} init v{Version} build 20261104-shop-life");
+		if (!MountLocalContent()) return;
+		GD.Print($"{Tag} init v{Version}");
 		// v0.14.44（多版本兼容）：记下游戏版本，换版本出问题时日志里一眼能看到是哪个版本
 		Safe("game version", () => GD.Print($"{Tag} game version {P3Makoto.Core.Compat.GameVersion()}"));
-		// v0.14.59（玩家：iOS 移植版报 PlatformNotSupportedException）：iOS / 纯 AOT 平台不能在运行时生成代码，
-		// Harmony 打补丁会抛异常甚至让游戏起不来。这种平台上什么补丁和特效都不装，只留资源包里的皮肤（资源包自己就覆盖原版路径）。
-		// 注：目前 iOS 版在加载 DLL 这一步就失败了（代码根本跑不到这里），只能删掉 DLL 用皮肤；这里是兜底。
+		// iOS 移植端加载 DLL 后，按运行时的动态代码能力决定是否尝试安装 Harmony 补丁。
 		if (!CanPatch(out string why))
 		{
 			GD.Print($"{Tag} runtime code patching unavailable ({why}) -> effects disabled, only the skin art from the pck is used");
@@ -40,7 +41,12 @@ public static class ModEntry
 					{
 						continue;
 					}
-					harmony.CreateClassProcessor(t).Patch();
+				var applied = harmony.CreateClassProcessor(t).Patch();
+				if (t == typeof(Patches.DamagePatch) && applied is { Count: > 0 })
+					{
+						Patches.DamagePatch.Installed = true;
+						GD.Print($"{Tag} damage hook installed: {string.Join(", ", Patches.DamagePatch.TargetMethods())}");
+					}
 					ok++;
 				}
 				catch (Exception e)
@@ -65,6 +71,7 @@ public static class ModEntry
 		Safe("timescale watchdog", Core.TimeScale.Install);     // v0.14.51：减速没恢复时自己恢复（玩家：一直像子弹时间）
 		Safe("health log", Core.Health.Install);              // v0.14.60：卡顿诊断日志（每 60 秒一行 + 低帧率时的明细）
 		Safe("sfx prewarm", Audio.Sfx.Prewarm);
+		Safe("shop assets", Vfx.ShopAssets.Watch);         // 0.15.30：商店房间的贴图 / 模型 / 着色器在地图空闲时提前准备
 		Safe("star orbit", Vfx.StarOrbit.Install);
 		Safe("preload", Vfx.Preload.Start);                  // 选中结城理时要用的大资源后台预加载 + 着色器预编译（避免第一次选中掉帧）
 		// 低血溺水暗角已按用户要求关闭（Vfx/LowHpFx.cs 保留未用）
@@ -78,13 +85,73 @@ public static class ModEntry
 		}
 	}
 
+	// The loader normally mounts PCKs before calling Init. The manifest opts out
+	// so a Workshop installation cannot replace even a vanilla texture.
+	private static bool MountLocalContent()
+	{
+		string? directory = Path.GetDirectoryName(typeof(ModEntry).Assembly.Location);
+		var candidates = ModManager.Mods.Where(m => m.manifest?.id == "P3Makoto").ToArray();
+		var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+		var source = candidates.FirstOrDefault(m => string.Equals(
+			Path.GetFullPath(m.path), directory, comparison));
+		if (source == null && candidates.Length == 1) source = candidates[0];
+		if (source?.modSource == ModSource.SteamWorkshop || source?.workshopId > 0
+			|| (source == null && directory?.Replace('\\', '/').Contains(
+				"/steamapps/workshop/content/2868840/", StringComparison.OrdinalIgnoreCase) == true))
+		{
+			GD.Print($"{Tag} Workshop distribution is not enabled.");
+			return false;
+		}
+		if (source?.manifest is { } manifest && (manifest.author != "B站川川errr 抖音川川" || manifest.description != "MOD唯一作者：B站川川errr 抖音川川。如果您在B站、抖音、玩家动力之外的渠道获取本MOD，均为盗版！"))
+		{
+			GD.PrintErr($"{Tag} The author or distribution notice differs from the release manifest.");
+			return false;
+		}
+		string? root = source?.path ?? directory;
+		if (string.IsNullOrEmpty(root)) return false;
+		string pack = Path.Combine(root, "P3Makoto.pck");
+		if (!File.Exists(pack))
+		{
+			GD.PrintErr($"{Tag} Missing local resource pack: {pack}");
+			return false;
+		}
+		// Managers scan manifests before initializers. Advertise only this validated
+		// local installation on its next launch; the distributed manifest stays opt-out.
+		if (source?.manifest != null && ModManager.Mods.Any(m =>
+			m.manifest?.id == "Gurio.SkinChanger"))
+			EnableLocalPackDiscovery(root);
+		if (ResourceLoader.Exists("res://p3makoto/ui/charselect_portrait.png")) return true;
+		if (ProjectSettings.LoadResourcePack(pack)) return true;
+		GD.PrintErr($"{Tag} Could not mount local resource pack: {pack}");
+		return false;
+	}
+
+	private static void EnableLocalPackDiscovery(string root)
+	{
+		string path = Path.Combine(root, "P3Makoto.json");
+		string temp = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
+		try
+		{
+			var doc = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(path));
+			if (doc?["id"]?.GetValue<string>() != "P3Makoto" || doc["has_pck"]?.GetValue<bool>() != false) return;
+			doc["has_pck"] = true;
+			File.WriteAllText(temp, doc.ToJsonString(new System.Text.Json.JsonSerializerOptions {
+				WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+			}));
+			File.Move(temp, path, true);
+			GD.Print($"{Tag} Local skin pack discovery enabled. Restart the game once to refresh the manager catalog.");
+		}
+		catch (Exception e) { GD.PrintErr($"{Tag} Could not enable local pack discovery at {path}: {e.Message}"); }
+		finally { try { File.Delete(temp); } catch (IOException) { } catch (UnauthorizedAccessException) { } }
+	}
+
 	private static bool CanPatch(out string why)
 	{
 		why = "";
 		try
 		{
 			string os = OS.GetName();
-			if (os == "iOS" || os == "Web")
+			if (os == "Web")
 			{
 				why = "platform " + os;
 				return false;

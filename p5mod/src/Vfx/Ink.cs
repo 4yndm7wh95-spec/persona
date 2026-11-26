@@ -369,7 +369,7 @@ void fragment() {
 		return s;
 	}
 
-	public static void Set(Sprite2D s, string name, Variant v) => ((ShaderMaterial)s.Material).SetShaderParameter(name, v);
+	public static void Set(Sprite2D s, string name, Variant v) => ((ShaderMaterial)s.Material).SetShaderParameter(Fx.ParameterName(name), v);
 
 	/// <summary>原版星光（BTL_BTN キラキラ）：一闪 —— 猛地放大、转一点、缩没。</summary>
 	public static void Twinkle(Control layer, Vector2 at, float size, float delay = 0f)

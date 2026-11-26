@@ -35,6 +35,8 @@ public static class AssetGuard
 
 	public static void Apply(string when)
 	{
+		// The manager owns the shared Regent paths for isolated providers.
+		if (MakotoSelectSkin.ManagedSelection.HasValue || MakotoSelectSkin.PackManaged) return;
 		if (!PackLoaded)
 		{
 			if (!_warnedMissing)

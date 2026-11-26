@@ -331,8 +331,8 @@ void fragment() {
 	/// <summary>同一个参数同时设到身体材质和每张翅膀的材质上（翅膀的材质多了 wing 开关和各自的弯曲参数）。</summary>
 	private void SetMat(string name, Variant value)
 	{
-		_mat.SetShaderParameter(name, value);
-		foreach (ShaderMaterial m in _wingMats.Values) m.SetShaderParameter(name, value);
+		_mat.SetShaderParameter(Fx.ParameterName(name), value);
+		foreach (ShaderMaterial m in _wingMats.Values) m.SetShaderParameter(Fx.ParameterName(name), value);
 	}
 
 	/// <summary>开枪的冲击帧（华丽收场第二版）：身体、翅膀、光环刷成 body，云海刷成 cloud（a = 程度，0 = 原样）。</summary>

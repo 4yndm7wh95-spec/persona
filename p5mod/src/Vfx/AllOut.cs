@@ -442,7 +442,7 @@ public static partial class AllOut
 
 		// ── 声音（用户 2026-11-18：只要三样）：蓄势（P3 mod 同款，高潮正好在碎开）、碎开、怪物喷血（P5R 原版总攻击斩击） ──
 		// 在时间轴里按真实时间触发（不用 Sfx 的延时：慢放会把延时也拖长）
-		var cues = new List<(float At, string Name, float Vol)> { (ShatterAt - 0.65f, Sfx.AoaZoom, 1.9f), (CrackAt, Sfx.AoaCrack, 1.5f), (ShatterAt, Sfx.Shatter, 1.9f), (ArtT - 0.05f, Sfx.AoaSplatter, 2.0f) };
+		var cues = new List<(float At, string Name, float Vol)> { (ShatterAt - 0.65f, Sfx.AoaZoom, 0.95f), (CrackAt, Sfx.AoaCrack, 0.75f), (ShatterAt, Sfx.Shatter, 0.95f), (ArtT - 0.05f, Sfx.AoaSplatter, 1.0f) };
 		var fired = new bool[cues.Count];
 
 		bool broke = false, finRequested = false, prepDone = false, shardsVisible = false;

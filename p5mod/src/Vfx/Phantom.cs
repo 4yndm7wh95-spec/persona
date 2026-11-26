@@ -95,7 +95,7 @@ void fragment() {
 		public Ribbon? Trail;
 		private readonly ShaderMaterial _m;
 		public P5Card(ShaderMaterial m) { _m = m; }
-		public void Set(string n, Variant v) => _m.SetShaderParameter(n, v);
+		public void Set(string n, Variant v) => _m.SetShaderParameter(Fx.ParameterName(n), v);
 		/// <summary>位置、倾斜、绕竖轴翻转（横向缩放 = cos，过 90° 换面）、整体缩放。</summary>
 		public void Place(Vector2 pos, float tilt, float flip, float scale = 1f)
 		{

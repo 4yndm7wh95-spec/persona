@@ -2,21 +2,59 @@ using System;
 using System.Reflection;
 using Godot;
 using MegaCrit.Sts2.Core.Bindings.MegaSpine;
+using MegaCrit.Sts2.Core.Nodes.CommonUi;
 
 namespace P3Makoto.Core;
 
 /// <summary>
-/// v0.14.45 版本适配层：杀戮尖塔 2 不同版本之间签名不一样的游戏接口，全部经过这里（运行时按当前版本选写法），
-/// 本 mod 其他代码不直接调用它们 —— 这样同一个 DLL 在 0.107.1（Steam 正式版）和 0.111.0（测试版）上都能用。
+/// 运行时适配不同游戏版本的 Spine、手柄与快捷键接口，让它们共用同一个 DLL。
 /// 对照结果（tools/compat/ApiCheck，research/libs 与 research/libs_0.107.1）：
 ///   · MegaAnimationState.SetAnimation / AddAnimation：0.107 返回 MegaTrackEntry，0.111 返回 void（参数相同）→ 反射调用；
 ///   · MegaSprite.GetGlobalBoneTransform：0.107 没有 → 直接调 Spine 原生方法 get_global_bone_transform，再不行用骨骼的 get_global_transform；
 ///   · MegaAnimationState.GetCurrentAnimationName：0.107 在轨道为空时会抛空引用 → 直接读原生轨道；
 ///   · NGame.GetGameVersion：0.107 没有 → 反射，取不到就算了；
 ///   · NControllerManager.IsUsingDirectionalNavigation：0.107 没有（只有 IsUsingController）→ 反射，两个都试。
+///   · NHotkeyManager：0.113 的 Push 多一个优先级参数，Remove 开始返回原优先级 → 运行时选签名。
 /// </summary>
 public static class Compat
 {
+	// 0.113 adds a sequence to Push and returns the removed sequence from Remove.
+	// These bindings are new overlays, so Push should always assign a fresh priority.
+	internal static class HotkeyBindings
+	{
+		private static readonly Type[] Legacy = [typeof(string), typeof(Action)];
+		private static readonly Type[] Sequenced = [typeof(string), typeof(Action), typeof(long)];
+		private static readonly Type[] Owned = [typeof(string), typeof(Node), typeof(Action)];
+		private static readonly Type[] OwnedSequenced = [typeof(string), typeof(Node), typeof(Action), typeof(long)];
+		private static readonly MethodInfo? PushPressed = Find("PushHotkeyPressedBinding", true);
+		private static readonly MethodInfo? PushReleased = Find("PushHotkeyReleasedBinding", true);
+		private static readonly MethodInfo? RemovePressed = Find("RemoveHotkeyPressedBinding", false);
+		private static readonly MethodInfo? RemoveReleased = Find("RemoveHotkeyReleasedBinding", false);
+
+		private static MethodInfo? Find(string name, bool push)
+		{
+			var manager = typeof(NHotkeyManager);
+			return push ? manager.GetMethod(name, OwnedSequenced) ?? manager.GetMethod(name, Sequenced) ?? manager.GetMethod(name, Legacy)
+				: manager.GetMethod(name, Owned) ?? manager.GetMethod(name, Legacy);
+		}
+
+		private static void Invoke(MethodInfo method, NHotkeyManager manager, string key, Node owner, Action action)
+		{
+			var args = method.GetParameters();
+			object[] values = args[1].ParameterType == typeof(Node)
+				? (args.Length == 4 ? [key, owner, action, 0L] : [key, owner, action])
+				: (args.Length == 3 ? [key, action, 0L] : [key, action]);
+			method.Invoke(manager, values);
+		}
+
+		internal static void Set(NHotkeyManager manager, string key, Node owner, Action pressed, Action released, bool bind)
+		{
+			if (PushPressed == null || PushReleased == null || RemovePressed == null || RemoveReleased == null) return;
+			Invoke(bind ? PushPressed : RemovePressed, manager, key, owner, pressed);
+			Invoke(bind ? PushReleased : RemoveReleased, manager, key, owner, released);
+		}
+	}
+
 	private static readonly MethodInfo? SetAnim =
 		typeof(MegaAnimationState).GetMethod("SetAnimation", BindingFlags.Public | BindingFlags.Instance, null, new[] { typeof(string), typeof(bool), typeof(int) }, null);
 

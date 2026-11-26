@@ -67,8 +67,8 @@ void fragment() {
 
 		public void Set(string key, Variant v)
 		{
-			Main.SetShaderParameter(key, v);
-			Glow.SetShaderParameter(key, v);
+			Main.SetShaderParameter(Fx.ParameterName(key), v);
+			Glow.SetShaderParameter(Fx.ParameterName(key), v);
 		}
 	}
 

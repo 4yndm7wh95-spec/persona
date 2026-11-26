@@ -411,6 +411,10 @@ public static class Warmup
 	public static void RequestPile()
 	{
 		if (!Groups.Add("pile")) return;
+		foreach (string clip in new[] { "main_0000", "main_0005", "main_0010", "main_0015", "main_0016" })
+			Enqueue(new("menu 3d " + clip, Load: () => MenuJoker3D.PollClip(clip)));
+		foreach (string font in new[] { P5Ui.Barlow, P5Ui.CjkBold })
+			Enqueue(new("pile font " + font, Load: () => P5Ui.PollFont(font)));
 		QueueTextures(PileDraw.Textures);
 		QueueTextures(PileExhaust.Textures);
 		QueueTextures(PileDeck.Textures);
@@ -431,7 +435,6 @@ public static class Warmup
 			slot.AddChild(new Polygon2D { Polygon = new[] { new Vector2(60, 44), new Vector2(76, 44), new Vector2(76, 60) }, Antialiased = true, Material = new ShaderMaterial { Shader = PileExhaust.InvertShader } });
 		}));
 		QueueTextures(new[] { "m3d_c0001_t01_face01UI", "m3d_c0001_t01_kamenUI" });
-		Enqueue(new("menu 3d data", Load: () => { MenuJoker3D.Preload("main_0000", "main_0005", "main_0010", "main_0015", "main_0016"); return true; }));
 		Enqueue(new("menu 3d material", Draw: MenuJoker3D.Warm));
 		LogPlan("pile");
 	}

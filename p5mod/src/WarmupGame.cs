@@ -50,6 +50,7 @@ public static class WarmupGame
 		if (game!.CurrentRunNode == null)
 		{
 			Warmup.RequestMenu();
+			if (P5Settings.Enabled(P5Settings.Option.Pile)) Warmup.RequestPile();
 			if (game.MainMenu?.SubmenuStack is { SubmenusOpen: true } stack && stack.Peek() is NCharacterSelectScreen screen
 				&& Selected?.GetValue(screen) is NCharacterSelectButton { Character: Silent })
 				Warmup.RequestJoker();

@@ -274,9 +274,9 @@ void fragment() {
 
 	}
 
-	public void Set(string key, float v) => _mat.SetShaderParameter(key, v);
+	public void Set(string key, float v) => _mat.SetShaderParameter(Fx.ParameterName(key), v);
 
-	public void Set(string key, Vector3 v) => _mat.SetShaderParameter(key, v);
+	public void Set(string key, Vector3 v) => _mat.SetShaderParameter(Fx.ParameterName(key), v);
 
 	// ───────────────────────── 毒性爆发：巨手捏碎眼神特写 ─────────────────────────
 	// 用户 2026-11-03：亚森还是要出来 → 亚森照常召唤现身，他往前出手的那一下（emergeAt）巨手从横幅里冲出来（这只手就是他的咒怨）。

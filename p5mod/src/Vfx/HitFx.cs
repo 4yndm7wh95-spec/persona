@@ -109,8 +109,8 @@ public static class HitFx
 			{
 				Vector2 d = Vector2.Right.Rotated(ang);
 				float l = len * Ease5.OutExpo(Mathf.Min(1f, t * 3f)), w = 9f * (1f - t);
-				g.Polygon = Glow.TaperPts(d * 10f, d * l, w);
-				c.Polygon = Glow.TaperPts(d * 10f, d * l * 0.85f, w * 0.35f);
+				Glow.SetTaper(g, d * 10f, d * l, w);
+				Glow.SetTaper(c, d * 10f, d * l * 0.85f, w * 0.35f);
 			}
 		});
 		Glow.Flash(layer, muzzle + new Vector2(20f * facing, 0f), new Color(1f, 0.1f, 0.12f), 160f, 0.12f);
@@ -168,9 +168,9 @@ public static class HitFx
 		Fx.Animate(tr, 0, 0.16, t =>
 		{
 			Vector2 a = from.Lerp(to, Fx.InCubic(Mathf.Clamp((t - 0.2f) / 0.8f, 0f, 1f))), b = from.Lerp(to, Ease5.OutExpo(Mathf.Min(1f, t * 4f)));
-			glow.Polygon = Glow.TaperPts(a, b, 22f * (1f - t) + 3f);
-			red.Polygon = Glow.TaperPts(a, b, 9f * (1f - t) + 2f);
-			core.Polygon = Glow.TaperPts(a, b, 4f * (1f - t) + 1f);
+			Glow.SetTaper(glow, a, b, 22f * (1f - t) + 3f);
+			Glow.SetTaper(red, a, b, 9f * (1f - t) + 2f);
+			Glow.SetTaper(core, a, b, 4f * (1f - t) + 1f);
 		});
 	}
 
@@ -285,14 +285,14 @@ public static class HitFx
 			if (aOn)
 			{
 				Vector2 p0 = At(tail), p1 = At(Mathf.Min(head, split));
-				glowA.Polygon = Glow.TaperPts(p0, p1, 10f * w + 2f);
-				coreA.Polygon = Glow.TaperPts(p0, p1, 3.5f * w + 1f);
+				Glow.SetTaper(glowA, p0, p1, 10f * w + 2f);
+				Glow.SetTaper(coreA, p0, p1, 3.5f * w + 1f);
 			}
 			if (bOn)
 			{
 				Vector2 p0 = At(Mathf.Max(tail, split)), p1 = At(head);
-				glowB.Polygon = Glow.TaperPts(p0, p1, 10f * w + 2f);
-				coreB.Polygon = Glow.TaperPts(p0, p1, 3.5f * w + 1f);
+				Glow.SetTaper(glowB, p0, p1, 10f * w + 2f);
+				Glow.SetTaper(coreB, p0, p1, 3.5f * w + 1f);
 			}
 		});
 	}

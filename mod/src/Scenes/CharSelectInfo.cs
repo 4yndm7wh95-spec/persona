@@ -64,6 +64,12 @@ public static class CharSelectInfo
 	private static Font CjkBold => ResourceLoader.Load(CjkBoldPath) as Font ?? Typo.Cjk;
 	private static Font CjkMedium => ResourceLoader.Load(CjkMediumPath) as Font ?? Typo.Cjk;
 
+	internal static void Clear(NCharacterSelectScreen screen)
+	{
+		if (Traverse.Create(screen).Field("_infoPanel").GetValue<Control>() is Control panel)
+			Restore(panel);
+	}
+
 	public static void Apply(NCharacterSelectScreen screen, NCharacterSelectButton button, CharacterModel model)
 	{
 		Control? panel = Traverse.Create(screen).Field("_infoPanel").GetValue<Control>();
@@ -71,8 +77,7 @@ public static class CharSelectInfo
 		{
 			return;
 		}
-		Restore(panel);
-		if (button.IsRandom || button.IsLocked || model.GetType().Name != "Regent" || !Core.Makoto.AssetsOurs)
+		if (button.IsRandom || button.IsLocked || model.GetType().Name != "Regent" || !Core.MakotoSelectSkin.IsSelected)
 		{
 			return;
 		}
@@ -91,7 +96,7 @@ public static class CharSelectInfo
 			panel.SelfModulate = new Color(1f, 1f, 1f, 0f);
 			foreach (Node child in panel.GetChildren())
 			{
-				if (child is not CanvasItem ci || child.Name == DecoName)
+				if (child is not CanvasItem ci || child == deco || child.Name == "P5InfoDeco")
 				{
 					continue;
 				}

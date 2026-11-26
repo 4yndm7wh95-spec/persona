@@ -329,7 +329,7 @@ void fragment() {
 		Fx.Animate(flare, 0, 0.25, t =>
 		{
 			float lw = w * 2.2f * Ease5.OutExpo(Mathf.Min(1f, t * 3f));
-			line.Polygon = Glow.TaperPts(new Vector2(-lw, 0f), new Vector2(lw, 0f), 6f * (1f - t));
+			Glow.SetTaper(line, new Vector2(-lw, 0f), new Vector2(lw, 0f), 6f * (1f - t));
 		});
 		// 沿柱子往上飘的光点
 		Glow.Sparks(layer, new Vector2(x, groundY - hgt * 0.15f), big ? 18 : 10, 260f, 700f, 0.5f,

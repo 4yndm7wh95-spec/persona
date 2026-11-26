@@ -69,7 +69,6 @@ public static class DeckScreenClosePatch
 	{
 		bool handled = false;
 		ModEntry.Safe("deck screen exit", () => handled = PileScreen.TryExit(__instance));
-		if (handled) ModEntry.Safe("deck top bar", () => MegaCrit.Sts2.Core.Nodes.NRun.Instance?.GlobalUi.TopBar.Deck.ToggleAnimState());
 		return !handled;
 	}
 }

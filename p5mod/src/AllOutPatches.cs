@@ -305,9 +305,9 @@ public static class AllOutGame
 			{
 				await tree.ToSignal(tree, SceneTree.SignalName.ProcessFrame);
 			}
-			ulong deadline = Time.GetTicksMsec() + (ulong)(1000 * Math.Max(2.5, SinfulPlay.Remaining(view) + 1.0));
+			ulong deadline = Time.GetTicksMsec() + (ulong)(1000 * Math.Max(2.5, SinfulPlay.RemainingUntilLastImpact(view) + 1.0));
 			while (Current() && Enabled && Time.GetTicksMsec() < deadline
-				&& (SinfulPlay.Remaining(view) > 0 || OutbreakCue.HasPendingImpact(view)))
+				&& (SinfulPlay.RemainingUntilLastImpact(view) > 0 || OutbreakCue.HasPendingImpact(view)))
 			{
 				await tree.ToSignal(tree, SceneTree.SignalName.ProcessFrame);
 			}

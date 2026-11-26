@@ -37,6 +37,7 @@ public static class PileScreen
 
 	private sealed class Item
 	{
+		public bool DisplayChecked;
 		public Control? Clip;
 		public Control? Slot;
 		public NGridCardHolder? Holder;
@@ -100,7 +101,7 @@ public static class PileScreen
 	/// <summary>关闭时先播退场（接管原版的「藏起来 + 删掉」），返回 false = 没有我们的界面，走原版。</summary>
 	public static bool TryExit(Control screen)
 	{
-		if (!Exits.Remove(screen.GetInstanceId(), out Action? exit)) return false;
+		if (!Exits.TryGetValue(screen.GetInstanceId(), out Action? exit)) return false;
 		exit();
 		return true;
 	}
@@ -121,7 +122,11 @@ public static class PileScreen
 		root.Hide();
 		foreach (string path in Hidden)
 		{
-			if (screen.GetNodeOrNull<CanvasItem>(path) is CanvasItem ci) ci.Visible = true;
+			if (screen.GetNodeOrNull<CanvasItem>(path) is CanvasItem ci && ci.HasMeta("p5_pile_hidden"))
+			{
+				ci.RemoveMeta("p5_pile_hidden");
+				ci.Show();
+			}
 		}
 		root.QueueFree();
 	}
@@ -129,7 +134,11 @@ public static class PileScreen
 	public static void Build(Control screen, CardPile pile)
 	{
 		if (screen.GetNodeOrNull(RootName) != null || screen.GetNodeOrNull<Control>("CardGrid") is not Control grid) return;
-		Vector2 view = screen.GetViewportRect().Size;
+		Vector2 view = screen.Size;
+		if (view.X <= 0f || view.Y <= 0f) view = screen.GetViewportRect().Size;
+		bool fitDeck = pile.Type == PileType.Deck && view.X * 1080f < view.Y * 1920f;
+		float topMargin = fitDeck ? (view.Y - view.X * (1080f / 1920f)) / 2f : 0f;
+		view.Y -= topMargin * 2f;
 		if (view.X <= 0f || view.Y <= 0f) return;
 		float k = view.Y / 1080f;
 		bool exhaust = pile.Type == PileType.Exhaust;
@@ -147,9 +156,23 @@ public static class PileScreen
 		root.SetAnchorsPreset(Control.LayoutPreset.FullRect);
 		screen.AddChild(root);
 		screen.MoveChild(root, grid.GetIndex());             // 原版网格的位置：返回按钮仍在上面
+		if (fitDeck)
+		{
+			var backdrop = new ColorRect { Color = Colors.Black, MouseFilter = Control.MouseFilterEnum.Ignore };
+			root.AddChild(backdrop);
+			backdrop.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+			var frame = new Control { Position = new Vector2(0f, topMargin), Size = view, MouseFilter = Control.MouseFilterEnum.Pass };
+			root.AddChild(frame);
+			root = new Control { Size = view, MouseFilter = Control.MouseFilterEnum.Stop };
+			frame.AddChild(root);
+		}
 		foreach (string path in Hidden)
 		{
-			if (screen.GetNodeOrNull<CanvasItem>(path) is CanvasItem ci) ci.Visible = false;
+			if (screen.GetNodeOrNull<CanvasItem>(path) is CanvasItem ci && ci.Visible)
+			{
+				ci.SetMeta("p5_pile_hidden", true);
+				ci.Hide();
+			}
 		}
 
 		// ── 装饰（红底、星纹面板、标题牌、立绘、COMMAND、预告信）──
@@ -199,32 +222,22 @@ public static class PileScreen
 		bool focusUp = false;
 		float upT0 = -1f;
 		bool upSwapped = false;
-		CardModel? upModel = null;
 		const float UpFlipTime = 0.6f;
 
 		void ShowFace(Item it, bool up)
 		{
-			if (up && upModel == null)
-			{
-				upModel = (CardModel)it.Card.MutableClone();
-				upModel.UpgradeInternal();
-			}
+			// Let the native holder select its own preview model for this game build.
+			var holder = it.Holder;
+			if (holder == null || !GodotObject.IsInstanceValid(holder)) return;
+			if (it.Card.IsUpgradable) holder.SetIsPreviewingUpgrade(up);
+			var model = holder.CardNode?.Model ?? throw new InvalidOperationException($"Pile preview for {it.Card.Id} has no model");
 			if (flip?.Card is NCard fc && GodotObject.IsInstanceValid(fc))
 			{
-				if (up && upModel != null)
-				{
-					fc.Model = upModel;
-					fc.ShowUpgradePreview();
-				}
-				else
-				{
-					fc.Model = it.Card;
-					fc.UpdateVisuals(pile.Type, CardPreviewMode.Normal);
-				}
+				fc.Model = model;
+				if (up && it.Card.IsUpgradable) fc.ShowUpgradePreview();
+				else fc.UpdateVisuals(pile.Type, CardPreviewMode.Normal);
 			}
-			if (it.Holder != null && GodotObject.IsInstanceValid(it.Holder) && it.Card.IsUpgradable)
-				it.Holder.SetIsPreviewingUpgrade(up);
-			Fill(fx!, up && upModel != null ? upModel : it.Card, pile);
+			Fill(fx!, model, pile);
 		}
 
 		void FlipUpgrade()
@@ -379,6 +392,7 @@ public static class PileScreen
 			it.Clip = clip;
 			it.Slot = slot;
 			it.Holder = h;
+			it.DisplayChecked = false;
 			h.Visible = true;
 			slot.AddChild(h);
 			cards.AddChild(clip);
@@ -443,7 +457,6 @@ public static class PileScreen
 				cards.MoveChild(upBtn!.Root, cards.GetChildCount() - 1);
 				flip = MakeFlip(root, cards, it.Card, pile.Type, it.Holder);
 				catcher.Visible = true;
-				upModel = null;
 				upT0 = -1f;
 				focusUp = false;
 				ShowFace(it, focusUp);
@@ -480,7 +493,7 @@ public static class PileScreen
 			foreach (string key in backKeys)
 			{
 				if (on && !InputMap.HasAction(key)) continue;
-				HotkeyBindings.Set(hk, key, unzoom, swallow, on);
+				HotkeyBindings.Set(hk, key, root, unzoom, swallow, on);
 			}
 		}
 
@@ -618,219 +631,228 @@ public static class PileScreen
 
 		void Tick()
 		{
+			try { RenderFrame(); }
+			catch (Exception e) { FallBack("display", e); }
+		}
+
+		// Keep the exception boundary outside the method the CLR must bind.
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+		void RenderFrame()
+		{
 			if (!GodotObject.IsInstanceValid(root) || !root.IsVisibleInTree()) return;
 			if (t0 < 0f) t0 = Time.GetTicksMsec() / 1000f;
-			try
+			if (!exiting && (needsRefill || items.Count != pile.Cards.Count))
 			{
-				if (!exiting && (needsRefill || items.Count != pile.Cards.Count))
+				needsRefill = false;
+				Refresh(pile.Cards.ToList(), animateSort: false);
+			}
+			float now = Now();
+			float dt = Mathf.Clamp(now - lastNow, 0f, 0.1f);
+			lastNow = now;
+			draw.Update(now, dt);
+			focusP = Mathf.MoveToward(focusP, focusOn ? 1f : 0f, dt / (focusOn ? 0.5f : 0.42f));
+			if (focused != null && !focusOn && focusP <= 0f)
+			{
+				BindBack(false);
+				upBtn?.Hide();
+				focused = null;
+				catcher.Visible = false;
+				FreeFlip(flip);
+				flip = null;
+			}
+			float fe = Ease5Ext.InOutCubic(focusP);
+			Vector2 focusCenter = L.FocusAt * k;
+			if (fx != null) Animate(fx, fe, focusP, focusOn, k, focusCenter);
+			float ex = exiting ? Mathf.Clamp((now - exitT0) / L.ExitTime, 0f, 1f) : 0f;
+			if (exiting)
+			{
+				if (screen.GetNodeOrNull<CanvasItem>("BackButton") is CanvasItem backBtn)
+					backBtn.Modulate = new Color(1f, 1f, 1f, 1f - Fx.OutCubic(ex));
+				if (fx != null) fx.Layer.Modulate = new Color(1f, 1f, 1f, 1f - ex);
+				if (flip != null) flip.Node.Modulate = new Color(1f, 1f, 1f, 1f - ex);
+				if (ex >= 1f && !finalized)
 				{
-					needsRefill = false;
-					Refresh(pile.Cards.ToList(), animateSort: false);
+					finalized = true;
+					Finalize(screen);
 				}
-				float now = Now();
-				float dt = Mathf.Clamp(now - lastNow, 0f, 0.1f);
-				lastNow = now;
-				draw.Update(now, dt);
-				focusP = Mathf.MoveToward(focusP, focusOn ? 1f : 0f, dt / (focusOn ? 0.5f : 0.42f));
-				if (focused != null && !focusOn && focusP <= 0f)
-				{
-					BindBack(false);
-					upBtn?.Hide();
-					focused = null;
-					catcher.Visible = false;
-					FreeFlip(flip);
-					flip = null;
-				}
-				float fe = Ease5Ext.InOutCubic(focusP);
-				Vector2 focusCenter = L.FocusAt * k;
-				if (fx != null) Animate(fx, fe, focusP, focusOn, k, focusCenter);
-				float ex = exiting ? Mathf.Clamp((now - exitT0) / L.ExitTime, 0f, 1f) : 0f;
-				if (exiting)
-				{
-					if (screen.GetNodeOrNull<CanvasItem>("BackButton") is CanvasItem backBtn)
-						backBtn.Modulate = new Color(1f, 1f, 1f, 1f - Fx.OutCubic(ex));
-					if (fx != null) fx.Layer.Modulate = new Color(1f, 1f, 1f, 1f - ex);
-					if (flip != null) flip.Node.Modulate = new Color(1f, 1f, 1f, 1f - ex);
-					if (ex >= 1f && !finalized)
-					{
-						finalized = true;
-						Finalize(screen);
-					}
-				}
-				// 红底铺开一小会儿之后开始建卡牌节点（每帧 4 张，避免一帧卡顿）
-				if (!exiting && now > 0.1f)
-				{
-					for (int n = 0; n < 4 && pending.TryDequeue(out Item? it); n++) Create(it);
-				}
-				empty.Visible = items.Count == 0 && now > 0.4f;
+			}
+			// 红底铺开一小会儿之后开始建卡牌节点（每帧 4 张，避免一帧卡顿）
+			if (!exiting && now > 0.1f)
+			{
+				for (int n = 0; n < 4 && pending.TryDequeue(out Item? it); n++) Create(it);
+			}
+			empty.Visible = items.Count == 0 && now > 0.4f;
 
-				float max = MaxScroll();
-				if (!dragging)
-				{
-					if (target < 0f) target = Mathf.Lerp(target, 0f, 0.2f);
-					if (target > max) target = Mathf.Lerp(target, max, 0.2f);
-				}
-				target = Mathf.Clamp(target, -120f, max + 120f);
-				scroll = Mathf.Lerp(scroll, target, 0.2f);
+			float max = MaxScroll();
+			if (!dragging)
+			{
+				if (target < 0f) target = Mathf.Lerp(target, 0f, 0.2f);
+				if (target > max) target = Mathf.Lerp(target, max, 0.2f);
+			}
+			target = Mathf.Clamp(target, -120f, max + 120f);
+			scroll = Mathf.Lerp(scroll, target, 0.2f);
 
-				Vector2 Screen(Vector2 at) => new Vector2(gx + at.X, L.GridTop + at.Y - scroll) * k;
-				foreach (Section s in sections)
+			Vector2 Screen(Vector2 at) => new Vector2(gx + at.X, L.GridTop + at.Y - scroll) * k;
+			foreach (Section s in sections)
+			{
+				Vector2 p = Screen(new Vector2(0f, s.Y + HeaderH * 0.5f));
+				float sIn = s.Born < 0f ? 1f : Fx.OutCubic(Mathf.Clamp((now - s.Born) / 0.3f, 0f, 1f));
+				float hIn = Ease5.OutExpo(Mathf.Clamp((now - L.CardsStart) / 0.3f, 0f, 1f));
+				s.Head.Position = p + new Vector2(-6f * k - 80f * k * (1f - sIn) - 80f * k * (1f - hIn) - 260f * k * Ease5Ext.InCubic(ex) - 60f * k * fe, 0f);
+				s.Head.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((now - L.CardsStart) / 0.25f, 0f, 1f) * sIn * (1f - fe) * (1f - ex));
+			}
+			for (int i = dying.Count - 1; i >= 0; i--)
+			{
+				Section s = dying[i];
+				float d = Mathf.Clamp((now - s.Die) / 0.25f, 0f, 1f);
+				if (d >= 1f || !GodotObject.IsInstanceValid(s.Head))
 				{
-					Vector2 p = Screen(new Vector2(0f, s.Y + HeaderH * 0.5f));
-					float sIn = s.Born < 0f ? 1f : Fx.OutCubic(Mathf.Clamp((now - s.Born) / 0.3f, 0f, 1f));
-					float hIn = Ease5.OutExpo(Mathf.Clamp((now - L.CardsStart) / 0.3f, 0f, 1f));
-					s.Head.Position = p + new Vector2(-6f * k - 80f * k * (1f - sIn) - 80f * k * (1f - hIn) - 260f * k * Ease5Ext.InCubic(ex) - 60f * k * fe, 0f);
-					s.Head.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((now - L.CardsStart) / 0.25f, 0f, 1f) * sIn * (1f - fe) * (1f - ex));
+					if (GodotObject.IsInstanceValid(s.Head)) s.Head.QueueFree();
+					dying.RemoveAt(i);
+					continue;
 				}
-				for (int i = dying.Count - 1; i >= 0; i--)
-				{
-					Section s = dying[i];
-					float d = Mathf.Clamp((now - s.Die) / 0.25f, 0f, 1f);
-					if (d >= 1f || !GodotObject.IsInstanceValid(s.Head))
-					{
-						if (GodotObject.IsInstanceValid(s.Head)) s.Head.QueueFree();
-						dying.RemoveAt(i);
-						continue;
-					}
-					Vector2 p = Screen(new Vector2(0f, s.Y + HeaderH * 0.5f));
-					s.Head.Position = p + new Vector2(-6f * k + 120f * k * Ease5Ext.InCubic(d), 0f);
-					s.Head.Modulate = new Color(1f, 1f, 1f, 1f - d);
-				}
-				// 排序切换跟着牌一起出来（入场的 3D 段放完以后；之前固定 0.24s，弃牌堆 / 牌组的入场还没放完就冒出来，用户 2026-11-24）
-				float headAt = L.CardsStart;
-				float headIn = Ease5.OutExpo(Mathf.Clamp((now - headAt) / 0.3f, 0f, 1f));
-				head.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((now - headAt) / 0.2f, 0f, 1f) * (1f - 0.85f * fe) * (1f - ex));
-				head.Position = new Vector2(-120f * k * (1f - headIn) - 260f * k * Ease5Ext.InCubic(ex), 0f);
-				Nav(now);
-				if (focused != null) hovered = null;
+				Vector2 p = Screen(new Vector2(0f, s.Y + HeaderH * 0.5f));
+				s.Head.Position = p + new Vector2(-6f * k + 120f * k * Ease5Ext.InCubic(d), 0f);
+				s.Head.Modulate = new Color(1f, 1f, 1f, 1f - d);
+			}
+			// 排序切换跟着牌一起出来（入场的 3D 段放完以后；之前固定 0.24s，弃牌堆 / 牌组的入场还没放完就冒出来，用户 2026-11-24）
+			float headAt = L.CardsStart;
+			float headIn = Ease5.OutExpo(Mathf.Clamp((now - headAt) / 0.3f, 0f, 1f));
+			head.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((now - headAt) / 0.2f, 0f, 1f) * (1f - 0.85f * fe) * (1f - ex));
+			head.Position = new Vector2(-120f * k * (1f - headIn) - 260f * k * Ease5Ext.InCubic(ex), 0f);
+			Nav(now);
+			if (focused != null) hovered = null;
 
-				bool any = hovered != null && hovered.Slot != null && GodotObject.IsInstanceValid(hovered.Holder) && hovered.Slot.Visible;
-				if (!any) hovered = null;
-				foreach (Item it in items)
+			bool any = hovered != null && hovered.Slot != null && GodotObject.IsInstanceValid(hovered.Holder) && hovered.Slot.Visible;
+			if (!any) hovered = null;
+			foreach (Item it in items)
+			{
+				if (it.Slot == null) continue;
+				if (it.Holder is not { } h || !GodotObject.IsInstanceValid(h) || !GodotObject.IsInstanceValid(h.CardNode))
+					throw new InvalidOperationException($"Pile card {it.Card.Id} lost its display node");
+				Vector2 cs = h.Hitbox.Size.X > 1f ? h.Hitbox.Size : new Vector2(300f, 422f);
+				float baseScale = L.CardW * k / cs.X;
+				float move = 0f;
+				Vector2 at = it.At;
+				if (it.MoveT0 >= 0f)
 				{
-					if (it.Slot == null) continue;
-					if (it.Holder is not { } h || !GodotObject.IsInstanceValid(h) || !GodotObject.IsInstanceValid(h.CardNode))
-						throw new InvalidOperationException($"Pile card {it.Card.Id} lost its display node");
-					Vector2 cs = h.Hitbox.Size.X > 1f ? h.Hitbox.Size : new Vector2(300f, 422f);
-					float baseScale = L.CardW * k / cs.X;
-					float move = 0f;
-					Vector2 at = it.At;
-					if (it.MoveT0 >= 0f)
+					float me = Mathf.Clamp((now - it.MoveT0 - it.MoveDelay) / 0.46f, 0f, 1f);
+					float mc = Ease5Ext.InOutCubic(me);
+					at = it.From.Lerp(it.At, mc);
+					move = Mathf.Sin(Mathf.Pi * mc);
+					if (me >= 1f) it.MoveT0 = -1f;
+				}
+				Vector2 p = Screen(at) + new Vector2(0f, -42f * k * move);
+				// 入场：从左下（抽牌堆按钮那边）弹进来
+				float born = it.Born < 0f ? 1f : Mathf.Clamp((now - it.Born) / 0.38f, 0f, 1f);
+				float pop = Ease5.OutBack(born);
+				it.Lift = Mathf.MoveToward(it.Lift, it == hovered ? 1f : 0f, 0.12f);
+				float lift = Fx.OutCubic(it.Lift);
+				it.Dim = Mathf.MoveToward(it.Dim, any && it != hovered ? 0.55f : 1f, 0.07f);
+				p += L.EnterOffset * k * (1f - pop);
+				p += new Vector2(0f, -14f) * k * lift;
+				it.Slot.Visible = true;
+				it.Clip!.ClipContents = it != focused;
+				float rot = Mathf.DegToRad(-4f) * move;
+				float want = baseScale * (0.85f + 0.15f * pop) * (1f + 0.26f * lift) * (1f + 0.07f * move);
+				float alpha = Mathf.Clamp(born * 3f, 0f, 1f);
+				if (it == focused)
+				{
+					Vector2 to = focusCenter + new Vector2(0f, Mathf.Sin(now * 1.6f) * 4f * k * fe);
+					p = p.Lerp(to, fe) + new Vector2(0f, -170f * k) * Mathf.Sin(Mathf.Pi * fe);
+					want = Mathf.Lerp(want, FocusW * k / cs.X, fe);
+					rot = Mathf.Lerp(rot, 0f, fe) + Mathf.DegToRad(-8f) * Mathf.Sin(Mathf.Pi * fe);
+					alpha = 1f;
+					if (!focusOn && fe < 0.5f && focusUp)
 					{
-						float me = Mathf.Clamp((now - it.MoveT0 - it.MoveDelay) / 0.46f, 0f, 1f);
-						float mc = Ease5Ext.InOutCubic(me);
-						at = it.From.Lerp(it.At, mc);
-						move = Mathf.Sin(Mathf.Pi * mc);
-						if (me >= 1f) it.MoveT0 = -1f;
+						focusUp = false;
+						ShowFace(it, focusUp);
 					}
-					Vector2 p = Screen(at) + new Vector2(0f, -42f * k * move);
-					// 入场：从左下（抽牌堆按钮那边）弹进来
-					float born = it.Born < 0f ? 1f : Mathf.Clamp((now - it.Born) / 0.38f, 0f, 1f);
-					float pop = Ease5.OutBack(born);
-					it.Lift = Mathf.MoveToward(it.Lift, it == hovered ? 1f : 0f, 0.12f);
-					float lift = Fx.OutCubic(it.Lift);
-					it.Dim = Mathf.MoveToward(it.Dim, any && it != hovered ? 0.55f : 1f, 0.07f);
-					p += L.EnterOffset * k * (1f - pop);
-					p += new Vector2(0f, -14f) * k * lift;
-					it.Slot.Visible = true;
-					it.Clip!.ClipContents = it != focused;
-					float rot = Mathf.DegToRad(-4f) * move;
-					float want = baseScale * (0.85f + 0.15f * pop) * (1f + 0.26f * lift) * (1f + 0.07f * move);
-					float alpha = Mathf.Clamp(born * 3f, 0f, 1f);
-					if (it == focused)
+					float upE = upT0 >= 0f ? Mathf.Clamp((now - upT0) / UpFlipTime, 0f, 1f) : 0f;
+					if (upT0 >= 0f && (upE >= 1f || !focusOn))
 					{
-						Vector2 to = focusCenter + new Vector2(0f, Mathf.Sin(now * 1.6f) * 4f * k * fe);
-						p = p.Lerp(to, fe) + new Vector2(0f, -170f * k) * Mathf.Sin(Mathf.Pi * fe);
-						want = Mathf.Lerp(want, FocusW * k / cs.X, fe);
-						rot = Mathf.Lerp(rot, 0f, fe) + Mathf.DegToRad(-8f) * Mathf.Sin(Mathf.Pi * fe);
-						alpha = 1f;
-						if (!focusOn && fe < 0.5f && focusUp)
+						if (!upSwapped)
 						{
-							focusUp = false;
-							ShowFace(it, focusUp);
-						}
-						float upE = upT0 >= 0f ? Mathf.Clamp((now - upT0) / UpFlipTime, 0f, 1f) : 0f;
-						if (upT0 >= 0f && (upE >= 1f || !focusOn))
-						{
-							if (!upSwapped)
-							{
-								focusUp = !focusUp;
-								ShowFace(it, focusUp);
-							}
-							upT0 = -1f;
-							upE = 0f;
-							upBtn!.Set(focusUp);
-						}
-						else if (upT0 >= 0f && !upSwapped && upE >= 0.5f)
-						{
-							upSwapped = true;
 							focusUp = !focusUp;
 							ShowFace(it, focusUp);
 						}
-						bool upFlipping = upT0 >= 0f;
-						float halfW = FocusW * k * 0.5f, halfH = halfW * cs.Y / cs.X;
-						upBtn!.Place(to + new Vector2(halfW + 18f * k, halfH - 34f * k), focusOn && fe > 0.95f ? Mathf.Clamp((fe - 0.95f) / 0.05f, 0f, 1f) : 0f);
-						bool flying = flip != null && ((fe > 0.004f && fe < 0.996f) || upFlipping);
-						it.Slot.Visible = !flying;
-						if (flip != null)
+						upT0 = -1f;
+						upE = 0f;
+						upBtn!.Set(focusUp);
+					}
+					else if (upT0 >= 0f && !upSwapped && upE >= 0.5f)
+					{
+						upSwapped = true;
+						focusUp = !focusUp;
+						ShowFace(it, focusUp);
+					}
+					bool upFlipping = upT0 >= 0f;
+					float halfW = FocusW * k * 0.5f, halfH = halfW * cs.Y / cs.X;
+					upBtn!.Place(to + new Vector2(halfW + 18f * k, halfH - 34f * k), focusOn && fe > 0.95f ? Mathf.Clamp((fe - 0.95f) / 0.05f, 0f, 1f) : 0f);
+					bool flying = flip != null && ((fe > 0.004f && fe < 0.996f) || upFlipping);
+					it.Slot.Visible = !flying;
+					if (flip != null)
+					{
+						flip.Node.Visible = flying;
+						if (flying)
 						{
-							flip.Node.Visible = flying;
-							if (flying)
-							{
-								flip.Node.Position = p;
-								flip.Node.Rotation = rot;
-								flip.Node.Scale = Vector2.One * want * (1f + 0.06f * Mathf.Sin(Mathf.Pi * upE));
-								Pose(flip, upFlipping ? Mathf.Tau * Ease5Ext.InOutCubic(upE) : Mathf.Tau * fe);
-							}
+							flip.Node.Position = p;
+							flip.Node.Rotation = rot;
+							flip.Node.Scale = Vector2.One * want * (1f + 0.06f * Mathf.Sin(Mathf.Pi * upE));
+							Pose(flip, upFlipping ? Mathf.Tau * Ease5Ext.InOutCubic(upE) : Mathf.Tau * fe);
 						}
 					}
-					else if (focused != null)
-					{
-						float dist = (it.At - focused.At).Length();
-						float r = Fx.OutCubic(Mathf.Clamp(focusP * 1.6f - Mathf.Min(0.5f, dist / 1600f), 0f, 1f));
-						p += new Vector2(-24f, 80f) * k * r;
-						want *= 1f - 0.16f * r;
-						rot += Mathf.DegToRad(-5f) * r;
-						alpha *= 1f - 0.9f * r;
-					}
-					if (exiting)
-					{
-						float r = Mathf.Clamp((ex - Mathf.Min(0.35f, it.Index * 0.012f)) / 0.65f, 0f, 1f);
-						float ri = Ease5Ext.InCubic(r);
-						p += L.ExitOffset * k * ri;
-						want *= 1f - 0.12f * ri;
-						rot += Mathf.DegToRad(4f) * ri;
-						alpha *= 1f - Fx.OutCubic(r);
-					}
-					it.Slot.Position = p - clipAt;
-					it.Slot.Rotation = rot;
-					float own = Mathf.Max(0.01f, h.Scale.X);
-					it.Slot.Scale = Vector2.One * (want / own);
-					float dd = it == focused ? 1f : it.Dim;
-					it.Slot.Modulate = new Color(dd, dd, dd, alpha);
 				}
-				if (any && hovered?.Clip is Control top && top.GetParent() == cards && top.GetIndex() != cards.GetChildCount() - 1)
-					cards.MoveChild(top, cards.GetChildCount() - 1);
-				if (any && hovered is { Slot: Control ps, Holder: NGridCardHolder ph } hv && GodotObject.IsInstanceValid(ps) && GodotObject.IsInstanceValid(ph))
+				else if (focused != null)
 				{
-					plate ??= NamePlate(root, k);
-					plate.Visible = true;
-					Vector2 cs = ph.Hitbox.Size.X > 1f ? ph.Hitbox.Size : new Vector2(300f, 422f);
-					float half = cs.Y * ps.Scale.Y * ph.Scale.Y * 0.5f;
-					plate.Position = ps.Position + clipAt + new Vector2(-20f * k, half + 6f * k);
-					((Label)plate.GetChild(plate.GetChildCount() - 1)).Text = hv.Card.Title;
-					float a = Fx.OutCubic(hv.Lift);
-					plate.Modulate = new Color(1f, 1f, 1f, a);
-					plate.Scale = new Vector2(Mathf.Lerp(0.7f, 1f, a), 1f);
+					float dist = (it.At - focused.At).Length();
+					float r = Fx.OutCubic(Mathf.Clamp(focusP * 1.6f - Mathf.Min(0.5f, dist / 1600f), 0f, 1f));
+					p += new Vector2(-24f, 80f) * k * r;
+					want *= 1f - 0.16f * r;
+					rot += Mathf.DegToRad(-5f) * r;
+					alpha *= 1f - 0.9f * r;
 				}
-				else if (plate != null)
+				if (exiting)
 				{
-					plate.Visible = false;
+					float r = Mathf.Clamp((ex - Mathf.Min(0.35f, it.Index * 0.012f)) / 0.65f, 0f, 1f);
+					float ri = Ease5Ext.InCubic(r);
+					p += L.ExitOffset * k * ri;
+					want *= 1f - 0.12f * ri;
+					rot += Mathf.DegToRad(4f) * ri;
+					alpha *= 1f - Fx.OutCubic(r);
 				}
+				if (!it.DisplayChecked && !exiting && focused == null && alpha >= 0.99f &&
+					p.Y >= clipAt.Y && p.Y < clipAt.Y + clipSize.Y)
+				{
+					var face = h.CardNode?.Body;
+					if (face == null || !face.IsVisibleInTree() || face.Modulate.A <= 0f || face.Scale.IsZeroApprox())
+						throw new InvalidOperationException($"Pile card {it.Card.Id} has no visible face");
+					it.DisplayChecked = true;
+				}
+				it.Slot.Position = p - clipAt;
+				it.Slot.Rotation = rot;
+				float own = Mathf.Max(0.01f, h.Scale.X);
+				it.Slot.Scale = Vector2.One * (want / own);
+				float dd = it == focused ? 1f : it.Dim;
+				it.Slot.Modulate = new Color(dd, dd, dd, alpha);
 			}
-			catch (Exception e)
+			if (any && hovered?.Clip is Control top && top.GetParent() == cards && top.GetIndex() != cards.GetChildCount() - 1)
+				cards.MoveChild(top, cards.GetChildCount() - 1);
+			if (any && hovered is { Slot: Control ps, Holder: NGridCardHolder ph } hv && GodotObject.IsInstanceValid(ps) && GodotObject.IsInstanceValid(ph))
 			{
-				FallBack("display", e);
+				plate ??= NamePlate(root, k);
+				plate.Visible = true;
+				Vector2 cs = ph.Hitbox.Size.X > 1f ? ph.Hitbox.Size : new Vector2(300f, 422f);
+				float half = cs.Y * ps.Scale.Y * ph.Scale.Y * 0.5f;
+				plate.Position = ps.Position + clipAt + new Vector2(-20f * k, half + 6f * k);
+				((Label)plate.GetChild(plate.GetChildCount() - 1)).Text = hv.Card.Title;
+				float a = Fx.OutCubic(hv.Lift);
+				plate.Modulate = new Color(1f, 1f, 1f, a);
+				plate.Scale = new Vector2(Mathf.Lerp(0.7f, 1f, a), 1f);
+			}
+			else if (plate != null)
+			{
+				plate.Visible = false;
 			}
 		}
 
@@ -842,6 +864,7 @@ public static class PileScreen
 		{
 			if (exiting) return;
 			exiting = true;
+			if (deck) ModEntry.Safe("deck top bar", () => MegaCrit.Sts2.Core.Nodes.NRun.Instance?.GlobalUi.TopBar.Deck.ToggleAnimState());
 			exitT0 = Now();
 			draw.BeginExit(exitT0);
 			// 退场期间继续动画，只在这个即将销毁的界面上禁用鼠标（holder 会回对象池，不改它们的 MouseFilter）
@@ -1246,32 +1269,36 @@ public static class PileScreen
 	/// <summary>NHotkeyManager 的 Push / Remove 在 0.113 多了优先级参数：运行时选签名（P3 Compat.HotkeyBindings 同款）。</summary>
 	private static class HotkeyBindings
 	{
-		private static readonly Type[] Binding = { typeof(string), typeof(Action) };
-		private static readonly Type[] SequencedBinding = { typeof(string), typeof(Action), typeof(long) };
-		private static readonly MethodInfo? PushPressed = FindPush("PushHotkeyPressedBinding");
-		private static readonly MethodInfo? PushReleased = FindPush("PushHotkeyReleasedBinding");
-		private static readonly MethodInfo? RemovePressed = typeof(NHotkeyManager).GetMethod("RemoveHotkeyPressedBinding", Binding);
-		private static readonly MethodInfo? RemoveReleased = typeof(NHotkeyManager).GetMethod("RemoveHotkeyReleasedBinding", Binding);
+		private static readonly Type[] Legacy = [typeof(string), typeof(Action)];
+		private static readonly Type[] Sequenced = [typeof(string), typeof(Action), typeof(long)];
+		private static readonly Type[] Owned = [typeof(string), typeof(Node), typeof(Action)];
+		private static readonly Type[] OwnedSequenced = [typeof(string), typeof(Node), typeof(Action), typeof(long)];
+		private static readonly MethodInfo? PushPressed = Find("PushHotkeyPressedBinding", true);
+		private static readonly MethodInfo? PushReleased = Find("PushHotkeyReleasedBinding", true);
+		private static readonly MethodInfo? RemovePressed = Find("RemoveHotkeyPressedBinding", false);
+		private static readonly MethodInfo? RemoveReleased = Find("RemoveHotkeyReleasedBinding", false);
 
-		private static MethodInfo? FindPush(string name) =>
-			typeof(NHotkeyManager).GetMethod(name, SequencedBinding) ?? typeof(NHotkeyManager).GetMethod(name, Binding);
+		private static MethodInfo? Find(string name, bool push)
+		{
+			var manager = typeof(NHotkeyManager);
+			return push ? manager.GetMethod(name, OwnedSequenced) ?? manager.GetMethod(name, Sequenced) ?? manager.GetMethod(name, Legacy)
+				: manager.GetMethod(name, Owned) ?? manager.GetMethod(name, Legacy);
+		}
 
-		private static object[] Args(MethodInfo method, string key, Action action) =>
-			method.GetParameters().Length == SequencedBinding.Length ? new object[] { key, action, 0L } : new object[] { key, action };
+		private static void Invoke(MethodInfo method, NHotkeyManager manager, string key, Node owner, Action action)
+		{
+			var args = method.GetParameters();
+			object[] values = args[1].ParameterType == typeof(Node)
+				? (args.Length == 4 ? [key, owner, action, 0L] : [key, owner, action])
+				: (args.Length == 3 ? [key, action, 0L] : [key, action]);
+			method.Invoke(manager, values);
+		}
 
-		internal static void Set(NHotkeyManager manager, string key, Action pressed, Action released, bool bind)
+		internal static void Set(NHotkeyManager manager, string key, Node owner, Action pressed, Action released, bool bind)
 		{
 			if (PushPressed == null || PushReleased == null || RemovePressed == null || RemoveReleased == null) return;
-			if (bind)
-			{
-				PushPressed.Invoke(manager, Args(PushPressed, key, pressed));
-				PushReleased.Invoke(manager, Args(PushReleased, key, released));
-			}
-			else
-			{
-				RemovePressed.Invoke(manager, new object[] { key, pressed });
-				RemoveReleased.Invoke(manager, new object[] { key, released });
-			}
+			Invoke(bind ? PushPressed : RemovePressed, manager, key, owner, pressed);
+			Invoke(bind ? PushReleased : RemoveReleased, manager, key, owner, released);
 		}
 	}
 }

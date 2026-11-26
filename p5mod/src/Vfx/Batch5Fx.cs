@@ -139,8 +139,8 @@ public static class Batch5Fx
 		Polygon2D g = Glow.TaperPoly(blade, new Color(1f, 0.15f, 0.22f, 0.9f));
 		Polygon2D c = Glow.TaperPoly(blade, Hot);
 		float r = 26f * u;
-		g.Polygon = Glow.TaperPts(new Vector2(-r, 0f), new Vector2(r, 0f), 12f * u);
-		c.Polygon = Glow.TaperPts(new Vector2(-r * 0.8f, 0f), new Vector2(r * 0.8f, 0f), 4f * u);
+		Glow.SetTaper(g, new Vector2(-r, 0f), new Vector2(r, 0f), 12f * u);
+		Glow.SetTaper(c, new Vector2(-r * 0.8f, 0f), new Vector2(r * 0.8f, 0f), 4f * u);
 		Fx.Animate(blade, 0, 0.09, t =>
 		{
 			blade.GlobalPosition = path(Ease5.OutQuint(t));

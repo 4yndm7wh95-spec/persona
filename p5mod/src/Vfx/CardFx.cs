@@ -181,7 +181,7 @@ void fragment() {
 			Scale = new Vector2(1f, 0.28f), MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Sigil },
 		};
 		sigil.AddChild(ring);
-		void SetS(string n, Variant v) => ((ShaderMaterial)ring.Material).SetShaderParameter(n, v);
+		void SetS(string n, Variant v) => ((ShaderMaterial)ring.Material).SetShaderParameter(Fx.ParameterName(n), v);
 		SetS("open", 0f);
 		Fx.Animate(ring, 0, 1.3, t =>
 		{
@@ -205,8 +205,8 @@ void fragment() {
 				streak.Visible = true;
 				float head = Fx.InCubic(t), tail = Fx.InCubic(Mathf.Max(0f, t - 0.25f) / 0.75f);
 				Vector2 p0 = dir * r0 * (1f - tail), p1 = dir * r0 * (1f - head);
-				glow.Polygon = Glow.TaperPts(p0, p1, 9f);
-				core.Polygon = Glow.TaperPts(p0, p1, 3f);
+				Glow.SetTaper(glow, p0, p1, 9f);
+				Glow.SetTaper(core, p0, p1, 3f);
 			});
 		}
 

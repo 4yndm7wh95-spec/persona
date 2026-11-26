@@ -16,6 +16,16 @@ public static class Fx
 
 	public static float Rand(float min, float max) => min + (float)Rng.NextDouble() * (max - min);
 
+	// Uniform names are a fixed vocabulary shared by the main-thread effect callbacks.
+	private static readonly Dictionary<string, StringName> ParameterNames = new(StringComparer.Ordinal);
+
+	internal static StringName ParameterName(string name)
+	{
+		if (!ParameterNames.TryGetValue(name, out var parameter))
+			ParameterNames.Add(name, parameter = new StringName(name));
+		return parameter;
+	}
+
 	private static CanvasItemMaterial? _additive;
 
 	public static CanvasItemMaterial Additive => _additive ??= new CanvasItemMaterial { BlendMode = CanvasItemMaterial.BlendModeEnum.Add };
@@ -91,7 +101,7 @@ public static class Fx
 			if (Loading.Remove(path))
 				tex = ResourceLoader.LoadThreadedGet(path) as Texture2D;
 			tex ??= Stage.LoadTexture(name);
-			Cache[name] = tex;
+			if (tex != null) Cache[name] = tex;
 		}
 		return tex;
 	}

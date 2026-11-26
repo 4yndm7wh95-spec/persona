@@ -279,7 +279,7 @@ public static partial class SkillRedo5
 				line.Visible = true;
 				float hd = Fx.InCubic(Mathf.Min(1f, t * 1.3f)), tl = Fx.InCubic(t);
 				Vector2 a = dir * Mathf.Lerp(r0, r1, hd), b = dir * Mathf.Lerp(r0 * 1.25f, r1, tl);
-				line.Polygon = Glow.TaperPts(b, a, w);
+				Glow.SetTaper(line, b, a, w);
 				line.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, t * 4f) * (1f - Ease5.Seg(t, 0.8f, 0.2f)));
 			});
 		}

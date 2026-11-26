@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Godot;
+using System.Threading.Tasks;
 
 namespace P5Joker;
 
@@ -84,9 +85,30 @@ public sealed class MenuJoker3D
 	}
 
 	/// <summary>一个片段的全部顶点（[帧][顶点][xyz] float），第一次用时解码 float16。</summary>
+	private static readonly Dictionary<string, Task<float[]?>> PendingClips = new();
+
+	internal static bool PollClip(string name)
+	{
+		if (!Available || Clips.ContainsKey(name)) return true;
+		if (!PendingClips.TryGetValue(name, out var pending))
+		{
+			PendingClips.Add(name, Task.Run(() => ReadClip(name)));
+			return false;
+		}
+		if (!pending.IsCompleted) return false;
+		Clip(name);
+		return true;
+	}
+
 	private static float[]? Clip(string name)
 	{
-		if (Clips.TryGetValue(name, out float[]? c)) return c;
+		if (Clips.TryGetValue(name, out var clip)) return clip;
+		return Clips[name] = PendingClips.Remove(name, out var pending)
+			? pending.GetAwaiter().GetResult() : ReadClip(name);
+	}
+
+	private static float[]? ReadClip(string name)
+	{
 		float[]? data = null;
 		try
 		{
@@ -101,7 +123,6 @@ public sealed class MenuJoker3D
 		{
 			Stage.Report("menu 3d clip " + name, e);
 		}
-		Clips[name] = data;
 		return data;
 	}
 
@@ -119,6 +140,7 @@ public sealed class MenuJoker3D
 	private readonly int[] _offset;
 	private readonly bool[] _rebuild;
 	private readonly Vector3[] _pos;
+	private readonly float[] _cameraValues = new float[7];
 	private readonly Vector2 _view;
 	private readonly float _k, _s;
 	private readonly Vector2 _o;
@@ -290,7 +312,7 @@ public sealed class MenuJoker3D
 		Key k1 = keys[i], k2 = keys[Math.Min(i + 1, keys.Length - 1)];
 		Key k0 = keys[Math.Max(i - 1, 0)], k3 = keys[Math.Min(i + 2, keys.Length - 1)];
 		float t = k2.U > k1.U ? Mathf.Clamp((u - k1.U) / (k2.U - k1.U), 0f, 1f) : 0f;
-		float[] cam = new float[7];
+		float[] cam = _cameraValues;
 		for (int j = 0; j < 7; j++)
 		{
 			float p0 = k0.Cam[j], p1 = k1.Cam[j], p2 = k2.Cam[j], p3 = k3.Cam[j];

@@ -56,7 +56,7 @@ internal static class SkinChangerSelect
 				cachedCatalog = currentCatalog;
 			}
 			return lookup!(groupId, display(groupId), out string provider)
-				&& string.Equals(provider, ProviderId, StringComparison.OrdinalIgnoreCase);
+				? string.Equals(provider, ProviderId, StringComparison.OrdinalIgnoreCase) : null;
 		};
 	}
 

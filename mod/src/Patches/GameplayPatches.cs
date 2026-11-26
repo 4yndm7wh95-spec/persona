@@ -37,7 +37,7 @@ public static class AttackHitVfxPatch
 	{
 		ModEntry.Safe("AttackHitVfx", () =>
 		{
-			if (__instance.ModelSource is CardModel card && CardFx.ReplacesHitVfx(card))
+			if (DamagePatch.Installed && __instance.ModelSource is CardModel card && CardFx.ReplacesHitVfx(card))
 			{
 				HitVfx.SetValue(__instance, null);
 				// 命中音效换成 P3R 原声时（Elements.Hit 里播），关掉原版命中音效（原版对 null 有判断）
@@ -51,24 +51,38 @@ public static class AttackHitVfxPatch
 	}
 }
 
-/// <summary>每一击伤害（所有 Damage 重载最终都汇到这个签名；0.111 带 cardPlay，0.107 不带）。</summary>
+/// <summary>每一击伤害：0.113 汇入 DamageTargetData 重载；旧版汇入 Creature 集合重载。</summary>
 [HarmonyPatch]
 public static class DamagePatch
 {
-	public static IEnumerable<MethodBase> TargetMethods() =>
-		typeof(CreatureCmd).GetMethods(BindingFlags.Public | BindingFlags.Static)
-			.Where(m => m.Name == "Damage" && (Sig.Params(m, "choiceContext", "targets", "amount", "props", "dealer", "cardSource", "cardPlay")
-				|| Sig.Params(m, "choiceContext", "targets", "amount", "props", "dealer", "cardSource")))      // 0.107：最终那个重载还没有 cardPlay 参数
-			.OrderByDescending(m => m.GetParameters().Length).Take(1);            // 两种都在时只挂参数多的那个（别的重载都汇到它）
+	public static bool Installed { get; internal set; }
+	private static readonly FieldInfo? DamageTarget = AccessTools.Field(
+		AccessTools.TypeByName("MegaCrit.Sts2.Core.Entities.Creatures.DamageTargetData") ?? typeof(object), "target");
 
-	public static void Prefix(IEnumerable<Creature>? targets, Creature? dealer, CardModel? cardSource)
+	public static IEnumerable<MethodBase> TargetMethods()
+	{
+		var methods = typeof(CreatureCmd).GetMethods(BindingFlags.Public | BindingFlags.Static).Where(m => m.Name == "Damage");
+		var modern = methods.FirstOrDefault(m => Sig.Params(m, "choiceContext", "targetData", "amount", "props", "dealer", "cardSource", "cardPlay", "modifyDamageHookType"));
+		if (modern != null) { yield return modern; yield break; }
+		foreach (var legacy in methods.Where(m => Sig.Params(m, "choiceContext", "targets", "amount", "props", "dealer", "cardSource", "cardPlay")
+			|| Sig.Params(m, "choiceContext", "targets", "amount", "props", "dealer", "cardSource"))
+			.OrderByDescending(m => m.GetParameters().Length).Take(1)) yield return legacy;
+	}
+
+	// Use the same argument position on both versions without referencing the new struct at compile time.
+	internal static IEnumerable<Creature> ReadTargets(object? value)
+	{
+		if (value is IEnumerable<Creature> creatures) return creatures;
+		if (value is not System.Collections.IEnumerable data || DamageTarget == null) return System.Array.Empty<Creature>();
+		return data.Cast<object>().Select(item => DamageTarget.GetValue(item)).OfType<Creature>();
+	}
+
+	public static void Prefix(object? __1, Creature? dealer, CardModel? cardSource)
 	{
 		ModEntry.Safe("Damage", () =>
 		{
-			if (targets == null)
-			{
-				return;
-			}
+			Creature[] targets = ReadTargets(__1).ToArray();
+			if (targets.Length == 0) return;
 			if (CardFx.IsMakotoCard(cardSource))
 			{
 				Popups.MarkHits(targets);

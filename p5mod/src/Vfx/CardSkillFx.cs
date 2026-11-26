@@ -79,7 +79,7 @@ float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { v += a
 		return r;
 	}
 
-	private static void Set(ColorRect r, string name, Variant v) => ((ShaderMaterial)r.Material).SetShaderParameter(name, v);
+	private static void Set(ColorRect r, string name, Variant v) => ((ShaderMaterial)r.Material).SetShaderParameter(Fx.ParameterName(name), v);
 
 	/// <summary>涂毒手上那团翻滚的咒毒（用户认可的画法），给别的牌复用：边长 size 的方块，grow / alpha / clock 由调用方驱动（不自动走时钟）。</summary>
 	internal static ColorRect VenomBlob(Node parent, float size)

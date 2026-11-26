@@ -2,14 +2,15 @@ using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Nodes.Screens.CharacterSelect;
 using MegaCrit.Sts2.Core.Nodes.Vfx;
+using MegaCrit.Sts2.Core.Nodes.HoverTips;
 using P3Makoto.Core;
 using P3Makoto.Scenes;
+using P3Makoto.Vfx;
 
 namespace P3Makoto.Patches;
 
 /// <summary>
-/// 君王之刃：结城理不显示环绕的大剑（v0.9.2 起由 Persona 代替：出牌时眼神切入 → 召唤器 → Thanatos 现身斩击，见 CutInFx / PersonaFx）。
-/// 整棵节点透明、悬停框不再接收鼠标（伤害数值在卡牌上照常显示）；仍保留换色，万一别处把它显示出来也是 P3 蓝。
+/// 用绕身蓝蝶替换君王之剑的场景模型，并让原版悬停框跟随蝴蝶。
 /// </summary>
 [HarmonyPatch(typeof(NSovereignBladeVfx), "_Ready")]
 public static class SovereignBladeReskinPatch
@@ -20,10 +21,67 @@ public static class SovereignBladeReskinPatch
 		{
 			if (Makoto.Is(__instance.Card?.Owner))
 			{
+				if (Makoto.FxLayer() is not { } front || Makoto.FxLayer(back: true) is not { } back)
+					return;
+
+				var owner = __instance.Card?.Owner;
+				var butterfly = SovereignButterfly.Start(front, back, () =>
+				{
+					if (Makoto.Node(owner) is not { } creature || !GodotObject.IsInstanceValid(creature) ||
+						!creature.IsInsideTree() || creature.Entity.IsDead)
+						return null;
+
+					var toLocal = front.GetGlobalTransform().AffineInverse();
+					Vector2 feet = toLocal * Makoto.Feet(creature);
+					Vector2 head = toLocal * Makoto.Head(creature);
+					return (feet, Mathf.Max(1f, feet.DistanceTo(head)));
+				});
 				BladeReskin.Apply(__instance);
 				BladeReskin.Hide(__instance);
+				AttachHover(__instance, front, butterfly);
+				__instance.TreeExiting += butterfly.Stop;
 			}
 		});
+	}
+
+	private static readonly AccessTools.FieldRef<NSovereignBladeVfx, NHoverTipSet?> HoverTip =
+		AccessTools.FieldRefAccess<NSovereignBladeVfx, NHoverTipSet?>("_hoverTip");
+
+	private static void AttachHover(NSovereignBladeVfx blade, Control front, SovereignButterfly butterfly)
+	{
+		if (blade.GetNodeOrNull<Control>("%Hitbox") is not { } hitbox) return;
+		hitbox.Hide();
+
+		void HideHover()
+		{
+			if (!GodotObject.IsInstanceValid(hitbox)) return;
+			hitbox.Hide();
+			if (GodotObject.IsInstanceValid(HoverTip(blade)))
+			{
+				NHoverTipSet.Remove(hitbox);
+				HoverTip(blade) = null;
+			}
+		}
+
+		butterfly.IsHovered = () => GodotObject.IsInstanceValid(blade) &&
+			GodotObject.IsInstanceValid(HoverTip(blade));
+		butterfly.MoveHoverTarget = (position, radius) =>
+		{
+			if (!GodotObject.IsInstanceValid(blade) || !GodotObject.IsInstanceValid(hitbox)) return;
+			if (position is not Vector2 center)
+			{
+				HideHover();
+				return;
+			}
+
+			// Keep the native signals and target-selection behavior, outside the sword's animated transform.
+			if (hitbox.GetParent() != blade) hitbox.Reparent(blade, false);
+			Transform2D transform = blade.GetGlobalTransform().AffineInverse() * front.GetGlobalTransform();
+			hitbox.Size = new Vector2(transform.X.Length() * 2.5f, transform.Y.Length() * 1.9f) * radius;
+			hitbox.Position = transform * center - hitbox.Size * 0.5f;
+			hitbox.Show();
+		};
+		blade.TreeExiting += HideHover;
 	}
 }
 
@@ -35,7 +93,7 @@ public static class CharSelectBgPatch
 	{
 		ModEntry.Safe("CharSelectBg", () =>
 		{
-			if (!Makoto.AssetsOurs)
+			if (!MakotoSelectSkin.IsSelected)
 			{
 				return;                                 // 储君骨骼被别的换皮 mod 换掉了：选人界面也让给它
 			}
@@ -49,9 +107,26 @@ public static class CharSelectBgPatch
 [HarmonyPatch(typeof(NCharacterSelectScreen), nameof(NCharacterSelectScreen.SelectCharacter))]
 public static class CharSelectInfoPatch
 {
-	public static void Postfix(NCharacterSelectScreen __instance, NCharacterSelectButton charSelectButton, MegaCrit.Sts2.Core.Models.CharacterModel characterModel)
+	public static void Prefix(NCharacterSelectScreen __instance) =>
+		ModEntry.Safe("CharSelectInfo restore", () => CharSelectInfo.Clear(__instance));
+
+	// SkinChanger passes this argument by name during its presentation replay.
+	[HarmonyAfter("Gurio.SkinChanger")]
+	public static void Postfix(NCharacterSelectScreen __instance, [HarmonyArgument(0)] NCharacterSelectButton charSelectButton)
 	{
-		ModEntry.Safe("CharSelectInfo", () => Vfx.Perf.Time("info panel apply", () => CharSelectInfo.Apply(__instance, charSelectButton, characterModel)));
+		ModEntry.Safe("CharSelectInfo", () => Vfx.Perf.Time("info panel apply", () =>
+		{
+			if (charSelectButton.IsRandom || charSelectButton.IsLocked || charSelectButton.Character.GetType().Name != "Regent"
+				|| !MakotoSelectSkin.IsSelected)
+				return;
+
+			if (MakotoSelectSkin.ManagedSelection == true
+				&& __instance.GetNodeOrNull<Control>("AnimatedBg/" + charSelectButton.Character.Id.Entry + "_bg") is { } bg)
+				CharSelectBg.Build(bg);
+
+			CharSelectInfo.Clear(__instance);
+			CharSelectInfo.Apply(__instance, charSelectButton, charSelectButton.Character);
+		}));
 	}
 }
 

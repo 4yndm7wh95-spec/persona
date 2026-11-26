@@ -56,7 +56,7 @@ float noise(vec2 p) {
 		return r;
 	}
 
-	private static void Set(ColorRect r, string name, Variant v) => ((ShaderMaterial)r.Material).SetShaderParameter(name, v);
+	private static void Set(ColorRect r, string name, Variant v) => ((ShaderMaterial)r.Material).SetShaderParameter(Fx.ParameterName(name), v);
 
 	private static float Unit(Control layer) => Fx.Screen(layer).Y / 1080f;
 

@@ -122,12 +122,15 @@ void fragment() {
 	COLOR = vec4(mix(vec3(1.0), tint, m * 0.62), 1.0);
 }" };
 
+	// One cast has twelve front/back pairs. Concurrent casts rent distinct materials.
+	private static readonly Stack<ShaderMaterial> IdleArcMaterials = new(24);
+
 	private sealed class Blade
 	{
 		public Node2D B = null!, F = null!;
 		public ShaderMaterial MB = null!, MF = null!;
 		public float Y, R, Tilt, W, Spin, Len, Phase, Delay;
-		public void Set(string n, Variant v) { MB.SetShaderParameter(n, v); MF.SetShaderParameter(n, v); }
+		public void Set(string n, Variant v) { MB.SetShaderParameter(Fx.ParameterName(n), v); MF.SetShaderParameter(Fx.ParameterName(n), v); }
 	}
 
 	/// <summary>
@@ -178,7 +181,7 @@ void fragment() {
 				line.Visible = true;
 				float hd = Fx.InCubic(Mathf.Min(1f, t * 1.3f)), tl = Fx.InCubic(t);
 				Vector2 a = dir * Mathf.Lerp(r0, r1, hd), b = dir * Mathf.Lerp(r0 * 1.25f, r1, tl);
-				line.Polygon = Glow.TaperPts(b, a, w);
+				Glow.SetTaper(line, b, a, w);
 				line.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, t * 4f) * (1f - Ease5.Seg(t, 0.8f, 0.2f)));
 			});
 		}
@@ -212,7 +215,7 @@ void fragment() {
 			foreach (bool front in new[] { false, true })
 			{
 				Node2D n = Fx.Root(front ? c.Front : back, feet, front ? "P5BladeF" : "P5BladeB", life + 0.1);
-				ShaderMaterial m = new() { Shader = Arc };
+				var m = IdleArcMaterials.TryPop(out var idle) ? idle : new ShaderMaterial { Shader = Arc };
 				m.SetShaderParameter("side", front ? 1f : -1f);
 				m.SetShaderParameter("tint", sp.tint);
 				m.SetShaderParameter("hot", sp.hot);
@@ -221,7 +224,14 @@ void fragment() {
 				m.SetShaderParameter("seed", Fx.Rand(0f, 9f));
 				m.SetShaderParameter("dir", Mathf.Sign(b.Spin));
 				m.SetShaderParameter("len", b.Len);
-				n.AddChild(new ColorRect { Size = new Vector2(2f, 2f), Position = new Vector2(-1f, -1f), Material = m, MouseFilter = Control.MouseFilterEnum.Ignore });
+				var rect = new ColorRect { Size = new Vector2(2f, 2f), Position = new Vector2(-1f, -1f), Material = m, MouseFilter = Control.MouseFilterEnum.Ignore };
+				n.AddChild(rect);
+				rect.TreeExiting += () =>
+				{
+					if (!n.IsQueuedForDeletion() || IdleArcMaterials.Count >= 24) return;
+					rect.Material = null;
+					IdleArcMaterials.Push(m);
+				};
 				n.Visible = false;
 				if (front) { b.F = n; b.MF = m; } else { b.B = n; b.MB = m; }
 			}
@@ -249,12 +259,9 @@ void fragment() {
 				float ang = b.Phase + b.Spin * (a * boost + c0 * 0.4f);
 				Vector2 at = feet + new Vector2(0f, -h * yy);
 				Vector2 sz = new(rr * 2f, rr * 2f * squash);
-				foreach (Node2D n in new[] { b.B, b.F })
-				{
-					n.GlobalPosition = at;
-					n.Rotation = b.Tilt;
-					n.Scale = sz / 2f;
-				}
+				b.B.GlobalPosition = b.F.GlobalPosition = at;
+				b.B.Rotation = b.F.Rotation = b.Tilt;
+				b.B.Scale = b.F.Scale = sz / 2f;
 				b.Set("head", Mathf.PosMod(ang, Mathf.Tau));
 				b.Set("flow", a * 14f);
 				b.Set("alpha", Mathf.Min(1f, a / 0.08f) * (1f - Ease5.Seg(s, snap + 0.04f, 0.14f)));

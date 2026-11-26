@@ -1,10 +1,10 @@
 {
   "id": "P5Joker",
   "name": "P5 Joker（静默猎手换皮）",
-  "author": "brooks",
-  "description": "将《杀戮尖塔 2》的静默猎手替换为《女神异闻录 5》的 Joker，包含专属动画、战斗特效、音效和界面。",
-  "version": "0.9.77",
-  "has_pck": true,
+  "author": "B站川川errr 抖音川川",
+  "description": "MOD唯一作者：B站川川errr 抖音川川。如果您在B站、抖音、玩家动力之外的渠道获取本MOD，均为盗版！",
+  "version": "0.9.83",
+  "has_pck": false,
   "has_dll": true,
   "affects_gameplay": false
 }

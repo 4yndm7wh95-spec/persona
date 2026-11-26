@@ -70,7 +70,7 @@ void fragment() {
 
 		public void Set(string name, Variant v)
 		{
-			foreach (var (_, m, _) in Segs) m.SetShaderParameter(name, v);
+			foreach (var (_, m, _) in Segs) m.SetShaderParameter(Fx.ParameterName(name), v);
 		}
 	}
 

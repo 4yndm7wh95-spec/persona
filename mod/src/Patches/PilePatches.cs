@@ -68,14 +68,16 @@ public static class DeckScreenPatch
 	}
 }
 
-/// <summary>v0.14.56：牌组界面关闭时也先播退场动画（NDeckViewScreen 重写的 AfterCapstoneClosed 会先调这个基类方法）。</summary>
-[HarmonyPatch(typeof(NCardsViewScreen), nameof(NCardsViewScreen.AfterCapstoneClosed))]
+/// <summary>牌组关闭时直接接管具体界面的退场，保留顶栏按钮的状态切换。</summary>
+[HarmonyPatch(typeof(NDeckViewScreen), nameof(NDeckViewScreen.AfterCapstoneClosed))]
 public static class CardsViewClosePatch
 {
-	public static bool Prefix(NCardsViewScreen __instance)
+	public static bool Prefix(NDeckViewScreen __instance)
 	{
 		bool handled = false;
 		ModEntry.Safe("deck screen exit", () => handled = PileFx.TryExit(__instance));
+		if (handled)
+			ModEntry.Safe("deck top bar", () => MegaCrit.Sts2.Core.Nodes.NRun.Instance?.GlobalUi.TopBar.Deck.ToggleAnimState());
 		return !handled;
 	}
 }

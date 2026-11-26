@@ -112,11 +112,13 @@ public static class PileFx
 
 	private sealed class Item
 	{
+		public bool DisplayChecked;
 		public Control? Clip;
 		public Control? Slot;
 		public NGridCardHolder? Holder;
 		public CardModel Card = null!;
 		public int Index;
+		public bool AnimateEntrance;
 		public float Born = -1f;
 		public float Lift;
 		public float Dim = 1f;
@@ -144,15 +146,15 @@ public static class PileFx
 	/// 原版是 Pile.Cards 再按 稀有度 → Id 用 List.Sort（不稳定排序）排一次 —— 同名牌谁在前取决于牌堆里的实际位置，SL 靠的就是这个。
 	/// 优先直接读原版网格（我们只是把它藏起来，它照样排好了），游戏更新了排法也跟着变；读不到时按同一段代码现算（同输入同算法 = 同结果）。
 	/// </summary>
-	private static List<CardModel> VanillaOrder(Control grid, CardPile pile)
+	private static List<CardModel> VanillaOrder(Control grid, PileType type, List<CardModel> cards)
 	{
-		List<CardModel> cards = pile.Cards.ToList();
 		if (grid is NCardGrid g && GridCards != null && GridCards(g) is List<CardModel> shown && shown.Count == cards.Count && shown.All(c => cards.Contains(c)))
 		{
 			return shown.ToList();
 		}
-		if (pile.Type == PileType.Draw)
+		if (type == PileType.Draw)
 		{
+			cards = cards.ToList();
 			cards.Sort((c1, c2) => c1.Rarity != c2.Rarity ? c1.Rarity.CompareTo(c2.Rarity) : string.Compare(c1.Id.Entry, c2.Id.Entry, StringComparison.Ordinal));
 		}
 		return cards;
@@ -201,8 +203,8 @@ public static class PileFx
 	public static void Rollback(Control screen)
 	{
 		Exits.Remove(screen.GetInstanceId());
-		if (screen.GetNodeOrNull(RootName) is Node root) HeroStage.Close(root);
-		screen.GetNodeOrNull(RootName)?.QueueFree();
+		if (screen.GetNodeOrNull<Control>(RootName) is not Control root) return;
+		root.Hide();
 		foreach (string path in Hidden)
 		{
 			if (screen.GetNodeOrNull<CanvasItem>(path) is CanvasItem ci)
@@ -210,6 +212,8 @@ public static class PileFx
 				ci.Visible = true;
 			}
 		}
+		ModEntry.Safe("pile hero rollback", () => HeroStage.Close(root));
+		root.QueueFree();
 	}
 
 	public static void Build(Control screen, CardPile pile, Kind kind)
@@ -219,6 +223,7 @@ public static class PileFx
 			return;
 		}
 		Vector2 view = screen.GetViewportRect().Size;
+		if (view.X <= 0f || view.Y <= 0f) return;
 		ulong buildStart = Time.GetTicksUsec();
 		float k = view.Y / 1080f;
 		float rx = view.X - 1920f * k;                    // 右侧元素的水平偏移（宽屏时贴右边缘）
@@ -502,34 +507,22 @@ public static class PileFx
 		bool focusUp = false;                                   // 特写这张现在显示的是不是升级后
 		float upT0 = -1f;                                       // 翻转开始的时间（< 0 = 没在翻）
 		bool upSwapped = false;
-		CardModel? upModel = null;
 		const float UpFlipTime = 0.6f;
 
 		void ShowFace(Item it, bool up)
 		{
-			if (up && upModel == null)
-			{
-				upModel = (CardModel)it.Card.MutableClone();
-				upModel.UpgradeInternal();
-			}
+			// Let the native holder select its own preview model for this game build.
+			var holder = it.Holder;
+			if (holder == null || !GodotObject.IsInstanceValid(holder)) return;
+			if (it.Card.IsUpgradable) holder.SetIsPreviewingUpgrade(up);
+			var model = holder.CardNode?.Model ?? throw new InvalidOperationException($"Pile preview for {it.Card.Id} has no model");
 			if (flip?.Card is NCard fc && GodotObject.IsInstanceValid(fc))
 			{
-				if (up && upModel != null)
-				{
-					fc.Model = upModel;
-					fc.ShowUpgradePreview();
-				}
-				else
-				{
-					fc.Model = it.Card;
-					fc.UpdateVisuals(pile.Type, CardPreviewMode.Normal);
-				}
+				fc.Model = model;
+				if (up && it.Card.IsUpgradable) fc.ShowUpgradePreview();
+				else fc.UpdateVisuals(pile.Type, CardPreviewMode.Normal);
 			}
-			if (it.Holder != null && GodotObject.IsInstanceValid(it.Holder) && it.Card.IsUpgradable)
-			{
-				it.Holder.SetIsPreviewingUpgrade(up);
-			}
-			Fill(fx!, up && upModel != null ? upModel : it.Card, pile, k);
+			Fill(fx!, model, pile, k);
 		}
 
 		void FlipUpgrade()
@@ -562,48 +555,58 @@ public static class PileFx
 		List<Section> sections = new();
 		List<Section> dying = new();
 		float sweepT0 = -10f;
-		List<CardModel> pending = new();
+		Queue<Item> pending = new();
+		List<CardModel>? displayed = null;
 		Item? hovered = null;
 		float scroll = 0f, target = 0f, contentH = 0f;
 		bool dragging = false;
 		float dragFrom = 0f, dragScroll = 0f;
 		float nextBorn = dive ? 0.35f : 0.22f;              // 入水：等水花散开再出牌
 
-		void Refill()
+		void ReleaseCard(Item it)
 		{
-			foreach (Item it in items)
+			// The holder owns the card and returns it on exit. Return the holder
+			// before deleting the clipping wrapper that contains it.
+			if (it.Holder is { } holder && GodotObject.IsInstanceValid(holder) && holder.GetParent() == it.Slot)
+				holder.QueueFreeSafely();
+			if (it.Clip is { } clip && GodotObject.IsInstanceValid(clip)) clip.QueueFree();
+			it.Holder = null;
+			it.Slot = null;
+			it.Clip = null;
+		}
+
+		void Refresh(List<CardModel> all, bool animateSort)
+		{
+			bool initial = displayed == null;
+			if (!animateSort && displayed != null && all.SequenceEqual(displayed, ReferenceEqualityComparer.Instance)) return;
+			var groups = Groups(all);
+			var reuse = new Dictionary<CardModel, Item>(ReferenceEqualityComparer.Instance);
+			foreach (Item it in items) reuse[it.Card] = it;
+			foreach (Section section in sections)
 			{
-				// 卡牌 holder 是对象池里的：先还回池子，再删外面的 slot
-				if (it.Holder != null && GodotObject.IsInstanceValid(it.Holder))
+				if (animateSort)
 				{
-					it.Holder.QueueFreeSafely();
+					section.Die = Now();
+					dying.Add(section);
 				}
-				if (it.Clip != null && GodotObject.IsInstanceValid(it.Clip))
-				{
-					it.Clip.QueueFree();
-				}
+				else if (GodotObject.IsInstanceValid(section.Head)) section.Head.QueueFree();
 			}
-			foreach (Section s in sections)
-			{
-				if (GodotObject.IsInstanceValid(s.Head))
-				{
-					s.Head.QueueFree();
-				}
-			}
-			items.Clear();
 			sections.Clear();
 			pending.Clear();
-			hovered = null;
-			focused = null;
-			focusOn = false;
-			focusP = 0f;
-			catcher.Visible = false;
-			FreeFlip(flip);
-			flip = null;
-
-			List<CardModel> all = pile.Cards.ToList();
-			float y = Place(Groups(all), null);
-			contentH = y;
+			contentH = Place(groups, reuse, animateSort, initial);
+			foreach (Item gone in reuse.Values) ReleaseCard(gone);
+			if (hovered != null && !items.Contains(hovered)) hovered = null;
+			if (focused != null && !items.Contains(focused))
+			{
+				focused = null;
+				focusOn = false;
+				focusP = 0f;
+				catcher.Visible = false;
+				upBtn?.Hide();
+				FreeFlip(flip);
+				flip = null;
+			}
+			displayed = all;
 			countL.Text = all.Count.ToString();
 			if (item && itemHeader != null)
 			{
@@ -623,7 +626,7 @@ public static class PileFx
 			if (orderMode)
 			{
 				// 原版顺序：一整段，从左到右、从上往下（行宽按我们的版式，不照抄原版一行几张）
-				if (all.Count > 0) groups.Add((kind == Kind.Draw ? "DRAW ORDER" : kind == Kind.Deck ? "DECK ORDER" : kind == Kind.Discard ? "DISCARD ORDER" : "EXHAUST ORDER", "", VanillaOrder(grid, pile)));   // v0.14.100：不加中文副标题（和 ×张数 叠在一起，也没用）
+				if (all.Count > 0) groups.Add((kind == Kind.Draw ? "DRAW ORDER" : kind == Kind.Deck ? "DECK ORDER" : kind == Kind.Discard ? "DISCARD ORDER" : "EXHAUST ORDER", "", VanillaOrder(grid, pile.Type, all)));   // v0.14.100：不加中文副标题（和 ×张数 叠在一起，也没用）
 			}
 			else
 			{
@@ -636,8 +639,8 @@ public static class PileFx
 			return groups;
 		}
 
-		// 按分组摆位置。reuse == null：新建 Item（之后分批建牌）；否则沿用已有的牌，只给新位置（切换排列模式，牌飞过去）
-		float Place(List<(string En, string Zh, List<CardModel> Cards)> groups, Dictionary<CardModel, Item>? reuse)
+		// Reuse holders and their entrance state across pile changes and sorting.
+		float Place(List<(string En, string Zh, List<CardModel> Cards)> groups, Dictionary<CardModel, Item> reuse, bool animateSort, bool initial)
 		{
 			float y = 0f;
 			int index = 0;
@@ -645,34 +648,27 @@ public static class PileFx
 			List<Item> order = new();
 			foreach ((string en, string zh, List<CardModel> list) in groups)
 			{
-				sections.Add(new Section { Head = SectionHead(heads, en, zh, list.Count, font, k, L.Cols * L.CellW), Y = y, Born = reuse != null ? now + 0.18f : -1f });
+				sections.Add(new Section { Head = SectionHead(heads, en, zh, list.Count, font, k, L.Cols * L.CellW), Y = y, Born = animateSort ? now + 0.18f : -1f });
 				y += HeaderH;
 				for (int i = 0; i < list.Count; i++)
 				{
 					Vector2 at = new((i % L.Cols) * L.CellW + L.CellW / 2f, y + (i / L.Cols) * L.CellH + L.CellH / 2f);
-					if (reuse != null && reuse.Remove(list[i], out Item? it))
+					if (!reuse.Remove(list[i], out Item? it))
 					{
-						it.From = it.At;
-						it.At = at;
-						it.Index = index;
-						it.MoveT0 = now;
-						it.MoveDelay = Mathf.Min(0.3f, index * 0.014f);
-						order.Add(it);
-						index++;
-						continue;
+						it = new Item { Card = list[i], At = at, AnimateEntrance = initial };
 					}
-					pending.Add(list[i]);
-					Item n = new() { Card = list[i], Index = index++, At = at };
-					items.Add(n);
-					order.Add(n);
+					it.From = it.At;
+					it.At = at;
+					it.Index = index++;
+					it.MoveT0 = animateSort ? now : -1f;
+					it.MoveDelay = Mathf.Min(0.3f, it.Index * 0.014f);
+					if (it.Slot == null) pending.Enqueue(it);
+					order.Add(it);
 				}
 				y += Mathf.Ceil(list.Count / (float)L.Cols) * L.CellH + 16f;
 			}
-			if (reuse != null)
-			{
-				items.Clear();
-				items.AddRange(order);
-			}
+			items.Clear();
+			items.AddRange(order);
 			return y;
 		}
 
@@ -692,32 +688,11 @@ public static class PileFx
 				case Kind.Exhaust: P3Settings.Current.ExhaustPileOrder = toOrder; break;
 			}
 			P3Settings.Save();
-			float now = Now();
-			foreach (Section s in sections)
-			{
-				s.Die = now;
-			}
-			dying.AddRange(sections);
-			sections.Clear();
-			Dictionary<CardModel, Item> reuse = new(ReferenceEqualityComparer.Instance);
-			foreach (Item it in items)
-			{
-				reuse[it.Card] = it;
-			}
-			List<Item> before = items.ToList();
-			contentH = Place(Groups(pile.Cards.ToList()), reuse);
-			foreach (Item gone in reuse.Values)
-			{
-				// 牌堆在切换的同一帧变了（极少见）：多出来的直接还回去
-				if (gone.Holder != null && GodotObject.IsInstanceValid(gone.Holder)) gone.Holder.QueueFreeSafely();
-				if (gone.Slot != null && GodotObject.IsInstanceValid(gone.Slot)) gone.Slot.QueueFree();
-			}
-			target = Mathf.Clamp(target, 0f, MaxScroll());
-			sweepT0 = now;
+			Refresh(pile.Cards.ToList(), animateSort: true);
+			sweepT0 = Now();
 			modeSwitch.Set(toOrder);
 			Audio.Sfx.Clip("ShuffleTime_CardSet", 0.4f);
 		}
-		modeSwitch.Changed = Switch;
 		// 扫光：一道青色细光带从网格顶扫到底（切换排列模式时）
 		Polygon2D sweep = new() { Color = new Color(0.55f, 0.9f, 1f, 0f), Polygon = new[] { new Vector2(-20f, -3f), new Vector2(L.Cols * L.CellW + 20f, -3f), new Vector2(L.Cols * L.CellW + 20f, 3f), new Vector2(-20f, 3f) }.Select(v => v * k).ToArray() };
 		heads.AddChild(sweep);
@@ -726,28 +701,40 @@ public static class PileFx
 
 		void Create(Item it)
 		{
-			NCard? card = NCard.Create(it.Card);
-			NGridCardHolder? h = card != null ? NGridCardHolder.Create(card) : null;
-			if (h == null)
+			NCard card = NCard.Create(it.Card) ?? throw new InvalidOperationException($"Could not create pile card {it.Card.Id}");
+			NGridCardHolder h;
+			try
 			{
-				card?.QueueFreeSafely();
-				return;
+				h = NGridCardHolder.Create(card) ?? throw new InvalidOperationException($"Could not create pile card holder {it.Card.Id}");
 			}
-			Control slot = new() { MouseFilter = Control.MouseFilterEnum.Ignore, Modulate = new Color(1f, 1f, 1f, 0f) };
+			catch
+			{
+				if (card.GetParent() == null) card.QueueFreeSafely();
+				throw;
+			}
 			Control clip = new() { Name = "PileCardClip", Position = clipAt, Size = clipSize,
 				ClipContents = true, MouseFilter = Control.MouseFilterEnum.Ignore };
-			cards.AddChild(clip);
+			Control slot = new() { MouseFilter = Control.MouseFilterEnum.Ignore, Modulate = new Color(1f, 1f, 1f, 0f) };
 			clip.AddChild(slot);
+			it.Clip = clip;
+			it.Slot = slot;
+			it.Holder = h;
+			it.DisplayChecked = false;
 			h.Visible = true;
 			slot.AddChild(h);
-			card!.UpdateVisuals(pile.Type, CardPreviewMode.Normal);
+			cards.AddChild(clip);
+			if (!card.IsInsideTree() || h.CardNode != card)
+				throw new InvalidOperationException($"Pile card {it.Card.Id} did not attach to its holder");
+			card.UpdateVisuals(pile.Type, CardPreviewMode.Normal);
 			h.SetIsPreviewingUpgrade(upgradeOn && it.Card.IsUpgradable);
 			PooledCardInput.Track(h);
-			it.Slot = slot;
-			it.Clip = clip;
-			it.Holder = h;
-			it.Born = Mathf.Max(Now(), nextBorn);
-			nextBorn = it.Born + 0.022f;
+			// Only the opening snapshot plays the stagger. Live arrivals can be
+			// replaced again on the next frame, so show them as soon as they exist.
+			if (it.AnimateEntrance)
+			{
+				it.Born = Mathf.Max(Now(), nextBorn);
+				nextBorn = it.Born + 0.022f;
+			}
 			bool OwnsHolder() => !exiting && GodotObject.IsInstanceValid(root) && root.IsInsideTree()
 				&& GodotObject.IsInstanceValid(h) && h.GetParent() == slot && it.Holder == h;
 			void Enter()
@@ -805,7 +792,6 @@ public static class PileFx
 				cards.MoveChild(upBtn!.Root, cards.GetChildCount() - 1);     // 按钮在挡点击层上面才点得到
 				flip = MakeFlip(root, front, it.Card, pile.Type, it.Holder);
 				catcher.Visible = true;
-				upModel = null;
 				upT0 = -1f;
 				focusUp = upgradeOn && it.Card.IsUpgradable;               // 牌组界面勾了「查看升级」：特写从升级后开始
 				ShowFace(it, focusUp);
@@ -847,20 +833,12 @@ public static class PileFx
 			backBound = on;
 			foreach (string key in backKeys)
 			{
-				if (!InputMap.HasAction(key))
+				if (on && !InputMap.HasAction(key))
 				{
 					continue;                                    // 旧版本没有的动作不挂（否则每次按键都会报"动作不存在"）
 				}
-				if (on)
-				{
-					hk.PushHotkeyPressedBinding(key, unzoom);
-					hk.PushHotkeyReleasedBinding(key, swallow);   // 原版返回按钮可能挂在"松开"上：特写期间一并挡住
-				}
-				else
-				{
-					hk.RemoveHotkeyPressedBinding(key, unzoom);
-					hk.RemoveHotkeyReleasedBinding(key, swallow);
-				}
+				// 原版返回按钮可能挂在"松开"上：特写期间一并挡住。
+				Compat.HotkeyBindings.Set(hk, key, root, unzoom, swallow, on);
 			}
 		}
 
@@ -1029,365 +1007,369 @@ public static class PileFx
 			}
 		});
 
-		Refill();
-		Action onChanged = () => ModEntry.Safe("pile changed", () =>
-		{
-			nextBorn = Now();
-			Refill();
-		});
-		pile.ContentsChanged += onChanged;
-
 		SceneTree tree = screen.GetTree();
-		// v0.14.53 兜底：每帧的排版连续出错 3 次 → 拆掉这个界面、退回原版网格（不能留一堆没排好的牌）
-		int tickFails = 0;
-		void RunTick(Action body)
+		bool needsRefill = false;
+		void OnChanged() => needsRefill = true;
+
+		void FallBack(string where, Exception error)
 		{
-			try
+			tree.ProcessFrame -= Tick;
+			pile.ContentsChanged -= OnChanged;
+			ModEntry.Safe("pile input cleanup", () => BindBack(false));
+			Rollback(screen);
+			if (exiting) Finalize(screen);
+			ModEntry.Report($"pile {kind} {where} ({pile.Cards.Count} cards in pile, {items.Count} slots, {pending.Count} pending); using vanilla grid", error);
+			ModEntry.Safe("pile card cleanup", () =>
 			{
-				body();
-				tickFails = 0;
-			}
-			catch (Exception e)
-			{
-				ModEntry.Report("pile tick", e);
-				if (++tickFails >= 3)
-				{
-					tree.ProcessFrame -= Tick;
-					BindBack(false);
-					ModEntry.Warn("pile screen: layout keeps failing -> back to the vanilla grid");
-					FreeFlip(flip);
-					flip = null;
-					Rollback(screen);
-				}
-			}
+				foreach (Item it in items) ReleaseCard(it);
+			});
 		}
 
+		modeSwitch.Changed = order =>
+		{
+			try { Switch(order); }
+			catch (Exception e) { FallBack("sort", e); }
+		};
+
 		void Tick()
+		{
+			try { RenderFrame(); }
+			catch (Exception e) { FallBack("display", e); }
+		}
+
+		// Keep the exception boundary outside the method the CLR must bind.
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+		void RenderFrame()
 		{
 			if (!GodotObject.IsInstanceValid(root) || !root.IsVisibleInTree())
 			{
 				return;
 			}
-			RunTick(() =>
+			// A draw/shuffle can raise ContentsChanged for each card. Rebuild once
+			// from the final snapshot, outside the game's notification callback.
+			if (!exiting && (needsRefill || items.Count != pile.Cards.Count))
 			{
-				SyncGridUpgradePreview();                      // 必须早于本帧分批建牌，不能沿用 _Ready 的默认选中值。
-				float now = Now();
-				float dt = Mathf.Clamp(now - lastNow, 0f, 0.1f);
-				lastNow = now;
-				// 特写进度：进 0.5s、退 0.42s
-				focusP = Mathf.MoveToward(focusP, focusOn ? 1f : 0f, dt / (focusOn ? 0.5f : 0.42f));
-				if (focused != null && !focusOn && focusP <= 0f)
+				needsRefill = false;
+				Refresh(pile.Cards.ToList(), animateSort: false);
+			}
+			SyncGridUpgradePreview();                      // 必须早于本帧分批建牌，不能沿用 _Ready 的默认选中值。
+			float now = Now();
+			float dt = Mathf.Clamp(now - lastNow, 0f, 0.1f);
+			lastNow = now;
+			// 特写进度：进 0.5s、退 0.42s
+			focusP = Mathf.MoveToward(focusP, focusOn ? 1f : 0f, dt / (focusOn ? 0.5f : 0.42f));
+			if (focused != null && !focusOn && focusP <= 0f)
+			{
+				BindBack(false);
+				upBtn?.Hide();
+				focused = null;
+				catcher.Visible = false;
+				FreeFlip(flip);
+				flip = null;
+			}
+			float fe = Ease.InOutCubic(focusP);
+			Vector2 focusCenter = focusAt * k;
+			if (fx != null) Animate(fx, fe, focusP, focusOn, now, focusCenter, k);
+			// ITEM / SKILL use a slightly longer, continuous ease like the existing focus transition.
+			float exitSeconds = item || skill ? 0.54f : ExitTime;
+			float ex = exiting ? Mathf.Clamp((now - exitT0) / exitSeconds, 0f, 1f) : 0f;
+			butterfly.Update(now, dt);
+			if (exiting)
+			{
+				float ei = item ? Ease.InOutCubic(ex) : Ease.InCubic(ex);
+				// SKILL's white panels touch the viewport edges: sliding them exposes
+				// their rectangular bounds. Fade in place while the water iris closes.
+				right.Position = skill ? Vector2.Zero : new Vector2(820f * k * L.Side * ei, 0f);
+				float decorOut = skill ? Ease.InOutCubic(ex)
+					: item ? Ease.InOutSine(Mathf.Clamp((ex - 0.1f) / 0.9f, 0f, 1f))
+					: Ease.InCubic(Mathf.Clamp((ex - 0.3f) / 0.7f, 0f, 1f));
+				right.Modulate = new Color(1f, 1f, 1f, decorExitAlpha * (1f - decorOut));
+				if (item && itemHeader != null)
 				{
-					BindBack(false);
-					upBtn?.Hide();
-					focused = null;
-					catcher.Visible = false;
-					FreeFlip(flip);
-					flip = null;
+					float headerOut = Ease.InOutCubic(ex);
+					itemHeader.Position = itemHeaderExitAt + new Vector2(160f, 50f) * k * headerOut;
+					itemHeader.Modulate = new Color(1f, 1f, 1f, itemHeaderExitAlpha * (1f - headerOut));
 				}
-				float fe = Ease.InOutCubic(focusP);
-				Vector2 focusCenter = focusAt * k;
-				if (fx != null) Animate(fx, fe, focusP, focusOn, now, focusCenter, k);
-				// ITEM / SKILL use a slightly longer, continuous ease like the existing focus transition.
-				float exitSeconds = item || skill ? 0.54f : ExitTime;
-				float ex = exiting ? Mathf.Clamp((now - exitT0) / exitSeconds, 0f, 1f) : 0f;
-				butterfly.Update(now, dt);
-				if (exiting)
+				float irisDelay = skill ? 0f : 0.15f;
+				water.SetShaderParameter("radius", closeRadius * (1f - Ease.InOutCubic(Mathf.Clamp((ex - irisDelay) / (1f - irisDelay), 0f, 1f))));
+				bubbles.Modulate = new Color(1f, 1f, 1f, 1f - ex);
+				if (screen.GetNodeOrNull<CanvasItem>("BackButton") is CanvasItem backBtn)
 				{
-					float ei = item ? Ease.InOutCubic(ex) : Ease.InCubic(ex);
-					// SKILL's white panels touch the viewport edges: sliding them exposes
-					// their rectangular bounds. Fade in place while the water iris closes.
-					right.Position = skill ? Vector2.Zero : new Vector2(820f * k * L.Side * ei, 0f);
-					float decorOut = skill ? Ease.InOutCubic(ex)
-						: item ? Ease.InOutSine(Mathf.Clamp((ex - 0.1f) / 0.9f, 0f, 1f))
-						: Ease.InCubic(Mathf.Clamp((ex - 0.3f) / 0.7f, 0f, 1f));
-					right.Modulate = new Color(1f, 1f, 1f, decorExitAlpha * (1f - decorOut));
-					if (item && itemHeader != null)
+					backBtn.Modulate = new Color(1f, 1f, 1f, 1f - Ease.OutCubic(ex));
+				}
+				if (fx != null) fx.Layer.Modulate = new Color(1f, 1f, 1f, 1f - ex);
+				if (flip != null)
+				{
+					flip.Node.Modulate = new Color(1f, 1f, 1f, 1f - ex);
+				}
+				if (ex >= 1f && !finalized)
+				{
+					finalized = true;
+					Finalize(screen);
+				}
+			}
+			// 圆孔张开一小会儿之后开始建卡牌节点（每帧 4 张，避免一帧卡顿）；入场按序号错开
+			if (!exiting && now > 0.12f)
+			{
+				for (int n = 0; n < 4 && pending.TryDequeue(out Item? it); n++)
+					Create(it);
+			}
+			empty.Visible = items.Count == 0 && now > 0.4f;
+
+			// 滚动：带回弹的平滑跟随
+			float max = MaxScroll();
+			if (!dragging)
+			{
+				if (target < 0f) target = Mathf.Lerp(target, 0f, 0.2f);
+				if (target > max) target = Mathf.Lerp(target, max, 0.2f);
+			}
+			target = Mathf.Clamp(target, -120f, max + 120f);
+			scroll = Mathf.Lerp(scroll, target, 0.2f);
+
+			Vector2 Screen(Vector2 at)
+			{
+				float sy = L.GridTop + at.Y - scroll;
+				return new Vector2(gx + at.X + (sy - L.GridTop) * L.Slant, sy) * k;
+			}
+			foreach (Section s in sections)
+			{
+				Vector2 p = Screen(new Vector2(0f, s.Y + HeaderH * 0.5f));
+				float sIn = s.Born < 0f ? 1f : Ease.OutCubic(Mathf.Clamp((now - s.Born) / 0.3f, 0f, 1f));   // 切换后新标题从左滑入
+				s.Head.Position = p + new Vector2(-14f * k - 80f * k * (1f - sIn), 0f);
+				s.Head.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((now - 0.2f) / 0.25f, 0f, 1f) * sIn * (1f - fe) * (1f - ex));
+				s.Head.Position += new Vector2(-60f * k * fe, 0f);
+			}
+			for (int i = dying.Count - 1; i >= 0; i--)
+			{
+				// 旧标题往右滑出、淡掉，然后删
+				Section s = dying[i];
+				float d = Mathf.Clamp((now - s.Die) / 0.25f, 0f, 1f);
+				if (d >= 1f || !GodotObject.IsInstanceValid(s.Head))
+				{
+					if (GodotObject.IsInstanceValid(s.Head)) s.Head.QueueFree();
+					dying.RemoveAt(i);
+					continue;
+				}
+				Vector2 p = Screen(new Vector2(0f, s.Y + HeaderH * 0.5f));
+				s.Head.Position = p + new Vector2(-14f * k + 120f * k * Ease.InCubic(d), 0f);
+				s.Head.Modulate = new Color(1f, 1f, 1f, 1f - d);
+			}
+			{
+				float se = Mathf.Clamp((now - sweepT0) / 0.6f, 0f, 1f);
+				sweep.Visible = se < 1f;
+				if (se < 1f)
+				{
+					Vector2 sp = Screen(new Vector2(0f, scroll + (L.GridBottom - L.GridTop) * Ease.InOutCubic(se)));
+					sweep.Position = sp;
+					sweep.Color = new Color(0.55f, 0.9f, 1f, 0.7f * Mathf.Sin(Mathf.Pi * se));
+					sweep.Rotation = Mathf.Atan(L.Slant);
+				}
+			}
+			head.Modulate = new Color(1f, 1f, 1f, (1f - 0.85f * fe) * (item ? 1f : 1f - ex));
+			if (exiting && !item)
+			{
+				head.Position = new Vector2((L.RightSide ? 320f : -260f) * k * Ease.InCubic(ex), 0f);
+			}
+			Nav(now);
+			if (focused != null)
+			{
+				hovered = null;
+			}
+
+			bool any = hovered != null && hovered.Slot != null && GodotObject.IsInstanceValid(hovered.Holder) && hovered.Slot.Visible;
+			if (!any)
+			{
+				hovered = null;
+			}
+			foreach (Item it in items)
+			{
+				if (it.Slot == null) continue; // Waiting in the creation queue.
+				if (it.Holder is not { } h || !GodotObject.IsInstanceValid(h) || !GodotObject.IsInstanceValid(h.CardNode))
+					throw new InvalidOperationException($"Pile card {it.Card.Id} lost its display node");
+				Vector2 cs = h.Hitbox.Size.X > 1f ? h.Hitbox.Size : new Vector2(300f, 422f);
+				float baseScale = L.CardW * k / cs.X;
+				// v0.14.98 切换排列模式：从旧位置沿弧线飞到新位置（先慢后快再慢），途中略放大、转一点
+				float move = 0f;
+				Vector2 at = it.At;
+				if (it.MoveT0 >= 0f)
+				{
+					float me = Mathf.Clamp((now - it.MoveT0 - it.MoveDelay) / 0.46f, 0f, 1f);
+					float mc = Ease.InOutCubic(me);
+					at = it.From.Lerp(it.At, mc);
+					move = Mathf.Sin(Mathf.Pi * mc);
+					if (me >= 1f) it.MoveT0 = -1f;
+				}
+				Vector2 p = Screen(at) + new Vector2(0f, -42f * k * move);
+				// 入场（每个界面不同）：抽牌堆从左下弹入；牌组一列列从右侧滑入；弃牌堆从上方飘落（左右摆着转）；消耗堆由光点聚拢显形（从大到小、淡入）
+				float born = it.Born < 0f ? 1f : Mathf.Clamp((now - it.Born) / (kind == Kind.Discard ? 0.6f : 0.38f), 0f, 1f);
+				float pop = Ease.OutBack(born);
+				float enterRot = 0f, enterScale = 1f;
+				it.Lift = Mathf.MoveToward(it.Lift, it == hovered ? 1f : 0f, 0.12f);
+				float lift = Ease.OutCubic(it.Lift);
+				it.Dim = Mathf.MoveToward(it.Dim, any && it != hovered ? 0.55f : 1f, 0.07f);
+				switch (kind)
+				{
+					case Kind.Deck:
+						p += new Vector2(160f, 0f) * k * (1f - Ease.OutExpo(born));
+						pop = 1f;
+						break;
+					case Kind.Discard:
+						float fall = 1f - Ease.OutCubic(born);
+						p += new Vector2(Mathf.Sin(born * Mathf.Pi * 2.2f) * 26f * fall, -190f * fall) * k;
+						enterRot = Mathf.DegToRad(16f) * Mathf.Sin(born * Mathf.Pi * 2.2f) * fall;
+						pop = 1f;
+						break;
+					case Kind.Exhaust:
+						enterScale = 1f + 0.3f * (1f - Ease.OutCubic(born));
+						pop = 1f;
+						break;
+					default:
+						p += new Vector2(-40f, 46f) * k * (1f - pop);
+						break;
+				}
+				p += new Vector2(0f, -14f) * k * lift;
+				it.Slot.Visible = true;
+				// The holder never leaves the tree. Only its fixed clipping wrapper is
+				// disabled while this card is enlarged for the full-screen close-up.
+				it.Clip!.ClipContents = it != focused;
+				float rot = Mathf.DegToRad(L.Slant < 0f ? 2f : L.Slant > 0f ? -2f : 0f) * (1f - lift) + enterRot;
+				// 原版悬停会把 holder 自己的 Scale 从 0.8 跳到 1.0；这里按它当前的 Scale 反算，让总缩放平滑
+				float want = baseScale * (0.85f + 0.15f * pop) * enterScale * (1f + 0.26f * lift) * (1f + 0.07f * move);
+				rot += Mathf.DegToRad(-4f) * move;
+				float alpha = Mathf.Clamp(born * (kind == Kind.Exhaust ? 1.4f : 3f), 0f, 1f);
+				if (it == focused)
+				{
+					// 特写：沿上拱的弧线飞到中间、放大，途中绕竖轴真正翻一圈（带透视：正面 → 塔罗牌背 → 正面），落定后轻轻浮动。
+					// 飞行中显示的是翻转用的替身（这张牌的离屏渲染 + 牌背），落定 / 飞回原位时换回真正的卡牌
+					Vector2 to = focusCenter + new Vector2(0f, Mathf.Sin(now * 1.6f) * 4f * k * fe);
+					p = p.Lerp(to, fe) + new Vector2(0f, -170f * k) * Mathf.Sin(Mathf.Pi * fe);
+					want = Mathf.Lerp(want, FocusW * k / cs.X, fe);
+					rot = Mathf.Lerp(rot, 0f, fe) + Mathf.DegToRad(-8f) * Mathf.Sin(Mathf.Pi * fe);
+					alpha = 1f;
+					// 飞回原位的半路（背面朝前时）换回网格的状态（牌组勾了「查看升级」= 升级后，否则原版）
+					bool gridUp = upgradeOn && it.Card.IsUpgradable;
+					if (!focusOn && fe < 0.5f && focusUp != gridUp)
 					{
-						float headerOut = Ease.InOutCubic(ex);
-						itemHeader.Position = itemHeaderExitAt + new Vector2(160f, 50f) * k * headerOut;
-						itemHeader.Modulate = new Color(1f, 1f, 1f, itemHeaderExitAlpha * (1f - headerOut));
+						focusUp = gridUp;
+						ShowFace(it, focusUp);
 					}
-					float irisDelay = skill ? 0f : 0.15f;
-					water.SetShaderParameter("radius", closeRadius * (1f - Ease.InOutCubic(Mathf.Clamp((ex - irisDelay) / (1f - irisDelay), 0f, 1f))));
-					bubbles.Modulate = new Color(1f, 1f, 1f, 1f - ex);
-					if (screen.GetNodeOrNull<CanvasItem>("BackButton") is CanvasItem backBtn)
+					// 查看升级：在原地绕竖轴翻一整圈（0.6s），转到背面时换成升级后 / 升级前
+					float upE = upT0 >= 0f ? Mathf.Clamp((now - upT0) / UpFlipTime, 0f, 1f) : 0f;
+					if (upT0 >= 0f && (upE >= 1f || !focusOn))
 					{
-						backBtn.Modulate = new Color(1f, 1f, 1f, 1f - Ease.OutCubic(ex));
+						if (!upSwapped)
+						{
+							focusUp = !focusUp;
+							ShowFace(it, focusUp);
+						}
+						upT0 = -1f;
+						upE = 0f;
+						upBtn!.Set(focusUp);
 					}
-					if (fx != null) fx.Layer.Modulate = new Color(1f, 1f, 1f, 1f - ex);
+					else if (upT0 >= 0f && !upSwapped && upE >= 0.5f)
+					{
+						upSwapped = true;
+						focusUp = !focusUp;
+						ShowFace(it, focusUp);
+						Audio.Sfx.Clip("ShuffleTime_Select", 0.35f);
+					}
+					bool upFlipping = upT0 >= 0f;
+					float halfW = FocusW * k * 0.5f, halfH = halfW * cs.Y / cs.X;
+					upBtn!.Place(to + new Vector2(halfW + 18f * k, halfH - 34f * k), focusOn && fe > 0.95f ? Mathf.Clamp((fe - 0.95f) / 0.05f, 0f, 1f) : 0f);
+					bool flying = flip != null && ((fe > 0.004f && fe < 0.996f) || upFlipping);
+					it.Slot.Visible = !flying;
 					if (flip != null)
 					{
-						flip.Node.Modulate = new Color(1f, 1f, 1f, 1f - ex);
-					}
-					if (ex >= 1f && !finalized)
-					{
-						finalized = true;
-						Finalize(screen);
-					}
-				}
-				// 圆孔张开一小会儿之后开始建卡牌节点（每帧 4 张，避免一帧卡顿）；入场按序号错开
-				if (now > 0.12f)
-				{
-					for (int n = 0; n < 4 && pending.Count > 0; n++)
-					{
-						CardModel model = pending[0];
-						pending.RemoveAt(0);
-						if (items.FirstOrDefault(i => i.Card == model && i.Slot == null) is Item it)
+						flip.Node.Visible = flying;
+						if (flying)
 						{
-							Create(it);
+							flip.Node.Position = p;
+							flip.Node.Rotation = rot;
+							flip.Node.Scale = Vector2.One * want * (1f + 0.06f * Mathf.Sin(Mathf.Pi * upE));
+							Pose(flip, upFlipping ? Mathf.Tau * Ease.InOutCubic(upE) : Mathf.Tau * fe);
 						}
 					}
 				}
-				empty.Visible = items.Count == 0 && now > 0.4f;
-
-				// 滚动：带回弹的平滑跟随
-				float max = MaxScroll();
-				if (!dragging)
+				else if (focused != null)
 				{
-					if (target < 0f) target = Mathf.Lerp(target, 0f, 0.2f);
-					if (target > max) target = Mathf.Lerp(target, max, 0.2f);
+					// 其他牌"退下"：离特写那张越远越晚，往下沉、缩小、转一点、淡出
+					float dist = (it.At - focused.At).Length();
+					float r = Ease.OutCubic(Mathf.Clamp(focusP * 1.6f - Mathf.Min(0.5f, dist / 1600f), 0f, 1f));
+					p += new Vector2(-24f, 80f) * k * r;
+					want *= 1f - 0.16f * r;
+					rot += Mathf.DegToRad(-5f) * r;
+					alpha *= 1f - 0.9f * r;
 				}
-				target = Mathf.Clamp(target, -120f, max + 120f);
-				scroll = Mathf.Lerp(scroll, target, 0.2f);
-
-				Vector2 Screen(Vector2 at)
+				if (exiting)
 				{
-					float sy = L.GridTop + at.Y - scroll;
-					return new Vector2(gx + at.X + (sy - L.GridTop) * L.Slant, sy) * k;
-				}
-				foreach (Section s in sections)
-				{
-					Vector2 p = Screen(new Vector2(0f, s.Y + HeaderH * 0.5f));
-					float sIn = s.Born < 0f ? 1f : Ease.OutCubic(Mathf.Clamp((now - s.Born) / 0.3f, 0f, 1f));   // 切换后新标题从左滑入
-					s.Head.Position = p + new Vector2(-14f * k - 80f * k * (1f - sIn), 0f);
-					s.Head.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((now - 0.2f) / 0.25f, 0f, 1f) * sIn * (1f - fe) * (1f - ex));
-					s.Head.Position += new Vector2(-60f * k * fe, 0f);
-				}
-				for (int i = dying.Count - 1; i >= 0; i--)
-				{
-					// 旧标题往右滑出、淡掉，然后删
-					Section s = dying[i];
-					float d = Mathf.Clamp((now - s.Die) / 0.25f, 0f, 1f);
-					if (d >= 1f || !GodotObject.IsInstanceValid(s.Head))
-					{
-						if (GodotObject.IsInstanceValid(s.Head)) s.Head.QueueFree();
-						dying.RemoveAt(i);
-						continue;
-					}
-					Vector2 p = Screen(new Vector2(0f, s.Y + HeaderH * 0.5f));
-					s.Head.Position = p + new Vector2(-14f * k + 120f * k * Ease.InCubic(d), 0f);
-					s.Head.Modulate = new Color(1f, 1f, 1f, 1f - d);
-				}
-				{
-					float se = Mathf.Clamp((now - sweepT0) / 0.6f, 0f, 1f);
-					sweep.Visible = se < 1f;
-					if (se < 1f)
-					{
-						Vector2 sp = Screen(new Vector2(0f, scroll + (L.GridBottom - L.GridTop) * Ease.InOutCubic(se)));
-						sweep.Position = sp;
-						sweep.Color = new Color(0.55f, 0.9f, 1f, 0.7f * Mathf.Sin(Mathf.Pi * se));
-						sweep.Rotation = Mathf.Atan(L.Slant);
-					}
-				}
-				head.Modulate = new Color(1f, 1f, 1f, (1f - 0.85f * fe) * (item ? 1f : 1f - ex));
-				if (exiting && !item)
-				{
-					head.Position = new Vector2((L.RightSide ? 320f : -260f) * k * Ease.InCubic(ex), 0f);
-				}
-				Nav(now);
-				if (focused != null)
-				{
-					hovered = null;
-				}
-
-				bool any = hovered != null && hovered.Slot != null && GodotObject.IsInstanceValid(hovered.Holder) && hovered.Slot.Visible;
-				if (!any)
-				{
-					hovered = null;
-				}
-				foreach (Item it in items)
-				{
-					if (it.Slot == null || !GodotObject.IsInstanceValid(it.Holder))
-					{
-						continue;
-					}
-					NGridCardHolder h = it.Holder;
-					Vector2 cs = h.Hitbox.Size.X > 1f ? h.Hitbox.Size : new Vector2(300f, 422f);
-					float baseScale = L.CardW * k / cs.X;
-					// v0.14.98 切换排列模式：从旧位置沿弧线飞到新位置（先慢后快再慢），途中略放大、转一点
-					float move = 0f;
-					Vector2 at = it.At;
-					if (it.MoveT0 >= 0f)
-					{
-						float me = Mathf.Clamp((now - it.MoveT0 - it.MoveDelay) / 0.46f, 0f, 1f);
-						float mc = Ease.InOutCubic(me);
-						at = it.From.Lerp(it.At, mc);
-						move = Mathf.Sin(Mathf.Pi * mc);
-						if (me >= 1f) it.MoveT0 = -1f;
-					}
-					Vector2 p = Screen(at) + new Vector2(0f, -42f * k * move);
-					// 入场（每个界面不同）：抽牌堆从左下弹入；牌组一列列从右侧滑入；弃牌堆从上方飘落（左右摆着转）；消耗堆由光点聚拢显形（从大到小、淡入）
-					float born = Mathf.Clamp((now - it.Born) / (kind == Kind.Discard ? 0.6f : 0.38f), 0f, 1f);
-					float pop = Ease.OutBack(born);
-					float enterRot = 0f, enterScale = 1f;
-					it.Lift = Mathf.MoveToward(it.Lift, it == hovered ? 1f : 0f, 0.12f);
-					float lift = Ease.OutCubic(it.Lift);
-					it.Dim = Mathf.MoveToward(it.Dim, any && it != hovered ? 0.55f : 1f, 0.07f);
+					// 按排列顺序依次下沉（每张晚 0.012 的进度，最多晚 0.35），边沉边缩小、转一点、淡出
+					float r = Mathf.Clamp((ex - Mathf.Min(0.35f, it.Index * 0.012f)) / 0.65f, 0f, 1f);
+					float ri = Ease.InCubic(r);
+					// 退场也各不相同：牌组往右滑走；弃牌堆继续往下掉（转着）；消耗堆放大散去；抽牌堆往下沉
 					switch (kind)
 					{
 						case Kind.Deck:
-							p += new Vector2(160f, 0f) * k * (1f - Ease.OutExpo(born));
-							pop = 1f;
+							p += new Vector2(300f, 0f) * k * ri;
 							break;
 						case Kind.Discard:
-							float fall = 1f - Ease.OutCubic(born);
-							p += new Vector2(Mathf.Sin(born * Mathf.Pi * 2.2f) * 26f * fall, -190f * fall) * k;
-							enterRot = Mathf.DegToRad(16f) * Mathf.Sin(born * Mathf.Pi * 2.2f) * fall;
-							pop = 1f;
+							p += new Vector2(30f, 280f) * k * ri;
+							rot += Mathf.DegToRad(12f) * ri;
 							break;
 						case Kind.Exhaust:
-							enterScale = 1f + 0.3f * (1f - Ease.OutCubic(born));
-							pop = 1f;
+							want *= 1f + 0.35f * ri;
 							break;
 						default:
-							p += new Vector2(-40f, 46f) * k * (1f - pop);
+							p += new Vector2(-20f, 130f) * k * ri;
+							want *= 1f - 0.12f * ri;
+							rot += Mathf.DegToRad(4f) * ri;
 							break;
 					}
-					p += new Vector2(0f, -14f) * k * lift;
-					it.Slot.Visible = true;
-					// The holder never leaves the tree. Only its fixed clipping wrapper is
-					// disabled while this card is enlarged for the full-screen close-up.
-					it.Clip!.ClipContents = it != focused;
-					float rot = Mathf.DegToRad(L.Slant < 0f ? 2f : L.Slant > 0f ? -2f : 0f) * (1f - lift) + enterRot;
-					// 原版悬停会把 holder 自己的 Scale 从 0.8 跳到 1.0；这里按它当前的 Scale 反算，让总缩放平滑
-					float want = baseScale * (0.85f + 0.15f * pop) * enterScale * (1f + 0.26f * lift) * (1f + 0.07f * move);
-					rot += Mathf.DegToRad(-4f) * move;
-					float alpha = Mathf.Clamp(born * (kind == Kind.Exhaust ? 1.4f : 3f), 0f, 1f);
-					if (it == focused)
-					{
-						// 特写：沿上拱的弧线飞到中间、放大，途中绕竖轴真正翻一圈（带透视：正面 → 塔罗牌背 → 正面），落定后轻轻浮动。
-						// 飞行中显示的是翻转用的替身（这张牌的离屏渲染 + 牌背），落定 / 飞回原位时换回真正的卡牌
-						Vector2 to = focusCenter + new Vector2(0f, Mathf.Sin(now * 1.6f) * 4f * k * fe);
-						p = p.Lerp(to, fe) + new Vector2(0f, -170f * k) * Mathf.Sin(Mathf.Pi * fe);
-						want = Mathf.Lerp(want, FocusW * k / cs.X, fe);
-						rot = Mathf.Lerp(rot, 0f, fe) + Mathf.DegToRad(-8f) * Mathf.Sin(Mathf.Pi * fe);
-						alpha = 1f;
-						// 飞回原位的半路（背面朝前时）换回网格的状态（牌组勾了「查看升级」= 升级后，否则原版）
-						bool gridUp = upgradeOn && it.Card.IsUpgradable;
-						if (!focusOn && fe < 0.5f && focusUp != gridUp)
-						{
-							focusUp = gridUp;
-							ShowFace(it, focusUp);
-						}
-						// 查看升级：在原地绕竖轴翻一整圈（0.6s），转到背面时换成升级后 / 升级前
-						float upE = upT0 >= 0f ? Mathf.Clamp((now - upT0) / UpFlipTime, 0f, 1f) : 0f;
-						if (upT0 >= 0f && (upE >= 1f || !focusOn))
-						{
-							if (!upSwapped)
-							{
-								focusUp = !focusUp;
-								ShowFace(it, focusUp);
-							}
-							upT0 = -1f;
-							upE = 0f;
-							upBtn!.Set(focusUp);
-						}
-						else if (upT0 >= 0f && !upSwapped && upE >= 0.5f)
-						{
-							upSwapped = true;
-							focusUp = !focusUp;
-							ShowFace(it, focusUp);
-							Audio.Sfx.Clip("ShuffleTime_Select", 0.35f);
-						}
-						bool upFlipping = upT0 >= 0f;
-						float halfW = FocusW * k * 0.5f, halfH = halfW * cs.Y / cs.X;
-						upBtn!.Place(to + new Vector2(halfW + 18f * k, halfH - 34f * k), focusOn && fe > 0.95f ? Mathf.Clamp((fe - 0.95f) / 0.05f, 0f, 1f) : 0f);
-						bool flying = flip != null && ((fe > 0.004f && fe < 0.996f) || upFlipping);
-						it.Slot.Visible = !flying;
-						if (flip != null)
-						{
-							flip.Node.Visible = flying;
-							if (flying)
-							{
-								flip.Node.Position = p;
-								flip.Node.Rotation = rot;
-								flip.Node.Scale = Vector2.One * want * (1f + 0.06f * Mathf.Sin(Mathf.Pi * upE));
-								Pose(flip, upFlipping ? Mathf.Tau * Ease.InOutCubic(upE) : Mathf.Tau * fe);
-							}
-						}
-					}
-					else if (focused != null)
-					{
-						// 其他牌"退下"：离特写那张越远越晚，往下沉、缩小、转一点、淡出
-						float dist = (it.At - focused.At).Length();
-						float r = Ease.OutCubic(Mathf.Clamp(focusP * 1.6f - Mathf.Min(0.5f, dist / 1600f), 0f, 1f));
-						p += new Vector2(-24f, 80f) * k * r;
-						want *= 1f - 0.16f * r;
-						rot += Mathf.DegToRad(-5f) * r;
-						alpha *= 1f - 0.9f * r;
-					}
-					if (exiting)
-					{
-						// 按排列顺序依次下沉（每张晚 0.012 的进度，最多晚 0.35），边沉边缩小、转一点、淡出
-						float r = Mathf.Clamp((ex - Mathf.Min(0.35f, it.Index * 0.012f)) / 0.65f, 0f, 1f);
-						float ri = Ease.InCubic(r);
-						// 退场也各不相同：牌组往右滑走；弃牌堆继续往下掉（转着）；消耗堆放大散去；抽牌堆往下沉
-						switch (kind)
-						{
-							case Kind.Deck:
-								p += new Vector2(300f, 0f) * k * ri;
-								break;
-							case Kind.Discard:
-								p += new Vector2(30f, 280f) * k * ri;
-								rot += Mathf.DegToRad(12f) * ri;
-								break;
-							case Kind.Exhaust:
-								want *= 1f + 0.35f * ri;
-								break;
-							default:
-								p += new Vector2(-20f, 130f) * k * ri;
-								want *= 1f - 0.12f * ri;
-								rot += Mathf.DegToRad(4f) * ri;
-								break;
-						}
-						alpha *= 1f - Ease.OutCubic(r);
-					}
-					it.Slot.Position = p - clipAt;
-					it.Slot.Rotation = rot;
-					float own = Mathf.Max(0.01f, h.Scale.X);
-					it.Slot.Scale = Vector2.One * (want / own);
-					float d = it == focused ? 1f : it.Dim;
-					// 消耗堆的牌偏冷灰（已经被"用掉"的感觉）
-					float cool = kind == Kind.Exhaust && it != focused ? 0.78f : 1f;
-					it.Slot.Modulate = new Color((d * 0.9f + 0.1f) * cool, (d * 0.94f + 0.06f) * (cool + (1f - cool) * 0.4f), Mathf.Min(1f, d + 0.1f), alpha);
+					alpha *= 1f - Ease.OutCubic(r);
 				}
-				// 指到的那张移到最上层（绘制和鼠标判定都按节点顺序）
-				if (any && hovered?.Clip is Control top && top.GetParent() == cards && top.GetIndex() != cards.GetChildCount() - 1)
+				if (!it.DisplayChecked && !exiting && focused == null && alpha >= 0.99f &&
+					p.Y >= clipAt.Y && p.Y < clipAt.Y + clipSize.Y)
 				{
-					cards.MoveChild(top, cards.GetChildCount() - 1);
+					var face = h.CardNode?.Body;
+					if (face == null || !face.IsVisibleInTree() || face.Modulate.A <= 0f || face.Scale.IsZeroApprox())
+						throw new InvalidOperationException($"Pile card {it.Card.Id} has no visible face");
+					it.DisplayChecked = true;
 				}
-				// 名牌：放大那张牌的正下方
-				// v0.14.53（Codex 编译警告 CS8602）：用显式的非空局部变量，节点失效就藏起名牌
-				if (any && hovered is { Slot: Control ps, Holder: NGridCardHolder ph } hv && GodotObject.IsInstanceValid(ps) && GodotObject.IsInstanceValid(ph))
-				{
-					plate ??= NamePlate(root, k);
-					plate.Visible = true;
-					Vector2 cs = ph.Hitbox.Size.X > 1f ? ph.Hitbox.Size : new Vector2(300f, 422f);
-					float half = cs.Y * ps.Scale.Y * ph.Scale.Y * 0.5f;
-						plate.Position = ps.Position + clipAt + new Vector2(-20f * k, half + 8f * k);
-					SetPileTitle((Label)plate.GetChild(plate.GetChildCount() - 1), hv.Card.Title);
-					float a = Ease.OutCubic(hv.Lift);
-					plate.Modulate = new Color(1f, 1f, 1f, a);
-					plate.Scale = new Vector2(Mathf.Lerp(0.7f, 1f, a), 1f);
-				}
-				else
-				{
-					if (plate != null) plate.Visible = false;
-				}
-			});
+				it.Slot.Position = p - clipAt;
+				it.Slot.Rotation = rot;
+				float own = Mathf.Max(0.01f, h.Scale.X);
+				it.Slot.Scale = Vector2.One * (want / own);
+				float d = it == focused ? 1f : it.Dim;
+				// 消耗堆的牌偏冷灰（已经被"用掉"的感觉）
+				float cool = kind == Kind.Exhaust && it != focused ? 0.78f : 1f;
+				it.Slot.Modulate = new Color((d * 0.9f + 0.1f) * cool, (d * 0.94f + 0.06f) * (cool + (1f - cool) * 0.4f), Mathf.Min(1f, d + 0.1f), alpha);
+			}
+			// 指到的那张移到最上层（绘制和鼠标判定都按节点顺序）
+			if (any && hovered?.Clip is Control top && top.GetParent() == cards && top.GetIndex() != cards.GetChildCount() - 1)
+			{
+				cards.MoveChild(top, cards.GetChildCount() - 1);
+			}
+			// 名牌：放大那张牌的正下方
+			// v0.14.53（Codex 编译警告 CS8602）：用显式的非空局部变量，节点失效就藏起名牌
+			if (any && hovered is { Slot: Control ps, Holder: NGridCardHolder ph } hv && GodotObject.IsInstanceValid(ps) && GodotObject.IsInstanceValid(ph))
+			{
+				plate ??= NamePlate(root, k);
+				plate.Visible = true;
+				Vector2 cs = ph.Hitbox.Size.X > 1f ? ph.Hitbox.Size : new Vector2(300f, 422f);
+				float half = cs.Y * ps.Scale.Y * ph.Scale.Y * 0.5f;
+				plate.Position = ps.Position + clipAt + new Vector2(-20f * k, half + 8f * k);
+				SetPileTitle((Label)plate.GetChild(plate.GetChildCount() - 1), hv.Card.Title);
+				float a = Ease.OutCubic(hv.Lift);
+				plate.Modulate = new Color(1f, 1f, 1f, a);
+				plate.Scale = new Vector2(Mathf.Lerp(0.7f, 1f, a), 1f);
+			}
+			else
+			{
+				if (plate != null) plate.Visible = false;
+			}
 		}
 
+		Refresh(pile.Cards.ToList(), animateSort: false);
+		pile.ContentsChanged += OnChanged;
 		tree.ProcessFrame += Tick;
 		ulong sid = screen.GetInstanceId();
 		Exits[sid] = () =>
@@ -1428,19 +1410,20 @@ public static class PileFx
 		};
 		root.TreeExiting += () =>
 		{
-			if (kind == Kind.Draw || item || skill) HeroStage.Close(right);
 			Exits.Remove(sid);
 			tree.ProcessFrame -= Tick;
-			BindBack(false);
-			pile.ContentsChanged -= onChanged;
-			FreeFlip(flip);                                  // 特写中途关掉界面：翻转替身借的卡牌还回对象池
+			pile.ContentsChanged -= OnChanged;
+			ModEntry.Safe("pile input cleanup", () => BindBack(false));
+			ModEntry.Safe("pile flip cleanup", () => FreeFlip(flip));
 			flip = null;
+			if (kind == Kind.Draw || item || skill)
+				ModEntry.Safe("pile hero cleanup", () => HeroStage.Close(right));
 		};
 		// 同上跳过静音引子；再延到下一帧才播：建界面这一帧要几十毫秒，立刻播的话声音会抢在画面前面
 		Audio.Sfx.Clip("ShuffleTime_Whoosh", 0.45f, delay: 0.001f, from: WhooshSkip);
 		if (dive) DiveFx.Start(root, water, view);       // 水花在最上层，最后加
 		lap("tail");
-		GD.Print($"{ModEntry.Tag} perf pile {kind} build {(Time.GetTicksUsec() - buildStart) / 1000f:0.0}ms (decor {decorMs:0.0}ms;{laps}); idle warmup complete={IdleWarmup.Complete}");
+		GD.Print($"{ModEntry.Tag} perf pile {kind} build {(Time.GetTicksUsec() - buildStart) / 1000f:0.0}ms (decor {decorMs:0.0}ms;{laps}); cards={items.Count}, order={(orderMode ? "original" : "type")}, idle warmup complete={IdleWarmup.Complete}");
 	}
 
 	// ── 点击特写 ──

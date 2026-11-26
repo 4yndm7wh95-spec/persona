@@ -141,7 +141,7 @@ public sealed class WraithVeil
 			{
 				ln.Visible = true;
 				float hd = Fx.InCubic(Mathf.Min(1f, t * 1.3f)), tl = Fx.InCubic(t);
-				ln.Polygon = Glow.TaperPts(dir * Mathf.Lerp(r0 * 1.25f, r1, tl), dir * Mathf.Lerp(r0, r1, hd), lw);
+				Glow.SetTaper(ln, dir * Mathf.Lerp(r0 * 1.25f, r1, tl), dir * Mathf.Lerp(r0, r1, hd), lw);
 				ln.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, t * 4f) * (1f - Ease5.Seg(t, 0.8f, 0.2f)));
 			});
 		}

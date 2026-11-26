@@ -76,6 +76,7 @@ public static class P3SettingsSectionPatch
 		Option( Zh ? "召唤时眼部特写" : "Summon eye close-up", () => d.CutIn, v => d.CutIn = v);
 		Option( Zh ? "选人动画" : "Character select animation", () => d.SelectSummon, v => d.SelectSummon = v);
 		Option( Zh ? "建筑师房间动画" : "Architect room animation", () => d.Architect, v => d.Architect = v);
+		Option( Zh ? "商人房间样式" : "Merchant room style", () => d.VelvetShop, v => d.VelvetShop = v, StyleName);
 		Option( Zh ? "牌堆界面样式" : "Pile screen style", () => d.PileScreen, v => d.PileScreen = v, StyleName);
 		Option( Zh ? "状态说明样式" : "Status tooltip style", () => d.TipList, v => d.TipList = v, StyleName);
 		Option( Zh ? "鼠标样式" : "Cursor style", () => d.CursorSkin, v =>
@@ -126,6 +127,7 @@ public static class P3SettingsSectionPatch
 					P3Settings.Data d = P3Settings.Current;
 					d.AllOut = custom.AllOut; d.Victory = custom.Victory; d.ShuffleTime = custom.ShuffleTime; d.ShuffleFull = custom.ShuffleFull;
 					d.CutIn = custom.CutIn; d.SelectSummon = custom.SelectSummon; d.Architect = custom.Architect;
+					d.VelvetShop = custom.VelvetShop;
 					d.PileScreen = custom.PileScreen; d.TipList = custom.TipList; d.CursorSkin = custom.CursorSkin;
 					P3Settings.Save();
 				}

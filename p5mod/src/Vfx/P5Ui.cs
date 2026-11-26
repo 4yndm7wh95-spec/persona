@@ -34,6 +34,7 @@ public static class P5Ui
 	internal static bool PollFont(string path)
 	{
 		if (Cache.ContainsKey(path)) return true;
+		if (path.StartsWith("res://p5joker/fonts/", StringComparison.Ordinal)) { Font(path); return true; }
 		if (!Fx.PollResource(path, out Resource? resource)) return false;
 		if (resource is Font font) Cache[path] = font;
 		return true;

@@ -1,10 +1,10 @@
 {
   "id": "P3Makoto",
   "name": "P3 结城理（储君换皮）",
-  "author": "brooks",
-  "description": "将储君替换为 Persona 3 主角结城理，附带专属出牌与预备出牌特效。纯视觉，不改玩法。",
-  "version": "0.9.0",
-  "has_pck": true,
+  "author": "B站川川errr 抖音川川",
+  "description": "MOD唯一作者：B站川川errr 抖音川川。如果您在B站、抖音、玩家动力之外的渠道获取本MOD，均为盗版！",
+  "version": "0.15.45",
+  "has_pck": false,
   "has_dll": true,
   "affects_gameplay": false
 }

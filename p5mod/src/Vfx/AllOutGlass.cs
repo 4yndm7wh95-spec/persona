@@ -59,7 +59,7 @@ public static partial class AllOut
 
 		public void Param(string name, Variant v)
 		{
-			foreach (Pane p in Panes) p.M.SetShaderParameter(name, v);
+			foreach (Pane p in Panes) p.M.SetShaderParameter(Fx.ParameterName(name), v);
 		}
 	}
 

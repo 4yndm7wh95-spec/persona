@@ -31,7 +31,8 @@ internal static class PooledCardInput
 				var hitbox = holder.Hitbox;
 				if (hitbox == null || !GodotObject.IsInstanceValid(hitbox)) return;
 				ClearFlags(hitbox, "_isHovered", "_isControllerFocused", "_isPressed");
-				AccessTools.Property(hitbox.GetType(), "IsFocused")?.SetValue(hitbox, false);
+				var focused = AccessTools.Property(hitbox.GetType(), "IsFocused");
+				if (focused?.SetMethod != null) focused.SetValue(hitbox, false);
 			});
 		}
 		holder.TreeExiting += Release;

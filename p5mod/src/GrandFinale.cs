@@ -14,6 +14,7 @@ using MegaCrit.Sts2.Core.Models.Cards;
 using MegaCrit.Sts2.Core.Nodes.Cards;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using MegaCrit.Sts2.Core.Nodes.Vfx;
 
 namespace P5Joker;
 
@@ -62,8 +63,31 @@ public static class GrandFinalePatch
 	public static void Finalizer(SinfulPlay.Clip? __state) => SinfulPlay.Current.Value = __state;
 }
 
+// OnPlay waits only when the spotlight factory returns a node. Keep that branch,
+// but skip the hidden node's timers, particles and screen shake.
+[HarmonyPatch(typeof(NGrandFinaleVfx), nameof(NGrandFinaleVfx._Ready))]
+public static class GrandFinaleSpotlightPatch
+{
+	public static bool Prefix(NGrandFinaleVfx __instance)
+	{
+		if (!SinfulPlay.Active) return true;
+		__instance.Hide();
+		__instance.QueueFree();
+		return false;
+	}
+}
+
+[HarmonyPatch]
+public static class GrandFinaleImpactPatch
+{
+	public static IEnumerable<System.Reflection.MethodBase> TargetMethods() =>
+		typeof(NGrandFinaleImpactVfx).GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
+			.Where(m => m.Name == nameof(NGrandFinaleImpactVfx.Create) && m.ReturnType == typeof(NGrandFinaleImpactVfx));
+	public static bool Prefix() => !SinfulPlay.Active;
+}
+
 /// <summary>华丽收场里原版聚光灯的预备等待：换成等到子弹碰到第一个敌人。</summary>
-[HarmonyPatch(typeof(Cmd), nameof(Cmd.Wait), typeof(float), typeof(CancellationToken), typeof(bool))]
+[HarmonyPatch(typeof(Cmd), nameof(Cmd.Wait), typeof(float), typeof(bool))]
 public static class GrandFinaleWaitPatch
 {
 	public static void Prefix(ref float seconds)
@@ -83,7 +107,10 @@ public static class GrandFinaleHitFxPatch
 	public static void Prefix(AttackCommand __instance, ref string? vfx, ref string? sfx, ref string? tmpSfx)
 	{
 		if (SinfulPlay.Current.Value is { } clip && ReferenceEquals(__instance.ModelSource, clip.Card))
+		{
+			__instance.WithNoAttackerAnim();
 			vfx = sfx = tmpSfx = null;
+		}
 	}
 }
 
@@ -95,10 +122,10 @@ public static class SinfulPlay
 	}
 	internal static readonly AsyncLocal<Clip?> Current = new();
 	internal static bool Active => Current.Value != null;
-	private static readonly ConditionalWeakTable<NCombatRoom, EndCue> EndCues = new();
-	private sealed class EndCue { public double At; }
+	private static readonly ConditionalWeakTable<NCombatRoom, ImpactCue> ImpactCues = new();
+	private sealed class ImpactCue { public double At; }
 
-	internal static double Remaining(NCombatRoom room) => EndCues.TryGetValue(room, out EndCue? cue)
+	internal static double RemainingUntilLastImpact(NCombatRoom room) => ImpactCues.TryGetValue(room, out ImpactCue? cue)
 		? Math.Max(0, cue.At - HitStop.VisualSeconds()) : 0;
 
 	internal static bool IsPlaying(CardModel card) => ReferenceEquals(Current.Value?.Card, card);
@@ -230,8 +257,8 @@ public static class SinfulPlay
 		var impacts = new Dictionary<Creature, float>();
 		for (int i = 0; i < pierce.Length && i < enemies.Count; i++)
 			if (enemies[i].Entity is { } target) impacts[target] = pierce[i];
-		EndCues.GetOrCreateValue(room).At = started + SinfulShell.Duration;
 		float hit = pierce.Length > 0 ? pierce.Min() : SinfulShell.FireAt + 0.1f;
+		ImpactCues.GetOrCreateValue(room).At = started + (pierce.Length > 0 ? pierce.Max() : hit);
 		return new Clip(card, started, impacts, hit, Mathf.Max(0f, SinfulShell.Duration - hit));
 	}
 }

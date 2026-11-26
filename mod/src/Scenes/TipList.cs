@@ -55,6 +55,9 @@ public static class TipList
 		internal Control Catcher = null!, Dismiss = null!;
 		internal NCreature Creature = null!;
 		internal float NextRefresh;
+		internal int TouchIndex = -1;
+		internal Vector2 TouchStart;
+		internal bool TouchMoved;
 		internal Vector2 Mouse;
 		internal bool MouseIn;
 		internal Action? Tick;
@@ -145,19 +148,20 @@ public static class TipList
 		st.Dismiss.GuiInput += ev =>
 		{
 			st.Dismiss.AcceptEvent();
-			if (ev is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left }) Close(id);
+			if (StatusButton.IsTapDown(ev)) Close(id);
 		};
 		// 列表区域接滚轮。按钮被列表范围覆盖时，也允许在原按钮位置再次点击关闭。
 		st.Catcher = new Control { MouseFilter = Control.MouseFilterEnum.Stop };
 		st.Root.AddChild(st.Catcher);
 		st.Catcher.GuiInput += ev => ModEntry.Safe("tip list wheel", () =>
 		{
+			if (Touch(st, ev)) return;
 			if (ev is InputEventMouseMotion)
 			{
 				st.Mouse = st.Catcher.GetGlobalMousePosition();
 				st.MouseIn = true;
 			}
-			if (ev is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left } &&
+			if (StatusButton.IsTapDown(ev) &&
 				StatusButton.Contains(creature, st.Catcher.GetGlobalMousePosition()))
 			{
 				st.Catcher.AcceptEvent();
@@ -191,16 +195,57 @@ public static class TipList
 			return false;
 		}
 		float step = Mathf.Clamp(st.WindowH * 0.22f, 70f, 140f);
-		if (mb.ButtonIndex == MouseButton.WheelUp) st.Target -= step;
-		else if (mb.ButtonIndex == MouseButton.WheelDown) st.Target += step;
+		if (mb.ButtonIndex == MouseButton.WheelUp) ScrollBy(st, -step);
+		else if (mb.ButtonIndex == MouseButton.WheelDown) ScrollBy(st, step);
 		else return false;
-		st.Target = Mathf.Clamp(st.Target, 0f, st.ContentH - st.WindowH);
 		if (GodotObject.IsInstanceValid(st.Catcher))
 		{
 			st.Catcher.AcceptEvent();
 		}
 		return true;
 	}
+
+	private static bool Touch(State st, InputEvent ev)
+	{
+		if (ev.Device == InputEvent.DeviceIdEmulation) return true;
+		if (ev is InputEventScreenTouch touch)
+		{
+			st.Catcher.AcceptEvent();
+			if (touch.Pressed && st.TouchIndex < 0)
+			{
+				st.TouchIndex = touch.Index;
+				st.TouchStart = touch.Position;
+				st.TouchMoved = false;
+				st.MouseIn = false;
+				st.Target = st.Scroll;
+			}
+			else if (!touch.Pressed && touch.Index == st.TouchIndex)
+			{
+				st.TouchIndex = -1;
+				if (!touch.Canceled && !st.TouchMoved &&
+					StatusButton.Contains(st.Creature, st.Catcher.GetGlobalTransform() * touch.Position))
+					Close(st.Creature);
+			}
+			return true;
+		}
+		if (ev is not InputEventScreenDrag drag) return false;
+		st.Catcher.AcceptEvent();
+		if (drag.Index == st.TouchIndex)
+		{
+			if (!st.TouchMoved)
+			{
+				Vector2 movement = drag.Position - st.TouchStart;
+				if (Mathf.Abs(movement.Y) < 8f) return true;
+				st.TouchMoved = true;
+				ScrollBy(st, -movement.Y);
+			}
+			else ScrollBy(st, -drag.Relative.Y);
+		}
+		return true;
+	}
+
+	private static void ScrollBy(State st, float pixels) =>
+		st.Target = Mathf.Clamp(st.Target + pixels, 0f, Mathf.Max(0f, st.ContentH - st.WindowH));
 
 	private static void MarkSeen(AbstractModel? model)
 	{
@@ -610,6 +655,11 @@ public static class StatusButton
 	private static readonly Color Red = new(0.89f, 0.13f, 0.23f);
 	private const float W = 74f, H = 28f, Lean = 8f;
 
+	internal static bool IsTapDown(InputEvent ev) =>
+		ev.Device != InputEvent.DeviceIdEmulation &&
+		(ev is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left } ||
+		ev is InputEventScreenTouch { Pressed: true });
+
 	public static void Attach(NCreature creature)
 	{
 		ulong id = creature.GetInstanceId();
@@ -644,7 +694,7 @@ public static class StatusButton
 		b.Hit.MouseExited += () => b.Mouse = false;
 		b.Hit.GuiInput += ev => ModEntry.Safe("status button", () =>
 		{
-			if (ev is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left })
+			if (IsTapDown(ev))
 			{
 				b.Hit.AcceptEvent();
 				b.Pulse = 1f;
@@ -715,10 +765,10 @@ public static class StatusButton
 			return;
 		}
 		// NHealthBar 根节点不代表可见血条的宽度；用完整 HpBarContainer（不是随当前血量变化的填充条）。
-		// 留 24px 间距，包含按钮悬停放大 / 弹动和阴影的余量，不压住血量数字或下方状态图标。
+		// 原间距为 24px，再向右移动一个原间距，包含按钮悬停放大 / 弹动和阴影的余量，不压住血量数字或下方状态图标。
 		Rect2 hp = bar.GetGlobalRect();
 		Vector2 scale = b.Hit.GetParent<Control>().GetGlobalTransform().Scale.Abs();
-		Vector2 at = new(hp.End.X + 24f * scale.X, hp.GetCenter().Y - H * scale.Y / 2f);
+		Vector2 at = new(hp.End.X + 48f * scale.X, hp.GetCenter().Y - H * scale.Y / 2f);
 		b.Hit.GlobalPosition = at;
 		bool open = TipList.IsOpen(creature);
 		b.Hover = Mathf.MoveToward(b.Hover, b.Mouse ? 1f : 0f, dt / 0.12f);

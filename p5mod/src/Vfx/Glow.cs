@@ -199,7 +199,7 @@ void fragment() {
 		return rect;
 	}
 
-	private static void Set(ColorRect r, string name, Variant v) => ((ShaderMaterial)r.Material).SetShaderParameter(name, v);
+	private static void Set(ColorRect r, string name, Variant v) => ((ShaderMaterial)r.Material).SetShaderParameter(Fx.ParameterName(name), v);
 
 	public static void SetParam(ColorRect r, string name, Variant v) => Set(r, name, v);
 
@@ -402,7 +402,16 @@ void fragment() {
 	/// 两头尖的直线光（多边形画，加法）：p0 → p1，最宽处在 35%，宽 w。
 	/// （Line2D 的 WidthCurve 在兼容渲染器里画不出来，所以锥形线都用多边形。）
 	/// </summary>
-	public static Vector2[] TaperPts(Vector2 p0, Vector2 p1, float w)
+	public static Vector2[] TaperPts(Vector2 p0, Vector2 p1, float w) =>
+		FillTaper(new Vector2[4], p0, p1, w);
+
+	// The Polygon setter copies the managed points into a native packed array immediately.
+	[System.ThreadStatic] private static Vector2[]? _taperScratch;
+
+	internal static void SetTaper(Polygon2D polygon, Vector2 p0, Vector2 p1, float w) =>
+		polygon.Polygon = FillTaper(_taperScratch ??= new Vector2[4], p0, p1, w);
+
+	private static Vector2[] FillTaper(Vector2[] points, Vector2 p0, Vector2 p1, float w)
 	{
 		Vector2 d = p1 - p0;
 		if (d.LengthSquared() < 0.01f)
@@ -410,7 +419,11 @@ void fragment() {
 			d = new Vector2(0.1f, 0f);
 		}
 		Vector2 n = new Vector2(-d.Y, d.X).Normalized() * w / 2f, m = p0 + d * 0.35f;
-		return new[] { p0, m + n, p1, m - n };
+		points[0] = p0;
+		points[1] = m + n;
+		points[2] = p1;
+		points[3] = m - n;
+		return points;
 	}
 
 	/// <summary>沿折线的带子：尾巴是尖、头部最宽 w。</summary>
@@ -447,8 +460,8 @@ void fragment() {
 			float head = Ease5.OutExpo(Mathf.Min(1f, t * 3f)), tail = Fx.InCubic(t);
 			Vector2 p0 = a0 + dir * length * tail, p1 = a0 + dir * length * head;
 			float w = Mathf.Lerp(1f, 0.35f, t);
-			glow.Polygon = TaperPts(p0, p1, width * w);
-			core.Polygon = TaperPts(p0, p1, width * 0.3f * w);
+			Glow.SetTaper(glow, p0, p1, width * w);
+			Glow.SetTaper(core, p0, p1, width * 0.3f * w);
 		});
 	}
 
@@ -468,7 +481,7 @@ void fragment() {
 			{
 				line.Visible = true;
 				float head = Ease5.OutExpo(Mathf.Min(1f, t * 1.6f)), tail = Fx.InCubic(t);
-				line.Polygon = TaperPts(dir * Mathf.Lerp(inner, reach, tail), dir * Mathf.Lerp(inner, reach, head), w);
+				Glow.SetTaper(line, dir * Mathf.Lerp(inner, reach, tail), dir * Mathf.Lerp(inner, reach, head), w);
 				line.Modulate = new Color(1f, 1f, 1f, 1f - tail);
 			});
 		}

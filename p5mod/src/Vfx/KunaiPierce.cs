@@ -328,5 +328,5 @@ void fragment() {
 		return k;
 	}
 
-	private void Set(string name, Variant v) => _mat.SetShaderParameter(name, v);
+	private void Set(string name, Variant v) => _mat.SetShaderParameter(Fx.ParameterName(name), v);
 }

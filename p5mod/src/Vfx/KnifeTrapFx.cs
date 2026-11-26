@@ -132,6 +132,7 @@ void fragment() {
 		Vector2? joker = null, float tall = 0f)
 	{
 		Clear();
+		if (count <= 0) return;
 		float u = Fx.Screen(front).Y / 1080f;
 		th = Mathf.Max(th, 120f * u);
 		tw = Mathf.Max(tw, th * 0.6f);
@@ -460,7 +461,7 @@ void fragment() {
 		}
 	}
 
-	private static void Clear()
+	internal static void Clear()
 	{
 		foreach (Slot sl in _slots)
 			if (sl.Card != null && GodotObject.IsInstanceValid(sl.Card.Root)) sl.Card.Root.QueueFree();

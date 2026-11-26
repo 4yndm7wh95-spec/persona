@@ -94,7 +94,7 @@ void fragment() {
 		return r;
 	}
 
-	public static void Set(ColorRect r, string name, Variant v) => ((ShaderMaterial)r.Material).SetShaderParameter(name, v);
+	public static void Set(ColorRect r, string name, Variant v) => ((ShaderMaterial)r.Material).SetShaderParameter(Fx.ParameterName(name), v);
 
 	public static void Palette(ColorRect r, Color dark, Color mid, Color hi, Color hot)
 	{
@@ -285,7 +285,7 @@ void fragment() {
 	private readonly float _half, _w, _h;
 	private bool _ended, _clenched;
 
-	private static void Set(ColorRect r, string n, Variant v) => ((ShaderMaterial)r.Material).SetShaderParameter(n, v);
+	private static void Set(ColorRect r, string n, Variant v) => ((ShaderMaterial)r.Material).SetShaderParameter(Fx.ParameterName(n), v);
 
 	private ColorRect Layer(Node2D parent, float w, float h, float facing, float cy)
 	{

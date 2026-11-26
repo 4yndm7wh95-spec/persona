@@ -247,7 +247,7 @@ public sealed class ReadyFx
 	{
 		Vector2 hilt = _pose(KnifeHilt), tip = _pose(KnifeTip);
 		Polygon2D edge = Glow.TaperPoly(_root, new Color(Pal5.Bright, 0.75f));
-		edge.Polygon = Glow.TaperPts(tip, hilt, 7f);
+		Glow.SetTaper(edge, tip, hilt, 7f);
 		Pulse(edge, 0.35f, 0.9f, 0.6);
 		Node2D glint = new();
 		_root.AddChild(glint);
@@ -375,7 +375,7 @@ public sealed class ReadyFx
 		}
 	}
 
-	private static void Set(ColorRect r, string name, Variant v) => ((ShaderMaterial)r.Material).SetShaderParameter(name, v);
+	private static void Set(ColorRect r, string name, Variant v) => ((ShaderMaterial)r.Material).SetShaderParameter(Fx.ParameterName(name), v);
 }
 
 /// <summary>

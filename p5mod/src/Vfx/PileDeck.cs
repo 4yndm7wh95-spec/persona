@@ -51,11 +51,6 @@ public sealed class PileDeck : IPileDecor
 	/// <summary>枪口闪光的位置（立绘的枪口，原版 (1730, 830) 换到我们的排版）和大小（1080p 像素）。原版 242：浅灰圆盘 + 往左上的一道白线；243–245 圆盘；246 炸成碎片；250 没了。</summary>
 	private static readonly Vector2 MuzzleAt = new(1730f * MapK - 80f, 830f * MapK);
 	private const float FlashR = 72f;
-	/// <summary>
-	/// 立绘的手臂和枪（L2 右边那块）在扫过去的同时往外送：立绘的枪是夸张透视（比模型的枪长得多），按行往 L2 压到 ArmFrom，ArmTime 弹开。
-	/// 收尾「240」第二版 3D 已经把手臂和枪伸到立绘的位置（fit240b.py），再压回去反而跳：ArmFrom = 1（不压）；以后要再用就改回 0.5。
-	/// </summary>
-	private const float ArmFrom = 1f, ArmTime = 0.14f;
 	// 最终排版的块面分界（export_deck.py，原版坐标换到我们的排版）：星纹 | L1 | 黑（Joker 白）| L2 | 灰 | 折线 | 红
 	private static float X1(float y) => 624.1f - 0.3275f * y;
 	private static float X2(float y) => 1155.4f - 0.628f * y;
@@ -77,7 +72,6 @@ public sealed class PileDeck : IPileDecor
 	private readonly Node2D _back, _portrait, _list, _title, _command;
 	private readonly Node2D _flash, _flashDisc, _flashStreak;
 	private readonly List<Node2D> _shards = new();
-	private readonly ShaderMaterial? _armMat;
 	private readonly List<(Node2D Node, float Delay, float Alpha)> _rows = new();
 	private float _exitT0 = -1f;
 	// 入场（原版 233–239）
@@ -107,13 +101,6 @@ public sealed class PileDeck : IPileDecor
 		// 背景块面（黑 / 灰 / 星纹拼贴）：图层本身在红色那块是透明的，下面露出红星纹
 		_back = Layer(root, "bg", BgAt * k);
 		_portrait = Layer(root, "portrait", PortraitPos * k);
-		if (_portrait.GetChildCount() > 0 && _portrait.GetChild(0) is Sprite2D ps && ps.Texture is Texture2D pt)
-		{
-			_armMat = new ShaderMaterial { Shader = ArmShader };
-			_armMat.SetShaderParameter("size", new Vector2(pt.GetWidth(), pt.GetHeight()));
-			ps.Material = _armMat;
-		}
-
 		// 1b. 入场：色块合成 + 3D Joker（PileField）
 		_entrance = new Node2D { Name = "PileDeckEntrance" };
 		root.AddChild(_entrance);
@@ -246,8 +233,8 @@ public sealed class PileDeck : IPileDecor
 	{
 		Node2D n = new() { Position = at };
 		parent.AddChild(n);
-		if (Fx.Tex("pile_dk_" + name) is Texture2D t)
-			n.AddChild(new Sprite2D { Texture = t, Centered = false, Scale = Vector2.One * _k, TextureFilter = CanvasItem.TextureFilterEnum.LinearWithMipmaps });
+		Texture2D t = Fx.Tex("pile_dk_" + name) ?? throw new System.InvalidOperationException($"Missing deck layer pile_dk_{name}");
+		n.AddChild(new Sprite2D { Texture = t, Centered = false, Scale = Vector2.One * _k, TextureFilter = CanvasItem.TextureFilterEnum.LinearWithMipmaps });
 		return n;
 	}
 
@@ -265,28 +252,6 @@ public sealed class PileDeck : IPileDecor
 	}
 
 	public void Kick() { }
-
-	private static Shader? _armShader;
-	/// <summary>立绘的手臂 / 枪（L2 右边）按行往 L2 压扁：arm = 1 原样，arm &lt; 1 每一行 L2 右边的内容缩到 arm 倍长（袖子根部贴着 L2 不动）。</summary>
-	internal static Shader ArmShader => _armShader ??= new Shader { Code = @"
-shader_type canvas_item;
-uniform vec2 size = vec2(1737.0, 1080.0);
-uniform float arm = 1.0;
-varying vec4 vcol;
-void vertex() { vcol = COLOR; }
-void fragment() {
-	vec2 p = UV * size;
-	float l2 = 1155.4 - 0.628 * p.y;
-	vec4 c;
-	if (arm < 0.999 && p.x > l2) {
-		float qx = l2 + (p.x - l2) / max(arm, 0.05);
-		c = qx < size.x ? texture(TEXTURE, vec2(qx / size.x, UV.y)) : vec4(0.0);
-	} else {
-		c = texture(TEXTURE, UV);
-	}
-	COLOR = c * vcol;
-}
-" };
 
 	public void BeginExit(float now)
 	{
@@ -328,7 +293,6 @@ void fragment() {
 		float bump = cut ? Mathf.Lerp(0.965f, 1f, Ease5.OutBack(Seg(t, PortraitAt, 0.14f))) : 1f;
 		_portrait.Scale = Vector2.One * bump;
 		_portrait.Position = new Vector2(560f, 540f) * k * (1f - bump);
-		_armMat?.SetShaderParameter("arm", cut ? Mathf.Lerp(ArmFrom, 1f, PileShapes.OutCubic(Seg(t, PortraitAt + 0.03f, ArmTime))) : ArmFrom);
 		_portrait.Modulate = Colors.White;
 		_root.Position = Vector2.Zero;   // 切立绘不震（用户 2026-11-24：头晕；枪口闪光已经够有冲击感）
 		// 列表一行行弹出（原版第 240 帧名单在一行行出来）
@@ -379,7 +343,6 @@ void fragment() {
 		_back.Position = new Vector2(1400f * k * o, 0f);
 		_portrait.Position = new Vector2(-500f * k * o, 0f);
 		_portrait.Scale = Vector2.One;
-		_armMat?.SetShaderParameter("arm", 1f);
 		_flash.Visible = false;
 		Color fade = new(1f, 1f, 1f, 1f - Seg(e, 0.35f, 0.5f));
 		_portrait.Modulate = _back.Modulate = fade;

@@ -9,7 +9,7 @@ namespace P5Joker;
 /// 不再必杀（被加了无实体、毒被清掉……）：翻面缩走；毒死了（血条刷新时已经没血）：一下胀开、碎成几片红黑碎片散掉。
 /// 挂在血条容器（%HpBarContainer）下面，跟着血条走、跟着血条一起隐藏。
 /// </summary>
-public partial class LethalMark : Node2D
+public sealed class LethalMark : Node2D
 {
 	private const string NodeName = "P5LethalMark";
 	private enum State { In, Idle, Out, Burst }
@@ -28,9 +28,14 @@ public partial class LethalMark : Node2D
 		{
 			if (mark == null || mark._state is State.Out or State.Burst)
 			{
-				mark?.QueueFree();
+				if (mark != null)
+				{
+					mark.Name = "P5LethalMarkRetiring";
+					mark.QueueFree();
+				}
 				mark = new LethalMark { Name = NodeName };
 				bar.AddChild(mark);
+				mark.Start();
 			}
 			mark.Place(bar);
 			return;
@@ -41,7 +46,7 @@ public partial class LethalMark : Node2D
 		if (dead) mark.Shatter();
 	}
 
-	public override void _Ready()
+	private void Start()
 	{
 		_seed = Fx.Rand(0f, 6.28f);
 		ZIndex = 2;
@@ -53,7 +58,15 @@ public partial class LethalMark : Node2D
 		_pin.AddChild(_card);
 		if (_card.Texture is Texture2D t) _card.Scale = Vector2.One * (58f / t.GetHeight());   // 卡高 58px（血条约 20px 高）
 		_glow.Scale = Vector2.One * (150f / Math.Max(_glow.Texture.GetWidth(), 1));
-		Visible = false;
+		_card.Modulate = Colors.Transparent;
+		SceneTree tree = GetTree();
+		void Tick()
+		{
+			if (!IsQueuedForDeletion() && CanProcess())
+				Advance(GetProcessDeltaTime());
+		}
+		tree.ProcessFrame += Tick;
+		TreeExiting += () => tree.ProcessFrame -= Tick;
 	}
 
 	private void Place(Control bar)
@@ -63,10 +76,9 @@ public partial class LethalMark : Node2D
 
 	private static float OutBack(float x, float s = 1.6f) { float c = s + 1f, y = x - 1f; return 1f + c * y * y * y + s * y * y; }
 
-	public override void _Process(double delta)
+	private void Advance(double delta)
 	{
 		_t += (float)delta;
-		Visible = true;
 		float sway = Mathf.Sin(_t * 2.1f + _seed) * 0.06f;
 		switch (_state)
 		{

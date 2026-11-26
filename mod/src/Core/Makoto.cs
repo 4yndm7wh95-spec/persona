@@ -24,7 +24,7 @@ public static class Makoto
 		NCreature? node = NCombatRoom.Instance?.GetCreatureNode(player.Creature);
 		if (node != null && GodotObject.IsInstanceValid(node) && node.Visuals?.SpineBody is MegaSprite body)
 		{
-			return BodyIsOurs(node.GetInstanceId(), body);
+			return BodyIsOurs(body);
 		}
 		return AssetsOurs;
 	}
@@ -33,90 +33,41 @@ public static class Makoto
 	private const string Signature = "sword_in";
 	private const string SkeletonPath = "res://animations/characters/regent/regent_skel_data.tres";
 
-	private static readonly System.Collections.Generic.Dictionary<ulong, bool> Bodies = new();
+	private sealed record SkeletonSignature(bool Ours);
+	private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Resource, SkeletonSignature> Known = new();
 
-	private static bool BodyIsOurs(ulong nodeId, MegaSprite body)
+	private static bool? Identify(Resource? skeleton)
 	{
-		lock (Bodies)
-		{
-			if (Bodies.TryGetValue(nodeId, out bool known))
-			{
-				return known;
-			}
-		}
-		bool ours;
-		try
-		{
-			if (!body.IsAnimationStateReady())
-			{
-				return AssetsOurs;                      // 骨骼还没建好（HasAnimation 会是 false 或抛异常）：先按资源判断，不缓存
-			}
-			ours = body.HasAnimation(Signature);
-		}
-		catch (System.Exception)
-		{
-			return AssetsOurs;                          // 读不到就不缓存，下次再看
-		}
-		lock (Bodies)
-		{
-			if (Bodies.Count > 64)
-			{
-				Bodies.Clear();
-			}
-			Bodies[nodeId] = ours;
-		}
-		if (!ours)
-		{
-			NotOurs("the Regent in combat");
-		}
-		return ours;
+		if (skeleton == null || !GodotObject.IsInstanceValid(skeleton)) return null;
+		if (Known.TryGetValue(skeleton, out var cached)) return cached.Ours;
+		if (!skeleton.HasMethod("get_animations") || !skeleton.HasMethod("find_animation")
+			|| skeleton.Call("get_animations").AsGodotArray().Count == 0) return null;
+		return Known.GetValue(skeleton, s => new SkeletonSignature(
+			s.Call("find_animation", Signature).AsGodotObject() != null)).Ours;
 	}
 
-	private static bool? _assetsOurs;
-
-	/// <summary>AssetGuard 把路径盖回来之后重新判断（之前可能判成了"不是我们的"）。</summary>
-	public static void ResetAssetCheck()
+	private static bool BodyIsOurs(MegaSprite body)
 	{
-		_assetsOurs = null;
-		_warned = false;
-		lock (Bodies)
+		if (body.BoundObject is GodotObject sprite && GodotObject.IsInstanceValid(sprite)
+			&& sprite.HasMethod("get_skeleton_data_res")
+			&& Identify(sprite.Get("skeleton_data_res").AsGodotObject() as Resource) is bool owns)
 		{
-			Bodies.Clear();
+			if (!owns) NotOurs("the Regent in combat");
+			return owns;
 		}
+		return body.IsAnimationStateReady() ? body.HasAnimation(Signature) : AssetsOurs;
 	}
 
-	/// <summary>资源层面：res:// 里的储君战斗骨骼是不是本 mod 的（没有战斗节点时用，例如选人界面）。读不出来时当作是。</summary>
+	public static void ResetAssetCheck() => _warned = false;
+
 	public static bool AssetsOurs
 	{
 		get
 		{
-			if (_assetsOurs is bool b)
-			{
-				return b;
-			}
-			bool ours = true;
-			try
-			{
-				// 骨骼数据没加载完时动画列表是空的，那种情况算"不知道"，当作是本 mod 的，也不缓存
-				if (ResourceLoader.Load(SkeletonPath) is Resource res && res.HasMethod("find_animation") && res.HasMethod("get_animations"))
-				{
-					if (res.Call("get_animations").AsGodotArray().Count == 0)
-					{
-						return true;
-					}
-					ours = res.Call("find_animation", Signature).AsGodotObject() != null;
-				}
-			}
-			catch (System.Exception)
-			{
-				ours = true;
-			}
-			_assetsOurs = ours;
-			if (!ours)
-			{
-				NotOurs("res://animations/characters/regent");
-			}
-			return ours;
+			Resource? skeleton = ResourceLoader.GetCachedRef(SkeletonPath) ?? ResourceLoader.Load(SkeletonPath);
+			bool? ours = Identify(skeleton);
+			if (ours == false) NotOurs("res://animations/characters/regent");
+			return ours ?? MakotoSelectSkin.ManagedSelection ?? AssetGuard.PackLoaded;
 		}
 	}
 

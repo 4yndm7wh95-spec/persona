@@ -47,7 +47,7 @@ float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { v += a
 		return r;
 	}
 
-	private static void Set(ColorRect r, string name, Variant v) => ((ShaderMaterial)r.Material).SetShaderParameter(name, v);
+	private static void Set(ColorRect r, string name, Variant v) => ((ShaderMaterial)r.Material).SetShaderParameter(Fx.ParameterName(name), v);
 	private static bool Ok(Control? c) => c != null && GodotObject.IsInstanceValid(c);
 
 	private static void TintPulse(Control layer, Vector2 at, Action<Color>? tint, Color to, float delay, float life, float hold = 0.3f)
