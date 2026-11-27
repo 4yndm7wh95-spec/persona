@@ -158,7 +158,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       <tr><td style="padding:4px 6px">几万真言</td><td style="padding:4px 6px">力量 ≥ 8：约 2.1 秒落第一下，约 3.5 秒结束（之前约 4.4 秒）</td><td style="padding:4px 6px">约 0.45 秒捏碎，约 1 秒落第一下（之前约 2 秒），约 1.6 秒打完</td></tr>
     </table>
     恶魔之焰：光团不再慢慢起步，一开始就在动，扫过手牌越来越快，一口气拐上去到电视里的手，只在最后落到手上时稍微收一下；牌收叠好马上捏碎。快速版扫牌同速，扫完光团直接冲出画面。<br>几万真言：快速版杖快速转一圈就停，停住马上劈。完整版捏碎提前，杖转得稍快，停住后不再空等，四下间隔 0.24 秒，结尾圆环紧跟最后一下。<br>
-    <b>另外：</b>Codex 第一批图都到了（眼神特写、伊邪那岐、伊邪那岐大神），放在下面「生图结果」里。
+    <b>另外：</b>Codex 的图都在下面「生图结果」里。新到的是逐帧重画的眼神特写（扭头出来了）和照原作改好的两把武器（v2）。眼神特写动起来的样子看草图第 7 个「眼神特写 逐帧版」。
   </div>
 
   <section id="decisions">
@@ -208,7 +208,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
 
   <section id="gencheck">
     <h2><span class="pill">新</span>生图结果（Codex 第一批） <span class="status" id="st-gencheck"></span></h2>
-    <p class="lead">眼神特写、伊邪那岐、伊邪那岐大神都到了。人物我对照原作没看出走样；两把武器和原作不一样，眼神特写要逐帧重画（你说的扭头）。每项点一个，要改的写一句。</p>
+    <p class="lead">标「新」的是这次到的：逐帧重画的眼神特写、照原作改好的两把武器（v2）；标「旧」的是第一批，留作对比。人物我对照原作没看出走样。每项点一个，要改的写一句。</p>
     <div class="vlist" id="genlist"></div>
   </section>
 
@@ -333,21 +333,27 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   ];
   var refStore = {};
   var GEN = [
-    { id: "gen_eyes", frames: ["gen/eye_01_closed.jpg", "gen/eye_02_slit.jpg", "gen/eye_03_half.jpg", "gen/eye_04_most.jpg", "gen/eye_05_open.jpg", "gen/eye_06_glint.jpg"], title: "眼神特写 6 帧",
-      text: "闭眼 → 睁开一条缝 → 睁开一半 → 大半 → 全睁 → 镜框上闪一下。画风、眼镜框、彩条、镜片反光都贴 P4R。但你说得对：这 6 帧是从同一张图改的，只有眨眼，没有原作那点扭头。",
-      use: "已经写了逐帧重画的任务：照原片第 4–12 帧一帧对一帧画（头从斜着往下看转向镜头、镜框跟着变平下移、反光从青扫到黄），设计照这一批。这一批先留着不删。" },
+    { id: "gen_eyes_turn", frames: ["gen/eye_t01.jpg", "gen/eye_t02.jpg", "gen/eye_t03.jpg", "gen/eye_t04.jpg", "gen/eye_t05.jpg", "gen/eye_t06.jpg", "gen/eye_t07.jpg", "gen/eye_t08.jpg", "gen/eye_t09.jpg"], title: "眼神特写 逐帧重画 9 帧（新）",
+      text: "照原片第 4–12 帧一帧对一帧画的：头从斜着往下看转向镜头，镜框从很斜慢慢转平，眼睛从闭到睁，反光从青扫到黄。扭头出来了。我担心的一点：生图的帧和帧之间构图有点跳（比如第 4→5、6→7 帧镜框位置会晃）。",
+      use: "动起来的样子在草图里的「眼神特写 逐帧版」（第 7 个），可以慢放看。抖得明显的话，我把跳得厉害的几帧挑出来让 Codex 重画。" },
+    { id: "gen_eyes", frames: ["gen/eye_01_closed.jpg", "gen/eye_02_slit.jpg", "gen/eye_03_half.jpg", "gen/eye_04_most.jpg", "gen/eye_05_open.jpg", "gen/eye_06_glint.jpg"], title: "眼神特写 6 帧（第一批，旧）",
+      text: "闭眼 → 睁开一条缝 → 睁开一半 → 大半 → 全睁 → 镜框上闪一下。画风贴 P4R，但你说得对：这 6 帧是从同一张图改的，只有眨眼，没有原作那点扭头。",
+      use: "已经按你的意见逐帧重画（上面那组），这组只留作对比。" },
     { id: "gen_izanagi", frames: ["gen/izanagi_full.webp", "gen/izanagi_body.webp"], title: "伊邪那岐：全身 / 去掉薙刀的身体",
       text: "黑色长大衣、红色内衬、银色头盔面甲、黄色眼睛、肩上的黄色徽章、腿上一排白扣带。身后那两条白色长飘带 P4G 设定图和 P4R 截图里都有，不是多画的。我对照下来没看出走样。",
       use: "第二张是给引擎用的：薙刀单独做成一张，引擎里再拿到他手上挥。" },
-    { id: "gen_naginata", frames: ["gen/izanagi_naginata.webp"], title: "伊邪那岐的薙刀（单独一张）",
-      text: "这里和原作不一样：原作刀身又宽又直，刀背靠近刀尖有一排锯齿，靠护手的地方有一条镂空槽，护手是一大块长方形横板；这张刀身细、弯得厉害，护手太小。",
-      use: "已经写好照原作改的任务（新图另存 v2，人物不动），和大神的杖一起改。你觉得不用改就点「可以用」。" },
+    { id: "gen_weapons_v2", frames: ["gen/izanagi_naginata_v2.webp", "gen/okami_staff_v2.webp", "gen/izanagi_full_v2.webp", "gen/okami_full_v2.webp"], title: "两把武器照原作改好了（v2，新）",
+      text: "薙刀：刀身又宽又直，刀背靠近刀尖有锯齿，靠护手有一条镂空槽，护手是一大块长方形横板，下面缠白布。大神的杖：杖头是又宽又长的银色直刃，下面是很大的十字护手，杖身细长。全身图里拿的也换成了新的。我对照 P4G 设定图看着都对上了。",
+      use: "确认可以的话，游戏里就用 v2；第一批的旧武器留着不删。" },
+    { id: "gen_naginata", frames: ["gen/izanagi_naginata.webp"], title: "伊邪那岐的薙刀（第一批，旧）",
+      text: "原作刀身又宽又直，刀背靠近刀尖有一排锯齿，靠护手的地方有一条镂空槽，护手是一大块长方形横板；这张刀身细、弯得厉害，护手太小。",
+      use: "已经改成上面的 v2，这张只留作对比。" },
     { id: "gen_okami", frames: ["gen/okami_full.webp", "gen/okami_body.webp"], title: "伊邪那岐大神：全身 / 去掉杖和圆环的身体",
       text: "白色长大衣、金扣、红领红内衬、黄领带、头顶那片很长的白色刃形头饰、腿上一排白扣带，和 P4G 白色那张一致。我看着没走样。",
       use: "第二张给引擎用：杖和圆环单独做，引擎里让杖绕着手转。" },
-    { id: "gen_okami_parts", frames: ["gen/okami_ring.webp", "gen/okami_staff.webp"], title: "伊邪那岐大神：圆环 / 杖（单独）",
-      text: "圆环没问题。杖和原作不一样：原作杖头是一段又宽又长的银色直刃，下面是很大的十字形护手；这张是短圆锥枪尖加小方块护手，全身图里的杖头又是另一种样子。几万真言快速版只出这根杖，最显眼。",
-      use: "已经写好照原作改的任务（和薙刀一起，新图另存 v2）。" }
+    { id: "gen_okami_parts", frames: ["gen/okami_ring.webp", "gen/okami_staff.webp"], title: "伊邪那岐大神：圆环 / 杖（第一批）",
+      text: "圆环没问题。杖和原作不一样：原作杖头是一段又宽又长的银色直刃，下面是很大的十字形护手；这张是短圆锥枪尖加小方块护手。",
+      use: "杖已经改成上面的 v2；圆环照用。" }
   ];
   var genStore = {};
   var Q3 = [
@@ -1814,6 +1820,29 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
             var bk = t - (tw + 0.1 + i * 0.035); if (bk > 0) damageBadge(ctx, e[0] + (w - 1.5) * H * 0.05, e[1] - H * 0.15 - w * H * 0.04, 9, seg(bk, 0, 0.16), 1 - seg(bk, 0.55, 0.85));
           });
         }
+      } },
+    { id: "eyesturn", name: "眼神特写 逐帧版（Codex 生图）", dur: 1.0, start: 0.3,
+      desc: "Codex 照原片第 4–12 帧一帧对一帧重画的 9 帧，放进黄色菱形里按 30 帧/秒播：菱形先是一块黄色，画面从黄色里透出来 → 头从斜着往下看转向镜头、镜框跟着变平，眼睛睁开，反光从青扫到黄 → 停在全睁。相邻两帧之间做了很短的淡入淡出，减轻生图帧和帧之间的小跳动。可以慢放，或者拖时间条一帧一帧看（右上角显示第几帧）。",
+      draw: function (ctx, W, H, tr) {
+        if (!IMG.et1) for (var k = 1; k <= 9; k++) loadImg("et" + k, "gen/eye_t0" + k + ".jpg");
+        battleFloor(ctx, W, H);
+        ctx.save(); ctx.globalAlpha = 0.35; ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H); ctx.restore();
+        enemy(ctx, W * 0.84, H * 0.6, H * 0.1, Math.sin(tr * 3));
+        var cx = W * 0.24, cy = H * 0.46, R = H * 0.66 * (0.7 + 0.3 * eOut(seg(tr, 0, 0.07)));
+        function rh() { ctx.beginPath(); ctx.moveTo(cx, cy - R); ctx.lineTo(cx + R, cy); ctx.lineTo(cx, cy + R); ctx.lineTo(cx - R, cy); ctx.closePath(); }
+        var f = (tr - 0.1) * 30, fi = clamp(Math.floor(f), 0, 8), fr2 = clamp(f - Math.floor(f), 0, 1), iw = R * 3, ih = R * 2;
+        function img(k, a) { var key = "et" + (k + 1); if (a <= 0 || !ready(key)) return; ctx.save(); ctx.globalAlpha = a; ctx.drawImage(IMG[key], cx - iw * 0.42, cy - ih * 0.5, iw, ih); ctx.restore(); }
+        ctx.save(); rh(); ctx.clip();
+        ctx.fillStyle = Y; ctx.fillRect(cx - R, cy - R, 2 * R, 2 * R);
+        if (tr >= 0.07) {
+          img(fi, 1);
+          if (f > 0 && f < 8) img(fi + 1, fr2);
+          var tint = 1 - seg(tr, 0.07, 0.14);
+          if (tint > 0) { ctx.save(); ctx.globalAlpha = tint * 0.85; ctx.fillStyle = Y; ctx.fillRect(cx - R, cy - R, 2 * R, 2 * R); ctx.restore(); }
+        }
+        ctx.restore();
+        ctx.save(); rh(); ctx.lineJoin = "round"; ctx.lineWidth = H * 0.03; ctx.strokeStyle = "#111"; ctx.stroke(); ctx.lineWidth = H * 0.02; ctx.strokeStyle = Y; ctx.stroke(); ctx.restore();
+        ctx.save(); ctx.fillStyle = "rgba(255,255,255,0.8)"; ctx.font = Math.round(H * 0.032) + "px sans-serif"; ctx.fillText(tr < 0.1 ? "黄色菱形" : "第 " + (fi + 1) + " / 9 帧", W * 0.66, H * 0.1); ctx.restore();
       } },
     { id: "myriadq_old", hidden: true, name: "几万真言 快速版（旧，整体加速）", dur: 1.5, start: 0.34,
       desc: "力量不到 8 时播这个：不出技能名、不转牌。悠手里的白金牌直接捏碎（0.1 秒）→ 伊邪那岐大神照样在悠身后出现（0.15 秒快速浮现，最后快速淡出）；杖在悠和敌人之间闪现，快转一圈停住（约 0.3 秒）→ 金光竖直劈下四下，间隔 0.12 秒。约 0.45 秒出第一下，整段约 1.2 秒。",
