@@ -150,7 +150,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
 
 <main class="wrap">
   <div class="notice">
-    <b>第三轮。</b>第二轮的回答都看了：视频拆解 10 条你都确认了，新草图都说像。这一轮按你的意见做了三段新草图：恶魔之焰的手牌收拢、几万真言的分镜、放大了手和卡的捏碎；另外有两个问题。前两轮的内容收在页面最下面。
+    <b>第四轮。</b>按你第三轮的意见改了两段草图：恶魔之焰换成纯色光柱一次扫进 + 明显的拖尾；几万真言的技能名改到出牌一开始，杖出现在敌人面前转，停下以后金光竖直劈下来。另外新加「参考图确认」：生图前先确认参考没错。捏碎的手你说得对，草图里是平面的，游戏里会用从电视里伸出来的立体手。
   </div>
 
   <section id="decisions">
@@ -177,6 +177,12 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     </div>
   </section>
 
+  <section id="refcheck">
+    <h2><span class="pill">02</span>参考图确认 <span class="status" id="st-refcheck"></span></h2>
+    <p class="lead">生图前先确认参考没错。下面是我们手里现有的设定图（P4G 图鉴解包，只当参考，不当素材）。正式参考会让 Codex 上网找高清官方图，找到以后也放到这里给你确认。</p>
+    <div class="vlist" id="reflist"></div>
+  </section>
+
   <details class="round1">
     <summary>第二轮：视频拆解（10 条都确认了）和两个问题（已回答）</summary>
     <div class="inner">
@@ -193,8 +199,8 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   </details>
 
   <section id="demos">
-    <h2><span class="pill">02</span>草图 <span class="status" id="st-demos"></span></h2>
-    <p class="lead">前三个是这一轮的新草图，后面是前两轮的。人物、手、人格面具、眼睛特写都是占位图形，之后换成生图的素材。可以慢放、拖时间条停在任意一帧。</p>
+    <h2><span class="pill">03</span>草图 <span class="status" id="st-demos"></span></h2>
+    <p class="lead">前两个是这一轮改过的，后面是之前的。人物、手、人格面具、眼睛特写都是占位图形，之后换成生图的素材。可以慢放、拖时间条停在任意一帧。</p>
     <div class="tabs" id="demoTabs" role="tablist"></div>
     <div class="stage"><canvas id="stage"></canvas></div>
     <div class="controls">
@@ -212,12 +218,12 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   </section>
 
   <section id="questions3">
-    <h2><span class="pill">03</span>这一轮的问题 <span class="status" id="st-answers3"></span></h2>
+    <h2><span class="pill">04</span>第三轮的问题（已回答） <span class="status" id="st-answers3"></span></h2>
     <div class="stack" id="q3list"></div>
   </section>
 
   <section id="uploads">
-    <h2><span class="pill">04</span>上传视频 / 截图 <span class="status" id="st-uploads"></span></h2>
+    <h2><span class="pill">05</span>上传视频 / 截图 <span class="status" id="st-uploads"></span></h2>
     <p class="lead">视频（mp4 / webm）或截图都可以，单个文件不超过 20MB。传上来的截图可以圈画。</p>
     <label class="drop" id="drop" for="file">
       <strong>点这里选文件，或者把文件拖进来</strong>
@@ -297,6 +303,15 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     { id: "q6", title: "手的材质？",
       opts: [["light", "光做的：黄白光、半透明、边缘柔和", true], ["dark", "暗色实体：像 P5 那只，靠轮廓光"]] }
   ];
+  var REFS = [
+    { id: "okami", frames: ["ref/okami_p4g.png"], title: "伊邪那岐大神（P4G 图鉴设定图）",
+      text: "白色长大衣、金色纽扣和饰边、大衣内侧红色、暗红黑色的头部，身后一个金色大圆环，手里一根很长的杖（一端是枪尖，枪尖下有十字形护手）。这是不是伊邪那岐大神？",
+      use: "P4R 还没公开大神的样子。确认是他以后，Codex 会上网再找更清楚的官方图，一起当生图参考。" },
+    { id: "izanagi", frames: ["ref/izanagi_p4g.png"], title: "伊邪那岐（P4G 图鉴设定图）",
+      text: "黑色高领长大衣、银白色头盔面甲、大衣内侧红色、长刃薙刀。P4R 里的伊邪那岐设计以 P4R 截图为准，这张只看结构。",
+      use: "Codex 也会上网找 P4R 官方的高清图。" }
+  ];
+  var refStore = {};
   var Q3 = [
     { id: "q8", title: "几万真言的「几万」怎么表现？",
       opts: [["spears", "大神转杖以后，几万道金白光矛从天上落向全体敌人（草图里的做法）", true], ["sweep", "转杖带出一圈圈光刃横扫过去"], ["both", "两个都要：光矛落下，最后一记横扫收尾"]] }
@@ -400,11 +415,11 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   var answers = { data: {} }, answers2 = { data: {} }, answers3 = { data: {} };
 
   /* ---------- verdict lists (understanding, video) ---------- */
-  function renderVerdicts(container, items, store, pathOf, statusId, makeBody) {
+  function renderVerdicts(container, items, store, pathOf, statusId, makeBody, labels) {
     items.forEach(function (it) {
       var c = makeBody(it);
       var chips = el("div", "chips");
-      [["yes", "对"], ["no", "不对"], ["part", "不全"]].forEach(function (o) {
+      (labels || [["yes", "对"], ["no", "不对"], ["part", "不全"]]).forEach(function (o) {
         var b = el("button", "chip", o[1]); b.type = "button"; b.dataset.k = it.id; b.dataset.v = o[0]; b.setAttribute("aria-pressed", "false");
         b.addEventListener("click", function () {
           store[it.id] = Object.assign({}, store[it.id], { v: o[0] });
@@ -774,8 +789,8 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
 
   /* ---------- demos ---------- */
   var DEMOS = [
-    { id: "fiend2", name: "恶魔之焰 v2（手牌收拢 + 半圆轨迹）", dur: 3.9, start: 1.08,
-      desc: "按你的说法：一道黄色扫光从左往右扫过手牌区，扫到哪张，哪张就往右收拢叠起来；收完以后整叠牌先顿一下，再由慢到快走一个大半圆，拖着彩色光带，飞进舞台大屏伸出来的那只手上方，散开成黄色扇形；握拳捏碎，碎片变成一道道蓝色刀光，一张牌一刀。",
+    { id: "fiend3", name: "恶魔之焰 v3（光柱扫牌 + 明显拖尾）", dur: 3.9, start: 1.2,
+      desc: "按你的意见改：一竖纯色的黄色光柱由慢到快从左往右扫过手牌，一次把牌全扫进光柱里，带到右边；顿一下，整叠牌变成一团光沿大半圆飞进电视里伸出来的手上方。拖尾是一条宽的发光黄带，加三色光带和星星，比上一版明显很多。然后散开成黄色扇形 → 握拳捏碎 → 一张牌一刀。",
       draw: function (ctx, W, H, tr) {
         var BEAT = 2.15, t = hs(tr, BEAT, 0.08);
         var shake = tr > BEAT && tr < BEAT + 0.16 ? (1 - (tr - BEAT) / 0.16) * H * 0.01 : 0;
@@ -791,17 +806,47 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         var close = eInOut(seg(t, 2.02, 2.15));
         lightHand(ctx, W, H, hx, hy, hsz, close, 0, seg(t, 1.15, 1.25) * (1 - seg(t, 2.7, 2.85)), [tvx, tvy]);
         var palm = [W * 0.56, H * 0.8 - H * 0.3 * 1.55];
-        var N = 5, cw = W * 0.08, ch = cw * 1.38, stack = [W * 0.8, H * 0.9];
+        var N = 5, cw = W * 0.08, ch = cw * 1.38, stack = [W * 0.84, H * 0.86];
         var path = [stack, [W * 1.02, H * 0.42], [W * 0.88, H * 0.0], palm];
-        var u0 = 0.82, u1 = 1.45, lead = seg(t, u0, u1);
-        if (lead > 0 && t < 1.7) ribbon(ctx, path, Math.max(0, (eIn(lead) * 0.85 + lead * 0.15) - 0.35), eIn(lead) * 0.85 + lead * 0.15, H * 0.03, 1 - seg(t, 1.45, 1.7));
+        /* a solid yellow light column sweeps left → right, slow → fast, and scoops every card into itself */
+        var swK = seg(t, 0.1, 0.72), swX = lerp(W * 0.14, stack[0], eIn(swK)), colA = swK > 0 ? 1 - seg(t, 0.85, 0.95) : 0;
+        var u0 = 0.86, u1 = 1.45, lead = seg(t, u0, u1), lk = eIn(lead) * 0.85 + lead * 0.15;
+        /* the trail: wide glowing band + striped ribbon + sparkles */
+        if (lead > 0 && t < 1.8) {
+          var tA = 1 - seg(t, 1.45, 1.8), k0 = Math.max(0, lk - 0.45), pts = [];
+          for (var q = 0; q <= 30; q++) pts.push(bez(path[0], path[1], path[2], path[3], lerp(k0, lk, q / 30)));
+          ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.shadowColor = YH; ctx.shadowBlur = H * 0.05;
+          for (var q2 = 1; q2 < pts.length; q2++) {
+            var f = q2 / (pts.length - 1);
+            ctx.globalAlpha = tA * f * 0.9; ctx.strokeStyle = Y; ctx.lineWidth = H * 0.07 * f;
+            ctx.beginPath(); ctx.moveTo(pts[q2 - 1][0], pts[q2 - 1][1]); ctx.lineTo(pts[q2][0], pts[q2][1]); ctx.stroke();
+          }
+          ctx.restore();
+          ribbon(ctx, path, k0, lk, H * 0.05, tA);
+          var rs = rng(90);
+          for (var sp = 0; sp < 14; sp++) {
+            var kk = lerp(k0, lk, rs()), pp = bez(path[0], path[1], path[2], path[3], kk), ss = H * lerp(0.012, 0.03, rs()) * tA;
+            star4(ctx, pp[0] + (rs() - 0.5) * H * 0.08, pp[1] + (rs() - 0.5) * H * 0.08, ss * (0.7 + 0.3 * Math.sin(t * 30 + sp)), 0.16, 1, sp % 3 ? "#ffffff" : YH);
+          }
+        }
+        if (colA > 0) {
+          var colTop = H * 0.6, colBot = H * 1.04, cwid = W * 0.05 * (1 + 0.6 * seg(t, 0.72, 0.85));
+          ctx.save(); ctx.translate(swX, 0); ctx.globalAlpha = colA;
+          ctx.shadowColor = YH; ctx.shadowBlur = W * 0.05; ctx.fillStyle = Y;
+          roundRect(ctx, -cwid / 2, colTop, cwid, colBot - colTop, cwid / 2); ctx.fill();
+          ctx.shadowBlur = 0; ctx.fillStyle = "#fffbe0"; roundRect(ctx, -cwid * 0.16, colTop + H * 0.02, cwid * 0.32, colBot - colTop - H * 0.02, cwid * 0.16); ctx.fill();
+          ctx.restore();
+        }
         for (var i = 0; i < N && t < BEAT; i++) {
           var hx0 = W * 0.5 + (i - 2) * cw * 0.85, hy0 = H * 0.93 + Math.abs(i - 2) * H * 0.012, a0 = (i - 2) * 0.1;
-          var ti = 0.12 + 0.5 * (hx0 - W * 0.18) / (W * 0.68), g = eOut(seg(t, ti, ti + 0.2));
-          var x = lerp(hx0, stack[0] + i * 3, g), y = lerp(hy0, stack[1] - i * 3, g), a = lerp(a0, 0.12, g), sc = 1;
-          y -= Math.sin(seg(t, 0.7, 0.82) * Math.PI) * H * 0.025;
-          var d = i * 0.035, u = seg(t, u0 + d, u1 + d);
-          if (u > 0) { var k = eIn(u) * 0.85 + u * 0.15, p = bez(path[0], path[1], path[2], path[3], k); x = p[0]; y = p[1]; a = lerp(0.12, -0.6, k); sc = lerp(1, 0.9, k); }
+          var x = hx0, y = hy0, a = a0, sc = 1;
+          if (swX >= hx0 - cw * 0.3) {
+            var cx2 = swX - (N - 1 - i) * W * 0.004, catchK = clamp((swX - hx0 + cw * 0.3) / (W * 0.08), 0, 1);
+            x = lerp(hx0, cx2, eOut(catchK)); y = lerp(hy0, stack[1] - i * 2, eOut(catchK)); a = lerp(a0, 0.05, catchK); sc = lerp(1, 0.92, catchK);
+          }
+          y -= Math.sin(seg(t, 0.74, 0.86) * Math.PI) * H * 0.03;
+          var d = i * 0.03, u = seg(t, u0 + d, u1 + d);
+          if (u > 0) { var k = eIn(u) * 0.85 + u * 0.15, p = bez(path[0], path[1], path[2], path[3], k); x = p[0]; y = p[1]; a = lerp(0.05, -0.6, k); sc = lerp(0.92, 0.9, k); }
           var fk = eOut(seg(t, 1.45 + d, 1.65 + d)), flip = seg(t, 1.5 + d, 1.64 + d);
           if (fk > 0) { var fa = (i - 2) * 0.28, fr = H * 0.12; x = lerp(palm[0], palm[0] + Math.sin(fa) * fr * 1.7, fk); y = lerp(palm[1], palm[1] - Math.cos(fa) * fr * 0.5 + fr * 0.3, fk); a = lerp(-0.6, fa, fk); sc = lerp(0.9, 1.15, fk); }
           var sx = flip > 0 && flip < 1 ? Math.abs(Math.cos(flip * Math.PI)) : 1;
@@ -809,15 +854,11 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
           if (flip >= 0.5) yellowCard(ctx, cw, ch); else stsCard(ctx, cw, ch, i % 3);
           ctx.restore();
         }
-        var sw = seg(t, 0.12, 0.62);
-        if (sw > 0 && sw < 1) {
-          var sx2 = lerp(W * 0.18, W * 0.86, sw);
-          ctx.save(); ctx.translate(sx2, H * 0.9); ctx.transform(1, 0, -0.35, 1, 0, 0);
-          var gb = ctx.createLinearGradient(-W * 0.09, 0, W * 0.015, 0);
-          gb.addColorStop(0, "rgba(230,235,26,0)"); gb.addColorStop(0.8, "rgba(230,235,26,0.9)"); gb.addColorStop(1, "rgba(255,255,255,1)");
-          ctx.fillStyle = gb; ctx.fillRect(-W * 0.09, -H * 0.2, W * 0.105, H * 0.3);
-          ctx.fillStyle = ORANGE; for (var dy = -H * 0.19; dy < H * 0.1; dy += H * 0.022) { ctx.beginPath(); ctx.arc(-W * 0.1, dy, H * 0.005, 0, Math.PI * 2); ctx.fill(); }
-          ctx.restore();
+        if (lead > 0 && lead < 1) {
+          var hp = bez(path[0], path[1], path[2], path[3], lk);
+          ctx.save(); ctx.globalCompositeOperation = "lighter";
+          var hg = ctx.createRadialGradient(hp[0], hp[1], 0, hp[0], hp[1], H * 0.13); hg.addColorStop(0, "rgba(255,252,200,0.95)"); hg.addColorStop(1, "rgba(230,235,26,0)");
+          ctx.fillStyle = hg; ctx.fillRect(hp[0] - H * 0.13, hp[1] - H * 0.13, H * 0.26, H * 0.26); ctx.restore();
         }
         if (tr >= BEAT) {
           var lt = tr - BEAT, st = Math.max(0, t - BEAT), P = [palm[0], palm[1] + H * 0.08];
@@ -843,7 +884,129 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         }
         ctx.restore();
       } },
-    { id: "myriad", name: "几万真言（分镜草图）", dur: 4.9, start: 2.2,
+    { id: "myriad2", name: "几万真言 v2（分镜）", dur: 5.5, start: 3.0,
+      desc: "按你的意见改：一出牌就先划过英文技能名（开头特效）→ 画面去色，悠变黑剪影，背后亮起金色圆盘，摘眼镜反光一闪 → 白金卡捏碎 → 伊邪那岐大神在悠身后升起 → 金色光点聚到敌人面前，凝成他的杖，由慢到快转、再慢下来停住 → 停住以后，敌人头顶的金光竖直劈下来，带闪电一样的闪烁，连劈四下，最后一下最大 → 黄色圆环收尾。大神和杖是占位图形。",
+      draw: function (ctx, W, H, tr) {
+        var GOLD = "#f2c54b", PALE = "#fff3c4";
+        var STOP = 3.35, t = hs(tr, STOP, 0.15);
+        var gray = t > 1.0 && t < 4.95;
+        battleFloor(ctx, W, H, gray);
+        var foes = [[W * 0.68, H * 0.66], [W * 0.8, H * 0.56], [W * 0.88, H * 0.72]];
+        foes.forEach(function (e, i) {
+          if (gray) { ctx.fillStyle = "#050505"; ctx.beginPath(); ctx.ellipse(e[0], e[1], H * 0.09, H * 0.072, 0, 0, Math.PI * 2); ctx.fill(); }
+          else enemy(ctx, e[0], e[1], H * 0.09, Math.sin(tr * 3 + i));
+        });
+        /* opening: the skill name sweeps in the moment the card is played */
+        var nk = eOut(seg(t, 0.0, 0.35)), nout = eIn(seg(t, 1.0, 1.3));
+        if (nk > 0 && nout < 1) {
+          ctx.save(); ctx.translate(W * 0.55, H * 0.42); ctx.rotate(-0.28);
+          var off = lerp(-W * 1.5, 0, nk) + nout * W * 1.8 + t * W * 0.03, tx = -W * 0.45 + off * 1.12;
+          ctx.fillStyle = "rgba(255,255,255,0.94)"; ctx.fillRect(-W * 1.2 + off, -H * 0.12, W * 2.4, H * 0.22);
+          ctx.fillStyle = GOLD; ctx.fillRect(-W * 1.2 + off, H * 0.12, W * 2.4, H * 0.03);
+          for (var dx = -W * 1.2; dx < W * 1.2; dx += H * 0.02) { ctx.beginPath(); ctx.arc(dx + off, -H * 0.15, H * 0.005, 0, Math.PI * 2); ctx.fill(); }
+          ctx.font = Math.round(H * 0.16) + "px 'Archivo Black', sans-serif"; ctx.textBaseline = "middle";
+          ctx.save(); ctx.beginPath(); ctx.rect(-W * 1.2 + off, -H * 0.12, W * 2.4, H * 0.22); ctx.clip();
+          ctx.save(); ctx.translate(tx, -H * 0.01); ctx.transform(1, 0, -0.22, 1, 0, 0); ctx.fillStyle = GOLD; ctx.fillText("MYRIAD TRUTHS", 0, 0); ctx.restore(); ctx.restore();
+          ctx.save(); ctx.beginPath(); ctx.rect(-W * 3, -H * 3, W * 6, H * 6); ctx.rect(-W * 1.2 + off, -H * 0.12, W * 2.4, H * 0.22); ctx.clip("evenodd");
+          ctx.save(); ctx.translate(tx, -H * 0.01); ctx.transform(1, 0, -0.22, 1, 0, 0); ctx.fillStyle = PALE; ctx.fillText("MYRIAD TRUTHS", 0, 0); ctx.restore(); ctx.restore();
+          var rsn = rng(12);
+          for (var si = 0; si < 6; si++) { var sk3 = seg(t, 0.15 + si * 0.08, 0.45 + si * 0.08) * (1 - nout); star4(ctx, (rsn() - 0.3) * W * 0.9 + off * 0.6, (rsn() - 0.5) * H * 0.4, H * 0.03 * Math.sin(Math.min(1, sk3) * Math.PI), 0.15, 1, si % 2 ? "#ffffff" : GOLD); }
+          ctx.restore();
+        }
+        var dk = eOut(seg(t, 1.05, 1.4)) * (1 - seg(t, 4.7, 5.0));
+        if (dk > 0) {
+          ctx.save(); ctx.globalAlpha = dk;
+          var dg = ctx.createRadialGradient(W * 0.22, H * 0.5, 0, W * 0.22, H * 0.5, H * 0.44);
+          dg.addColorStop(0, PALE); dg.addColorStop(0.7, GOLD); dg.addColorStop(1, "rgba(242,197,75,0)");
+          ctx.fillStyle = dg; ctx.beginPath(); ctx.arc(W * 0.22, H * 0.5, H * 0.44 * dk, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+        }
+        var ok = eOut(seg(t, 1.75, 2.3)) * (1 - seg(t, 4.75, 5.1));
+        var ox = W * 0.3, oy = H * 1.0 - (1 - ok) * H * 0.15;
+        if (ok > 0) {
+          ctx.save(); ctx.globalAlpha = ok; ctx.shadowColor = GOLD; ctx.shadowBlur = H * 0.04;
+          ring(ctx, ox, H * 0.34, H * 0.3, H * 0.02, GOLD, 1); ring(ctx, ox, H * 0.34, H * 0.26, 2, PALE, 0.8); ctx.restore();
+          ctx.save(); ctx.globalAlpha = ok; okamiBody(ctx, ox, oy, H * 0.95); ctx.restore();
+        }
+        /* the staff appears in front of the enemies, spins up, slows down and stops */
+        var gc = [W * 0.79, H * 0.46], L = H * 0.86;
+        var appear = eOut(seg(t, 2.25, 2.6)), fadeS = 1 - seg(t, STOP + 0.3, STOP + 0.6);
+        var rp = rng(77);
+        for (var pi = 0; pi < 26; pi++) {
+          var sx0 = gc[0] + (rp() - 0.5) * H * 1.0, sy0 = gc[1] + (rp() - 0.5) * H * 0.8, sPos = rp() - 0.5;
+          var pk = eInOut(seg(t, 2.1 + pi * 0.006, 2.5 + pi * 0.006));
+          if (pk <= 0 || pk >= 1) continue;
+          var px = lerp(sx0, gc[0], pk), py = lerp(sy0, gc[1] + sPos * L, pk);
+          ctx.save(); ctx.globalAlpha = Math.sin(pk * Math.PI); ctx.fillStyle = pi % 3 ? GOLD : PALE; ctx.beginPath(); ctx.arc(px, py, H * 0.008, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+        }
+        if (appear > 0 && fadeS > 0) {
+          var spk = seg(t, 2.5, STOP), e1 = eInOut(spk), e2 = eInOut(seg(t + 0.01, 2.5, STOP));
+          var target = -Math.PI / 2, ang = target - (1 - e1) * Math.PI * 5, omega = (e2 - e1) / 0.01 * Math.PI * 5;
+          if (omega > 3) {
+            for (var gi = 1; gi <= 8; gi++) {
+              var ga = ang - gi * omega * 0.01;
+              ctx.save(); ctx.globalAlpha = appear * fadeS * 0.32 * (1 - gi / 9); ctx.strokeStyle = GOLD; ctx.lineWidth = H * 0.014;
+              ctx.beginPath(); ctx.moveTo(gc[0] - Math.cos(ga) * L / 2, gc[1] - Math.sin(ga) * L / 2); ctx.lineTo(gc[0] + Math.cos(ga) * L / 2, gc[1] + Math.sin(ga) * L / 2); ctx.stroke(); ctx.restore();
+            }
+            ring(ctx, gc[0], gc[1], L / 2, H * 0.006, PALE, appear * fadeS * Math.min(1, omega / 30));
+          }
+          ctx.save(); ctx.globalAlpha = appear * fadeS; ctx.translate(gc[0], gc[1]); ctx.rotate(ang);
+          ctx.shadowColor = PALE; ctx.shadowBlur = H * (tr >= STOP && tr < STOP + 0.2 ? 0.08 : 0.025);
+          ctx.fillStyle = "#efe9d8"; ctx.fillRect(-L / 2, -H * 0.008, L, H * 0.016);
+          ctx.fillStyle = GOLD; ctx.beginPath(); ctx.moveTo(L / 2, -H * 0.024); ctx.lineTo(L / 2 + H * 0.13, 0); ctx.lineTo(L / 2, H * 0.024); ctx.closePath(); ctx.fill();
+          ctx.fillRect(L / 2 - H * 0.07, -H * 0.04, H * 0.012, H * 0.08);
+          ctx.restore();
+        }
+        figure(ctx, W * 0.2, H * 0.94, H * 0.4, gray ? null : Y);
+        var gk = seg(t, 1.2, 1.45);
+        if (gk > 0 && gk < 1) star4(ctx, W * 0.2 + H * 0.02, H * 0.94 - H * 0.4 * 0.93, H * 0.07 * Math.sin(gk * Math.PI), 0.12, 1, PALE);
+        var cpos = [W * 0.25, H * 0.42], ck = seg(t, 1.45, 1.7);
+        if (ck > 0 && t < 1.72) {
+          ctx.save(); ctx.translate(cpos[0], cpos[1]); ctx.scale(Math.max(0.05, Math.abs(Math.cos(t * 10))), 1);
+          roundRect(ctx, -H * 0.05, -H * 0.075, H * 0.1, H * 0.15, 3); ctx.fillStyle = PALE; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = GOLD; ctx.stroke(); ctx.restore();
+        }
+        if (t >= 1.72 && t < 2.6) {
+          var st = t - 1.72;
+          ring(ctx, cpos[0], cpos[1], lerp(H * 0.02, H * 0.5, eOut(seg(st, 0, 0.5))), lerp(H * 0.04, 2, seg(st, 0, 0.5)), "#ffffff", 1 - seg(st, 0.3, 0.55));
+          ring(ctx, cpos[0], cpos[1], lerp(H * 0.02, H * 0.38, eOut(seg(st, 0.06, 0.55))), lerp(H * 0.025, 2, seg(st, 0.06, 0.55)), GOLD, 1 - seg(st, 0.35, 0.6));
+          makeShards(61, 22, { vmin: H * 0.7, vmax: H * 1.8, smin: H * 0.01, smax: H * 0.03 }).forEach(function (s) { var p = shardPos(s, st, 2.6, H * 0.3); drawShard(ctx, cpos[0] + p[0], cpos[1] + p[1], s, st, PALE, 1 - seg(st, 0.5, 0.9)); });
+        }
+        if (tr >= STOP && tr < STOP + 0.12) { ctx.save(); ctx.globalAlpha = (1 - (tr - STOP) / 0.12) * 0.35; ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, W, H); ctx.restore(); }
+        /* golden light strikes straight down onto every enemy, four hits, flickering like lightning */
+        for (var w = 0; w < 4; w++) {
+          var tw = STOP + 0.4 + w * 0.3;
+          foes.forEach(function (e, i) {
+            var lk2 = seg(t, tw + i * 0.03, tw + 0.24 + i * 0.03);
+            if (lk2 <= 0 || lk2 >= 1) return;
+            var on = lk2 < 0.5 ? ((Math.floor(tr * 45 + i * 2 + w) % 3) === 0 ? 0.35 : 1) : 1;
+            var a = on * (1 - seg(lk2, 0.55, 1)), big2 = w === 3 ? 1.7 : 1, x = e[0], y1 = e[1] - H * 0.02;
+            ctx.save(); ctx.globalCompositeOperation = "lighter";
+            var gw = H * 0.07 * big2, gg = ctx.createLinearGradient(x - gw, 0, x + gw, 0);
+            gg.addColorStop(0, "rgba(242,197,75,0)"); gg.addColorStop(0.5, "rgba(242,197,75," + (0.75 * a) + ")"); gg.addColorStop(1, "rgba(242,197,75,0)");
+            ctx.fillStyle = gg; ctx.fillRect(x - gw, -H * 0.05, gw * 2, y1 + H * 0.05);
+            ctx.fillStyle = "rgba(255,252,235," + a + ")"; ctx.fillRect(x - H * 0.008 * big2, -H * 0.05, H * 0.016 * big2, y1 + H * 0.05);
+            ctx.restore();
+            [0, 1].forEach(function (b) {
+              var r = rng(Math.floor(tr * 30) * 7 + i * 13 + w * 31 + b);
+              ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = a * 0.9; ctx.strokeStyle = b ? PALE : "#ffffff"; ctx.lineWidth = H * 0.004 * big2; ctx.beginPath(); ctx.moveTo(x, -H * 0.05);
+              for (var s2 = 1; s2 <= 9; s2++) { var yy = lerp(-H * 0.05, y1, s2 / 9), xx = x + (s2 < 9 ? (r() - 0.5) * H * 0.07 * big2 : 0); ctx.lineTo(xx, yy); }
+              ctx.stroke(); ctx.restore();
+            });
+            var ik = seg(lk2, 0, 0.6);
+            ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = a;
+            var ig = ctx.createRadialGradient(x, y1, 0, x, y1, H * 0.12 * big2); ig.addColorStop(0, "rgba(255,255,255,1)"); ig.addColorStop(1, "rgba(242,197,75,0)");
+            ctx.fillStyle = ig; ctx.fillRect(x - H * 0.15 * big2, y1 - H * 0.15 * big2, H * 0.3 * big2, H * 0.3 * big2); ctx.restore();
+            ring(ctx, x, y1, lerp(H * 0.03, H * 0.16 * big2, eOut(ik)), lerp(H * 0.02, 1.5, ik), w === 3 ? "#ffffff" : PALE, 1 - ik);
+          });
+          foes.forEach(function (e, i) { var bk = t - (tw + 0.08 + i * 0.03); if (bk > 0) damageBadge(ctx, e[0] + (w - 1.5) * H * 0.05, e[1] - H * 0.15 - w * H * 0.04, w === 3 ? 31 : 18, seg(bk, 0, 0.18), 1 - seg(bk, 0.6, 0.9)); });
+          if (w === 3) { var fl = 1 - seg(t, tw + 0.05, tw + 0.3); if (fl > 0 && fl < 1) { ctx.save(); ctx.globalAlpha = fl * 0.7; ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, W, H); ctx.restore(); } }
+        }
+        var yk = seg(t, 4.85, 5.4);
+        if (yk > 0 && yk < 1) {
+          ring(ctx, W * 0.5, H * 0.5, lerp(H * 0.05, Math.hypot(W, H) * 0.6, eOut(yk)), lerp(H * 0.12, H * 0.01, yk), Y, 1 - seg(yk, 0.6, 1));
+          ring(ctx, W * 0.5, H * 0.5, lerp(H * 0.03, Math.hypot(W, H) * 0.45, eOut(seg(yk, 0.1, 1))), 3, "#ffffff", 1 - seg(yk, 0.5, 1));
+        }
+      } },
+    { id: "myriad", hidden: true, name: "几万真言（分镜草图，旧）", dur: 4.9, start: 2.2,
       desc: "分镜：白金色斜条纹扫过 → 画面去色，悠变成黑剪影，背后亮起金色圆盘，摘眼镜的反光一闪 → 白金色的卡被捏碎 → 伊邪那岐大神从背后升起（白衣、金色圆环），转动长杖，由慢到快转两圈多 → 杖停住指向敌人，顿一下，背景划过英文技能名 → 四波金白光矛落向全体敌人，每波一次伤害，最后一波最大 → 黄色圆环收尾，回到战场。大神是占位图形。",
       draw: function (ctx, W, H, tr) {
         var GOLD = "#f2c54b", PALE = "#fff3c4";
@@ -1280,6 +1443,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   }
   function renderDemoUI() {
     DEMOS.forEach(function (d) {
+      if (d.hidden) return;
       var b = el("button", "chip", d.name); b.type = "button"; b.dataset.id = d.id; b.setAttribute("role", "tab");
       b.addEventListener("click", function () { selectDemo(d); }); $("demoTabs").appendChild(b);
     });
@@ -1333,6 +1497,16 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       c.appendChild(fr); c.appendChild(el("h3", null, v.title)); c.appendChild(el("p", null, v.text)); c.appendChild(el("p", "use", v.use));
       return c;
     });
+  }
+
+  function renderRefs() {
+    renderVerdicts($("reflist"), REFS, refStore, function (id) { return "refcheck/" + id; }, "st-refcheck", function (v) {
+      var c = el("div", "card vitem");
+      var fr = el("div", "frames");
+      v.frames.forEach(function (src) { var im = el("img"); im.src = src; im.alt = v.title; im.loading = "lazy"; im.style.background = "#2a2a30"; fr.appendChild(im); });
+      c.appendChild(fr); c.appendChild(el("h3", null, v.title)); c.appendChild(el("p", null, v.text)); c.appendChild(el("p", "use", v.use));
+      return c;
+    }, [["yes", "是他"], ["no", "不是"], ["part", "不确定"]]);
   }
 
   /* ---------- round 1 sections ---------- */
@@ -1427,6 +1601,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   function boot() {
     renderVideo(); renderChipQuestions("q2list", Q2, answers2, "answers2/main", "st-answers2");
     renderChipQuestions("q3list", Q3, answers3, "answers3/main", "st-answers3");
+    renderRefs();
     renderDemoUI(); renderRound1(); setupUploads();
     requestAnimationFrame(resize);
     if (!window.claude || typeof window.claude.use !== "function") { setConn("bad", "本地预览：不会保存"); return; }
@@ -1441,6 +1616,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       function once(key) { if (hydrated[key]) return false; hydrated[key] = true; return true; }
       sub("answers", function (s) { s.docs.forEach(function (d) { if (d.id === "main" && once("answers")) hydrateChips("qlist", QUESTIONS, answers, d.data() || {}); }); });
       sub("answers2", function (s) { s.docs.forEach(function (d) { if (d.id === "main" && once("answers2")) hydrateChips("q2list", Q2, answers2, d.data() || {}); }); });
+      sub("refcheck", function (s) { s.docs.forEach(function (d) { if (once("ref-" + d.id)) { refStore[d.id] = Object.assign({}, d.data()); delete refStore[d.id].at; } }); syncVerdicts($("reflist"), refStore); fillVerdictNotes($("reflist"), refStore); });
       sub("answers3", function (s) { s.docs.forEach(function (d) { if (d.id === "main" && once("answers3")) hydrateChips("q3list", Q3, answers3, d.data() || {}); }); });
       sub("understanding", function (s) { s.docs.forEach(function (d) { if (d.id === "main" && once("understanding")) { var items = (d.data() || {}).items || {}; Object.keys(items).forEach(function (k) { understanding[k] = items[k]; }); syncVerdicts($("ulist"), understanding); fillVerdictNotes($("ulist"), understanding); } }); });
       sub("video", function (s) { s.docs.forEach(function (d) { if (once("video-" + d.id)) { videoStore[d.id] = Object.assign({}, d.data()); delete videoStore[d.id].at; } }); syncVerdicts($("vlist"), videoStore); fillVerdictNotes($("vlist"), videoStore); });
