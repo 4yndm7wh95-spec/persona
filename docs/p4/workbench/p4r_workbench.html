@@ -150,9 +150,11 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
 
 <main class="wrap">
   <div class="notice">
-    <b>快速版改了：不加速，只剪段落。</b>留下来的每一段都和完整版一样的速度。草图按顺序是：恶魔之焰完整版、恶魔之焰快速版、几万真言完整版、几万真言快速版。
+    <b>新做：添柴（第一版草图）。</b>就是草图的前两个。添柴的效果是消耗所有手牌，每消耗一张加一张随机牌，所以演出是：整手牌一握全碎 → 碎片在场地中间拼成一圈转动的卡牌转盘（Shuffle Time 洗牌）→ 转到最前面的牌依次甩出来，翻开变成新牌落回手牌。分档建议和恶魔之焰一样：一次烧 7 张以上播完整版，其余播快速版（剪段落、不加速）。<br>
+    <b>上一轮：快速版不加速，只剪段落</b>，留下来的每一段都和完整版一样的速度。
     <table style="width:100%;margin:10px 0 4px;border-collapse:collapse;font-size:14px">
       <tr style="text-align:left;color:var(--dim)"><th style="padding:4px 6px">牌</th><th style="padding:4px 6px">完整版（条件）</th><th style="padding:4px 6px">快速版（其余情况）</th></tr>
+      <tr><td style="padding:4px 6px">添柴（新）</td><td style="padding:4px 6px">建议烧 ≥ 7 张：约 0.5 秒捏碎，约 2.3 秒新牌发完</td><td style="padding:4px 6px">剪掉背景字、去色和转盘。约 0.4 秒捏碎，约 1.2 秒新牌全部到手</td></tr>
       <tr><td style="padding:4px 6px">恶魔之焰</td><td style="padding:4px 6px">烧 ≥ 7 张：约 1.5 秒到捏碎，再约 0.4 秒出第一下，0.8 秒打完</td><td style="padding:4px 6px">剪掉飞去电视、伸手、收叠。约 0.8 秒出第一下，之后每张牌隔 0.1 秒一下，5 张约 1.2 秒打完</td></tr>
       <tr><td style="padding:4px 6px">几万真言</td><td style="padding:4px 6px">力量 ≥ 8：约 4 秒</td><td style="padding:4px 6px">剪掉技能名和召唤大神。约 0.6 秒捏碎，约 1.95 秒落第一下金光，约 2.9 秒四下打完</td></tr>
     </table>
@@ -1004,7 +1006,187 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   }
 
   /* ---------- demos ---------- */
+  /* Stoke: yellow tarot back with a thin black frame and a rhombus mark */
+  function tarotBack(ctx, w, h) {
+    roundRect(ctx, -w / 2, -h / 2, w, h, w * 0.06); ctx.fillStyle = Y; ctx.fill();
+    ctx.lineWidth = Math.max(1.2, w * 0.022); ctx.strokeStyle = "#9c960c"; ctx.stroke();
+    roundRect(ctx, -w * 0.39, -h * 0.41, w * 0.78, h * 0.82, w * 0.04); ctx.lineWidth = Math.max(1, w * 0.018); ctx.strokeStyle = "#1a1a1a"; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, -h * 0.2); ctx.lineTo(w * 0.2, 0); ctx.lineTo(0, h * 0.2); ctx.lineTo(-w * 0.2, 0); ctx.closePath();
+    ctx.lineWidth = Math.max(1, w * 0.028); ctx.stroke();
+    star4(ctx, 0, 0, w * 0.12, 0.22, 1);
+  }
+  /* Stoke: the whole hand flips to tarot backs and is crushed at once.
+     full: the shards swirl up into a spinning Shuffle Time carousel; each card that reaches the front is dealt back into the hand as a new card.
+     quick: same speeds, the carousel is cut; each card re-forms where it was and flips over as the new card. */
+  function stokeScene(ctx, W, H, tr, full) {
+    var N = full ? 7 : 4, FLIPST = 0.035, FLIPD = 0.12;
+    var BEAT = 0.05 + (N - 1) * FLIPST + FLIPD + 0.1, t = hs(tr, BEAT, 0.08), st = t - BEAT;
+    var cw = W * 0.075, ch = cw * 1.38, mid = (N - 1) / 2, LIFT = H * 0.035;
+    function slot(i) { return [W * 0.5 + (i - mid) * cw * 0.8, H * 0.925 + Math.abs(i - mid) * H * 0.01, (i - mid) * 0.08]; }
+    function newKind(i) { return (i * 5 + 2) % 3; }
+    function tForm(k) { return full ? BEAT + 0.6 + k * 0.03 : BEAT + 0.42 + k * 0.02; }
+    var C = [W * 0.5, H * 0.4], RX = W * 0.21, RY = H * 0.08, CS = 1.25;
+    var DEALDT = 0.085, WD = 2 * Math.PI / (N * DEALDT), TA = BEAT + 0.05, TBr = BEAT + 0.75, TD = BEAT + 0.85, FD = 0.3, PH = 0.35;
+    function A(tt) { if (tt <= TA) return 0; if (tt <= TBr) return WD * (tt - TA) * (tt - TA) / (2 * (TBr - TA)); return WD * (TBr - TA) / 2 + WD * (tt - TBr); }
+    function cang(k, tt) { return A(tt) + k * 2 * Math.PI / N + PH; }
+    var dep = [], tdep = {}, slotOf = {};
+    if (full) {
+      var Ad = A(TD), Ab = A(TBr);
+      for (var k0 = 0; k0 < N; k0++) { var base = k0 * 2 * Math.PI / N + PH, mm = Math.ceil((Ad + base) / (2 * Math.PI)); dep.push({ k: k0, t: TBr + (2 * Math.PI * mm - base - Ab) / WD }); }
+      dep.sort(function (a, b) { return a.t - b.t; });
+      dep.forEach(function (d, o) { tdep[d.k] = d.t; slotOf[d.k] = o; });
+    }
+    var lastDep = full ? dep[N - 1].t : 0, lastLand = full ? lastDep + FD : tForm(N - 1) + 0.24;
+    var shake = tr > BEAT && tr < BEAT + 0.16 ? (1 - (tr - BEAT) / 0.16) * H * 0.008 : 0;
+    ctx.save(); if (shake) ctx.translate(Math.sin(tr * 90) * shake, Math.cos(tr * 70) * shake);
+    /* full: the battle goes grey while the Shuffle Time carousel runs; the name is a background band only */
+    var gray = full && t >= BEAT && t < lastLand - 0.05;
+    battleFloor(ctx, W, H, gray);
+    if (full) skillBand(ctx, W, H, t, 0.0, lastLand - 0.35, { cx: W * 0.55, cy: H * 0.2, rot: -0.1, alpha: 0.88, text: "SHUFFLE TIME", gold: "#e8c400", pale: "#fffbd6" });
+    var ex = W * 0.86, ey = H * 0.6;
+    if (gray) { ctx.fillStyle = "#050505"; ctx.beginPath(); ctx.ellipse(ex, ey, H * 0.09, H * 0.072, 0, 0, Math.PI * 2); ctx.fill(); }
+    else enemy(ctx, ex, ey, H * 0.09, Math.sin(tr * 3));
+    figure(ctx, W * 0.12, H * 0.92, H * 0.42, Y);
+    /* Yu's open palm, closed into a fist on the beat */
+    var P = [W * 0.12 + H * 0.11, H * 0.6];
+    if (t < BEAT) {
+      var pk = eOut(seg(t, 0.04, 0.24)), close = seg(t, BEAT - 0.07, BEAT);
+      if (pk > 0) {
+        ctx.save(); ctx.globalAlpha = pk; var pg = ctx.createRadialGradient(P[0], P[1], 0, P[0], P[1], H * 0.06);
+        pg.addColorStop(0, "rgba(255,255,255,1)"); pg.addColorStop(0.45, "rgba(252,248,0,0.6)"); pg.addColorStop(1, "rgba(252,248,0,0)");
+        ctx.fillStyle = pg; ctx.beginPath(); ctx.arc(P[0], P[1], H * 0.06 * (1 - 0.5 * close), 0, Math.PI * 2); ctx.fill(); ctx.restore();
+        ring(ctx, P[0], P[1], H * (0.075 - 0.04 * close), 2, "#ffffff", pk * 0.7);
+      }
+    } else {
+      star4(ctx, P[0], P[1], H * 0.09 * (1 - seg(st, 0, 0.15)), 0.12, 1);
+      ring(ctx, P[0], P[1], lerp(H * 0.02, H * 0.22, eOut(seg(st, 0, 0.3))), lerp(H * 0.02, 1.5, seg(st, 0, 0.3)), "#ffffff", 1 - seg(st, 0.15, 0.3));
+    }
+    /* carousel decoration: halftone dot ellipse and speed arcs, faster as it spins up */
+    if (full) {
+      var vis = seg(t, BEAT + 0.15, BEAT + 0.4) * (1 - seg(t, lastDep - 0.1, lastDep + 0.15)), om = Math.min(1, (A(t + 0.01) - A(t)) / 0.01 / WD);
+      if (vis > 0) {
+        ctx.save(); ctx.globalAlpha = vis * 0.6; ctx.fillStyle = "#e8c400";
+        for (var dd = 0; dd < 44; dd++) { var aa = dd / 44 * 2 * Math.PI + A(t) * 0.4; ctx.beginPath(); ctx.arc(C[0] + RX * 1.32 * Math.sin(aa), C[1] + RY * 1.32 * Math.cos(aa), H * 0.0045, 0, 2 * Math.PI); ctx.fill(); }
+        ctx.restore();
+        [[1.16, "#ffffff", 0], [1.24, "#e8c400", 2.1], [1.08, "#ffffff", 4.2]].forEach(function (L) {
+          var th = Math.PI / 2 - (A(t) * 1.15 + L[2]);
+          ctx.save(); ctx.globalAlpha = vis * om * 0.85; ctx.strokeStyle = L[1]; ctx.lineWidth = 2; ctx.lineCap = "round";
+          ctx.beginPath(); ctx.ellipse(C[0], C[1], RX * L[0], RY * L[0], 0, th, th + 1.3); ctx.stroke(); ctx.restore();
+        });
+        for (var sp2 = 0; sp2 < 5; sp2++) {
+          var sa = sp2 * 1.26 + A(t) * 0.25, tw = 0.6 + 0.4 * Math.sin(tr * 20 + sp2 * 2.3);
+          star4(ctx, C[0] + RX * 1.45 * Math.sin(sa), C[1] - H * 0.06 + RY * 1.6 * Math.cos(sa), H * (sp2 % 2 ? 0.016 : 0.024) * tw, 0.15, vis, sp2 % 2 ? "#e8c400" : "#ffffff");
+        }
+      }
+    }
+    /* carousel cards, back to front: outline first, then filled as the last shards land; the one at the front is dealt */
+    function cardAt(k, tt) { var f = cang(k, tt), d = Math.cos(f); return { x: C[0] + RX * Math.sin(f), y: C[1] + RY * d, d: d, sc: lerp(0.62, 1, (d + 1) / 2) * CS, wf: 0.4 + 0.6 * Math.abs(d) }; }
+    function formed(x, y, sx, sy, rot, tf, dark) {
+      ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(sx, sy);
+      if (t < tf) { ctx.globalAlpha = seg(t, tf - 0.1, tf); roundRect(ctx, -cw / 2, -ch / 2, cw, ch, cw * 0.06); ctx.lineWidth = 2 / Math.max(0.3, sx); ctx.strokeStyle = "#ffffff"; ctx.stroke(); }
+      else {
+        tarotBack(ctx, cw, ch);
+        var fl2 = 1 - seg(t, tf, tf + 0.12);
+        if (fl2 > 0) { roundRect(ctx, -cw / 2, -ch / 2, cw, ch, cw * 0.06); ctx.fillStyle = "rgba(255,255,255," + fl2 + ")"; ctx.fill(); }
+        if (dark > 0) { roundRect(ctx, -cw / 2, -ch / 2, cw, ch, cw * 0.06); ctx.fillStyle = "rgba(0,0,0," + dark + ")"; ctx.fill(); }
+      }
+      ctx.restore();
+      var sk2 = seg(t, tf, tf + 0.2); if (sk2 > 0 && sk2 < 1) star4(ctx, x + cw * 0.35 * sx, y - ch * 0.45 * sy, H * 0.026 * Math.sin(sk2 * Math.PI), 0.15, 1);
+    }
+    if (full && t >= BEAT) {
+      var order = []; for (var k1 = 0; k1 < N; k1++) if (t >= tForm(k1) - 0.1 && t < tdep[k1]) order.push(k1);
+      order.sort(function (a, b) { return cardAt(a, t).d - cardAt(b, t).d; });
+      order.forEach(function (k) { var c = cardAt(k, t); formed(c.x, c.y, c.sc * c.wf, c.sc, 0, tForm(k), (1 - c.d) / 2 * 0.45); });
+    }
+    /* the hand before the beat: lifts and flips to tarot backs left to right, trembles, then everything is crushed at once */
+    for (var i = 0; i < N; i++) {
+      var s0 = slot(i), f0 = 0.05 + i * FLIPST, fl = seg(t, f0, f0 + FLIPD), lift = eOut(seg(t, f0 - 0.03, f0 + FLIPD)) * LIFT;
+      if (t < BEAT) {
+        var trem = t > BEAT - 0.08 ? Math.sin(t * 120 + i * 1.7) * H * 0.003 : 0;
+        ctx.save(); ctx.translate(s0[0] + trem, s0[1] - lift); ctx.rotate(s0[2]); ctx.scale(Math.max(0.05, Math.abs(Math.cos(fl * Math.PI))), 1);
+        if (fl < 0.5) stsCard(ctx, cw, ch, i % 3); else tarotBack(ctx, cw, ch);
+        ctx.restore();
+        var sk = seg(t, f0 + FLIPD * 0.5, f0 + FLIPD + 0.1);
+        if (sk > 0 && sk < 1) star4(ctx, s0[0] + cw * 0.36, s0[1] - lift - ch * 0.46, H * 0.028 * Math.sin(sk * Math.PI), 0.15, 1);
+      } else {
+        star4(ctx, s0[0], s0[1] - LIFT, H * 0.06 * (1 - seg(st, 0, 0.12)), 0.12, 1);
+        ring(ctx, s0[0], s0[1] - LIFT, lerp(H * 0.02, H * 0.09, eOut(seg(st, 0, 0.18))), 2, "#ffffff", 1 - seg(st, 0.08, 0.22));
+      }
+    }
+    var lt = tr - BEAT; if (lt > 0 && lt < 0.12) { ctx.save(); ctx.globalAlpha = (1 - lt / 0.12) * 0.35; ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, W, H); ctx.restore(); }
+    /* shards: a short burst, then full = spiral round the carousel centre (orbit shrinking and flattening onto the ring) into their card,
+       quick = one turn around where the card was */
+    if (t >= BEAT) {
+      var M = full ? 12 : 10, TBU = 0.12;
+      for (var i3 = 0; i3 < N; i3++) {
+        var c0 = slot(i3), cx0 = c0[0], cy0 = c0[1] - LIFT, rr = rng(950 + i3 * 31);
+        makeShards(930 + i3, M, { vmin: H * 0.35, vmax: H * 0.9, smin: H * 0.011, smax: H * 0.026 }).forEach(function (s, j) {
+          var ox = (rr() - 0.5) * 0.8, oy = (rr() - 0.5) * 0.9, ar = tForm(i3) - (M - 1 - j) * 0.012;
+          if (t >= ar) return;
+          var bE = shardPos(s, TBU, 4.0, H * 0.3);
+          var dx0 = cx0 + bE[0] - C[0], dy0 = cy0 + bE[1] - C[1], ry0 = RX * 0.9;
+          var r0 = Math.hypot(dx0 / RX, dy0 / ry0), a0 = Math.atan2(dx0 / RX, dy0 / ry0);
+          var mW = Math.ceil((a0 + 0.5 - cang(i3, BEAT + TBU)) / (2 * Math.PI));
+          function at(tt) {
+            var sst = tt - BEAT;
+            if (sst < TBU) { var bp = shardPos(s, Math.max(0, sst), 4.0, H * 0.3); return [cx0 + bp[0], cy0 + bp[1], 0]; }
+            var u = seg(tt, BEAT + TBU, ar), e = 0.4 * u + 0.6 * eInOut(u);
+            if (full) {
+              var an = lerp(a0, cang(i3, tt) + 2 * Math.PI * mW, e), rN = lerp(r0, 1, eOut(u)), ry = lerp(ry0, RY, eOut(u)), d = Math.cos(an);
+              var sc = lerp(0.62, 1, (d + 1) / 2) * CS, wf = 0.4 + 0.6 * Math.abs(d);
+              return [C[0] + RX * rN * Math.sin(an) + ox * cw * sc * wf * e, C[1] + ry * rN * d + oy * ch * sc * e, u];
+            }
+            var rq = lerp(Math.hypot(bE[0], bE[1]), 0, e), aq = Math.atan2(bE[1], bE[0]) + Math.PI * 1.8 * e;
+            return [cx0 + Math.cos(aq) * rq + ox * cw * e, cy0 + Math.sin(aq) * rq + oy * ch * e, u];
+          }
+          var p = at(t), a = 1 - seg(t, ar - 0.05, ar);
+          if (full && st > TBU + 0.02) {
+            var q = at(t - 0.03);
+            ctx.save(); ctx.globalAlpha = a * 0.5 * seg(p[2], 0.12, 0.35); ctx.strokeStyle = YH; ctx.lineWidth = Math.max(1, s.size * 0.45); ctx.lineCap = "round";
+            ctx.beginPath(); ctx.moveTo(q[0], q[1]); ctx.lineTo(p[0], p[1]); ctx.stroke(); ctx.restore();
+          }
+          drawShard(ctx, p[0], p[1], Object.assign({}, s, { size: s.size * (1 - 0.3 * p[2]) }), st, Y, a);
+        });
+      }
+    }
+    /* new cards: full = dealt from the carousel front, flipping face up in the air; quick = re-formed in place, flipped, dropped into the slot */
+    function landFx(S, tl) {
+      var k2 = seg(t, tl, tl + 0.28); if (k2 <= 0 || k2 >= 1) return;
+      ring(ctx, S[0], S[1], lerp(cw * 0.35, cw * 0.95, eOut(k2)), lerp(3, 1, k2), "#ffffff", 1 - k2);
+      star4(ctx, S[0] + cw * 0.4, S[1] - ch * 0.5, H * 0.03 * Math.sin(k2 * Math.PI), 0.15, 1);
+      ctx.save(); ctx.translate(S[0], S[1]); ctx.rotate(S[2]); roundRect(ctx, -cw / 2, -ch / 2, cw, ch, cw * 0.08); ctx.lineWidth = 3; ctx.strokeStyle = YH; ctx.globalAlpha = 1 - k2; ctx.stroke(); ctx.restore();
+    }
+    if (full) {
+      dep.forEach(function (d, o) {
+        if (t < d.t) return;
+        var S = slot(o), u = seg(t, d.t, d.t + FD), F = [C[0], C[1] + RY];
+        var p = quadP(F, [lerp(F[0], S[0], 0.2), lerp(F[1], S[1], 0.7)], [S[0], S[1]], eOut(u));
+        var fk = seg(u, 0.05, 0.45), pop = lerp(CS, 1, eOut(u)) * (1 + 0.1 * Math.sin(u * Math.PI));
+        ctx.save(); ctx.translate(p[0], p[1]); ctx.rotate(lerp(0, S[2], eOut(u))); ctx.scale(Math.max(0.05, Math.abs(Math.cos(fk * Math.PI))) * pop, pop);
+        if (fk < 0.5) tarotBack(ctx, cw, ch); else stsCard(ctx, cw, ch, newKind(o));
+        ctx.restore();
+        landFx(S, d.t + FD);
+      });
+    } else if (t >= BEAT) {
+      for (var i4 = 0; i4 < N; i4++) {
+        var S4 = slot(i4), tf = tForm(i4);
+        if (t < tf - 0.1) continue;
+        var rv = seg(t, tf + 0.04, tf + 0.16), dk = eOut(seg(t, tf + 0.04, tf + 0.24)), y4 = S4[1] - LIFT * (1 - dk);
+        if (rv <= 0) formed(S4[0], y4, 1, 1, S4[2], tf, 0);
+        else { ctx.save(); ctx.translate(S4[0], y4); ctx.rotate(S4[2]); ctx.scale(Math.max(0.05, Math.abs(Math.cos(rv * Math.PI))), 1); if (rv < 0.5) tarotBack(ctx, cw, ch); else stsCard(ctx, cw, ch, newKind(i4)); ctx.restore(); }
+        landFx(S4, tf + 0.24);
+      }
+    }
+    ctx.restore();
+  }
+
   var DEMOS = [
+    { id: "stoke", name: "添柴 完整版（建议：烧 7 张以上）", dur: 2.8, start: 1.3,
+      desc: "打出后，背景划出「SHUFFLE TIME」（P4 洗牌小游戏的名字，只当背景）。手牌从左到右依次抬起，翻成黄色塔罗牌背面；悠伸手一握，整手牌同时捏碎（顿帧 + 震屏 + 闪白）。战场去色，碎片打着旋被吸到场地中间，拼成一圈转动的卡牌转盘（像 Shuffle Time 洗牌）：每张先出白色轮廓，最后几片落进去时填满黄色、闪一下。转盘越转越快，转到最前面的那张就被甩出来，在空中翻开变成新牌，落进手牌，落位时亮一圈白环、一道黄边和小星星，一张接一张。约 0.5 秒捏碎，约 1.3 秒转盘拼好、开始发牌，约 2.3 秒发完。",
+      draw: function (ctx, W, H, tr) { stokeScene(ctx, W, H, tr, true); } },
+    { id: "stokeq", name: "添柴 快速版（烧 7 张以下）", dur: 1.6, start: 0.7,
+      desc: "不加速，只剪段落：剪掉 SHUFFLE TIME 背景字、去色和中间的转盘。翻牌、一握捏碎和完整版同样速度；碎片不飞走，在每张牌原来的位置转一圈拼回去（用时和完整版飞上转盘一样），拼好马上翻开成新牌、落回原位，亮一圈白环和黄边。约 0.4 秒捏碎，约 1.2 秒新牌全部到手。",
+      draw: function (ctx, W, H, tr) { stokeScene(ctx, W, H, tr, false); } },
     { id: "fiend5", name: "恶魔之焰 完整版（烧 7 张以上）", dur: 3.0, start: 0.55,
       desc: "按你的意见：整体加快，中间不停。扫牌和转向电视现在是同一条连续的曲线：光团沿手牌弧线从慢到快扫过去，扫到右边不减速，顺着惯性往右上拐，走半圆弯回电视里伸出来的手，只在快到手的时候放慢落位。牌在路上跟着光团头部走，到手边收拢成一叠（每张稍微错开一点，看得出有几张），不展开，依次翻成黄色，整叠一起被捏碎；每张牌化成一道黄色小彗星飞向敌人，命中只用光环表达（白环、黄环、旋钮刻度环、网点环、小星星，最后一下加粉绿细环），加电视信号错位，一张牌一下。整段从亮起到捏碎约 1.5 秒。",
       draw: function (ctx, W, H, tr) {
