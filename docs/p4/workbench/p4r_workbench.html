@@ -150,13 +150,13 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
 
 <main class="wrap">
   <div class="notice">
-    <b>第六轮：分档。</b>完整版只在大场面播，平时播快速版。草图按顺序是：恶魔之焰完整版、恶魔之焰快速版、几万真言完整版、几万真言快速版。
+    <b>快速版改了：不加速，只剪段落。</b>留下来的每一段都和完整版一样的速度。草图按顺序是：恶魔之焰完整版、恶魔之焰快速版、几万真言完整版、几万真言快速版。
     <table style="width:100%;margin:10px 0 4px;border-collapse:collapse;font-size:14px">
       <tr style="text-align:left;color:var(--dim)"><th style="padding:4px 6px">牌</th><th style="padding:4px 6px">完整版（条件）</th><th style="padding:4px 6px">快速版（其余情况）</th></tr>
-      <tr><td style="padding:4px 6px">恶魔之焰</td><td style="padding:4px 6px">烧 ≥ 7 张：约 1.5 秒到捏碎，再 0.6 秒出完刀</td><td style="padding:4px 6px">约 0.35 秒出第一刀，整段约 0.8 秒</td></tr>
-      <tr><td style="padding:4px 6px">几万真言</td><td style="padding:4px 6px">力量 ≥ 8：约 4 秒</td><td style="padding:4px 6px">约 0.45 秒出第一下，整段约 1.1 秒</td></tr>
+      <tr><td style="padding:4px 6px">恶魔之焰</td><td style="padding:4px 6px">烧 ≥ 7 张：约 1.5 秒到捏碎，再约 0.4 秒出第一下，0.8 秒打完</td><td style="padding:4px 6px">剪掉飞去电视、伸手、收叠。约 0.8 秒出第一下，之后每张牌隔 0.1 秒一下，5 张约 1.2 秒打完</td></tr>
+      <tr><td style="padding:4px 6px">几万真言</td><td style="padding:4px 6px">力量 ≥ 8：约 4 秒</td><td style="padding:4px 6px">剪掉技能名和召唤大神。约 0.6 秒捏碎，约 1.95 秒落第一下金光，约 2.9 秒四下打完</td></tr>
     </table>
-    快速版保留牌的「招牌」（彗星光团捏碎 / 杖 + 竖直金光），去掉技能名、转牌、召唤全身、拿着牌飞的那些铺垫，阶段之间互相重叠，只在捏碎时有 40 毫秒的小顿帧。<br>按你第三轮的意见改了两段草图：恶魔之焰换成纯色光柱一次扫进 + 明显的拖尾；几万真言的技能名改到出牌一开始，杖出现在敌人面前转，停下以后金光竖直劈下来。另外新加「参考图确认」：生图前先确认参考没错。捏碎的手你说得对，草图里是平面的，游戏里会用从电视里伸出来的立体手。
+    恶魔之焰：光团扫牌、小彗星飞行、光环命中都和完整版同速。扫到的牌几乎同时被捏碎，所以每张碎完先留一颗小火星，再按完整版的间隔一张一张飞出去。<br>几万真言：掏牌、转牌、捏碎和完整版同速，只是转牌短一点；捏碎后杖直接出现，转速和完整版一样，只少转一圈；四下金光每一下的动画速度不变，只是相邻两下的间隔从 0.3 秒缩到 0.22 秒。
   </div>
 
   <section id="decisions">
@@ -1151,20 +1151,23 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         }
         ctx.restore();
       } },
-    { id: "fiendq", name: "恶魔之焰 快速版（烧 7 张以下）", dur: 1.4, start: 0.24,
-      desc: "烧不到 7 张时播这个：同一团彗星光，但只在手牌区快速扫一下（约 0.25 秒），不飞去电视、不伸手、不收叠；扫到哪张，哪张原地翻黄、立刻捏碎，再化成一道黄色小彗星飞向敌人，一张牌一下。命中只用光环表达：中心白点弹出变成粗白环，稍后一圈柠檬黄环（内侧一条细橙线），一圈像电视旋钮的刻度环边扩边转，一圈黄色网点环，白环上亮几颗小星星；最后一下多两圈粉、绿细环（BATON 那种彩虹环）收尾。命中瞬间敌人那块画面像电视信号一样横向错位一下。约 0.45 秒出第一下，整段约 0.9 秒。",
+    { id: "fiendq", name: "恶魔之焰 快速版（烧 7 张以下）", dur: 2.0, start: 0.42,
+      desc: "烧不到 7 张时播这个：不加速，只剪段落。彗星光团用和完整版一样的速度从左往右扫过手牌（约 0.5 秒），剪掉飞去电视、伸手、收叠这几段；扫到哪张，哪张原地翻黄、立刻捏碎。几张牌几乎是同时碎的，所以每张碎完先留一颗小火星，再按完整版的间隔（0.1 秒）一张一张化成黄色小彗星飞向敌人，一张牌一下。命中只用光环表达：中心白点弹出变成粗白环，稍后一圈柠檬黄环（内侧一条细橙线），一圈像电视旋钮的刻度环边扩边转，一圈黄色网点环，白环上亮几颗小星星；最后一下多两圈粉、绿细环（BATON 那种彩虹环）收尾。命中瞬间敌人那块画面像电视信号一样横向错位一下。约 0.8 秒出第一下，5 张约 1.2 秒打完。",
       draw: function (ctx, W, H, tr) {
         battleFloor(ctx, W, H);
         figure(ctx, W * 0.13, H * 0.92, H * 0.42, Y);
         var ex = W * 0.82, ey = H * 0.6; enemy(ctx, ex, ey, H * 0.11, Math.sin(tr * 3));
-        var N = 5, cw = W * 0.08, ch = cw * 1.38, x0 = W * 0.22, x1 = W * 0.8, T0 = 0.03, T1 = 0.28;
+        /* same sweep speed as the full version; only the TV / hand / stack part is cut */
+        var N = 5, cw = W * 0.08, ch = cw * 1.38, x0 = W * 0.06, x1 = W * 0.86, T0 = 0.1, T1 = 0.62;
         function baseY(x) { var u = (x - W * 0.5) / (W * 0.42); return H * 0.9 - H * 0.035 * (1 - u * u); }
         function head(tt) { var x = lerp(x0, x1, eIn(seg(tt, T0, T1))); return [x, baseY(x)]; }
-        var pts = []; for (var k = 0; k <= 18; k++) pts.push(head(tr - k * 0.007));
-        drawComet(ctx, pts, H * 0.075, tr, seg(tr, 0.0, 0.05) * (1 - seg(tr, 0.28, 0.38)));
+        var pts = []; for (var k = 0; k <= 26; k++) pts.push(head(tr - k * 0.008));
+        drawComet(ctx, pts, H * 0.1 * (0.6 + 0.4 * seg(tr, 0, 0.18)), tr, seg(tr, 0.0, 0.1) * (1 - seg(tr, 0.62, 0.76)));
+        function tCof(j) { var cj = W * 0.5 + (j - 2) * cw * 0.85; return T0 + Math.cbrt(clamp((cj - x0) / (x1 - x0), 0, 1)) * (T1 - T0) + 0.05; }
+        var tC0 = tCof(0);
         for (var i = 0; i < N; i++) {
           var cx = W * 0.5 + (i - 2) * cw * 0.85, cy = H * 0.93 + Math.abs(i - 2) * H * 0.012;
-          var tPass = T0 + Math.cbrt(clamp((cx - x0) / (x1 - x0), 0, 1)) * (T1 - T0), tC = tPass + 0.05;
+          var tC = tCof(i), tPass = tC - 0.05;
           if (tr < tC) {
             var fl = seg(tr, tPass - 0.02, tPass + 0.03), sx = Math.abs(Math.cos(fl * Math.PI));
             ctx.save(); ctx.translate(cx, cy - eOut(fl) * H * 0.03); ctx.rotate((i - 2) * 0.1); ctx.scale(Math.max(sx, 0.05), 1);
@@ -1176,12 +1179,21 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
             ring(ctx, Sq[0], Sq[1], lerp(H * 0.02, H * 0.12, eOut(seg(st, 0, 0.2))), 2, "#ffffff", 1 - seg(st, 0.1, 0.25));
             makeShards(700 + i, 7, { vmin: H * 0.4, vmax: H * 1.0, smin: H * 0.01, smax: H * 0.026 }).forEach(function (s) { var p = shardPos(s, st, 3.0, H * 1.2); drawShard(ctx, Sq[0] + p[0], Sq[1] + p[1], s, st, Y, 1 - seg(st, 0.15, 0.35)); });
             var Eq = [ex + (i - 2) * H * 0.025, ey + (i % 2 ? -1 : 1) * H * 0.03], Cq = [(Sq[0] + Eq[0]) / 2, Math.min(Sq[1], Eq[1]) - H * (0.16 + 0.03 * i)];
-            var di = i * 0.05;
+            /* the sweep crushes the cards almost together; each one waits as a small spark and launches 0.1 s after the previous one, the same spacing as the full version */
+            var di = tC0 + 0.06 + i * 0.1 - tC, ek = 1 - seg(st, 0.02 + di, 0.06 + di);
+            if (st > 0.05 && ek > 0) {
+              var ea = ek * seg(st, 0.05, 0.1), pulse = 0.85 + 0.15 * Math.sin(tr * 38 + i * 2);
+              ctx.save(); ctx.globalAlpha = ea;
+              var eg = ctx.createRadialGradient(Sq[0], Sq[1], 0, Sq[0], Sq[1], H * 0.05);
+              eg.addColorStop(0, "rgba(255,255,255,0.9)"); eg.addColorStop(0.35, "rgba(252,248,0,0.55)"); eg.addColorStop(1, "rgba(252,248,0,0)");
+              ctx.fillStyle = eg; ctx.fillRect(Sq[0] - H * 0.05, Sq[1] - H * 0.05, H * 0.1, H * 0.1); ctx.restore();
+              star4(ctx, Sq[0], Sq[1], H * 0.03 * pulse, 0.14, ea);
+            }
             if (st > 0.02 + di && st < 0.25 + di) { var cq = []; for (var q = 0; q <= 10; q++) cq.push(quadP(Sq, Cq, Eq, eIn(seg(st - q * 0.007, 0.02 + di, 0.2 + di)))); drawComet(ctx, cq, H * 0.032, tr, 1 - seg(st, 0.2 + di, 0.25 + di)); }
             var h2 = st - 0.2 - di;
             if (h2 > 0) {
               if (h2 < 0.06) glitchStrips(ctx, ex, ey, H * 0.46, H * 0.4, h2 / 0.06, 60 + i);
-              p4rRing(ctx, ex + (i - 2) * H * 0.03, ey + (i % 2 ? -1 : 1) * H * 0.02, H, seg(h2, 0, 0.36), 80 + i, 0.9, i === N - 1);
+              p4rRing(ctx, ex + (i - 2) * H * 0.03, ey + (i % 2 ? -1 : 1) * H * 0.02, H, seg(h2, 0, 0.4), 80 + i, 1, i === N - 1);
               damageBadge(ctx, ex - W * 0.04 + (i - 2) * W * 0.03, ey - H * 0.21 - i * H * 0.035, 7, seg(h2, 0, 0.14), 1 - seg(h2, 0.45, 0.7));
             }
           }
@@ -1529,7 +1541,59 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
           ring(ctx, W * 0.5, H * 0.5, lerp(H * 0.1, Math.hypot(W, H) * 0.45, eOut(seg(yk, 0.1, 1))), 3, "#ffffff", 1 - seg(yk, 0.5, 1));
         }
       } },
-    { id: "myriadq", name: "几万真言 快速版（力量 8 以下）", dur: 1.5, start: 0.34,
+    { id: "myriadq", name: "几万真言 快速版（力量 8 以下）", dur: 3.4, start: 0.5,
+      desc: "按你的意见：不加速，只剪段落。悠掏牌、转牌、捏碎这一段和完整版一样的速度（只是转牌时间短一点），约 0.6 秒捏碎；捏碎后不召唤大神、不出技能名，杖直接在悠和敌人之间出现，转的速度和完整版一样，只转一圈半；停住以后金光竖直劈下四下，每一下的动画速度也和完整版一样，只是相邻两下的间隔从 0.3 秒缩到 0.22 秒。约 1.95 秒落第一下，约 2.9 秒四下打完。",
+      draw: function (ctx, W, H, tr) {
+        var GOLD = "#f2c54b", PALE = "#fff3c4";
+        var CRUSH = 0.62, STOP = 1.45, t = hs(hs(tr, CRUSH, 0.08), STOP, 0.12);
+        battleFloor(ctx, W, H);
+        ctx.save(); ctx.globalAlpha = 0.3 * seg(t, CRUSH, CRUSH + 0.2) * (1 - seg(t, 2.75, 3.05)); ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H); ctx.restore();
+        var foes = [[W * 0.74, H * 0.66], [W * 0.84, H * 0.56], [W * 0.91, H * 0.72]];
+        foes.forEach(function (e, i) { enemy(ctx, e[0], e[1], H * 0.085, Math.sin(tr * 3 + i)); });
+        /* the staff alone (no Okami): same spin speed as the full version, fewer turns */
+        var gc = [W * 0.58, H * 0.44], L = H * 0.8;
+        var appear = eOut(seg(t, CRUSH + 0.02, CRUSH + 0.22)), fadeS = 1 - seg(t, STOP + 0.3, STOP + 0.6);
+        if (appear > 0 && fadeS > 0) {
+          var e1 = eInOut(seg(t, CRUSH + 0.05, STOP)), e2 = eInOut(seg(t + 0.01, CRUSH + 0.05, STOP));
+          var ang = -Math.PI / 2 - (1 - e1) * Math.PI * 3, omega = (e2 - e1) / 0.01 * Math.PI * 3;
+          if (omega > 3) {
+            for (var gi = 1; gi <= 8; gi++) { var ga = ang - gi * omega * 0.01; ctx.save(); ctx.globalAlpha = appear * fadeS * 0.3 * (1 - gi / 9); ctx.strokeStyle = GOLD; ctx.lineWidth = H * 0.014; ctx.beginPath(); ctx.moveTo(gc[0] - Math.cos(ga) * L / 2, gc[1] - Math.sin(ga) * L / 2); ctx.lineTo(gc[0] + Math.cos(ga) * L / 2, gc[1] + Math.sin(ga) * L / 2); ctx.stroke(); ctx.restore(); }
+            ring(ctx, gc[0], gc[1], L / 2, H * 0.006, PALE, appear * fadeS * Math.min(1, omega / 30));
+          }
+          ring(ctx, gc[0], gc[1], H * 0.26, H * 0.012, GOLD, appear * fadeS * 0.45);
+          ctx.save(); ctx.globalAlpha = appear * fadeS; ctx.translate(gc[0], gc[1]); ctx.rotate(ang);
+          ctx.shadowColor = PALE; ctx.shadowBlur = H * (tr >= STOP + 0.08 && tr < STOP + 0.3 ? 0.09 : 0.025);
+          ctx.fillStyle = "#efe9d8"; ctx.fillRect(-L / 2, -H * 0.008, L, H * 0.016);
+          ctx.fillStyle = GOLD; ctx.beginPath(); ctx.moveTo(L / 2, -H * 0.024); ctx.lineTo(L / 2 + H * 0.13, 0); ctx.lineTo(L / 2, H * 0.024); ctx.closePath(); ctx.fill();
+          ctx.fillRect(L / 2 - H * 0.07, -H * 0.04, H * 0.012, H * 0.08);
+          ctx.restore();
+        }
+        /* Yu: same pull-out and spin as the full version, shorter hold, same crush */
+        figure(ctx, W * 0.2, H * 0.94, H * 0.4, Y);
+        var cpos = [W * 0.26, H * 0.48];
+        if (t < CRUSH) {
+          var pull = eOut(seg(t, 0.08, 0.35)), cy2 = lerp(H * 0.64, cpos[1], pull);
+          ctx.save(); ctx.globalAlpha = pull; ctx.translate(cpos[0], cy2 + Math.sin(t * 6) * H * 0.006); ctx.scale(Math.max(0.06, Math.abs(Math.cos(t * 9))), 1);
+          ctx.shadowColor = PALE; ctx.shadowBlur = H * 0.045;
+          roundRect(ctx, -H * 0.065, -H * 0.1, H * 0.13, H * 0.2, 4); ctx.fillStyle = PALE; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = GOLD; ctx.stroke(); ctx.restore();
+          var ak = seg(t, CRUSH - 0.23, CRUSH); if (ak > 0) ring(ctx, cpos[0], cpos[1], H * (0.07 + 0.08 * ak), 2, "#ffffff", Math.sin(ak * Math.PI));
+        } else {
+          var st = t - CRUSH, lt = tr - CRUSH;
+          if (lt < 0.14) { ctx.save(); ctx.globalAlpha = (1 - lt / 0.14) * 0.45; ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, W, H); ctx.restore(); }
+          ring(ctx, cpos[0], cpos[1], lerp(H * 0.02, H * 0.55, eOut(seg(st, 0, 0.5))), lerp(H * 0.045, 2, seg(st, 0, 0.5)), "#ffffff", 1 - seg(st, 0.3, 0.55));
+          ring(ctx, cpos[0], cpos[1], lerp(H * 0.02, H * 0.42, eOut(seg(st, 0.06, 0.55))), lerp(H * 0.03, 2, seg(st, 0.06, 0.55)), GOLD, 1 - seg(st, 0.35, 0.6));
+          ray(ctx, cpos[0], cpos[1], -0.3, W * 0.6, 2, 1 - seg(st, 0, 0.3)); ray(ctx, cpos[0], cpos[1], 1.1, W * 0.35, 1.5, 0.8 * (1 - seg(st, 0, 0.3)));
+          makeShards(61, 24, { vmin: H * 0.7, vmax: H * 1.9, smin: H * 0.01, smax: H * 0.03 }).forEach(function (s) { var p = shardPos(s, st, 2.6, H * 0.3); drawShard(ctx, cpos[0] + p[0], cpos[1] + p[1], s, st, PALE, 1 - seg(st, 0.5, 0.9)); });
+        }
+        for (var w = 0; w < 4; w++) {
+          var tw = STOP + 0.3 + w * 0.22;
+          foes.forEach(function (e, i) {
+            goldStrike(ctx, H, e[0], e[1] - H * 0.01, seg(t, tw + i * 0.035, tw + 0.28 + i * 0.035), tr, w * 3 + i, w === 3 ? 1.6 : 1);
+            var bk = t - (tw + 0.1 + i * 0.035); if (bk > 0) damageBadge(ctx, e[0] + (w - 1.5) * H * 0.05, e[1] - H * 0.15 - w * H * 0.04, 9, seg(bk, 0, 0.16), 1 - seg(bk, 0.55, 0.85));
+          });
+        }
+      } },
+    { id: "myriadq_old", hidden: true, name: "几万真言 快速版（旧，整体加速）", dur: 1.5, start: 0.34,
       desc: "力量不到 8 时播这个：不出技能名、不转牌。悠手里的白金牌直接捏碎（0.1 秒）→ 伊邪那岐大神照样在悠身后出现（0.15 秒快速浮现，最后快速淡出）；杖在悠和敌人之间闪现，快转一圈停住（约 0.3 秒）→ 金光竖直劈下四下，间隔 0.12 秒。约 0.45 秒出第一下，整段约 1.2 秒。",
       draw: function (ctx, W, H, tr) {
         var GOLD = "#f2c54b", PALE = "#fff3c4", t = hs(tr, 0.1, 0.04);
