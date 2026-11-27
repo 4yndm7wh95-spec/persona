@@ -158,7 +158,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       <tr><td style="padding:4px 6px">几万真言</td><td style="padding:4px 6px">力量 ≥ 8：约 2.1 秒落第一下，约 3.5 秒结束（之前约 4.4 秒）</td><td style="padding:4px 6px">约 0.45 秒捏碎，约 1 秒落第一下（之前约 2 秒），约 1.6 秒打完</td></tr>
     </table>
     恶魔之焰：光团不再慢慢起步，一开始就在动，扫过手牌越来越快，一口气拐上去到电视里的手，只在最后落到手上时稍微收一下；牌收叠好马上捏碎。快速版扫牌同速，扫完光团直接冲出画面。<br>几万真言：快速版杖快速转一圈就停，停住马上劈。完整版捏碎提前，杖转得稍快，停住后不再空等，四下间隔 0.24 秒，结尾圆环紧跟最后一下。<br>
-    <b>眼神特写：</b>按你说的回到第一批的睁眼帧。草图第 7 个「眼神特写（原版排版 + 第一批睁眼帧）」：菱形的大小、位置、角度和图片在里面的摆法都是从原版逐帧量出来的；帧和帧之间连续淡入淡出，整张图再加很轻的镜头移动，避免一下一下换帧的感觉。武器 v2 在「生图结果」里。
+    <b>召唤整段连起来了：</b>草图第 7 个「召唤（眼神特写 → 翻页 → 手里捏碎）」。眼神特写照原版排版（菱形大小、位置、角度、眼睛的摆法都是从官方截图量的），然后翻页落到电视里伸出的手上、捏碎、伊邪那岐出现，约 1.25 秒捏碎。眼睛先用第一批的图占位；第一批有几帧怪（闭眼那帧镜片被一整块平涂的青色盖死，睁开后大小还变了），已经写好重画第三版的任务。
   </div>
 
   <section id="decisions">
@@ -333,9 +333,9 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   ];
   var refStore = {};
   var GEN = [
-    { id: "gen_eyes", frames: ["gen/eye_01_closed.jpg", "gen/eye_02_slit.jpg", "gen/eye_03_half.jpg", "gen/eye_04_most.jpg", "gen/eye_05_open.jpg", "gen/eye_06_glint.jpg"], title: "眼神特写 6 帧（第一批，按你说的就用这组）",
-      text: "闭眼 → 睁开一条缝 → 睁开一半 → 大半 → 全睁 → 镜框上闪一下。同一张图改出来的，帧和帧之间可以连续淡入淡出、不会重影。",
-      use: "放进菱形的样子看草图第 7 个「眼神特写（原版排版 + 第一批睁眼帧）」：菱形大小、位置、图片摆法都照原版量的。" },
+    { id: "gen_eyes", frames: ["gen/eye_01_closed.jpg", "gen/eye_02_slit.jpg", "gen/eye_03_half.jpg", "gen/eye_04_most.jpg", "gen/eye_05_open.jpg", "gen/eye_06_glint.jpg"], title: "眼神特写 6 帧（第一批，要重画）",
+      text: "你说得对，有几帧很怪：闭眼那帧镜片被一整块不透明的平涂青色盖死，闭着的眼睛只是在上面画了一条线；睁开以后眼睛大小还变了（每帧都是重新生成的）。",
+      use: "第三版任务已写好：先画睁眼那帧当底图，其余帧只改镜片里面，最后把镜片以外的像素全部换回底图，大小位置不会变；闭眼、睁开过程、睁开后的样子都照原版写清楚了。召唤草图里先用这组占位。" },
     { id: "gen_eyes_turn", frames: ["gen/eye_t01.jpg", "gen/eye_t02.jpg", "gen/eye_t03.jpg", "gen/eye_t04.jpg", "gen/eye_t05.jpg", "gen/eye_t06.jpg", "gen/eye_t07.jpg", "gen/eye_t08.jpg", "gen/eye_t09.jpg"], title: "眼神特写 逐帧重画 9 帧（不用了）",
       text: "照原片一帧对一帧画的扭头版，但生图的帧和帧之间构图会跳，连起来播不自然。按你的意见不用这组，文件留着不删。",
       use: "" },
@@ -1220,6 +1220,51 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     ctx.restore();
   }
 
+  /* P4R summon eye cut-in, layout measured from the official 16:9 frames: rhombus symmetric about a horizontal line,
+     right corner at 64.6% / 50.8%, both edges at 40 degrees, the rest off screen; grows from a small diamond in ~4 frames */
+  var EYEF = ["eye_01_closed", "eye_02_slit", "eye_03_half", "eye_04_most", "eye_05_open"];
+  function eyeRhombus(W, H, t) {
+    var VX = W * 0.646, VY = H * 0.508, A = W * 0.75, B = A * Math.tan(40 * Math.PI / 180);
+    var k = eOut(seg(t, 0, 0.13)), s = lerp(0.06 * W / A, 1, k);
+    var cx = lerp(W * 0.432, VX - A, k), cy = lerp(H * 0.55, VY, k);
+    return { cx: cx, cy: cy, a: A * s, b: B * s, vx: cx + A * s };
+  }
+  /* closed ~0.1 s, opens in ~0.13 s with continuous cross-fades, holds; a slight camera settle keeps the picture moving.
+     yellowOut 0..1 floods the window back to yellow before the page turn. Returns the frame shown, for labels. */
+  function eyeCutIn(ctx, W, H, t, yellowOut, skill) {
+    if (!IMG.ec0) EYEF.forEach(function (n, k) { loadImg("ec" + k, "gen/" + n + ".jpg"); });
+    var g = eyeRhombus(W, H, t);
+    function rh() { ctx.beginPath(); ctx.moveTo(g.cx, g.cy - g.b); ctx.lineTo(g.cx + g.a, g.cy); ctx.lineTo(g.cx, g.cy + g.b); ctx.lineTo(g.cx - g.a, g.cy); ctx.closePath(); }
+    var fi = 0, fb = 0;
+    if (t >= 0.2 && t < 0.3333) { var f = (t - 0.2) / 0.03333; fi = Math.min(3, Math.floor(f)); fb = f - fi; } else if (t >= 0.3333) fi = 4;
+    ctx.save(); rh(); ctx.clip();
+    ctx.fillStyle = Y; ctx.fillRect(0, 0, W, H);
+    if (t >= 0.1) {
+      var cam = eOut(seg(t, 0.1, 0.55)), ih = H * 1.05, iw = ih * 1.5, sc = lerp(1.07, 1, cam);
+      ctx.save(); ctx.translate(W * 0.367 + lerp(W * 0.03, 0, cam), H * 0.427 + lerp(-H * 0.04, 0, cam)); ctx.rotate(lerp(-0.09, 0, cam)); ctx.scale(sc, sc);
+      var pic = function (i, al) { var key = "ec" + i; if (al <= 0 || !ready(key)) return; ctx.globalAlpha = al; ctx.drawImage(IMG[key], -0.54 * iw, -0.42 * ih, iw, ih); };
+      pic(fi, 1); if (fb > 0 && fi < 4) pic(fi + 1, fb);
+      ctx.restore();
+      var tint = Math.max((1 - seg(t, 0.1, 0.14)) * 0.85, yellowOut || 0);
+      if (tint > 0) { ctx.save(); ctx.globalAlpha = tint; ctx.fillStyle = Y; ctx.fillRect(0, 0, W, H); ctx.restore(); }
+    }
+    ctx.restore();
+    var gk = seg(t, 0.38, 0.48); if (gk > 0 && gk < 1) star4(ctx, W * 0.585, H * 0.12, H * 0.05 * Math.sin(gk * Math.PI), 0.12, 1);
+    ctx.save(); rh(); ctx.lineJoin = "miter"; ctx.lineWidth = H * 0.022; ctx.strokeStyle = "#f4e81a"; ctx.stroke(); ctx.restore();
+    /* skill name tag, top left, as in P4R: dark rounded tab, white name, a yellow line underneath ending in a small hook */
+    var tg = eOut(seg(t, 0.06, 0.14)) * (1 - (yellowOut || 0));
+    if (tg > 0) {
+      ctx.save(); ctx.globalAlpha = tg; ctx.translate(lerp(-W * 0.08, 0, tg), 0);
+      var tx0 = W * 0.015, ty0 = H * 0.075, tw0 = W * 0.25, th0 = H * 0.062;
+      roundRect(ctx, tx0, ty0, tw0, th0, th0 / 2); ctx.fillStyle = "rgba(28,28,30,0.88)"; ctx.fill();
+      ctx.fillStyle = "#ffffff"; ctx.font = "600 " + Math.round(H * 0.036) + "px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(skill || "Zio", tx0 + tw0 / 2, ty0 + th0 / 2 + 1);
+      ctx.strokeStyle = "#f4e81a"; ctx.lineWidth = H * 0.01; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.beginPath();
+      ctx.moveTo(tx0 + th0 * 0.3, ty0 + th0 + H * 0.01); ctx.lineTo(tx0 + tw0 + W * 0.004, ty0 + th0 + H * 0.01); ctx.quadraticCurveTo(tx0 + tw0 + W * 0.016, ty0 + th0 + H * 0.004, tx0 + tw0 + W * 0.02, ty0 + th0 * 0.3); ctx.stroke();
+      ctx.restore();
+    }
+    return { fi: fi, fb: fb };
+  }
+
   var DEMOS = [
     { id: "stoke", name: "添柴 完整版（建议：烧 7 张以上）", dur: 2.8, start: 1.3,
       desc: "打出后，背景划出「SHUFFLE TIME」（P4 洗牌小游戏的名字，只当背景）。手牌从左到右依次抬起，翻成黄色塔罗牌背面；悠伸手一握，整手牌同时捏碎（顿帧 + 震屏 + 闪白）。战场去色，碎片打着旋被吸到场地中间，拼成一圈转动的卡牌转盘（像 Shuffle Time 洗牌）：每张先出白色轮廓，最后几片落进去时填满黄色、闪一下。转盘越转越快，转到最前面的那张就被甩出来，在空中翻开变成新牌，落进手牌，落位时亮一圈白环、一道黄边和小星星，一张接一张。约 0.5 秒捏碎，约 1.3 秒转盘拼好、开始发牌，约 2.3 秒发完。",
@@ -1821,7 +1866,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
           });
         }
       } },
-    { id: "eyecut", name: "眼神特写（原版排版 + 第一批睁眼帧）", dur: 0.9, start: 0.4,
+    { id: "eyecut", hidden: true, name: "眼神特写（原版排版 + 第一批睁眼帧）", dur: 0.9, start: 0.4,
       desc: "照原版排版（按官方 16:9 截图量的）：菱形左右对称，右尖角在画面横向 64.6%、高度 50.8%，两条边各斜 40°（尖角约 80°），左边整块超出屏幕；先是一个小黄菱形，约 4 帧（0.13 秒）冲大到位；粗黄边、没有黑描边，外面的战场压暗。眼睛特写放得很大，瞳孔对到原版的位置（菱形里偏左上），脸颊贴着右尖角。睁眼用第一批 6 帧，相邻两帧连续淡入淡出（同一张图改出来的，不会重影）；整张图同时有很轻的镜头移动（稍微转正、往左下落、轻微拉远），画面一直在动，就不会像静止的图一下一下换帧。节奏照原版：闭眼约 0.1 秒 → 0.13 秒睁开 → 停一下、镜框闪光 → 变黄、翻页。右上角显示当前是哪一帧。",
       draw: function (ctx, W, H, tr) {
         var EYE = ["eye_01_closed", "eye_02_slit", "eye_03_half", "eye_04_most", "eye_05_open", "eye_06_glint"];
@@ -2159,73 +2204,63 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         var sk2 = seg(t, 0, 0.5);
         if (sk2 > 0 && sk2 < 1) stripes(ctx, W, H, sk2, ["#ffffff", PALE, GOLD, "#ffffff", "#e8cf72"], GOLD);
       } },
-    { id: "crush3", name: "捏碎 v3（手和卡放大）", dur: 3.3, start: 1.3,
-      desc: "按你的意见放大：舞台大屏更大，伸出来的手和卡占画面很大一块，菱形翻页落下来以后卡不会突然变小。其他和 v2 一样。",
+    { id: "crush3", name: "召唤（眼神特写 → 翻页 → 手里捏碎）", dur: 2.5, start: 0.4,
+      desc: "整段召唤连起来了：眼神特写照原版排版（菱形大小、位置、角度和眼睛在里面的摆法都是从官方截图量的；小黄菱形 4 帧冲大 → 画面从黄色里透出来 → 闭眼约 0.1 秒 → 0.13 秒睁开（相邻帧连续淡入淡出，整张图有很轻的镜头移动）→ 镜框闪一下 → 变黄）→ 菱形以右尖角为轴翻页，一路落到电视里伸出来的手上变成黄卡 → 卡在掌心转两下 → 一握捏碎 → 伊邪那岐在蓝焰里出现。约 1.25 秒捏碎（之前 1.85 秒）。眼睛现在先用第一批的图占位，Codex 重画的第三版到了就换上。",
       draw: function (ctx, W, H, t) { var d = DEMOS.filter(function (x) { return x.id === "crush2"; })[0]; d.draw.call({ big: true }, ctx, W, H, t); } },
-    { id: "crush2", name: "捏碎 v2（电视里伸出手）", dur: 3.3, start: 0.62,
+    { id: "crush2", hidden: true, name: "召唤 小版（手和卡小一号）", dur: 2.5, start: 0.4,
       desc: "照你的思路：黄菱形出现、往左放大到半屏，里面是悠的眼睛（从闭到睁）→ 菱形以右边为轴翻页，一路缩小落到手上变成卡 → 背景舞台大屏里伸出一只光做的手，屏幕表面起涟漪 → 卡在掌心上方转 → 握拳：中心白光、细长光线交叉、纯黄碎片往外炸、白色和黄色实心圆环一圈圈扩散 → 手退回电视，伊邪那岐在蓝焰里出现。这里的手只是平面占位；游戏里用最新版毒性爆发同款的着色器立体手（近大远小、边缘融掉、没有描边），材质换成 P4 的。",
       draw: function (ctx, W, H, tr) {
-        var BEAT = 1.85, t = hs(tr, BEAT, 0.08);
+        var BEAT = 1.25, t = hs(tr, BEAT, 0.08);
         var shake = tr > BEAT && tr < BEAT + 0.16 ? (1 - (tr - BEAT) / 0.16) * H * 0.01 : 0;
         ctx.save(); if (shake) ctx.translate(Math.sin(tr * 90) * shake, Math.cos(tr * 77) * shake);
         battleFloor(ctx, W, H);
-        ctx.save(); ctx.globalAlpha = 0.45 * eOut(seg(t, 0, 0.3)) * (1 - seg(t, 2.6, 3.0)); ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H); ctx.restore();
+        ctx.save(); ctx.globalAlpha = 0.42 * eOut(seg(t, 0, 0.12)) * (1 - seg(t, BEAT + 0.75, BEAT + 1.1)); ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H); ctx.restore();
         var big = !!(this && this.big);
         var tvx = big ? W * 0.56 : W * 0.6, tvy = big ? H * 0.3 : H * 0.27, tvw = big ? W * 0.42 : W * 0.3, tvh = big ? H * 0.46 : H * 0.36;
         var CWc = big ? H * 0.26 : H * 0.17, CHc = big ? H * 0.4 : H * 0.26;
-        var glow = seg(t, 0.55, 0.85) * (1 - seg(t, 2.3, 2.7));
-        stageTV(ctx, W, H, tr, tvx, tvy, tvw, tvh, glow * 0.8, 0.95);
+        var glow = seg(t, 0.35, 0.6) * (1 - seg(t, BEAT + 0.45, BEAT + 0.85));
+        stageTV(ctx, W, H, tr, tvx, tvy, tvw, tvh, glow * 0.8, 0.55);
         figure(ctx, W * 0.17, H * 0.92, H * 0.42, Y);
-        flames(ctx, tr, W * 0.17, H * 0.96, W * 0.12, H * 0.5, 3, seg(t, 2.25, 2.5) * (1 - seg(t, 3.0, 3.3)));
-        var izA = eOut(seg(t, 2.35, 2.8));
+        flames(ctx, tr, W * 0.17, H * 0.96, W * 0.12, H * 0.5, 3, seg(t, BEAT + 0.4, BEAT + 0.65) * (1 - seg(t, BEAT + 1.15, BEAT + 1.45)));
+        var izA = eOut(seg(t, BEAT + 0.5, BEAT + 0.95));
         if (izA > 0) { ctx.save(); ctx.globalAlpha = izA; ctx.shadowColor = BLUE; ctx.shadowBlur = 24; figure(ctx, W * 0.27, H * 0.9 + (1 - izA) * H * 0.08, H * 0.62, null); ctx.restore(); }
         enemy(ctx, W * 0.84, H * 0.62, H * 0.12, Math.sin(tr * 3));
-        var out = eOut(seg(t, 0.95, 1.4)), back = eIn(seg(t, 2.1, 2.45));
+        var out = eOut(seg(t, 0.55, 0.95)), back = eIn(seg(t, BEAT + 0.25, BEAT + 0.6));
         var hk = out * (1 - back);
         var hx = lerp(tvx, big ? W * 0.56 : W * 0.6, hk), hy = lerp(tvy + H * 0.02, big ? H * 0.8 : H * 0.66, hk), hs2 = lerp(H * 0.04, big ? H * 0.32 : H * 0.22, hk);
-        var close = eInOut(seg(t, 1.72, 1.85));
+        var close = eInOut(seg(t, BEAT - 0.13, BEAT));
         var cardC = [hx, hy - hs2 * (big ? 1.7 : 1.55)];
-        lightHand(ctx, W, H, hx, hy, hs2, close, 0, seg(t, 0.95, 1.05) * (1 - seg(t, 2.3, 2.45)), [tvx, tvy]);
-        /* rhombus */
-        var R = [W * 0.5, H * 0.46], grow = eOut(seg(t, 0.06, 0.38)), pop = eBack(seg(t, 0, 0.12));
-        var hw = lerp(H * 0.05 * pop, W * 0.3, grow), hh = lerp(H * 0.05 * pop, H * 0.6, grow);
-        var cx = R[0] - hw, cy = R[1];
-        var dia = [[cx, cy - hh], [cx + hw, cy], [cx, cy + hh], [cx - hw, cy]];
-        var flip = eInOut(seg(t, 0.86, 1.3)), th = flip * Math.PI;
-        if (t < 1.3 && t > 0) {
-          var hinge = R[0];
+        lightHand(ctx, W, H, hx, hy, hs2, close, 0, seg(t, 0.55, 0.65) * (1 - seg(t, BEAT + 0.45, BEAT + 0.6)), [tvx, tvy]);
+        /* eye cut-in in the P4R layout (floods back to yellow at the end), then the rhombus turns like a page around its
+           right corner and lands on the palm as the card */
+        var FL0 = 0.5, FL1 = 0.86;
+        if (t < FL0) eyeCutIn(ctx, W, H, t, seg(t, 0.44, 0.5), "Zio");
+        else if (t < FL1) {
+          var g = eyeRhombus(W, H, 1), cy = g.cy, hinge = g.vx, th = eInOut(seg(t, FL0, FL1)) * Math.PI;
+          var dia = [[g.cx, cy - g.b], [g.cx + g.a, cy], [g.cx, cy + g.b], [g.cx - g.a, cy]];
           var pts = dia.map(function (p) {
-            var dx = p[0] - hinge, x2 = hinge + dx * Math.cos(th), persp = 1 + 0.18 * Math.sin(th) * (-dx / (W * 0.3));
+            var dx = p[0] - hinge, x2 = hinge + dx * Math.cos(th), persp = 1 + 0.18 * Math.sin(th) * (-dx / (2 * g.a));
             return [x2, cy + (p[1] - cy) * persp];
           });
           if (th > Math.PI / 2) {
             var k2 = eInOut((th - Math.PI / 2) / (Math.PI / 2));
-            var cw = CWc, ch = CHc, rect =[[cardC[0] - cw / 2, cardC[1] - ch / 2], [cardC[0] + cw / 2, cardC[1] - ch / 2], [cardC[0] + cw / 2, cardC[1] + ch / 2], [cardC[0] - cw / 2, cardC[1] + ch / 2]];
+            var rect = [[cardC[0] - CWc / 2, cardC[1] - CHc / 2], [cardC[0] + CWc / 2, cardC[1] - CHc / 2], [cardC[0] + CWc / 2, cardC[1] + CHc / 2], [cardC[0] - CWc / 2, cardC[1] + CHc / 2]];
             var order = [pts[0], pts[3], pts[2], pts[1]];
             pts = order.map(function (p, i) { return [lerp(p[0], rect[i][0], k2), lerp(p[1], rect[i][1], k2)]; });
           }
           quad(ctx, pts); ctx.fillStyle = "#f4ee2a"; ctx.fill();
-          if (th < Math.PI / 2) {
-            var inner = shrinkPoly(pts, 0.94);
-            quad(ctx, inner); ctx.fillStyle = Y; ctx.fill();
-            var open = eOut(seg(t, 0.4, 0.62)), winA = 1 - seg(t, 0.82, 0.9);
-            if (winA > 0) {
-              var win = shrinkPoly(pts, 0.86);
-              ctx.save(); quad(ctx, win); ctx.clip();
-              ctx.save(); ctx.globalAlpha = winA; eyePlaceholder(ctx, cx + hw * 0.15, cy, hw, hh, open, 1 - 0.65 * open); ctx.restore();
-              ctx.restore();
-            }
-          } else {
+          if (th < Math.PI / 2) { ctx.save(); quad(ctx, pts); ctx.lineJoin = "miter"; ctx.lineWidth = H * 0.022; ctx.strokeStyle = "#f4e81a"; ctx.stroke(); ctx.restore(); }
+          else {
             var lines = 1 - seg(th, Math.PI * 0.55, Math.PI * 0.9);
             if (lines > 0) { ctx.save(); quad(ctx, pts); ctx.clip(); for (var li = 0; li < 6; li++) ray(ctx, pts[0][0], cy, -0.6 + li * 0.25, W * 0.4, 2, lines * 0.6); ctx.restore(); }
           }
         }
-        /* card on the palm */
-        if (t >= 1.3 && t < BEAT) {
-          var spin = Math.cos((t - 1.3) * 9), cs = 1 - 0.75 * close;
+        /* card on the palm: turns a couple of times, then the fist closes on it */
+        if (t >= FL1 && t < BEAT) {
+          var spin = Math.cos((t - FL1) * 9), cs = 1 - 0.75 * close;
           ctx.save(); ctx.translate(cardC[0], cardC[1] + Math.sin(t * 5) * H * 0.006 + close * hs2 * 0.9); ctx.scale(Math.max(Math.abs(spin), 0.05) * cs, cs);
           yellowCard(ctx, CWc, CHc); ctx.restore();
-          var rk = seg(t, 1.6, 1.8); if (rk > 0) ring(ctx, cardC[0], cardC[1], H * (0.05 + 0.06 * rk), 2, "#ffffff", Math.sin(rk * Math.PI));
+          var rk = seg(t, BEAT - 0.25, BEAT - 0.05); if (rk > 0) ring(ctx, cardC[0], cardC[1], H * (0.05 + 0.06 * rk), 2, "#ffffff", Math.sin(rk * Math.PI));
         }
         if (tr >= BEAT) {
           var lt = tr - BEAT, st = Math.max(0, t - BEAT), P = [cardC[0], hy - hs2 * 0.6];
