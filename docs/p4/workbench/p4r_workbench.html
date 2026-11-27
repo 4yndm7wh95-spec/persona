@@ -158,7 +158,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       <tr><td style="padding:4px 6px">几万真言</td><td style="padding:4px 6px">力量 ≥ 8：约 2.1 秒落第一下，约 3.5 秒结束（之前约 4.4 秒）</td><td style="padding:4px 6px">约 0.45 秒捏碎，约 1 秒落第一下（之前约 2 秒），约 1.6 秒打完</td></tr>
     </table>
     恶魔之焰：光团不再慢慢起步，一开始就在动，扫过手牌越来越快，一口气拐上去到电视里的手，只在最后落到手上时稍微收一下；牌收叠好马上捏碎。快速版扫牌同速，扫完光团直接冲出画面。<br>几万真言：快速版杖快速转一圈就停，停住马上劈。完整版捏碎提前，杖转得稍快，停住后不再空等，四下间隔 0.24 秒，结尾圆环紧跟最后一下。<br>
-    <b>另外：</b>Codex 的图都在下面「生图结果」里。新到的是逐帧重画的眼神特写（扭头出来了）和照原作改好的两把武器（v2）。眼神特写动起来的样子看草图第 7 个「眼神特写 逐帧版」。
+    <b>眼神特写：</b>按你说的回到第一批的睁眼帧。草图第 7 个「眼神特写（原版排版 + 第一批睁眼帧）」：菱形的大小、位置、角度和图片在里面的摆法都是从原版逐帧量出来的；帧和帧之间连续淡入淡出，整张图再加很轻的镜头移动，避免一下一下换帧的感觉。武器 v2 在「生图结果」里。
   </div>
 
   <section id="decisions">
@@ -208,7 +208,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
 
   <section id="gencheck">
     <h2><span class="pill">新</span>生图结果（Codex 第一批） <span class="status" id="st-gencheck"></span></h2>
-    <p class="lead">标「新」的是这次到的：逐帧重画的眼神特写、照原作改好的两把武器（v2）；标「旧」的是第一批，留作对比。人物我对照原作没看出走样。每项点一个，要改的写一句。</p>
+    <p class="lead">眼神特写用第一批 6 帧（逐帧重画那组不用了）；两把武器照原作改好了（v2），第一批的旧武器留作对比。人物我对照原作没看出走样。每项点一个，要改的写一句。</p>
     <div class="vlist" id="genlist"></div>
   </section>
 
@@ -333,12 +333,12 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   ];
   var refStore = {};
   var GEN = [
-    { id: "gen_eyes_turn", frames: ["gen/eye_t01.jpg", "gen/eye_t02.jpg", "gen/eye_t03.jpg", "gen/eye_t04.jpg", "gen/eye_t05.jpg", "gen/eye_t06.jpg", "gen/eye_t07.jpg", "gen/eye_t08.jpg", "gen/eye_t09.jpg"], title: "眼神特写 逐帧重画 9 帧（新）",
-      text: "照原片第 4–12 帧一帧对一帧画的：头从斜着往下看转向镜头，镜框从很斜慢慢转平，眼睛从闭到睁，反光从青扫到黄。扭头出来了。我担心的一点：生图的帧和帧之间构图有点跳（比如第 4→5、6→7 帧镜框位置会晃）。",
-      use: "动起来的样子在草图里的「眼神特写 逐帧版」（第 7 个），可以慢放看。抖得明显的话，我把跳得厉害的几帧挑出来让 Codex 重画。" },
-    { id: "gen_eyes", frames: ["gen/eye_01_closed.jpg", "gen/eye_02_slit.jpg", "gen/eye_03_half.jpg", "gen/eye_04_most.jpg", "gen/eye_05_open.jpg", "gen/eye_06_glint.jpg"], title: "眼神特写 6 帧（第一批，旧）",
-      text: "闭眼 → 睁开一条缝 → 睁开一半 → 大半 → 全睁 → 镜框上闪一下。画风贴 P4R，但你说得对：这 6 帧是从同一张图改的，只有眨眼，没有原作那点扭头。",
-      use: "已经按你的意见逐帧重画（上面那组），这组只留作对比。" },
+    { id: "gen_eyes", frames: ["gen/eye_01_closed.jpg", "gen/eye_02_slit.jpg", "gen/eye_03_half.jpg", "gen/eye_04_most.jpg", "gen/eye_05_open.jpg", "gen/eye_06_glint.jpg"], title: "眼神特写 6 帧（第一批，按你说的就用这组）",
+      text: "闭眼 → 睁开一条缝 → 睁开一半 → 大半 → 全睁 → 镜框上闪一下。同一张图改出来的，帧和帧之间可以连续淡入淡出、不会重影。",
+      use: "放进菱形的样子看草图第 7 个「眼神特写（原版排版 + 第一批睁眼帧）」：菱形大小、位置、图片摆法都照原版量的。" },
+    { id: "gen_eyes_turn", frames: ["gen/eye_t01.jpg", "gen/eye_t02.jpg", "gen/eye_t03.jpg", "gen/eye_t04.jpg", "gen/eye_t05.jpg", "gen/eye_t06.jpg", "gen/eye_t07.jpg", "gen/eye_t08.jpg", "gen/eye_t09.jpg"], title: "眼神特写 逐帧重画 9 帧（不用了）",
+      text: "照原片一帧对一帧画的扭头版，但生图的帧和帧之间构图会跳，连起来播不自然。按你的意见不用这组，文件留着不删。",
+      use: "" },
     { id: "gen_izanagi", frames: ["gen/izanagi_full.webp", "gen/izanagi_body.webp"], title: "伊邪那岐：全身 / 去掉薙刀的身体",
       text: "黑色长大衣、红色内衬、银色头盔面甲、黄色眼睛、肩上的黄色徽章、腿上一排白扣带。身后那两条白色长飘带 P4G 设定图和 P4R 截图里都有，不是多画的。我对照下来没看出走样。",
       use: "第二张是给引擎用的：薙刀单独做成一张，引擎里再拿到他手上挥。" },
@@ -1821,7 +1821,55 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
           });
         }
       } },
-    { id: "eyesturn", name: "眼神特写 逐帧版（Codex 生图）", dur: 1.0, start: 0.3,
+    { id: "eyecut", name: "眼神特写（原版排版 + 第一批睁眼帧）", dur: 0.9, start: 0.4,
+      desc: "照原版排版（按官方 16:9 截图量的）：菱形左右对称，右尖角在画面横向 64.6%、高度 50.8%，两条边各斜 40°（尖角约 80°），左边整块超出屏幕；先是一个小黄菱形，约 4 帧（0.13 秒）冲大到位；粗黄边、没有黑描边，外面的战场压暗。眼睛特写放得很大，瞳孔对到原版的位置（菱形里偏左上），脸颊贴着右尖角。睁眼用第一批 6 帧，相邻两帧连续淡入淡出（同一张图改出来的，不会重影）；整张图同时有很轻的镜头移动（稍微转正、往左下落、轻微拉远），画面一直在动，就不会像静止的图一下一下换帧。节奏照原版：闭眼约 0.1 秒 → 0.13 秒睁开 → 停一下、镜框闪光 → 变黄、翻页。右上角显示当前是哪一帧。",
+      draw: function (ctx, W, H, tr) {
+        var EYE = ["eye_01_closed", "eye_02_slit", "eye_03_half", "eye_04_most", "eye_05_open", "eye_06_glint"];
+        if (!IMG.ec0) EYE.forEach(function (n, k) { loadImg("ec" + k, "gen/" + n + ".jpg"); });
+        battleFloor(ctx, W, H);
+        enemy(ctx, W * 0.84, H * 0.6, H * 0.1, Math.sin(tr * 3));
+        var dim = seg(tr, 0, 0.1) * (1 - seg(tr, 0.62, 0.8));
+        ctx.save(); ctx.globalAlpha = 0.35 * dim; ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H); ctx.restore();
+        /* rhombus measured from the P4R clip: right corner at 67.5% across and half height, both edges at 40 degrees, the rest off screen */
+        var VX = W * 0.646, VY = H * 0.508, A = W * 0.75, B = A * Math.tan(40 * Math.PI / 180);
+        var k = eOut(seg(tr, 0, 0.13)), s = lerp(0.06 * W / A, 1, k);
+        var cx = lerp(W * 0.432, VX - A, k), cy = lerp(H * 0.55, VY, k), a = A * s, b = B * s;
+        var fx = 1 - eIn(seg(tr, 0.6, 0.72));   /* page turn at the end: folds toward the left edge */
+        if (fx <= 0.002) return;
+        function rh() { ctx.beginPath(); ctx.moveTo(cx * fx, cy - b); ctx.lineTo((cx + a) * fx, cy); ctx.lineTo(cx * fx, cy + b); ctx.lineTo((cx - a) * fx, cy); ctx.closePath(); }
+        /* blink frames: continuous cross-fades, never a hard cut */
+        var fi = 0, fb = 0;
+        if (tr >= 0.2 && tr < 0.3333) { var f = (tr - 0.2) / 0.03333; fi = Math.min(3, Math.floor(f)); fb = f - fi; }
+        else if (tr >= 0.3333) { fi = 4; fb = seg(tr, 0.46, 0.51); if (fb >= 1) { fi = 5; fb = 0; } }
+        ctx.save(); rh(); ctx.clip();
+        ctx.fillStyle = Y; ctx.fillRect(0, 0, W, H);
+        if (tr >= 0.1) {
+          /* a slight camera settle over the whole picture: turns a little upright, drops down-left, eases back */
+          var cam = eOut(seg(tr, 0.1, 0.55)), ih = H * 1.05, iw = ih * 1.5;
+          ctx.save(); ctx.translate(W * 0.367 + lerp(W * 0.03, 0, cam), H * 0.427 + lerp(-H * 0.04, 0, cam)); ctx.rotate(lerp(-0.09, 0, cam)); ctx.scale(lerp(1.07, 1, cam), lerp(1.07, 1, cam));
+          function pic(i, al) { var key = "ec" + i; if (al <= 0 || !ready(key)) return; ctx.globalAlpha = al; ctx.drawImage(IMG[key], -0.54 * iw, -0.42 * ih, iw, ih); }
+          pic(fi, 1); if (fb > 0 && fi < 5) pic(fi + 1, fb);
+          ctx.restore();
+          var tint = Math.max((1 - seg(tr, 0.1, 0.14)) * 0.85, seg(tr, 0.52, 0.6));
+          if (tint > 0) { ctx.save(); ctx.globalAlpha = tint; ctx.fillStyle = Y; ctx.fillRect(0, 0, W, H); ctx.restore(); }
+        }
+        ctx.restore();
+        ctx.save(); rh(); ctx.lineJoin = "miter"; ctx.lineWidth = H * 0.022; ctx.strokeStyle = "#f4e81a"; ctx.stroke(); ctx.restore();
+        /* skill name tag, top left, as in P4R: dark rounded tab, white name, a yellow line underneath ending in a small hook */
+        var tg = eOut(seg(tr, 0.06, 0.14)) * fx;
+        if (tg > 0) {
+          ctx.save(); ctx.globalAlpha = tg; ctx.translate(lerp(-W * 0.08, 0, tg), 0);
+          var tx0 = W * 0.015, ty0 = H * 0.075, tw0 = W * 0.25, th0 = H * 0.062;
+          roundRect(ctx, tx0, ty0, tw0, th0, th0 / 2); ctx.fillStyle = "rgba(28,28,30,0.88)"; ctx.fill();
+          ctx.fillStyle = "#ffffff"; ctx.font = "600 " + Math.round(H * 0.036) + "px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("Zio", tx0 + tw0 / 2, ty0 + th0 / 2 + 1);
+          ctx.strokeStyle = "#f4e81a"; ctx.lineWidth = H * 0.01; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.beginPath();
+          ctx.moveTo(tx0 + th0 * 0.3, ty0 + th0 + H * 0.01); ctx.lineTo(tx0 + tw0 + W * 0.004, ty0 + th0 + H * 0.01); ctx.quadraticCurveTo(tx0 + tw0 + W * 0.016, ty0 + th0 + H * 0.004, tx0 + tw0 + W * 0.02, ty0 + th0 * 0.3); ctx.stroke();
+          ctx.restore();
+        }
+        ctx.save(); ctx.fillStyle = "rgba(255,255,255,0.8)"; ctx.font = Math.round(H * 0.032) + "px sans-serif";
+        ctx.fillText(tr < 0.1 ? "黄色菱形" : tr > 0.52 ? "变黄、翻页" : "第 " + (fi + 1) + " 帧" + (fb > 0.05 && fb < 0.95 ? " → 第 " + (fi + 2) + " 帧" : ""), W * 0.7, H * 0.1); ctx.restore();
+      } },
+    { id: "eyesturn", hidden: true, name: "眼神特写 逐帧版（Codex 生图，不用了）", dur: 1.0, start: 0.3,
       desc: "Codex 照原片第 4–12 帧一帧对一帧重画的 9 帧，放进黄色菱形里按 30 帧/秒播：菱形先是一块黄色，画面从黄色里透出来 → 头从斜着往下看转向镜头、镜框跟着变平，眼睛睁开，反光从青扫到黄 → 停在全睁。相邻两帧之间做了很短的淡入淡出，减轻生图帧和帧之间的小跳动。可以慢放，或者拖时间条一帧一帧看（右上角显示第几帧）。",
       draw: function (ctx, W, H, tr) {
         if (!IMG.et1) for (var k = 1; k <= 9; k++) loadImg("et" + k, "gen/eye_t0" + k + ".jpg");
