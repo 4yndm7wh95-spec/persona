@@ -1,0 +1,20 @@
+{
+  "cpk": "SC.CPK",
+  "archive": "BATTLE/GUI/BTL_BTN.SPD",
+  "sprites": [
+    {
+      "index": 27,
+      "list_index": 28,
+      "texture_index": 2,
+      "x": 2,
+      "y": 374,
+      "width": 598,
+      "height": 186,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "fire",
+      "texture_member": "btl_btn2.dds",
+      "png": "fire.png"
+    }
+  ]
+}

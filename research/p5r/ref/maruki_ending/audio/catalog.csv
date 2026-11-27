@@ -1,0 +1,10 @@
+ogg,cpk,path,stream_index,cue,duration_s,sample_rate,content,evidence
+checkmate_en.ogg,SOUND_E.CPK,SOUND/EVENT/E511_604.AWB,18,Cue28,0.730,24000,Joker 的 Checkmate／将军,BMD MND_027，vp Cue28
+oracle_weak_point_en.ogg,SOUND_E.CPK,SOUND/EVENT/E511_604.AWB,15,Cue25,3.745,24000,双叶确认头部失去防御,BMD MSG_024，vp Cue25
+morgana_joker_en.ogg,SOUND_E.CPK,SOUND/EVENT/E511_604.AWB,17,Cue27,2.264,24000,摩尔加纳让 Joker 出手,BMD MSG_026，vp Cue27
+shot_and_aftermath_mix.ogg,SOUND_E.CPK,SOUND/EVENT/E511_604_SE.ACB,3,e511_604_se_3782,18.781,48000,开枪及后续混合音效,事件音效流名以 3782 开头，EVT 同编号有震动
+system_confirm_candidate.ogg,SOUND_E.CPK,SOUND/SYSTEM.ACB,204,ok,0.390,44100,通用确认音候选,流名 ok，脚本有 COMSE_PLAY(1)，未独立确认映射
+maruki_why_en.ogg,SOUND_E.CPK,SOUND/EVENT/E511_605.AWB,2,Cue2,7.847,24000,丸喜质问自己付出一切后为何落败,BMD MSG_000，vp Cue2
+aftermath_quake.ogg,BASE.CPK,SOUND/EVENT/E511_605_SE.ACB,4,0321_quake,9.983,32000,丸喜对峙后震动音效,同号事件音效流 0321_quake
+maruki_final_request_en.ogg,SOUND_E.CPK,SOUND/EVENT/E511_615.AWB,6,Cue9,2.968,24000,丸喜请 Joker 为自己的遗憾做个了断,BMD MSG_004，vp Cue9
+maruki_let_go_en.ogg,SOUND_E.CPK,SOUND/EVENT/E511_625.AWB,9,Cue12,3.517,24000,塌陷后丸喜请求 Joker 放手,BMD MSG_011，vp Cue12

@@ -1,0 +1,10 @@
+ogg,cpk,path,stream_index,cue,duration_s,sample_rate,content,evidence
+velvet_door.ogg,SOUND_E.CPK,SOUND/SYSTEM.AWB,53,door_velvet,5.000,48000,天鹅绒房间门／转场声,流名 door_velvet，进出复用情况未确认
+prison_bell.ogg,BASE.CPK,SOUND/EVENT/E127_001_SE.ACB,1,prison_bell,5.000,32000,牢房铃声,场景专用流名 prison_bell
+menu_confirm.ogg,SOUND_E.CPK,SOUND/SYSTEM.ACB,204,ok,0.390,44100,通用菜单确认声,流名 ok
+menu_cancel.ogg,SOUND_E.CPK,SOUND/SYSTEM.ACB,172,cancel,0.384,44100,通用菜单取消声,流名 cancel
+velvet_incense.ogg,SOUND_E.CPK,SOUND/SYSTEM.ACB,222,velvet_incense,2.680,48000,天鹅绒房间熏香效果声,流名 velvet_incense
+velvet_imprisonment.ogg,SOUND_E.CPK,SOUND/SYSTEM.AWB,99,velvet_imprisonment,3.208,48000,天鹅绒房间监禁效果声,流名 velvet_imprisonment
+caroline_wake_up_en.ogg,SOUND_E.CPK,SOUND/EVENT/E127_001.AWB,2,e127001_001_0102,1.771,24000,卡萝莉娜询问 Joker 是否醒来,BMD MSG_000，vp 1；流名角色码 0102
+justine_opening_en.ogg,SOUND_E.CPK,SOUND/EVENT/E127_001.AWB,4,e127001_003_0101,5.915,24000,芮丝汀娜让 Joker 听主人说话,BMD MSG_001，vp 3；流名角色码 0101
+lavenza_first_line_en.ogg,SOUND_E.CPK,SOUND/EVENT/E451_003.AWB,64,e451003_063_0100,1.432,24000,双子合体后拉雯妲出声,流名 e451003_063_0100 和本机 BMD

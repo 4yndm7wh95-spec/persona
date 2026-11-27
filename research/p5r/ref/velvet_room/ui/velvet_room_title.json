@@ -1,0 +1,13 @@
+{
+  "cpk": "SC.CPK",
+  "path": "FIELD/PANEL/PLACE_PICT/PLC_010_003_00.DDS",
+  "png": "velvet_room_title.png",
+  "width": 2048,
+  "height": 1024,
+  "alpha_bounding_box_left_top_right_bottom": [
+    669,
+    381,
+    1380,
+    745
+  ]
+}
