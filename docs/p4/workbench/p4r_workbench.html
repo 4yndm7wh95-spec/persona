@@ -150,7 +150,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
 
 <main class="wrap">
   <div class="notice">
-    <b>第四轮（再更新）：</b>恶魔之焰 v5 在草图第一个：整体加快，扫牌和转向电视是同一条连续曲线，中间不停。伊邪那岐大神按你说的用白色那个。<br>按你第三轮的意见改了两段草图：恶魔之焰换成纯色光柱一次扫进 + 明显的拖尾；几万真言的技能名改到出牌一开始，杖出现在敌人面前转，停下以后金光竖直劈下来。另外新加「参考图确认」：生图前先确认参考没错。捏碎的手你说得对，草图里是平面的，游戏里会用从电视里伸出来的立体手。
+    <b>第五轮：</b>恶魔之焰定稿（v5，牌收成一叠不展开）。几万真言 v3 按你的节奏重排，在草图第二个：技能名只当背景；悠先掏出牌在手里转；捏碎的一瞬间技能名退出、大神出现并马上转杖；杖在悠和敌人之间偏右。<br>按你第三轮的意见改了两段草图：恶魔之焰换成纯色光柱一次扫进 + 明显的拖尾；几万真言的技能名改到出牌一开始，杖出现在敌人面前转，停下以后金光竖直劈下来。另外新加「参考图确认」：生图前先确认参考没错。捏碎的手你说得对，草图里是平面的，游戏里会用从电视里伸出来的立体手。
   </div>
 
   <section id="decisions">
@@ -1153,7 +1153,142 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         }
         ctx.restore();
       } },
-    { id: "myriad2", name: "几万真言 v2（分镜）", dur: 5.5, start: 3.0,
+    { id: "myriad3", name: "几万真言 v3（悠先转牌，捏碎时大神出现）", dur: 4.4, start: 0.55,
+      desc: "按你的节奏：出牌 → 背景划出技能名（只是背景，压在人物后面）；同时悠掏出那张白金色的牌，在手里转。→ 捏碎的一瞬间三件事同时发生：技能名背景退出去，伊邪那岐大神在悠身后出现，他一出现就转杖；杖在悠和敌人之间、中间偏右，不在他脸上。→ 杖由慢到快转、再慢下来停住 → 金光从敌人头顶竖直劈下，连劈四下 → 黄色圆环收尾。金光草图比上一版细了一些（分层的光柱、抖动的边、带分叉的闪电、落点光晕、上升的光点），游戏里会用着色器做。",
+      draw: function (ctx, W, H, tr) {
+        var GOLD = "#f2c54b", PALE = "#fff3c4";
+        var CRUSH = 0.95, STOP = 2.15, t = hs(hs(tr, CRUSH, 0.08), STOP, 0.12);
+        var gray = t > CRUSH && t < 3.85;
+        battleFloor(ctx, W, H, gray);
+        var foes = [[W * 0.74, H * 0.66], [W * 0.84, H * 0.56], [W * 0.91, H * 0.72]];
+        foes.forEach(function (e, i) {
+          if (gray) { ctx.fillStyle = "#050505"; ctx.beginPath(); ctx.ellipse(e[0], e[1], H * 0.085, H * 0.07, 0, 0, Math.PI * 2); ctx.fill(); }
+          else enemy(ctx, e[0], e[1], H * 0.085, Math.sin(tr * 3 + i));
+        });
+        /* background skill name: in on play, out at the crush (the same slide continued) */
+        var nk = eOut(seg(t, 0.0, 0.3)), nout = eIn(seg(t, CRUSH, CRUSH + 0.22));
+        if (nk > 0 && nout < 1) {
+          ctx.save(); ctx.globalAlpha = 0.6; ctx.translate(W * 0.58, H * 0.27); ctx.rotate(-0.24);
+          var off = lerp(-W * 1.5, 0, nk) + nout * W * 2.0 + t * W * 0.04, tx = -W * 0.38 + off * 1.12;
+          ctx.fillStyle = "rgba(255,255,255,0.85)"; ctx.fillRect(-W * 1.2 + off, -H * 0.07, W * 2.4, H * 0.13);
+          ctx.fillStyle = GOLD; ctx.fillRect(-W * 1.2 + off, H * 0.07, W * 2.4, H * 0.018);
+          for (var dx = -W * 1.2; dx < W * 1.2; dx += H * 0.02) { ctx.beginPath(); ctx.arc(dx + off, -H * 0.092, H * 0.004, 0, Math.PI * 2); ctx.fill(); }
+          ctx.font = Math.round(H * 0.1) + "px 'Archivo Black', sans-serif"; ctx.textBaseline = "middle";
+          ctx.save(); ctx.beginPath(); ctx.rect(-W * 1.2 + off, -H * 0.07, W * 2.4, H * 0.13); ctx.clip();
+          ctx.save(); ctx.translate(tx, -H * 0.005); ctx.transform(1, 0, -0.22, 1, 0, 0); ctx.fillStyle = GOLD; ctx.fillText("MYRIAD TRUTHS", 0, 0); ctx.restore(); ctx.restore();
+          ctx.save(); ctx.beginPath(); ctx.rect(-W * 3, -H * 3, W * 6, H * 6); ctx.rect(-W * 1.2 + off, -H * 0.07, W * 2.4, H * 0.13); ctx.clip("evenodd");
+          ctx.save(); ctx.translate(tx, -H * 0.005); ctx.transform(1, 0, -0.22, 1, 0, 0); ctx.fillStyle = PALE; ctx.fillText("MYRIAD TRUTHS", 0, 0); ctx.restore(); ctx.restore();
+          ctx.restore();
+        }
+        /* at the crush: gold disk and Izanagi-no-Okami behind Yu */
+        var dk = eOut(seg(t, CRUSH, CRUSH + 0.3)) * (1 - seg(t, 3.6, 3.9));
+        if (dk > 0) {
+          ctx.save(); ctx.globalAlpha = dk;
+          var dg = ctx.createRadialGradient(W * 0.24, H * 0.5, 0, W * 0.24, H * 0.5, H * 0.46);
+          dg.addColorStop(0, PALE); dg.addColorStop(0.7, GOLD); dg.addColorStop(1, "rgba(242,197,75,0)");
+          ctx.fillStyle = dg; ctx.beginPath(); ctx.arc(W * 0.24, H * 0.5, H * 0.46 * dk, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+        }
+        var ok = eOut(seg(t, CRUSH, CRUSH + 0.25)) * (1 - seg(t, 3.55, 3.95));
+        var ox = W * 0.27, oy = H * 1.0 - (1 - ok) * H * 0.08;
+        if (ok > 0) {
+          ctx.save(); ctx.globalAlpha = ok; ctx.shadowColor = GOLD; ctx.shadowBlur = H * 0.04;
+          ring(ctx, ox, H * 0.34, H * 0.3 * (0.8 + 0.2 * ok), H * 0.02, GOLD, 1); ring(ctx, ox, H * 0.34, H * 0.26, 2, PALE, 0.8); ctx.restore();
+          ctx.save(); ctx.globalAlpha = ok; okamiBody(ctx, ox, oy, H * 0.95); ctx.restore();
+        }
+        /* the staff: between Yu and the enemies, a little right of centre; spins as soon as he appears */
+        var gc = [W * 0.58, H * 0.44], L = H * 0.8;
+        var appear = eOut(seg(t, CRUSH + 0.02, CRUSH + 0.22)), fadeS = 1 - seg(t, STOP + 0.3, STOP + 0.6);
+        if (appear > 0 && fadeS > 0) {
+          var spk = seg(t, CRUSH + 0.05, STOP), e1 = eInOut(spk), e2 = eInOut(seg(t + 0.01, CRUSH + 0.05, STOP));
+          var target = -Math.PI / 2, ang = target - (1 - e1) * Math.PI * 5, omega = (e2 - e1) / 0.01 * Math.PI * 5;
+          if (omega > 3) {
+            for (var gi = 1; gi <= 8; gi++) {
+              var ga = ang - gi * omega * 0.01;
+              ctx.save(); ctx.globalAlpha = appear * fadeS * 0.3 * (1 - gi / 9); ctx.strokeStyle = GOLD; ctx.lineWidth = H * 0.014;
+              ctx.beginPath(); ctx.moveTo(gc[0] - Math.cos(ga) * L / 2, gc[1] - Math.sin(ga) * L / 2); ctx.lineTo(gc[0] + Math.cos(ga) * L / 2, gc[1] + Math.sin(ga) * L / 2); ctx.stroke(); ctx.restore();
+            }
+            ring(ctx, gc[0], gc[1], L / 2, H * 0.006, PALE, appear * fadeS * Math.min(1, omega / 30));
+          }
+          ctx.save(); ctx.globalAlpha = appear * fadeS; ctx.translate(gc[0], gc[1]); ctx.rotate(ang);
+          ctx.shadowColor = PALE; ctx.shadowBlur = H * (tr >= STOP + 0.08 && tr < STOP + 0.3 ? 0.09 : 0.025);
+          ctx.fillStyle = "#efe9d8"; ctx.fillRect(-L / 2, -H * 0.008, L, H * 0.016);
+          ctx.fillStyle = GOLD; ctx.beginPath(); ctx.moveTo(L / 2, -H * 0.024); ctx.lineTo(L / 2 + H * 0.13, 0); ctx.lineTo(L / 2, H * 0.024); ctx.closePath(); ctx.fill();
+          ctx.fillRect(L / 2 - H * 0.07, -H * 0.04, H * 0.012, H * 0.08);
+          ctx.restore();
+        }
+        /* Yu: pulls the card out on play, it spins in his hand, crushed at CRUSH */
+        figure(ctx, W * 0.2, H * 0.94, H * 0.4, gray ? null : Y);
+        var cpos = [W * 0.26, H * 0.48];
+        if (t < CRUSH) {
+          var pull = eOut(seg(t, 0.08, 0.35)), cy2 = lerp(H * 0.64, cpos[1], pull);
+          ctx.save(); ctx.globalAlpha = pull; ctx.translate(cpos[0], cy2 + Math.sin(t * 6) * H * 0.006);
+          ctx.scale(Math.max(0.06, Math.abs(Math.cos(t * 9))), 1);
+          ctx.shadowColor = PALE; ctx.shadowBlur = H * 0.045;
+          roundRect(ctx, -H * 0.065, -H * 0.1, H * 0.13, H * 0.2, 4); ctx.fillStyle = PALE; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = GOLD; ctx.stroke(); ctx.restore();
+          var ak = seg(t, 0.72, CRUSH); if (ak > 0) ring(ctx, cpos[0], cpos[1], H * (0.07 + 0.08 * ak), 2, "#ffffff", Math.sin(ak * Math.PI));
+        } else {
+          var st = t - CRUSH, lt = tr - CRUSH;
+          if (lt < 0.14) { ctx.save(); ctx.globalAlpha = (1 - lt / 0.14) * 0.6; ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, W, H); ctx.restore(); }
+          ring(ctx, cpos[0], cpos[1], lerp(H * 0.02, H * 0.55, eOut(seg(st, 0, 0.5))), lerp(H * 0.045, 2, seg(st, 0, 0.5)), "#ffffff", 1 - seg(st, 0.3, 0.55));
+          ring(ctx, cpos[0], cpos[1], lerp(H * 0.02, H * 0.42, eOut(seg(st, 0.06, 0.55))), lerp(H * 0.03, 2, seg(st, 0.06, 0.55)), GOLD, 1 - seg(st, 0.35, 0.6));
+          ray(ctx, cpos[0], cpos[1], -0.3, W * 0.6, 2, 1 - seg(st, 0, 0.3)); ray(ctx, cpos[0], cpos[1], 1.1, W * 0.35, 1.5, 0.8 * (1 - seg(st, 0, 0.3)));
+          makeShards(61, 24, { vmin: H * 0.7, vmax: H * 1.9, smin: H * 0.01, smax: H * 0.03 }).forEach(function (s) { var p = shardPos(s, st, 2.6, H * 0.3); drawShard(ctx, cpos[0] + p[0], cpos[1] + p[1], s, st, PALE, 1 - seg(st, 0.5, 0.9)); });
+        }
+        /* golden strikes straight down, four hits: layered column with a wavering edge, forked bolts, impact bloom, rising motes */
+        for (var w = 0; w < 4; w++) {
+          var tw = STOP + 0.3 + w * 0.3;
+          foes.forEach(function (e, i) {
+            var t0 = tw + i * 0.035, lk2 = seg(t, t0, t0 + 0.28);
+            if (lk2 <= 0 || lk2 >= 1) return;
+            var big2 = w === 3 ? 1.6 : 1, x = e[0], y1 = e[1] - H * 0.01, top = -H * 0.05;
+            var flick = lk2 < 0.45 ? (((Math.floor(tr * 50) + i + w) % 4) === 0 ? 0.4 : 1) : 1, a = flick * (1 - seg(lk2, 0.5, 1));
+            var lead = seg(lk2, 0, 0.12);
+            ctx.save(); ctx.globalCompositeOperation = "lighter";
+            if (lead < 1) { ctx.globalAlpha = 1; ctx.fillStyle = "rgba(255,250,220,0.9)"; ctx.fillRect(x - 1, top, 2, (y1 - top) * lead); }
+            else {
+              var rw = rng(w * 97 + i * 13 + Math.floor(tr * 24));
+              [[0.11, "rgba(242,197,75,0.22)"], [0.055, "rgba(242,197,75,0.5)"], [0.022, "rgba(255,244,200,0.9)"], [0.008, "rgba(255,255,255,1)"]].forEach(function (L2) {
+                var hw = H * L2[0] * big2; ctx.globalAlpha = a; ctx.fillStyle = L2[1]; ctx.beginPath();
+                for (var s3 = 0; s3 <= 12; s3++) { var yy = lerp(top, y1, s3 / 12), wob = 1 + (rw() - 0.5) * 0.35; ctx.lineTo(x - hw * wob * (0.55 + 0.45 * s3 / 12), yy); }
+                for (var s4 = 12; s4 >= 0; s4--) { var yy2 = lerp(top, y1, s4 / 12), wob2 = 1 + (rw() - 0.5) * 0.35; ctx.lineTo(x + hw * wob2 * (0.55 + 0.45 * s4 / 12), yy2); }
+                ctx.closePath(); ctx.fill();
+              });
+              ctx.shadowColor = PALE; ctx.shadowBlur = H * 0.03;
+              [0, 1, 2].forEach(function (b) {
+                var rb = rng(Math.floor(tr * 30) * 7 + i * 13 + w * 31 + b * 5), px = x, py = top;
+                ctx.globalAlpha = a * (b === 0 ? 1 : 0.7); ctx.strokeStyle = b === 0 ? "#ffffff" : PALE; ctx.lineWidth = H * (b === 0 ? 0.005 : 0.003) * big2;
+                ctx.beginPath(); ctx.moveTo(px, py);
+                for (var s5 = 1; s5 <= 10; s5++) {
+                  var nx = x + (s5 < 10 ? (rb() - 0.5) * H * 0.09 * big2 : 0), ny = lerp(top, y1, s5 / 10);
+                  ctx.lineTo(nx, ny);
+                  if (rb() < 0.22 && s5 < 9) { ctx.moveTo(nx, ny); ctx.lineTo(nx + (rb() - 0.5) * H * 0.12, ny + H * 0.05); ctx.moveTo(nx, ny); }
+                }
+                ctx.stroke();
+              });
+              ctx.shadowBlur = 0;
+            }
+            var ik = seg(lk2, 0.1, 0.7);
+            if (ik > 0) {
+              ctx.globalAlpha = a;
+              var ig = ctx.createRadialGradient(x, y1, 0, x, y1, H * 0.16 * big2); ig.addColorStop(0, "rgba(255,255,255,1)"); ig.addColorStop(0.4, "rgba(255,236,160,0.6)"); ig.addColorStop(1, "rgba(242,197,75,0)");
+              ctx.fillStyle = ig; ctx.fillRect(x - H * 0.18 * big2, y1 - H * 0.18 * big2, H * 0.36 * big2, H * 0.36 * big2);
+              ctx.globalAlpha = (1 - ik) * flick; ctx.strokeStyle = PALE; ctx.lineWidth = lerp(H * 0.02, 1.5, ik);
+              ctx.beginPath(); ctx.ellipse(x, y1 + H * 0.04, lerp(H * 0.03, H * 0.2 * big2, eOut(ik)), lerp(H * 0.01, H * 0.06 * big2, eOut(ik)), 0, 0, Math.PI * 2); ctx.stroke();
+              var rm = rng(i * 7 + w * 3);
+              for (var m = 0; m < 8; m++) { var mx = x + (rm() - 0.5) * H * 0.18, my = y1 - ik * H * lerp(0.1, 0.3, rm()); ctx.globalAlpha = (1 - ik) * a; ctx.fillStyle = m % 2 ? "#ffffff" : GOLD; ctx.beginPath(); ctx.arc(mx, my, H * 0.004 * big2, 0, Math.PI * 2); ctx.fill(); }
+            }
+            ctx.restore();
+          });
+          foes.forEach(function (e, i) { var bk = t - (tw + 0.1 + i * 0.035); if (bk > 0) damageBadge(ctx, e[0] + (w - 1.5) * H * 0.05, e[1] - H * 0.15 - w * H * 0.04, w === 3 ? 31 : 18, seg(bk, 0, 0.16), 1 - seg(bk, 0.55, 0.85)); });
+          if (w === 3) { var fl = 1 - seg(t, tw + 0.08, tw + 0.32); if (fl > 0 && fl < 1) { ctx.save(); ctx.globalAlpha = fl * 0.6; ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, W, H); ctx.restore(); } }
+        }
+        var yk = seg(t, 3.75, 4.3);
+        if (yk > 0 && yk < 1) {
+          ring(ctx, W * 0.5, H * 0.5, lerp(H * 0.16, Math.hypot(W, H) * 0.6, eOut(yk)), lerp(H * 0.05, H * 0.006, yk), Y, 1 - seg(yk, 0.6, 1));
+          ring(ctx, W * 0.5, H * 0.5, lerp(H * 0.1, Math.hypot(W, H) * 0.45, eOut(seg(yk, 0.1, 1))), 3, "#ffffff", 1 - seg(yk, 0.5, 1));
+        }
+      } },
+    { id: "myriad2", hidden: true, name: "几万真言 v2（分镜）", dur: 5.5, start: 3.0,
       desc: "按你的意见改：一出牌就先划过英文技能名（开头特效）→ 画面去色，悠变黑剪影，背后亮起金色圆盘，摘眼镜反光一闪 → 白金卡捏碎 → 伊邪那岐大神在悠身后升起 → 金色光点聚到敌人面前，凝成他的杖，由慢到快转、再慢下来停住 → 停住以后，敌人头顶的金光竖直劈下来，带闪电一样的闪烁，连劈四下，最后一下最大 → 黄色圆环收尾。大神和杖是占位图形。",
       draw: function (ctx, W, H, tr) {
         var GOLD = "#f2c54b", PALE = "#fff3c4";
