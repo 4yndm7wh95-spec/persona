@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Noto+Sans+SC:wght@400;700;900&display=swap">
 <style>
-/* Layout: one working column. Order = what the user does first: answer → check my understanding → watch demos → mark screenshots → upload.
+/* Layout: one working column. Round 2 order: what I recorded → what I read from the user's clips → new sketches → two questions → uploads → round 1 (collapsed).
    Deliberately single dark theme: P4R's battle UI is lemon yellow on near-black. */
 :root {
   --ink: #0e0e10;
@@ -17,177 +17,101 @@
   --yellow-hot: #fcf800;
   --blue: #33c3ff;
   --red: #ff3b5c;
-  --mark: #ff2d55;
   --font-display: "Archivo Black", "Noto Sans SC", system-ui, sans-serif;
   --font-body: "Noto Sans SC", system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
-body {
-  background: var(--ink);
-  color: var(--fg);
-  font-family: var(--font-body);
-  font-size: 15px;
-  line-height: 1.6;
-}
+body { background: var(--ink); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.6; }
 .wrap {
-  max-width: 1000px;
-  margin: 0 auto;
+  max-width: 1000px; margin: 0 auto;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   padding-block: 0 64px;
 }
-/* Header: a slanted lemon-yellow plate, like P4R's skill-name panels */
 .hero {
   position: relative;
   margin-top: calc(-1 * env(safe-area-inset-top, 0px));
   padding-top: calc(env(safe-area-inset-top, 0px) + 28px);
   padding-bottom: 26px;
-  background: var(--ink);
-  overflow: hidden;
+  background: var(--ink); overflow: hidden;
 }
 .hero::before {
-  content: "";
-  position: absolute;
-  inset: 0 -10% 0 62%;
-  background: var(--yellow);
-  transform: skewX(-18deg);
-  transform-origin: bottom left;
+  content: ""; position: absolute; inset: 0 -10% 0 62%;
+  background: var(--yellow); transform: skewX(-18deg); transform-origin: bottom left;
 }
 @media (max-width: 700px) { .hero::before { inset: 0 -40% 0 80%; } }
 .hero .wrap { position: relative; padding-block: 0; }
-.hero h1 {
-  font-family: var(--font-display);
-  font-size: clamp(28px, 5vw, 44px);
-  line-height: 1.1;
-  margin: 0;
-  letter-spacing: 0.01em;
-  text-wrap: balance;
-}
+.hero h1 { font-family: var(--font-display); font-size: clamp(28px, 5vw, 44px); line-height: 1.1; margin: 0; text-wrap: balance; }
 .hero h1 .tag {
-  display: inline-block;
-  background: var(--ink);
-  color: var(--yellow);
-  border: 3px solid var(--yellow);
-  border-radius: 999px;
-  padding: 2px 16px 4px;
-  transform: rotate(-3deg);
+  display: inline-block; background: var(--ink); color: var(--yellow);
+  border: 3px solid var(--yellow); border-radius: 999px; padding: 2px 16px 4px; transform: rotate(-3deg);
 }
-.hero p { margin: 14px 0 0; max-width: 30em; color: var(--fg); }
+.hero p { margin: 14px 0 0; max-width: 30em; }
 .conn {
-  display: inline-flex; align-items: center; gap: 6px;
-  margin-top: 12px;
-  font-size: 13px;
-  background: var(--ink);
-  color: var(--dim);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 2px 12px;
+  display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; font-size: 13px;
+  background: var(--ink); color: var(--dim); border: 1px solid var(--line); border-radius: 999px; padding: 2px 12px;
 }
 .conn i { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); display: inline-block; }
 .conn.ok i { background: #6be36b; }
 .conn.bad i { background: var(--red); }
-
-.notice {
-  margin: 22px 0 0;
-  border-left: 6px solid var(--yellow);
-  background: var(--panel);
-  padding: 12px 16px;
-  border-radius: 0 10px 10px 0;
-}
+.notice { margin: 22px 0 0; border-left: 6px solid var(--yellow); background: var(--panel); padding: 12px 16px; border-radius: 0 10px 10px 0; }
 section { margin-top: 44px; }
-section > h2 {
-  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-  font-size: 22px; margin: 0 0 6px; text-wrap: balance;
-}
+section > h2 { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 22px; margin: 0 0 6px; text-wrap: balance; }
 section > h2 .pill {
-  font-family: var(--font-display);
-  font-size: 13px;
-  letter-spacing: 0.08em;
-  background: var(--yellow);
-  color: var(--ink);
-  border-radius: 999px;
-  padding: 2px 12px;
-  transform: rotate(-3deg);
+  font-family: var(--font-display); font-size: 13px; letter-spacing: 0.08em;
+  background: var(--yellow); color: var(--ink); border-radius: 999px; padding: 2px 12px; transform: rotate(-3deg);
 }
 .lead { color: var(--dim); margin: 0 0 16px; max-width: 46em; }
 .status { font-size: 12px; color: var(--dim); margin-left: auto; min-height: 1em; }
 .status.saved { color: #8fe08f; }
 .status.err { color: var(--red); }
-
-.card {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 16px;
-}
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
 .stack { display: grid; gap: 12px; }
 .q h3 { margin: 0 0 10px; font-size: 16px; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip {
-  font: inherit; font-size: 14px;
-  color: var(--fg);
-  background: var(--panel-2);
-  border: 2px solid var(--line);
-  border-radius: 999px;
-  padding: 5px 14px;
-  cursor: pointer;
+  font: inherit; font-size: 14px; color: var(--fg); background: var(--panel-2);
+  border: 2px solid var(--line); border-radius: 999px; padding: 5px 14px; cursor: pointer;
 }
 .chip:hover { border-color: var(--dim); }
 .chip[aria-pressed="true"] { background: var(--yellow); color: var(--ink); border-color: var(--yellow); font-weight: 700; }
 .chip.rec::after { content: " 推荐"; font-size: 11px; opacity: 0.75; }
-.chip:focus-visible, button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+.chip:focus-visible, button:focus-visible, textarea:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
 textarea, input[type="text"] {
-  width: 100%;
-  font: inherit; font-size: 14px;
-  color: var(--fg);
-  background: var(--ink);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 8px 10px;
-  margin-top: 10px;
-  resize: vertical;
+  width: 100%; font: inherit; font-size: 14px; color: var(--fg); background: var(--ink);
+  border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; margin-top: 10px; resize: vertical;
 }
-textarea::placeholder, input::placeholder { color: #6f6e67; }
+textarea::placeholder { color: #6f6e67; }
+.decisions { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+.decisions li { padding-left: 2px; }
+.decisions b { color: var(--yellow); font-weight: 700; }
 
-/* Understanding checklist */
-.u { display: grid; grid-template-columns: 1fr auto; gap: 8px 14px; align-items: start; }
-.u p { margin: 0; min-width: 0; }
-.u .chips { justify-content: flex-end; }
-.u textarea { grid-column: 1 / -1; margin-top: 0; }
-@media (max-width: 640px) { .u { grid-template-columns: 1fr; } .u .chips { justify-content: flex-start; } }
-.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; margin-top: 4px; }
-.sw { border-radius: 8px; overflow: hidden; border: 1px solid var(--line); background: var(--panel-2); }
-.sw b { display: block; height: 38px; }
-.sw span { display: block; font-size: 12px; padding: 4px 8px; color: var(--dim); }
+/* video breakdown */
+.vlist { display: grid; gap: 14px; }
+.vitem .frames { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 6px; }
+.vitem .frames img { width: 100%; height: auto; display: block; border-radius: 6px; border: 1px solid var(--line); background: #000; }
+.vitem h3 { margin: 12px 0 4px; font-size: 16px; }
+.vitem p { margin: 0 0 10px; }
+.vitem .use { color: var(--dim); font-size: 14px; margin-top: -4px; }
 
-/* Demos */
+/* demos */
 .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 .stage {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  max-width: 100%;
-  background: #05060a;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid var(--line);
+  position: relative; width: 100%; aspect-ratio: 16 / 9; max-width: 100%;
+  background: #05060a; border-radius: 12px; overflow: hidden; border: 1px solid var(--line);
 }
 .stage canvas { width: 100%; height: 100%; display: block; }
 .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px; }
-.btn {
-  font: inherit; font-size: 14px; font-weight: 700;
-  background: var(--yellow); color: var(--ink);
-  border: none; border-radius: 8px;
-  padding: 7px 16px; cursor: pointer;
-}
+.btn { font: inherit; font-size: 14px; font-weight: 700; background: var(--yellow); color: var(--ink); border: none; border-radius: 8px; padding: 7px 16px; cursor: pointer; }
 .btn.ghost { background: var(--panel-2); color: var(--fg); border: 1px solid var(--line); font-weight: 400; }
 .btn[aria-pressed="true"] { outline: 2px solid var(--yellow); }
 .controls input[type="range"] { flex: 1 1 200px; min-width: 0; accent-color: var(--yellow); }
 .tlabel { font-variant-numeric: tabular-nums; font-size: 13px; color: var(--dim); min-width: 5.5em; }
 .demo-desc { margin: 10px 0 0; color: var(--dim); }
+.tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 
-/* Screenshots to mark */
+/* screenshots (round 1) */
 .shots { display: grid; gap: 18px; }
 .shot { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 16px; align-items: start; }
 @media (max-width: 760px) { .shot { grid-template-columns: 1fr; } }
@@ -196,22 +120,24 @@ textarea::placeholder, input::placeholder { color: #6f6e67; }
 .ann canvas { position: absolute; inset: 0; width: 100%; height: 100%; cursor: crosshair; }
 .shot h3 { margin: 0 0 6px; font-size: 16px; }
 .shot .ask { margin: 0; }
-.shot .src { font-size: 12px; color: var(--dim); margin-top: 6px; word-break: break-all; }
-.tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.u { display: grid; grid-template-columns: 1fr auto; gap: 8px 14px; align-items: start; }
+.u p { margin: 0; min-width: 0; }
+.u .chips { justify-content: flex-end; }
+.u textarea { grid-column: 1 / -1; margin-top: 0; }
+@media (max-width: 640px) { .u { grid-template-columns: 1fr; } .u .chips { justify-content: flex-start; } }
+details.round1 { margin-top: 44px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+details.round1 > summary { cursor: pointer; padding: 14px 16px; font-weight: 700; }
+details.round1 > .inner { padding: 0 16px 16px; }
+details.round1 section { margin-top: 28px; }
 
-/* Uploads */
-.drop {
-  display: grid; place-items: center; gap: 6px; text-align: center;
-  border: 2px dashed var(--line); border-radius: 12px;
-  padding: 26px 16px; background: var(--panel);
-}
+/* uploads */
+.drop { display: grid; place-items: center; gap: 6px; text-align: center; border: 2px dashed var(--line); border-radius: 12px; padding: 26px 16px; background: var(--panel); }
 .drop.over { border-color: var(--yellow); }
 .uplist { display: grid; gap: 16px; margin-top: 16px; }
 .up video { width: 100%; border-radius: 10px; background: #000; display: block; }
 .up .meta { font-size: 12px; color: var(--dim); margin-top: 6px; word-break: break-all; }
 .muted { color: var(--dim); }
 footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
-@media (prefers-reduced-motion: reduce) { .chip, .btn { transition: none; } }
 </style>
 
 <header class="hero">
@@ -224,58 +150,61 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
 
 <main class="wrap">
   <div class="notice">
-    你上一条说的<b>那段视频</b>，和<b>4 个问题的回答</b>，我这边都没有收到（问卷弹窗回来是空的，消息里也没有附件）。视频可以在本页最下面上传；4 个问题在下面点一下就行。
+    <b>第二轮。</b>你填的回答、两段视频我都看完了，两段视频逐帧拆过。下面是：我记下的决定、我从视频里看出来的做法、按你的反馈重做的草图，以及还要问你的两件事。第一轮的内容收在页面最下面。
   </div>
 
-  <!-- 1. Questions -->
-  <section id="questions">
-    <h2><span class="pill">01</span>4 个问题 <span class="status" id="st-answers"></span></h2>
-    <p class="lead">点一个选项就保存。想补充的写在框里。</p>
-    <div class="stack" id="qlist"></div>
-  </section>
-
-  <!-- 2. Understanding -->
-  <section id="understanding">
-    <h2><span class="pill">02</span>我理解的 P4R 特效做法 <span class="status" id="st-understanding"></span></h2>
-    <p class="lead">这是我从截图里总结的做法。每条点「对 / 不对 / 不全」，不对的地方写一句，或者去下面的截图上圈出来。</p>
-    <div class="stack" id="ulist"></div>
-    <div class="card" style="margin-top:12px">
-      <p style="margin:0 0 8px">截图里量到的颜色（大概值）：</p>
-      <div class="swatches" id="swatches"></div>
+  <section id="decisions">
+    <h2><span class="pill">01</span>我记下的决定 <span class="status" id="st-decisions"></span></h2>
+    <p class="lead">有记错或者漏掉的，写在最下面的框里。</p>
+    <div class="card">
+      <ul class="decisions">
+        <li><b>技能名</b>少用，只给部分金卡。用英文。不是字幕弹进来又收回去，而是从人物身后、左下往右上划过的大规模背景特效：技能名是主角，周围配大量 P4 的黄色横条这类 UI 感特效。</li>
+        <li><b>1 MORE / CRITICAL / WEAK</b> 是 P 系列通用元素，同样当特效做，少出现，只给部分牌。</li>
+        <li><b>不做 3D 半身特写。</b>改成背景的电视屏幕中间由里向外伸出一只手，手心出现旋转的塔罗牌，握拳捏碎。手是「特效」，不能有明显轮廓和贴图感。参考<b>最新版</b>毒性爆发的大手：着色器实时渲染的立体手，近大远小，边缘自然融掉、没有描边；不用它的烟雾质感。</li>
+        <li><b>黄卡的出场</b>照原版思路：黄菱形出现、往左放大到半屏，里面是眼睛特写（闭眼到睁眼），停一下，菱形像翻页一样翻过去，落到手上变成那张卡。</li>
+        <li><b>捏碎</b>：碎片纯色，从卡的位置往四周炸；捏完直接切回战场，不用整屏黄。</li>
+        <li><b>单张消耗</b>走轻量版（草图你说像）。<b>几万真言</b>白金为主、黄色收尾。</li>
+        <li><b>描边</b>只在人物身后一侧，粗细适中，静止不变。<b>刀光</b>是发光的，有明暗，形状讲究。<b>伤害数字</b>带声波括号、会弹。<b>CRITICAL</b> 轻微抖动。<b>圆角电视框</b>不是「轮到谁框谁」，是战斗开始动画里的一帧：几层框缩放到位，最后留成整个画面的黄色边框；颜色按黄色来。</li>
+        <li><b>美感</b>：不是火、水、烟这类通俗特效，是用 UI 和平面设计做的特效：规整、有序、不乱、细节细腻、画面均匀。参考 P3 mod 那种纯色圆环扩散的做法。还有<b>撞色</b>。</li>
+        <li><b>总攻击</b>以后再做，只做最后结算那一下。参考 P4R 的运镜：镜头由慢到快推到主角脚下、仰拍全身、停一下，身后两块大屏幕亮起来。不一定用 3D，学它的创意。</li>
+      </ul>
+      <textarea id="decisionsNote" rows="2" placeholder="记错或漏掉的写这里"></textarea>
     </div>
   </section>
 
-  <!-- 3. Demos -->
+  <section id="video">
+    <h2><span class="pill">02</span>你两段视频里我看到的做法 <span class="status" id="st-video"></span></h2>
+    <p class="lead">每一条是我对一段画面的拆解，后面一行写我们 mod 里打算怎么用。点「对 / 不对 / 不全」，不对的写一句。</p>
+    <div class="vlist" id="vlist"></div>
+  </section>
+
   <section id="demos">
-    <h2><span class="pill">03</span>小演示：我理解的样子 <span class="status" id="st-demos"></span></h2>
-    <p class="lead">用图形占位做的动态草图，只看结构、节奏和形状语言，不是成品画风。可以慢放、拖时间条停在任意一帧，告诉我哪里不像。</p>
+    <h2><span class="pill">03</span>新草图 <span class="status" id="st-demos"></span></h2>
+    <p class="lead">按你的反馈重做的动态草图。人物、手、伊邪那岐还是占位图形；眼睛特写用的是 P4G 解包出来的召唤特写贴图。可以慢放、拖时间条停在任意一帧。</p>
     <div class="tabs" id="demoTabs" role="tablist"></div>
     <div class="stage"><canvas id="stage"></canvas></div>
     <div class="controls">
       <button class="btn" id="play" type="button">播放</button>
       <button class="btn ghost" id="slow" type="button" aria-pressed="false">慢放 ×0.3</button>
-      <input type="range" id="scrub" min="0" max="1" step="0.01" value="0" aria-label="时间">
+      <input type="range" id="scrub" min="0" max="1" step="0.005" value="0" aria-label="时间">
       <span class="tlabel" id="tlabel">0.00 s</span>
     </div>
     <p class="demo-desc" id="demoDesc"></p>
     <div class="card" style="margin-top:12px">
       <div class="chips" id="demoVerdict"></div>
-      <textarea id="demoNote" rows="2" placeholder="哪里不像？可以先点「插入当前时间」再写，比如：[0.92s] 碎片应该更大、更少"></textarea>
+      <textarea id="demoNote" rows="2" placeholder="哪里不像？可以先点「插入当前时间」再写"></textarea>
       <div class="tools"><button class="btn ghost" id="insertTime" type="button">插入当前时间</button></div>
     </div>
   </section>
 
-  <!-- 4. Screenshots -->
-  <section id="shots">
-    <h2><span class="pill">04</span>我没看懂的截图 <span class="status" id="st-shots"></span></h2>
-    <p class="lead">在图上直接拿手指或鼠标圈画，旁边写一句。截图来自 B 站 360P 视频放大，比较糊；看不清的地方，你按原版告诉我就行。</p>
-    <div class="shots" id="shotList"></div>
+  <section id="questions2">
+    <h2><span class="pill">04</span>还要问你的两件事 <span class="status" id="st-answers2"></span></h2>
+    <div class="stack" id="q2list"></div>
   </section>
 
-  <!-- 5. Uploads -->
   <section id="uploads">
-    <h2><span class="pill">05</span>上传你说的那段视频 <span class="status" id="st-uploads"></span></h2>
-    <p class="lead">视频（mp4 / webm）或截图都可以，单个文件不超过 20MB。传上来以后，可以在截图上圈画、在视频下面写想让我看哪几秒。</p>
+    <h2><span class="pill">05</span>上传视频 / 截图 <span class="status" id="st-uploads"></span></h2>
+    <p class="lead">视频（mp4 / webm）或截图都可以，单个文件不超过 20MB。传上来的截图可以圈画。</p>
     <label class="drop" id="drop" for="file">
       <strong>点这里选文件，或者把文件拖进来</strong>
       <span class="muted" id="upHint">mp4 / webm / png / jpg，每个 20MB 以内</span>
@@ -283,13 +212,31 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     <input type="file" id="file" accept="video/mp4,video/webm,image/png,image/jpeg,image/webp,image/gif" multiple hidden>
     <div class="uplist" id="upList"></div>
     <div class="card" style="margin-top:16px">
-      <label for="links"><b>视频太大传不了？</b> 把链接和时间点写在这里，比如：B 站链接 + 「1:23–1:31 召唤」。</label>
+      <label for="links"><b>视频太大传不了？</b> 把链接和时间点写在这里。</label>
       <textarea id="links" rows="3" placeholder="链接和时间点"></textarea>
       <span class="status" id="st-links"></span>
     </div>
   </section>
 
-  <footer>全部自动保存。我回来会读这一页的内容，再改方案和演示。</footer>
+  <details class="round1">
+    <summary>第一轮：4 个问题、我的理解、9 张截图（已回答，点开可以改）</summary>
+    <div class="inner">
+      <section>
+        <h2>4 个问题 <span class="status" id="st-answers"></span></h2>
+        <div class="stack" id="qlist"></div>
+      </section>
+      <section>
+        <h2>我理解的 P4R 特效做法 <span class="status" id="st-understanding"></span></h2>
+        <div class="stack" id="ulist"></div>
+      </section>
+      <section>
+        <h2>截图 <span class="status" id="st-shots"></span></h2>
+        <div class="shots" id="shotList"></div>
+      </section>
+    </div>
+  </details>
+
+  <footer>全部自动保存。我回来会读这一页的内容，再改方案和草图。</footer>
 </main>
 
 <script>
@@ -297,6 +244,46 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   "use strict";
 
   /* ---------- content ---------- */
+  var VIDEO = [
+    { id: "v1", frames: ["frames/A022.jpg", "frames/A046.jpg"], title: "定格 + 身后流动的弧形色带",
+      text: "先手一刀砍中时画面定格，人物不动，身后几条弧形色带一直沿弧线往前流：柠檬黄、黄绿、橙，橙带上缘一排黄色网点。色带边缘干净，里面有细的速度线明暗，不是死平涂。人物压在色带前面，周围点缀橙红四角星和小亮点。",
+      use: "用法：大招出手的定格瞬间；技能名特效的底层色带。" },
+    { id: "v2", frames: ["frames/A070.jpg", "frames/A075.jpg"], title: "斜条纹转场",
+      text: "一条黄色宽带从右下扫进来，接着整屏斜条纹：橙、黄绿、深灰条（里面两排黄点）、柠檬黄（下缘几条细平行线）。条纹一直在滑，小橙块沿着网点条跑。像电视台的台标片头。",
+      use: "用法：特写和战场之间的切换，比如几万真言开场。" },
+    { id: "v3", frames: ["frames/A088.jpg", "frames/A094.jpg"], title: "去色 + 黑剪影 + 黄光",
+      text: "画面整个去色成灰，人物变成纯黑剪影；一束黄色光带从右上打到悠背后；然后剪影后面亮起一个黄绿色大圆盘。用最少的颜色做最强的对比。",
+      use: "用法：几万真言、午夜这类大牌的「静止一拍」。" },
+    { id: "v4", frames: ["frames/A100.jpg", "frames/A118.jpg"], title: "电视隧道 + 发光的小屏幕",
+      text: "灰色的电视套电视（一层层往里的屏幕框），中间一块发光的黄色小屏幕，往右上射出一束多色光带（黄、黄绿、带细密线纹的橙）。镜头往里推，小屏幕放大到整屏变黄。黄色小屏幕本身有柔光。",
+      use: "用法：「电视里伸出手」的那台电视就照这个做：灰色屏幕 + 发光的黄色核心。" },
+    { id: "v5", frames: ["frames/A124.jpg", "frames/A145.jpg"], title: "好几层电视框",
+      text: "进战斗时，画面外面套着几层倾斜的圆角电视框（黄、红、绿），一层层缩放到位；最后整个战斗画面留一圈黄色边框，里面一条细绿线、一条细红线，像在电视里看。悠背后一侧有黄色描边。",
+      use: "用法：这是战斗开始的进场动画（你指出的那张绿框截图就是其中一帧）。可以用在大牌演出结束、切回战场的那一下，或者以后的战斗开场。" },
+    { id: "v6", frames: ["frames/A130.jpg", "frames/A136.jpg"], title: "命中爆发",
+      text: "命中时一团红色锯齿爆发，白芯加红色辉光；接几道弧形红色刀痕绕着敌人转。",
+      use: "用法：敌人受击；我们的颜色换成黄白 / 蓝白。" },
+    { id: "v7", frames: ["frames/B001.jpg", "frames/B003.jpg", "frames/B011.jpg"], title: "菱形窗口",
+      text: "左边先出现一个小黄菱形，往左放大到半屏；菱形边上一圈更亮的黄边，里面是悠的眼睛特写（闭着眼，然后睁开），眼镜框上有彩虹色反光。技能名的胶囊条挂在菱形边上。",
+      use: "用法：捏碎演出的开场，照搬这个思路。" },
+    { id: "v8", frames: ["frames/B015.jpg", "frames/B017.jpg", "frames/B023.jpg"], title: "菱形翻页，变成那张卡",
+      text: "菱形以右边为轴像书页一样翻过去，翻的时候里面有放射状的运动线；翻到右边变成一个大圆弧，再一路缩小，落到悠手上变成那张纯黄的卡。中间手的动作是动画式的拖影。同一块黄色从头到尾没断过：窗口 → 翻页 → 卡。",
+      use: "用法：我们翻到画面中间那只从电视里伸出来的手上。" },
+    { id: "v9", frames: ["frames/B033.jpg", "frames/B035.jpg", "frames/B037.jpg"], title: "捏碎",
+      text: "卡上先出现一圈白色细环；握拳那一下中心一团白光，几条很长的细光线交叉划过画面，纯黄碎片从拳头往外炸；左边一大块黄色圆弧扫过。",
+      use: "用法：碎片 + 细长光线 + 白色圆环扩散，加 P3 mod 那种规整的纯色圆环。" },
+    { id: "v10", frames: ["frames/B053.jpg", "frames/B061.jpg"], title: "拍手换人",
+      text: "背景是巨大的 BATON 字，字和背景撞色（黄底深色字，切到橙红底时字的颜色也变）。两只手相碰的地方先射出彩虹色细光束（青、粉、黄、绿），接着几圈彩虹圆环（粉、黄、绿）扩散出去，周围是大小不同的四角星（白的小、金的大）、彩色五角星、小花和圆点，分布得很均匀。",
+      use: "用法：烧牌时的手牌联动、无惧疼痛之类的光效，可以用这套「彩虹光束 + 圆环 + 星星」。" }
+  ];
+
+  var Q2 = [
+    { id: "q5", title: "伸出手的那台电视放在哪？",
+      opts: [["stage", "战场背景正中，像舞台大屏", true], ["behind", "悠身后"], ["float", "悠和敌人之间悬着一台"]] },
+    { id: "q6", title: "手的材质？",
+      opts: [["light", "光做的：黄白光、半透明、边缘柔和", true], ["dark", "暗色实体：像 P5 那只，靠轮廓光"]] }
+  ];
+
   var QUESTIONS = [
     { id: "q1", title: "文字：P4R 里文字演出很多（技能名条、1 MORE、CRITICAL 大字）。我们放多少？",
       opts: [["gold", "只给金卡打技能名", true], ["none", "完全不要文字"], ["full", "像 P4R 一样多用"]] },
@@ -307,51 +294,30 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     { id: "q4", title: "几万真言（焚烧）的配色？伊邪那岐大神本身是白衣、金色圆环。",
       opts: [["whitegold", "白金为主、黄色收尾", true], ["yellow", "全部用 P4 黄"]] }
   ];
-
   var UNDERSTANDING = [
-    ["u1", "黄色当底板用：特效先切进一大块平涂黄（斜面板、圆、圆环），人物和动作压在上面。黄色是舞台背景板，不是光。"],
-    ["u2", "人物外面有一圈很粗的黄色描边，把角色从画面里「剪」出来，像贴在电视画面上的剪影。"],
-    ["u3", "光很少用柔和渐变，多数是硬边：十字星芒、细长直光线、平涂多边形碎片。真正发光的只有人格面具的蓝焰和雷。"],
-    ["u4", "节奏：快速滑入 → 停一下 → 一个最满的拍（捏碎 / 命中）→ 用几何遮罩（圆环收拢、斜切）快速切走。一段 1 秒左右，很干脆。"],
-    ["u5", "电视语言用在系统层：圆角显像管框（轮到谁、锁定）、整墙屏幕（结算）、雪花、聚光灯舞台（总攻击）。"],
-    ["u6", "文字本身就是特效：1 MORE、CRITICAL、技能名条都倾斜、带描边、配星星，砸进画面。"],
-    ["u7", "颜色分工：黄 = 我方和系统节奏；蓝 = 人格面具；红 / 粉 = 敌人、暴击、伤害；黄橙绿三色彩带 = 队伍和总攻击。战斗里的黄偏绿（柠檬黄），宣传图的黄偏暖。"]
+    ["u1", "黄色当底板用：特效先切进一大块平涂黄（斜面板、圆、圆环），人物和动作压在上面。"],
+    ["u2", "人物外面有一圈很粗的黄色描边，把角色从画面里「剪」出来。"],
+    ["u3", "光很少用柔和渐变，多数是硬边：十字星芒、细长直光线、平涂多边形碎片。"],
+    ["u4", "节奏：快速滑入 → 停一下 → 一个最满的拍 → 用几何遮罩快速切走。"],
+    ["u5", "电视语言用在系统层：圆角显像管框、整墙屏幕、雪花、聚光灯舞台。"],
+    ["u6", "文字本身就是特效：倾斜、带描边、配星星，砸进画面。"],
+    ["u7", "颜色分工：黄 = 我方和系统；蓝 = 人格面具；红 / 粉 = 敌人、暴击；三色彩带 = 队伍和总攻击。"]
   ];
-
-  var SWATCHES = [
-    ["#e5eb18", "战斗柠檬黄（捏碎的卡）"], ["#fcf800", "1 MORE 的黄"], ["#f8d420", "宣传图暖黄"],
-    ["#33c3ff", "人格面具蓝焰"], ["#ff3b5c", "暴击红粉"], ["#f8a800", "彩带橙"], ["#a6e34a", "彩带绿 / 回合框绿"]
-  ];
-
   var SHOTS = [
-    { id: "card-appear", src: "shots/card_appear.jpg", title: "黄卡出现",
-      ask: "卡是纯黄色、没有图案的平面卡吗？它是从掌心升起来，还是凭空放大出现？" },
-    { id: "card-iris", src: "shots/card_iris.jpg", title: "黄色圆环收拢",
-      ask: "这个黄色圆环是从外往里收、最后对准拳头收没吗？收完是直接切回战场，还是先整屏黄一下？" },
-    { id: "card-shards", src: "shots/card_shards.jpg", title: "捏碎的碎片",
-      ask: "碎片是纯平涂黄，还是有亮边、渐变？是从拳头往四周炸，还是往镜头飞？" },
-    { id: "outline", src: "shots/yu_outline.jpg", title: "人物的粗黄描边",
-      ask: "悠外面这圈粗黄边是静止的，还是会抖动、闪烁、带残影？描边的粗细会变吗？" },
-    { id: "damage", src: "shots/damage_number.jpg", title: "伤害数字",
-      ask: "数字两边的黑色括号像声波，我理解是电视 / 广播的意思，对吗？数字出现时会弹跳或抖动吗？" },
-    { id: "turn-frame", src: "shots/turn_frame.jpg", title: "圆角屏幕框",
-      ask: "这个圆角框是「轮到谁就框住谁」吗？这里是绿色，另一张截图里是黄色，颜色有区别吗？" },
-    { id: "onemore", src: "shots/one_more.jpg", title: "1 MORE",
-      ask: "1 MORE 的字是怎么进场的：砸下来、滑进来，还是弹出来？后面的斜带按什么顺序出现？" },
-    { id: "critical", src: "shots/critical.jpg", title: "CRITICAL",
-      ask: "CRITICAL 的红蓝错位，是一直在抖的故障效果，还是只有出现那一下？" },
-    { id: "slash", src: "shots/yellow_slash.jpg", title: "黄色刀光",
-      ask: "这道黄色刀光是平涂的形状（像贴纸），还是发光的？红黑碎片是命中时才出来的吗？" }
+    { id: "card-appear", src: "shots/card_appear.jpg", title: "黄卡出现", ask: "卡是纯黄色的平面卡吗？它是怎么出现的？" },
+    { id: "card-iris", src: "shots/card_iris.jpg", title: "黄色圆环收拢", ask: "圆环怎么收？收完怎么切回战场？" },
+    { id: "card-shards", src: "shots/card_shards.jpg", title: "捏碎的碎片", ask: "碎片是纯色吗？往哪个方向炸？" },
+    { id: "outline", src: "shots/yu_outline.jpg", title: "人物的粗黄描边", ask: "描边是静止的吗？" },
+    { id: "damage", src: "shots/damage_number.jpg", title: "伤害数字", ask: "声波括号？会弹吗？" },
+    { id: "turn-frame", src: "shots/turn_frame.jpg", title: "圆角屏幕框", ask: "颜色有区别吗？" },
+    { id: "onemore", src: "shots/one_more.jpg", title: "1 MORE", ask: "字是怎么进场的？" },
+    { id: "critical", src: "shots/critical.jpg", title: "CRITICAL", ask: "红蓝错位一直抖吗？" },
+    { id: "slash", src: "shots/yellow_slash.jpg", title: "黄色刀光", ask: "刀光是平涂还是发光？" }
   ];
 
   /* ---------- helpers ---------- */
   function $(id) { return document.getElementById(id); }
-  function el(tag, cls, text) {
-    var e = document.createElement(tag);
-    if (cls) e.className = cls;
-    if (text != null) e.textContent = text;
-    return e;
-  }
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
   function setStatus(id, kind, extra) {
     var s = $(id); if (!s) return;
     s.classList.remove("saved", "err");
@@ -362,129 +328,92 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     else s.textContent = "";
   }
 
-  /* ---------- persistence (db) ---------- */
-  var DB = null, ASSETS = null;
-  var queues = {};
+  /* ---------- persistence ---------- */
+  var DB = null, ASSETS = null, queues = {};
   function saveDoc(path, body, statusId) {
     var q = queues[path] || (queues[path] = { busy: false, next: null, timer: null, status: statusId });
-    q.next = body; q.status = statusId;
-    setStatus(statusId, "saving");
-    clearTimeout(q.timer);
-    q.timer = setTimeout(function () { flush(path); }, 500);
+    q.next = body; q.status = statusId; setStatus(statusId, "saving");
+    clearTimeout(q.timer); q.timer = setTimeout(function () { flush(path); }, 500);
   }
   function flush(path) {
     var q = queues[path];
     if (!q || q.busy || !q.next) return;
     if (!DB) { setStatus(q.status, "offline"); return; }
     var body = q.next; q.next = null; q.busy = true;
-    var data = Object.assign({}, body, { at: new Date().toISOString() });
-    DB.doc(path).set(data).then(function () {
+    DB.doc(path).set(Object.assign({}, body, { at: new Date().toISOString() })).then(function () {
       setStatus(q.status, "saved");
-    }, function (e) {
-      setStatus(q.status, "error", e && e.code);
-    }).then(function () {
-      q.busy = false;
-      if (q.next) flush(path);
+    }, function (e) { setStatus(q.status, "error", e && e.code); }).then(function () {
+      q.busy = false; if (q.next) flush(path);
     });
   }
 
-  /* ---------- 1. questions ---------- */
-  var answers = {};
-  function renderQuestions() {
-    var list = $("qlist");
-    QUESTIONS.forEach(function (q) {
+  /* ---------- generic chip question ---------- */
+  function renderChipQuestions(listId, qs, store, path, statusId) {
+    var list = $(listId);
+    qs.forEach(function (q) {
       var c = el("div", "card q");
       c.appendChild(el("h3", null, q.title));
       var chips = el("div", "chips");
       q.opts.forEach(function (o) {
         var b = el("button", "chip" + (o[2] ? " rec" : ""), o[1]);
-        b.type = "button"; b.dataset.q = q.id; b.dataset.v = o[0];
-        b.setAttribute("aria-pressed", "false");
-        b.addEventListener("click", function () {
-          answers[q.id] = o[0];
-          syncQuestionChips();
-          saveDoc("answers/main", answers, "st-answers");
-        });
+        b.type = "button"; b.dataset.q = q.id; b.dataset.v = o[0]; b.setAttribute("aria-pressed", "false");
+        b.addEventListener("click", function () { store.data[q.id] = o[0]; syncChips(listId, store); saveDoc(path, store.data, statusId); });
         chips.appendChild(b);
       });
       c.appendChild(chips);
-      var t = el("textarea"); t.rows = 1; t.id = "note-" + q.id; t.placeholder = "补充（可不填）";
-      t.addEventListener("input", function () {
-        answers[q.id + "_note"] = t.value;
-        saveDoc("answers/main", answers, "st-answers");
-      });
-      c.appendChild(t);
-      list.appendChild(c);
+      var t = el("textarea"); t.rows = 1; t.id = listId + "-note-" + q.id; t.placeholder = "补充（可不填）";
+      t.addEventListener("input", function () { store.data[q.id + "_note"] = t.value; saveDoc(path, store.data, statusId); });
+      c.appendChild(t); list.appendChild(c);
     });
   }
-  function syncQuestionChips() {
-    document.querySelectorAll("#qlist .chip").forEach(function (b) {
-      b.setAttribute("aria-pressed", answers[b.dataset.q] === b.dataset.v ? "true" : "false");
+  function syncChips(listId, store) {
+    document.querySelectorAll("#" + listId + " .chip").forEach(function (b) {
+      b.setAttribute("aria-pressed", store.data[b.dataset.q] === b.dataset.v ? "true" : "false");
     });
   }
-  function hydrateAnswers(d) {
-    answers = Object.assign({}, d); delete answers.at;
-    syncQuestionChips();
-    QUESTIONS.forEach(function (q) {
-      var t = $("note-" + q.id);
-      if (t && document.activeElement !== t) t.value = answers[q.id + "_note"] || "";
+  function hydrateChips(listId, qs, store, d) {
+    store.data = Object.assign({}, d); delete store.data.at;
+    syncChips(listId, store);
+    qs.forEach(function (q) {
+      var t = $(listId + "-note-" + q.id);
+      if (t && document.activeElement !== t) t.value = store.data[q.id + "_note"] || "";
     });
   }
+  var answers = { data: {} }, answers2 = { data: {} };
 
-  /* ---------- 2. understanding ---------- */
-  var understanding = {};
-  function renderUnderstanding() {
-    var list = $("ulist");
-    UNDERSTANDING.forEach(function (u) {
-      var c = el("div", "card u");
-      c.appendChild(el("p", null, u[1]));
+  /* ---------- verdict lists (understanding, video) ---------- */
+  function renderVerdicts(container, items, store, pathOf, statusId, makeBody) {
+    items.forEach(function (it) {
+      var c = makeBody(it);
       var chips = el("div", "chips");
       [["yes", "对"], ["no", "不对"], ["part", "不全"]].forEach(function (o) {
-        var b = el("button", "chip", o[1]);
-        b.type = "button"; b.dataset.u = u[0]; b.dataset.v = o[0];
-        b.setAttribute("aria-pressed", "false");
+        var b = el("button", "chip", o[1]); b.type = "button"; b.dataset.k = it.id; b.dataset.v = o[0]; b.setAttribute("aria-pressed", "false");
         b.addEventListener("click", function () {
-          understanding[u[0]] = Object.assign({}, understanding[u[0]], { v: o[0] });
-          syncUnderstanding();
-          saveDoc("understanding/main", { items: understanding }, "st-understanding");
+          store[it.id] = Object.assign({}, store[it.id], { v: o[0] });
+          syncVerdicts(container, store); saveDoc(pathOf(it.id), store[it.id], statusId);
         });
         chips.appendChild(b);
       });
       c.appendChild(chips);
-      var t = el("textarea"); t.rows = 1; t.id = "unote-" + u[0]; t.placeholder = "不对的话，原版是怎样的？";
-      t.addEventListener("input", function () {
-        understanding[u[0]] = Object.assign({}, understanding[u[0]], { note: t.value });
-        saveDoc("understanding/main", { items: understanding }, "st-understanding");
-      });
-      c.appendChild(t);
-      list.appendChild(c);
-    });
-    var sw = $("swatches");
-    SWATCHES.forEach(function (s) {
-      var d = el("div", "sw");
-      var b = el("b"); b.style.background = s[0];
-      d.appendChild(b);
-      d.appendChild(el("span", null, s[1] + " " + s[0].toUpperCase()));
-      sw.appendChild(d);
+      var t = el("textarea"); t.rows = 1; t.id = container.id + "-n-" + it.id; t.placeholder = "不对或不全的话，原版是怎样的？";
+      t.addEventListener("input", function () { store[it.id] = Object.assign({}, store[it.id], { note: t.value }); saveDoc(pathOf(it.id), store[it.id], statusId); });
+      c.appendChild(t); container.appendChild(c);
     });
   }
-  function syncUnderstanding() {
-    document.querySelectorAll("#ulist .chip").forEach(function (b) {
-      var it = understanding[b.dataset.u];
-      b.setAttribute("aria-pressed", it && it.v === b.dataset.v ? "true" : "false");
+  function syncVerdicts(container, store) {
+    container.querySelectorAll(".chip").forEach(function (b) {
+      var it = store[b.dataset.k]; b.setAttribute("aria-pressed", it && it.v === b.dataset.v ? "true" : "false");
     });
   }
-  function hydrateUnderstanding(d) {
-    understanding = Object.assign({}, d.items || {});
-    syncUnderstanding();
-    UNDERSTANDING.forEach(function (u) {
-      var t = $("unote-" + u[0]);
-      if (t && document.activeElement !== t) t.value = (understanding[u[0]] && understanding[u[0]].note) || "";
+  function fillVerdictNotes(container, store) {
+    Object.keys(store).forEach(function (k) {
+      var t = $(container.id + "-n-" + k); if (t && document.activeElement !== t) t.value = (store[k] && store[k].note) || "";
     });
   }
+  var videoStore = {}, understanding = {};
 
-  /* ---------- 3. demos (canvas) ---------- */
-  var Y = "#e6eb1a", YH = "#fcf800", BLUE = "#33c3ff", SKIN = "#f3d8c2";
+  /* ---------- demo math ---------- */
+  var Y = "#e6eb1a", YH = "#fcf800", BLUE = "#33c3ff", ORANGE = "#f39a1e", LIME = "#9ee82c";
   function clamp(x, a, b) { return x < a ? a : x > b ? b : x; }
   function seg(t, a, b) { return clamp((t - a) / (b - a), 0, 1); }
   function lerp(a, b, k) { return a + (b - a) * k; }
@@ -500,31 +429,31 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       return ((t ^ t >>> 14) >>> 0) / 4294967296;
     };
   }
-  /* hit-stop: freeze animation time for d seconds at b */
   function hs(t, b, d) { return t < b ? t : (t < b + d ? b : t - d); }
+  var IMG = {};
+  function loadImg(key, src) { var i = new Image(); i.onload = function () { render(); }; i.src = src; IMG[key] = i; }
+  function ready(key) { var i = IMG[key]; return i && i.complete && i.naturalWidth > 0; }
 
   function star4(ctx, x, y, r, thin, alpha, color) {
-    ctx.save(); ctx.globalAlpha = alpha; ctx.fillStyle = color || "#fff";
-    ctx.beginPath();
-    for (var i = 0; i < 8; i++) {
-      var a = i * Math.PI / 4 - Math.PI / 2;
-      var rr = i % 2 === 0 ? r : r * thin;
-      ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr);
-    }
+    if (alpha <= 0 || r <= 0) return;
+    ctx.save(); ctx.globalAlpha = alpha; ctx.fillStyle = color || "#fff"; ctx.beginPath();
+    for (var i = 0; i < 8; i++) { var a = i * Math.PI / 4 - Math.PI / 2, rr = i % 2 === 0 ? r : r * thin; ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); }
     ctx.closePath(); ctx.fill(); ctx.restore();
   }
-  function star5(ctx, x, y, r, rot, color) {
-    ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.fillStyle = color;
-    ctx.beginPath();
-    for (var i = 0; i < 10; i++) {
-      var a = i * Math.PI / 5 - Math.PI / 2, rr = i % 2 === 0 ? r : r * 0.45;
-      ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
-    }
+  function star5(ctx, x, y, r, rot, color, stroke) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.fillStyle = color; ctx.beginPath();
+    for (var i = 0; i < 10; i++) { var a = i * Math.PI / 5 - Math.PI / 2, rr = i % 2 === 0 ? r : r * 0.45; ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); }
     ctx.closePath(); ctx.fill();
-    ctx.lineWidth = Math.max(1, r * 0.12); ctx.strokeStyle = "#111"; ctx.stroke();
+    if (stroke) { ctx.lineWidth = Math.max(1, r * 0.12); ctx.strokeStyle = stroke; ctx.stroke(); }
+    ctx.restore();
+  }
+  function flower(ctx, x, y, r, rot, color) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.fillStyle = color;
+    for (var i = 0; i < 6; i++) { ctx.rotate(Math.PI / 3); ctx.beginPath(); ctx.ellipse(0, -r * 0.55, r * 0.22, r * 0.5, 0, 0, Math.PI * 2); ctx.fill(); }
     ctx.restore();
   }
   function ray(ctx, x, y, ang, len, w, alpha) {
+    if (alpha <= 0) return;
     ctx.save(); ctx.translate(x, y); ctx.rotate(ang); ctx.globalAlpha = alpha;
     var g = ctx.createLinearGradient(-len, 0, len, 0);
     g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(0.5, "rgba(255,255,255,1)"); g.addColorStop(1, "rgba(255,255,255,0)");
@@ -537,118 +466,80 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
     ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath();
   }
-  /* shards with damped motion evaluated analytically, so scrubbing is exact */
-  function makeShards(seed, n, opts) {
+  function crtPath(ctx, w, h) {
+    var b = Math.min(w, h) * 0.06, r = Math.min(w, h) * 0.16, hw = w / 2, hh = h / 2;
+    ctx.beginPath();
+    ctx.moveTo(-hw + r, -hh); ctx.quadraticCurveTo(0, -hh - b, hw - r, -hh);
+    ctx.quadraticCurveTo(hw, -hh, hw, -hh + r); ctx.quadraticCurveTo(hw + b, 0, hw, hh - r);
+    ctx.quadraticCurveTo(hw, hh, hw - r, hh); ctx.quadraticCurveTo(0, hh + b, -hw + r, hh);
+    ctx.quadraticCurveTo(-hw, hh, -hw, hh - r); ctx.quadraticCurveTo(-hw - b, 0, -hw, -hh + r);
+    ctx.quadraticCurveTo(-hw, -hh, -hw + r, -hh); ctx.closePath();
+  }
+  function makeShards(seed, n, o) {
     var r = rng(seed), out = [];
     for (var i = 0; i < n; i++) {
-      var a = (opts.dir != null ? opts.dir + (r() - 0.5) * opts.spread : r() * Math.PI * 2);
-      var sp = lerp(opts.vmin, opts.vmax, r());
+      var a = (o.dir != null ? o.dir + (r() - 0.5) * o.spread : r() * Math.PI * 2), sp = lerp(o.vmin, o.vmax, r());
       var verts = [], k = 3 + Math.floor(r() * 3);
-      for (var j = 0; j < k; j++) {
-        var aa = (j / k) * Math.PI * 2 + (r() - 0.5) * 0.9;
-        verts.push([Math.cos(aa) * lerp(0.55, 1, r()), Math.sin(aa) * lerp(0.55, 1, r())]);
-      }
-      out.push({ vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, size: lerp(opts.smin, opts.smax, r()),
-        rot: r() * 6.28, w: (r() - 0.5) * 14, verts: verts, hot: r() < 0.25 });
+      for (var j = 0; j < k; j++) { var aa = (j / k) * Math.PI * 2 + (r() - 0.5) * 0.9; verts.push([Math.cos(aa) * lerp(0.55, 1, r()), Math.sin(aa) * lerp(0.55, 1, r())]); }
+      out.push({ vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, size: lerp(o.smin, o.smax, r()), rot: r() * 6.28, w: (r() - 0.5) * 14, verts: verts, hot: r() < 0.22 });
     }
     return out;
   }
-  function shardPos(s, t, k, g) {
-    var e = Math.exp(-k * t);
-    return [s.vx / k * (1 - e), s.vy / k * (1 - e) + g / k * (t - (1 - e) / k)];
+  function shardPos(s, t, k, g) { var e = Math.exp(-k * t); return [s.vx / k * (1 - e), s.vy / k * (1 - e) + g / k * (t - (1 - e) / k)]; }
+  function drawShard(ctx, x, y, s, t, color, alpha) {
+    if (alpha <= 0) return;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(s.rot + s.w * (1 - Math.exp(-2 * t)) / 2); ctx.globalAlpha = alpha; ctx.beginPath();
+    s.verts.forEach(function (v, i) { var px = v[0] * s.size, py = v[1] * s.size; if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py); });
+    ctx.closePath(); ctx.fillStyle = s.hot ? YH : color; ctx.fill(); ctx.restore();
   }
-  function drawShard(ctx, x, y, s, t, scale, color, alpha) {
-    ctx.save(); ctx.translate(x, y); ctx.rotate(s.rot + s.w * (1 - Math.exp(-2 * t)) / 2);
-    ctx.globalAlpha = alpha;
-    ctx.beginPath();
-    s.verts.forEach(function (v, i) { var px = v[0] * s.size * scale, py = v[1] * s.size * scale; if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py); });
-    ctx.closePath();
-    ctx.fillStyle = s.hot ? YH : color; ctx.fill();
-    ctx.restore();
-  }
-  function iris(ctx, W, H, cx, cy, r, color) {
-    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, H);
-    ctx.moveTo(cx + Math.max(r, 0), cy); ctx.arc(cx, cy, Math.max(r, 0), 0, Math.PI * 2, true);
-    ctx.fillStyle = color; ctx.fill("evenodd");
-    if (r > 2) { ctx.lineWidth = Math.max(2, r * 0.02); ctx.strokeStyle = "rgba(0,0,0,0.55)"; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke(); }
-    ctx.restore();
-  }
-  function flames(ctx, W, H, t, x0, y0, width, height, seed, alpha) {
+  function flames(ctx, t, x0, y0, width, height, seed, alpha) {
+    if (alpha <= 0) return;
     var r = rng(seed);
     ctx.save(); ctx.globalCompositeOperation = "lighter";
     for (var i = 0; i < 46; i++) {
       var ph = r(), xo = (r() - 0.5) * width, sp = lerp(0.7, 1.4, r()), sz = lerp(0.5, 1, r());
-      var age = (t * sp + ph) % 1;
-      var x = x0 + xo + Math.sin((age * 4 + ph * 9)) * width * 0.05;
-      var y = y0 - age * height;
-      var s = (1 - age) * height * 0.22 * sz;
+      var age = (t * sp + ph) % 1, x = x0 + xo + Math.sin(age * 4 + ph * 9) * width * 0.05, y = y0 - age * height, s = (1 - age) * height * 0.22 * sz;
       ctx.globalAlpha = alpha * Math.sin(age * Math.PI) * 0.55;
       var g = ctx.createRadialGradient(x, y, 0, x, y, s);
       g.addColorStop(0, "rgba(190,240,255,1)"); g.addColorStop(0.4, "rgba(51,160,255,0.9)"); g.addColorStop(1, "rgba(10,40,140,0)");
-      ctx.fillStyle = g;
-      ctx.beginPath(); ctx.ellipse(x, y, s * 0.55, s, 0, 0, Math.PI * 2); ctx.fill();
-    }
-    ctx.restore();
-  }
-  /* placeholder hand: palm toward camera, yellow outer outline like P4R cut-ins */
-  function hand(ctx, x, y, s, close, rot) {
-    var fingers = [[-0.36, 0.92, -0.2], [-0.12, 1.06, -0.06], [0.12, 1.0, 0.06], [0.35, 0.8, 0.2]];
-    function parts(pass) {
-      ctx.beginPath(); roundRect(ctx, -0.5 * s, -0.05 * s, s, 0.82 * s, 0.22 * s);
-      pass();
-      fingers.forEach(function (f) {
-        var len = f[1] * s * (1 - 0.62 * close), wv = 0.2 * s;
-        ctx.save(); ctx.translate(f[0] * s, 0.02 * s); ctx.rotate(f[2] * (1 - close));
-        ctx.beginPath(); roundRect(ctx, -wv / 2, -len, wv, len + 0.1 * s, wv / 2);
-        pass(); ctx.restore();
-      });
-      ctx.save(); ctx.translate(-0.48 * s, 0.38 * s); ctx.rotate(-1.0 + 0.55 * close);
-      var tl = 0.66 * s * (1 - 0.35 * close), tw = 0.24 * s;
-      ctx.beginPath(); roundRect(ctx, -tw / 2, -tl, tw, tl + 0.1 * s, tw / 2);
-      pass(); ctx.restore();
-    }
-    ctx.save(); ctx.translate(x, y); ctx.rotate(rot || 0);
-    ctx.lineJoin = "round";
-    parts(function () { ctx.lineWidth = s * 0.16; ctx.strokeStyle = Y; ctx.stroke(); });
-    parts(function () { ctx.fillStyle = SKIN; ctx.fill(); });
-    if (close > 0.5) {
-      ctx.strokeStyle = "rgba(90,50,40,0.45)"; ctx.lineWidth = s * 0.02;
-      for (var i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo((-0.3 + i * 0.22) * s, -0.3 * s); ctx.lineTo((-0.3 + i * 0.22) * s, -0.05 * s); ctx.stroke(); }
+      ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(x, y, s * 0.55, s, 0, 0, Math.PI * 2); ctx.fill();
     }
     ctx.restore();
   }
   function stageBg(ctx, W, H, tint) {
-    var g = ctx.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, tint || "#0b1024"); g.addColorStop(1, "#04050b");
+    var g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, tint || "#0b1024"); g.addColorStop(1, "#04050b");
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   }
-  /* P4R-like battle floor: black/white checker with a red carpet */
-  function battleFloor(ctx, W, H) {
-    stageBg(ctx, W, H, "#141018");
+  function battleFloor(ctx, W, H, gray) {
+    stageBg(ctx, W, H, gray ? "#1a1a1c" : "#141018");
     var hy = H * 0.42;
     function P(u, v) { var vv = Math.pow(v, 1.35); return [W / 2 + (u - 0.5) * W * (0.5 + 2.2 * vv), hy + (H - hy) * vv]; }
-    var rows = 9, cols = 12;
-    for (var i = 0; i < rows; i++) for (var j = 0; j < cols; j++) {
-      var a = P(j / cols, i / rows), b = P((j + 1) / cols, i / rows), c = P((j + 1) / cols, (i + 1) / rows), d = P(j / cols, (i + 1) / rows);
+    for (var i = 0; i < 9; i++) for (var j = 0; j < 12; j++) {
+      var a = P(j / 12, i / 9), b = P((j + 1) / 12, i / 9), c = P((j + 1) / 12, (i + 1) / 9), d = P(j / 12, (i + 1) / 9);
       ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.lineTo(c[0], c[1]); ctx.lineTo(d[0], d[1]); ctx.closePath();
       ctx.fillStyle = (i + j) % 2 ? "#2a2a2e" : "#8d8c88"; ctx.fill();
     }
     var c1 = P(0.5, 0.22), c2 = P(0.78, 0.55), c3 = P(0.5, 0.92), c4 = P(0.22, 0.55);
     ctx.beginPath(); ctx.moveTo(c1[0], c1[1]); ctx.lineTo(c2[0], c2[1]); ctx.lineTo(c3[0], c3[1]); ctx.lineTo(c4[0], c4[1]); ctx.closePath();
-    ctx.fillStyle = "#7a1a1f"; ctx.fill();
+    ctx.fillStyle = gray ? "#3d3d40" : "#7a1a1f"; ctx.fill();
     var vg = ctx.createRadialGradient(W / 2, H * 0.55, H * 0.2, W / 2, H * 0.55, H * 0.95);
     vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,0.65)");
     ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
   }
-  function figure(ctx, x, y, h, outline) {
+  /* Yu placeholder: dark body, yellow rim only along the back (left) edge */
+  function figure(ctx, x, y, h, rim) {
     ctx.save(); ctx.translate(x, y);
-    ctx.beginPath();
-    ctx.moveTo(-0.09 * h, -0.86 * h); ctx.lineTo(0.09 * h, -0.86 * h); ctx.lineTo(0.15 * h, -0.45 * h);
-    ctx.lineTo(0.12 * h, 0); ctx.lineTo(-0.12 * h, 0); ctx.lineTo(-0.15 * h, -0.45 * h); ctx.closePath();
-    ctx.lineJoin = "round"; ctx.lineWidth = h * 0.03; ctx.strokeStyle = outline; ctx.stroke();
-    ctx.fillStyle = "#15151a"; ctx.fill();
-    ctx.beginPath(); ctx.arc(0, -0.93 * h, 0.075 * h, 0, Math.PI * 2);
-    ctx.stroke(); ctx.fillStyle = "#b9b4ab"; ctx.fill();
+    function body() {
+      ctx.beginPath();
+      ctx.moveTo(-0.09 * h, -0.86 * h); ctx.lineTo(0.09 * h, -0.86 * h); ctx.lineTo(0.15 * h, -0.45 * h);
+      ctx.lineTo(0.12 * h, 0); ctx.lineTo(-0.12 * h, 0); ctx.lineTo(-0.15 * h, -0.45 * h); ctx.closePath();
+      ctx.moveTo(0.075 * h, -0.93 * h); ctx.arc(0, -0.93 * h, 0.075 * h, 0, Math.PI * 2);
+    }
+    if (rim) {
+      ctx.save(); ctx.beginPath(); ctx.rect(-h, -h * 1.1, h * 0.94, h * 1.2); ctx.clip();
+      body(); ctx.lineJoin = "round"; ctx.lineWidth = h * 0.028; ctx.strokeStyle = rim; ctx.stroke(); ctx.restore();
+    }
+    body(); ctx.fillStyle = "#15151a"; ctx.fill();
     ctx.restore();
   }
   function enemy(ctx, x, y, s, wob) {
@@ -663,348 +554,499 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   function stsCard(ctx, w, h, kind) {
     roundRect(ctx, -w / 2, -h / 2, w, h, w * 0.08);
     ctx.fillStyle = "#2b2420"; ctx.fill(); ctx.lineWidth = w * 0.05; ctx.strokeStyle = "#cdb88c"; ctx.stroke();
-    var art = kind === 0 ? "#b33b2e" : kind === 1 ? "#2f6fb3" : "#7a4bb3";
-    ctx.fillStyle = art; ctx.fillRect(-w * 0.38, -h * 0.36, w * 0.76, h * 0.38);
+    ctx.fillStyle = kind === 0 ? "#b33b2e" : kind === 1 ? "#2f6fb3" : "#7a4bb3"; ctx.fillRect(-w * 0.38, -h * 0.36, w * 0.76, h * 0.38);
     ctx.fillStyle = "#e9e2d0"; ctx.fillRect(-w * 0.34, h * 0.1, w * 0.68, h * 0.05); ctx.fillRect(-w * 0.3, h * 0.2, w * 0.6, h * 0.04);
     ctx.beginPath(); ctx.arc(-w * 0.38, -h * 0.42, w * 0.13, 0, Math.PI * 2); ctx.fillStyle = "#c2392b"; ctx.fill();
   }
-  function yellowCard(ctx, w, h) {
-    roundRect(ctx, -w / 2, -h / 2, w, h, w * 0.05);
-    ctx.fillStyle = Y; ctx.fill();
-  }
+  function yellowCard(ctx, w, h) { roundRect(ctx, -w / 2, -h / 2, w, h, w * 0.05); ctx.fillStyle = Y; ctx.fill(); }
   function damageBadge(ctx, x, y, n, k, alpha) {
+    if (alpha <= 0) return;
     var sc = k < 1 ? eBack(k) : 1;
     ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc); ctx.globalAlpha = alpha;
     var w = 70, h = 40;
-    roundRect(ctx, -w / 2, -h / 2, w, h, h / 2); ctx.fillStyle = YH; ctx.fill();
-    ctx.lineWidth = 3; ctx.strokeStyle = "#111"; ctx.stroke();
-    ctx.strokeStyle = "#111"; ctx.lineWidth = 4;
+    roundRect(ctx, -w / 2, -h / 2, w, h, h / 2); ctx.fillStyle = YH; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = "#111"; ctx.stroke();
+    ctx.lineWidth = 4;
     [1, 2].forEach(function (i) {
-      ctx.beginPath(); ctx.arc(-w / 2 - 2 + 0, 0, h * 0.4 + i * 9, Math.PI * 0.72, Math.PI * 1.28); ctx.stroke();
+      ctx.beginPath(); ctx.arc(-w / 2 - 2, 0, h * 0.4 + i * 9, Math.PI * 0.72, Math.PI * 1.28); ctx.stroke();
       ctx.beginPath(); ctx.arc(w / 2 + 2, 0, h * 0.4 + i * 9, -Math.PI * 0.28, Math.PI * 0.28); ctx.stroke();
     });
     ctx.fillStyle = "#111"; ctx.font = "26px 'Archivo Black', sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillText(String(n), 0, 2);
-    ctx.restore();
+    ctx.fillText(String(n), 0, 2); ctx.restore();
   }
-  function crtFrame(ctx, x, y, w, h, tilt, scale, color) {
-    ctx.save(); ctx.translate(x, y); ctx.rotate(tilt); ctx.scale(scale, scale);
-    var b = Math.min(w, h) * 0.06, r = Math.min(w, h) * 0.16, hw = w / 2, hh = h / 2;
-    ctx.beginPath();
-    ctx.moveTo(-hw + r, -hh); ctx.quadraticCurveTo(0, -hh - b, hw - r, -hh);
-    ctx.quadraticCurveTo(hw, -hh, hw, -hh + r); ctx.quadraticCurveTo(hw + b, 0, hw, hh - r);
-    ctx.quadraticCurveTo(hw, hh, hw - r, hh); ctx.quadraticCurveTo(0, hh + b, -hw + r, hh);
-    ctx.quadraticCurveTo(-hw, hh, -hw, hh - r); ctx.quadraticCurveTo(-hw - b, 0, -hw, -hh + r);
-    ctx.quadraticCurveTo(-hw, -hh, -hw + r, -hh); ctx.closePath();
-    ctx.lineJoin = "round";
-    ctx.lineWidth = 16; ctx.strokeStyle = "#111"; ctx.stroke();
-    ctx.lineWidth = 10; ctx.strokeStyle = color; ctx.stroke();
+  /* lock-on frame: yellow CRT frame with thin red and green lines inside (P4R battle frame) */
+  function crtFrame(ctx, x, y, w, h, tilt, scale) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(tilt); ctx.scale(scale, scale); ctx.lineJoin = "round";
+    crtPath(ctx, w, h); ctx.lineWidth = 15; ctx.strokeStyle = "#111"; ctx.stroke();
+    ctx.lineWidth = 10; ctx.strokeStyle = Y; ctx.stroke();
+    crtPath(ctx, w - 26, h - 26); ctx.lineWidth = 2.5; ctx.strokeStyle = "#ff3b5c"; ctx.stroke();
+    crtPath(ctx, w - 36, h - 36); ctx.lineWidth = 2.5; ctx.strokeStyle = LIME; ctx.stroke();
     ctx.restore();
   }
   function slashArc(ctx, x, y, R, a0, sweep, p, alpha) {
-    if (p <= 0) return;
+    if (p <= 0 || alpha <= 0) return;
     ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = alpha;
-    var steps = 18;
-    for (var i = 0; i < steps; i++) {
-      var k0 = i / steps, k1 = (i + 1) / steps;
-      if (k0 > p) break;
+    for (var i = 0; i < 18; i++) {
+      var k0 = i / 18, k1 = (i + 1) / 18; if (k0 > p) break;
       var w = Math.sin(Math.PI * k0) * R * 0.16 + 1;
       ctx.beginPath(); ctx.arc(x, y, R, a0 + sweep * k0, a0 + sweep * Math.min(k1, p));
-      ctx.lineWidth = w; ctx.strokeStyle = BLUE; ctx.stroke();
-      ctx.lineWidth = w * 0.35; ctx.strokeStyle = "#ffffff"; ctx.stroke();
+      ctx.lineWidth = w; ctx.strokeStyle = BLUE; ctx.stroke(); ctx.lineWidth = w * 0.35; ctx.strokeStyle = "#ffffff"; ctx.stroke();
     }
     ctx.restore();
   }
+  /* orderly solid rings, the P3 mod's ripple idea in P4 colors */
+  function ring(ctx, x, y, r, w, color, alpha) {
+    if (alpha <= 0 || r <= 0 || w <= 0) return;
+    ctx.save(); ctx.globalAlpha = alpha; ctx.lineWidth = w; ctx.strokeStyle = color;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+  }
 
+  /* hand geometry shared by the placeholder hands */
+  var FINGERS = [[-0.36, 0.92, -0.2], [-0.12, 1.06, -0.06], [0.12, 1.0, 0.06], [0.35, 0.8, 0.2]];
+  function handParts(ctx, s, close, fill) {
+    roundRect(ctx, -0.5 * s, -0.05 * s, s, 0.82 * s, 0.22 * s); fill();
+    FINGERS.forEach(function (f) {
+      var len = f[1] * s * (1 - 0.62 * close), wv = 0.2 * s;
+      ctx.save(); ctx.translate(f[0] * s, 0.02 * s); ctx.rotate(f[2] * (1 - close));
+      roundRect(ctx, -wv / 2, -len, wv, len + 0.1 * s, wv / 2); fill(); ctx.restore();
+    });
+    ctx.save(); ctx.translate(-0.48 * s, 0.38 * s); ctx.rotate(-1.0 + 0.55 * close);
+    var tl = 0.66 * s * (1 - 0.35 * close), tw = 0.24 * s;
+    roundRect(ctx, -tw / 2, -tl, tw, tl + 0.1 * s, tw / 2); fill(); ctx.restore();
+  }
+  /* a hand made of light: no outline, glow instead of edges, arm fading back into the TV */
+  var off = null, offCtx = null;
+  function offscreen(w, h) {
+    if (!off) { off = document.createElement("canvas"); offCtx = off.getContext("2d"); }
+    if (off.width !== w || off.height !== h) { off.width = w; off.height = h; }
+    offCtx.setTransform(1, 0, 0, 1, 0, 0); offCtx.clearRect(0, 0, w, h);
+    return offCtx;
+  }
+  function lightHand(ctx, W, H, x, y, s, close, rot, alpha, tv) {
+    if (alpha <= 0) return;
+    var o = offscreen(canvas.width, canvas.height);
+    o.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var wx = x, wy = y + 0.78 * s;
+    var gArm = o.createLinearGradient(tv[0], tv[1], wx, wy);
+    gArm.addColorStop(0, "rgba(255,250,215,0)"); gArm.addColorStop(0.55, "rgba(255,250,215,0.55)"); gArm.addColorStop(1, "rgba(255,250,215,1)");
+    var dx = wx - tv[0], dy = wy - tv[1], L = Math.hypot(dx, dy) || 1, nx = -dy / L, ny = dx / L;
+    o.beginPath();
+    o.moveTo(tv[0] + nx * s * 0.04, tv[1] + ny * s * 0.04); o.lineTo(wx + nx * s * 0.27, wy + ny * s * 0.27);
+    o.lineTo(wx - nx * s * 0.27, wy - ny * s * 0.27); o.lineTo(tv[0] - nx * s * 0.04, tv[1] - ny * s * 0.04); o.closePath();
+    o.fillStyle = gArm; o.fill();
+    o.save(); o.translate(x, y); o.rotate(rot || 0);
+    var g = o.createLinearGradient(0, -s, 0, s * 0.8);
+    g.addColorStop(0, "#fffef2"); g.addColorStop(0.6, "#fff6c8"); g.addColorStop(1, "#ffe98a");
+    o.fillStyle = g;
+    handParts(o, s, close, function () { o.fill(); });
+    o.restore();
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = alpha * 0.9; ctx.globalCompositeOperation = "lighter";
+    ctx.shadowColor = "rgba(255,226,90,0.95)"; ctx.shadowBlur = s * dpr * 0.45;
+    ctx.drawImage(off, 0, 0);
+    ctx.shadowBlur = s * dpr * 0.12; ctx.globalAlpha = alpha * 0.55; ctx.drawImage(off, 0, 0);
+    ctx.restore();
+  }
+  /* background TV: grey screen, static, a glowing yellow core, ripples where the arm comes through */
+  function stageTV(ctx, W, H, t, cx, cy, w, h, glow, ripple0) {
+    ctx.save(); ctx.translate(cx, cy);
+    crtPath(ctx, w + 22, h + 22); ctx.fillStyle = "#1c1c20"; ctx.fill();
+    crtPath(ctx, w + 22, h + 22); ctx.lineWidth = 3; ctx.strokeStyle = Y; ctx.stroke();
+    crtPath(ctx, w, h); ctx.save(); ctx.clip();
+    var g = ctx.createRadialGradient(0, 0, 0, 0, 0, w * 0.7); g.addColorStop(0, "#6a6a6e"); g.addColorStop(1, "#2a2a2e");
+    ctx.fillStyle = g; ctx.fillRect(-w, -h, w * 2, h * 2);
+    for (var k = 1; k <= 4; k++) { crtPath(ctx, w * (1 - k * 0.2), h * (1 - k * 0.2)); ctx.lineWidth = 2; ctx.strokeStyle = "rgba(255,255,255," + (0.05 + k * 0.03) + ")"; ctx.stroke(); }
+    var r = rng(Math.floor(t * 30) + 7);
+    for (var i = 0; i < 90; i++) { ctx.fillStyle = "rgba(255,255,255," + (r() * 0.18) + ")"; ctx.fillRect((r() - 0.5) * w, (r() - 0.5) * h, r() * 5 + 1, 1.5); }
+    for (var sl = -h / 2; sl < h / 2; sl += 4) { ctx.fillStyle = "rgba(0,0,0,0.12)"; ctx.fillRect(-w / 2, sl, w, 1.5); }
+    if (glow > 0) {
+      ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = glow;
+      var gg = ctx.createRadialGradient(0, 0, 0, 0, 0, h * 0.5); gg.addColorStop(0, "rgba(255,245,120,1)"); gg.addColorStop(1, "rgba(255,220,40,0)");
+      ctx.fillStyle = gg; ctx.fillRect(-w, -h, w * 2, h * 2);
+      ctx.restore();
+      ctx.save(); ctx.globalAlpha = glow; roundRect(ctx, -w * 0.09, -h * 0.08, w * 0.18, h * 0.16, 4); ctx.fillStyle = YH; ctx.fill(); ctx.restore();
+    }
+    if (ripple0 != null && t > ripple0) {
+      for (var j = 0; j < 4; j++) {
+        var rt = t - ripple0 - j * 0.14; if (rt <= 0) continue;
+        var rr = rt * h * 0.9, a = Math.max(0, 0.7 - rt * 0.9);
+        ctx.beginPath(); ctx.ellipse(0, 0, rr * 1.4, rr * 0.8, 0, 0, Math.PI * 2);
+        ctx.lineWidth = 3; ctx.strokeStyle = "rgba(255,248,190," + a + ")"; ctx.stroke();
+      }
+    }
+    ctx.restore(); ctx.restore();
+  }
+  /* the yellow rhombus: window → page flip → card */
+  function quad(ctx, pts) { ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); for (var i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]); ctx.closePath(); }
+  function shrinkPoly(pts, k) {
+    var cx = 0, cy = 0; pts.forEach(function (p) { cx += p[0]; cy += p[1]; }); cx /= pts.length; cy /= pts.length;
+    return pts.map(function (p) { return [cx + (p[0] - cx) * k, cy + (p[1] - cy) * k]; });
+  }
+
+  /* ---------- demos ---------- */
   var DEMOS = [
-    { id: "crush", name: "捏碎（特写版）", dur: 2.6,
-      desc: "照 P4R 的召唤特写：黄色面板扫过画面、切进特写 → 掌心上方出现黄卡（星芒、细光线）→ 握拳 → 十字星芒 + 黄色碎片炸开（顿帧）→ 黄色圆环收拢到拳头 → 圆环张开，蓝焰里伊邪那岐出现。手和伊邪那岐都是占位图形。",
+    { id: "crush2", name: "捏碎 v2（电视里伸出手）", dur: 3.3, start: 0.62,
+      desc: "照你的思路：黄菱形出现、往左放大到半屏，里面是悠的眼睛（从闭到睁）→ 菱形以右边为轴翻页，一路缩小落到手上变成卡 → 背景舞台大屏里伸出一只光做的手，屏幕表面起涟漪 → 卡在掌心上方转 → 握拳：中心白光、细长光线交叉、纯黄碎片往外炸、白色和黄色实心圆环一圈圈扩散 → 手退回电视，伊邪那岐在蓝焰里出现。这里的手只是平面占位；游戏里用最新版毒性爆发同款的着色器立体手（近大远小、边缘融掉、没有描边），材质换成 P4 的。",
       draw: function (ctx, W, H, tr) {
-        var BEAT = 0.92, t = hs(tr, BEAT, 0.08);
-        var shake = tr > BEAT && tr < BEAT + 0.16 ? (1 - (tr - BEAT) / 0.16) * H * 0.012 : 0;
+        var BEAT = 1.85, t = hs(tr, BEAT, 0.08);
+        var shake = tr > BEAT && tr < BEAT + 0.16 ? (1 - (tr - BEAT) / 0.16) * H * 0.01 : 0;
         ctx.save(); if (shake) ctx.translate(Math.sin(tr * 90) * shake, Math.cos(tr * 77) * shake);
-        stageBg(ctx, W, H);
-        flames(ctx, W, H, tr, W * 0.5, H * 1.05, W * 0.9, H * 0.45, 7, 0.8);
-        var hx = W * 0.6, hy = lerp(H * 1.25, H * 0.72, eOut(seg(t, 0.12, 0.42))), hsz = H * 0.3;
-        var close = eInOut(seg(t, 0.8, 0.92));
-        var fx = hx, fy = hy - hsz * 0.25;
-        var ck = seg(t, 0.4, 0.55);
-        if (t < 0.92 && ck > 0) {
-          var cs = eBack(ck) * (1 - 0.7 * close);
-          var cy = lerp(hy - hsz * 1.25, fy, close);
-          ctx.save(); ctx.translate(hx, cy + Math.sin(t * 6) * H * 0.006); ctx.rotate(-0.17); ctx.scale(cs, cs * (1 - 0.5 * close));
-          yellowCard(ctx, H * 0.24, H * 0.36); ctx.restore();
-          var gl = seg(t, 0.45, 0.75);
-          if (gl > 0 && gl < 1) {
-            var ga = Math.sin(gl * Math.PI);
-            star4(ctx, hx + H * 0.08, cy - H * 0.14, H * 0.07, 0.16, ga);
-            ray(ctx, hx + H * 0.08, cy - H * 0.14, -0.35, W * 0.45, 2, ga * 0.9);
-            ray(ctx, hx + H * 0.08, cy - H * 0.14, 1.2, W * 0.3, 1.5, ga * 0.7);
-            ctx.save(); ctx.globalAlpha = ga * 0.8; ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
-            ctx.beginPath(); ctx.arc(hx, cy, H * (0.1 + 0.22 * gl), 0, Math.PI * 2); ctx.stroke(); ctx.restore();
-          }
-        }
-        hand(ctx, hx, hy, hsz, close, -0.08);
-        /* yellow panel sweeps right → left: battle scene on its left, the cut-in on its right */
-        var wk = eInOut(seg(t, 0, 0.3));
-        if (wk < 1) {
-          var Lx = lerp(W * 1.05, -W * 1.35, wk), PW = W * 0.95, skw = H * 0.35;
-          ctx.save(); ctx.beginPath();
-          ctx.moveTo(-20, -20); ctx.lineTo(Lx + skw, -20); ctx.lineTo(Lx, H + 20); ctx.lineTo(-20, H + 20); ctx.closePath(); ctx.clip();
-          battleFloor(ctx, W, H); figure(ctx, W * 0.22, H * 0.92, H * 0.38, Y);
-          ctx.restore();
-          ctx.save(); ctx.fillStyle = Y; ctx.beginPath();
-          ctx.moveTo(Lx + skw, -20); ctx.lineTo(Lx + skw + PW, -20); ctx.lineTo(Lx + PW, H + 20); ctx.lineTo(Lx, H + 20); ctx.closePath(); ctx.fill();
-          ctx.lineWidth = 6; ctx.strokeStyle = "#111"; ctx.stroke(); ctx.restore();
-        }
-        if (tr >= BEAT) {
-          var lt = tr - BEAT;
-          if (lt < 0.14) { ctx.save(); ctx.globalAlpha = (1 - lt / 0.14) * 0.7; ctx.fillStyle = "#fff"; ctx.fillRect(-20, -20, W + 40, H + 40); ctx.restore(); }
-          var sk = 1 - seg(lt, 0, 0.3);
-          if (sk > 0) {
-            star4(ctx, fx, fy, H * 0.45 * (0.6 + 0.4 * eOut(seg(lt, 0, 0.06))), 0.05, sk);
-            ray(ctx, fx, fy, -0.5, W * 0.6, 3, sk); ray(ctx, fx, fy, 0.9, W * 0.5, 2, sk * 0.8);
-          }
-          var sh = makeShards(11, 38, { vmin: H * 0.9, vmax: H * 2.6, smin: H * 0.012, smax: H * 0.05 });
-          var st = Math.max(0, t - BEAT);
-          sh.forEach(function (s) {
-            var p = shardPos(s, st, 2.6, H * 0.5);
-            drawShard(ctx, fx + p[0], fy + p[1], s, st, 1, Y, 1 - seg(st, 0.7, 1.1));
-          });
-        }
-        var ir = seg(t, 1.02, 1.36);
-        if (ir > 0) {
-          var diag = Math.hypot(W, H);
-          var open = seg(t, 1.5, 1.85);
-          if (open <= 0) iris(ctx, W, H, fx, fy, lerp(diag, 0, eIn(ir)), Y);
-        }
-        ctx.restore();
-        var op = seg(t, 1.5, 1.85);
-        if (op > 0) {
-          ctx.save();
-          ctx.beginPath(); ctx.arc(W * 0.5, H * 0.55, Math.hypot(W, H) * eOut(op), 0, Math.PI * 2); ctx.clip();
-          battleFloor(ctx, W, H);
-          var rise = eOut(seg(t, 1.6, 2.2));
-          flames(ctx, W, H, tr, W * 0.32, H * 0.92, W * 0.22, H * 0.7, 3, 1);
-          ctx.save(); ctx.globalAlpha = rise;
-          ctx.translate(0, (1 - rise) * H * 0.12);
-          ctx.save(); ctx.shadowColor = BLUE; ctx.shadowBlur = 24; figure(ctx, W * 0.32, H * 0.9, H * 0.66, "#7fd8ff"); ctx.restore();
-          ctx.restore();
-          figure(ctx, W * 0.22, H * 0.92, H * 0.38, Y);
-          ctx.restore();
-          if (op < 1) iris(ctx, W, H, W * 0.5, H * 0.55, Math.hypot(W, H) * eOut(op), Y);
-        }
-      } },
-    { id: "fiend", name: "恶魔之焰（手牌联动）", dur: 3.4,
-      desc: "大烧牌的完整版：手牌真的飞到悠的掌心上方排成扇形，翻成黄卡，一握全碎（顿帧）；碎片分成几股变成蓝色刀光，一张牌一刀，伤害数字一个个弹出来。",
-      draw: function (ctx, W, H, tr) {
-        var BEAT = 1.25, t = hs(tr, BEAT, 0.08);
-        var shake = 0;
-        if (tr > BEAT && tr < BEAT + 0.16) shake = (1 - (tr - BEAT) / 0.16) * H * 0.01;
-        ctx.save(); if (shake) ctx.translate(Math.sin(tr * 90) * shake, Math.cos(tr * 70) * shake);
         battleFloor(ctx, W, H);
-        var yx = W * 0.24, yy = H * 0.86, palm = [W * 0.27, H * 0.3];
-        figure(ctx, yx, yy, H * 0.5, Y);
-        var ex = W * 0.74, ey = H * 0.6;
-        enemy(ctx, ex, ey, H * 0.13, Math.sin(tr * 3));
-        var N = 5, cw = W * 0.075, ch = cw * 1.38;
-        var hk = eOut(seg(t, 0.85, 1.1));
-        if (t > 0.6) { star4(ctx, palm[0], palm[1] + H * 0.08, H * 0.03 * (1 - seg(t, 1.25, 1.4)), 0.3, 0.9, Y); }
-        for (var i = 0; i < N; i++) {
-          var hxp = W * 0.5 + (i - 2) * cw * 0.8, hyp = H * 0.98, ha = (i - 2) * 0.12;
-          var fa = (i - 2) * 0.33, fr = H * 0.16;
-          var fxp = palm[0] + Math.sin(fa) * fr, fyp = palm[1] - Math.cos(fa) * fr * 0.6;
-          var mk = eInOut(seg(t, 0.25 + i * 0.06, 0.65 + i * 0.06));
-          if (t >= BEAT) break;
-          var mx = lerp(hxp, fxp, mk), my = lerp(hyp, fyp, mk) - Math.sin(mk * Math.PI) * H * 0.18;
-          var ang = lerp(ha, fa, mk), sc = lerp(1, 0.72, mk);
-          var flip = seg(t, 0.5 + i * 0.06, 0.66 + i * 0.06);
-          var sx = Math.abs(Math.cos(flip * Math.PI));
-          ctx.save(); ctx.translate(mx, my + Math.sin(t * 30 + i) * H * 0.003 * hk); ctx.rotate(ang); ctx.scale(sc * Math.max(sx, 0.04), sc);
-          if (flip < 0.5) stsCard(ctx, cw, ch, i % 3); else yellowCard(ctx, cw, ch);
-          ctx.restore();
+        ctx.save(); ctx.globalAlpha = 0.45 * eOut(seg(t, 0, 0.3)) * (1 - seg(t, 2.6, 3.0)); ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H); ctx.restore();
+        var tvx = W * 0.6, tvy = H * 0.27, tvw = W * 0.3, tvh = H * 0.36;
+        var glow = seg(t, 0.55, 0.85) * (1 - seg(t, 2.3, 2.7));
+        stageTV(ctx, W, H, tr, tvx, tvy, tvw, tvh, glow * 0.8, 0.95);
+        figure(ctx, W * 0.17, H * 0.92, H * 0.42, Y);
+        flames(ctx, tr, W * 0.17, H * 0.96, W * 0.12, H * 0.5, 3, seg(t, 2.25, 2.5) * (1 - seg(t, 3.0, 3.3)));
+        var izA = eOut(seg(t, 2.35, 2.8));
+        if (izA > 0) { ctx.save(); ctx.globalAlpha = izA; ctx.shadowColor = BLUE; ctx.shadowBlur = 24; figure(ctx, W * 0.27, H * 0.9 + (1 - izA) * H * 0.08, H * 0.62, null); ctx.restore(); }
+        enemy(ctx, W * 0.84, H * 0.62, H * 0.12, Math.sin(tr * 3));
+        var out = eOut(seg(t, 0.95, 1.4)), back = eIn(seg(t, 2.1, 2.45));
+        var hk = out * (1 - back);
+        var hx = lerp(tvx, W * 0.6, hk), hy = lerp(tvy + H * 0.02, H * 0.66, hk), hs2 = lerp(H * 0.04, H * 0.22, hk);
+        var close = eInOut(seg(t, 1.72, 1.85));
+        var cardC = [hx, hy - hs2 * 1.55];
+        lightHand(ctx, W, H, hx, hy, hs2, close, 0, seg(t, 0.95, 1.05) * (1 - seg(t, 2.3, 2.45)), [tvx, tvy]);
+        /* rhombus */
+        var R = [W * 0.5, H * 0.46], grow = eOut(seg(t, 0.06, 0.38)), pop = eBack(seg(t, 0, 0.12));
+        var hw = lerp(H * 0.05 * pop, W * 0.3, grow), hh = lerp(H * 0.05 * pop, H * 0.6, grow);
+        var cx = R[0] - hw, cy = R[1];
+        var dia = [[cx, cy - hh], [cx + hw, cy], [cx, cy + hh], [cx - hw, cy]];
+        var flip = eInOut(seg(t, 0.86, 1.3)), th = flip * Math.PI;
+        if (t < 1.3 && t > 0) {
+          var hinge = R[0];
+          var pts = dia.map(function (p) {
+            var dx = p[0] - hinge, x2 = hinge + dx * Math.cos(th), persp = 1 + 0.18 * Math.sin(th) * (-dx / (W * 0.3));
+            return [x2, cy + (p[1] - cy) * persp];
+          });
+          if (th > Math.PI / 2) {
+            var k2 = eInOut((th - Math.PI / 2) / (Math.PI / 2));
+            var cw = H * 0.17, ch = H * 0.26, rect = [[cardC[0] - cw / 2, cardC[1] - ch / 2], [cardC[0] + cw / 2, cardC[1] - ch / 2], [cardC[0] + cw / 2, cardC[1] + ch / 2], [cardC[0] - cw / 2, cardC[1] + ch / 2]];
+            var order = [pts[0], pts[3], pts[2], pts[1]];
+            pts = order.map(function (p, i) { return [lerp(p[0], rect[i][0], k2), lerp(p[1], rect[i][1], k2)]; });
+          }
+          quad(ctx, pts); ctx.fillStyle = "#f4ee2a"; ctx.fill();
+          if (th < Math.PI / 2) {
+            var inner = shrinkPoly(pts, 0.94);
+            quad(ctx, inner); ctx.fillStyle = Y; ctx.fill();
+            var open = eOut(seg(t, 0.4, 0.62)), winA = 1 - seg(t, 0.82, 0.9);
+            if (winA > 0) {
+              var win = shrinkPoly(pts, 0.86);
+              ctx.save(); quad(ctx, win); ctx.clip();
+              ctx.fillStyle = "#0b1636"; ctx.fillRect(0, 0, W, H);
+              if (ready("eyes")) {
+                var iw = hw * 2.6, ih = iw / 4;
+                ctx.save(); ctx.globalAlpha = winA; ctx.translate(cx + hw * 0.1, cy - hh * 0.05); ctx.scale(1, lerp(0.06, 1, open));
+                ctx.drawImage(IMG.eyes, -iw / 2, -ih / 2, iw, ih); ctx.restore();
+                var gk = seg(t, 0.64, 0.8);
+                if (gk > 0 && gk < 1 && ready("glint")) {
+                  ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = Math.sin(gk * Math.PI);
+                  ctx.drawImage(IMG.glint, cx - hw + gk * hw * 2, cy - hh * 0.25, hh * 0.25, hh * 0.5); ctx.restore();
+                }
+              }
+              ctx.restore();
+            }
+          } else {
+            var lines = 1 - seg(th, Math.PI * 0.55, Math.PI * 0.9);
+            if (lines > 0) { ctx.save(); quad(ctx, pts); ctx.clip(); for (var li = 0; li < 6; li++) ray(ctx, pts[0][0], cy, -0.6 + li * 0.25, W * 0.4, 2, lines * 0.6); ctx.restore(); }
+          }
         }
-        if (t > 0.95 && t < BEAT) {
-          var g2 = seg(t, 0.95, 1.2);
-          ray(ctx, palm[0], palm[1] - H * 0.05, -0.3, W * 0.3, 2, Math.sin(g2 * Math.PI) * 0.8);
+        /* card on the palm */
+        if (t >= 1.3 && t < BEAT) {
+          var spin = Math.cos((t - 1.3) * 9), cs = 1 - 0.75 * close;
+          ctx.save(); ctx.translate(cardC[0], cardC[1] + Math.sin(t * 5) * H * 0.006 + close * hs2 * 0.9); ctx.scale(Math.max(Math.abs(spin), 0.05) * cs, cs);
+          yellowCard(ctx, H * 0.17, H * 0.26); ctx.restore();
+          var rk = seg(t, 1.6, 1.8); if (rk > 0) ring(ctx, cardC[0], cardC[1], H * (0.05 + 0.06 * rk), 2, "#ffffff", Math.sin(rk * Math.PI));
         }
         if (tr >= BEAT) {
-          var lt = tr - BEAT;
-          if (lt < 0.12) { ctx.save(); ctx.globalAlpha = (1 - lt / 0.12) * 0.55; ctx.fillStyle = "#fff"; ctx.fillRect(-20, -20, W + 40, H + 40); ctx.restore(); }
-          var sk = 1 - seg(lt, 0, 0.28);
-          if (sk > 0) { star4(ctx, palm[0], palm[1], H * 0.32, 0.05, sk); ray(ctx, palm[0], palm[1], -0.45, W * 0.45, 3, sk); }
-          var st = Math.max(0, t - BEAT);
-          for (var c = 0; c < N; c++) {
-            var fa2 = (c - 2) * 0.33;
-            var ox = palm[0] + Math.sin(fa2) * H * 0.16, oy = palm[1] - Math.cos(fa2) * H * 0.1;
-            var sh = makeShards(100 + c, 9, { vmin: H * 0.5, vmax: H * 1.4, smin: H * 0.01, smax: H * 0.03 });
-            var launch = 0.32 + c * 0.13, fl = seg(st, launch, launch + 0.22);
-            sh.forEach(function (s, j) {
-              var p = shardPos(s, Math.min(st, launch), 3.2, 0);
-              var x = ox + p[0], y = oy + p[1];
-              if (fl > 0) {
-                var k2 = eIn(fl), mxp = (x + ex) / 2, myp = Math.min(y, ey) - H * 0.25;
-                var a1 = lerp(x, mxp, k2), b1 = lerp(y, myp, k2), a2 = lerp(mxp, ex, k2), b2 = lerp(myp, ey, k2);
-                x = lerp(a1, a2, k2) + (j - 4) * H * 0.004 * (1 - k2); y = lerp(b1, b2, k2);
-              }
-              if (fl < 1) drawShard(ctx, x, y, s, st, 1, fl > 0.3 ? "#9fe6ff" : Y, 1);
-            });
-            var hitT = launch + 0.22, hk2 = st - hitT;
-            if (hk2 > 0) {
-              slashArc(ctx, ex, ey, H * 0.2, -2.4 + c * 0.55, 2.2, seg(hk2, 0, 0.1), 1 - seg(hk2, 0.12, 0.3));
-              damageBadge(ctx, ex + (c - 2) * W * 0.035, ey - H * 0.24 - c * H * 0.035, 7, seg(hk2, 0, 0.18), 1 - seg(hk2, 0.7, 1.0));
-            }
+          var lt = tr - BEAT, st = Math.max(0, t - BEAT), P = [cardC[0], hy - hs2 * 0.6];
+          var core = 1 - seg(lt, 0.02, 0.3);
+          if (core > 0) {
+            ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = core;
+            var cg = ctx.createRadialGradient(P[0], P[1], 0, P[0], P[1], H * 0.25); cg.addColorStop(0, "rgba(255,255,255,1)"); cg.addColorStop(1, "rgba(255,250,200,0)");
+            ctx.fillStyle = cg; ctx.fillRect(P[0] - H * 0.3, P[1] - H * 0.3, H * 0.6, H * 0.6); ctx.restore();
+            ray(ctx, P[0], P[1], -0.32, W * 0.75, 2, core); ray(ctx, P[0], P[1], 1.0, W * 0.4, 1.5, core * 0.8); ray(ctx, P[0], P[1], -1.35, W * 0.3, 1.2, core * 0.6);
           }
+          ring(ctx, P[0], P[1], lerp(H * 0.03, H * 0.62, eOut(seg(st, 0, 0.5))), lerp(H * 0.05, H * 0.004, seg(st, 0, 0.5)), "#ffffff", 1 - seg(st, 0.3, 0.55));
+          ring(ctx, P[0], P[1], lerp(H * 0.02, H * 0.48, eOut(seg(st, 0.07, 0.55))), lerp(H * 0.03, H * 0.004, seg(st, 0.07, 0.55)), YH, 1 - seg(st, 0.38, 0.62));
+          ring(ctx, P[0], P[1], lerp(H * 0.02, H * 0.36, eOut(seg(st, 0.12, 0.6))), 2, "#ffffff", 0.8 * (1 - seg(st, 0.4, 0.66)));
+          ring(ctx, P[0], P[1], lerp(H * 0.02, H * 0.28, eOut(seg(st, 0.17, 0.62))), 1.5, "#ffffff", 0.6 * (1 - seg(st, 0.42, 0.7)));
+          makeShards(21, 34, { vmin: H * 0.9, vmax: H * 2.4, smin: H * 0.012, smax: H * 0.045 }).forEach(function (s) {
+            var p = shardPos(s, st, 2.6, H * 0.35); drawShard(ctx, P[0] + p[0], P[1] + p[1], s, st, Y, 1 - seg(st, 0.6, 1.0));
+          });
+          var r6 = rng(9);
+          for (var si = 0; si < 6; si++) { var a6 = r6() * 6.28, d6 = H * lerp(0.2, 0.45, r6()), sk6 = seg(st, 0.08 + si * 0.03, 0.4 + si * 0.03); star4(ctx, P[0] + Math.cos(a6) * d6, P[1] + Math.sin(a6) * d6, H * 0.025 * Math.sin(sk6 * Math.PI), 0.18, 1); }
         }
         ctx.restore();
       } },
-    { id: "single", name: "单张消耗（轻量版）", dur: 1.2,
-      desc: "每回合可能出现很多次，所以很轻：手里那张牌原地翻成黄卡 → 星芒一闪 → 碎成小片往下落，约 0.4 秒。",
+    { id: "skillname", name: "技能名特效（英文大字）", dur: 3.0, start: 1.2,
+      desc: "技能名当背景特效：从悠身后、左下往右上划过。底下是几层斜色带（柠檬黄、黄绿、橙，橙带上缘一排网点，下面几条细线），色带里有流动的速度线；字压过不同色带时撞色（黄带上是橙字，橙带和暗处是黄字）。周围点缀四角星和短横条。人物在最前面。",
       draw: function (ctx, W, H, t) {
         battleFloor(ctx, W, H);
-        var cw = W * 0.11, ch = cw * 1.38, x = W * 0.5, y = H * 0.68;
-        for (var i = -2; i <= 2; i++) {
-          if (i === 0) continue;
-          ctx.save(); ctx.translate(x + i * cw * 0.82, H * 0.82 + Math.abs(i) * H * 0.02); ctx.rotate(i * 0.1); stsCard(ctx, cw, ch, (i + 3) % 3); ctx.restore();
+        ctx.save(); ctx.globalAlpha = 0.35; ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H); ctx.restore();
+        var inK = eOut(seg(t, 0.05, 0.45)), outK = eIn(seg(t, 2.35, 2.75));
+        var off = lerp(-W * 1.5, 0, inK) + (t - 0.45) * W * 0.03 + outK * W * 1.8;
+        var toff = off * 1.12 + (1 - inK) * -W * 0.2;
+        ctx.save(); ctx.translate(W * 0.52, H * 0.5); ctx.rotate(-0.28);
+        var bands = [
+          { y: -H * 0.25, h: H * 0.09, c: ORANGE, dots: true },
+          { y: -H * 0.14, h: H * 0.24, c: Y },
+          { y: H * 0.12, h: H * 0.035, c: LIME }
+        ];
+        bands.forEach(function (b) {
+          ctx.fillStyle = b.c; ctx.fillRect(-W * 1.2 + off, b.y, W * 2.4, b.h);
+          if (b.dots) {
+            ctx.fillStyle = YH;
+            for (var dx = -W * 1.2; dx < W * 1.2; dx += H * 0.02) { ctx.beginPath(); ctx.arc(dx + off, b.y + H * 0.012, H * 0.0055, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(dx + off + H * 0.01, b.y + H * 0.03, H * 0.0055, 0, Math.PI * 2); ctx.fill(); }
+          }
+        });
+        ctx.fillStyle = Y; for (var ln = 0; ln < 3; ln++) ctx.fillRect(-W * 1.2 + off, H * 0.17 + ln * H * 0.014, W * 2.4, H * 0.0045);
+        var r = rng(77);
+        ctx.save(); ctx.beginPath(); ctx.rect(-W * 1.2 + off, -H * 0.14, W * 2.4, H * 0.24); ctx.clip();
+        for (var i = 0; i < 16; i++) {
+          var yy = -H * 0.13 + r() * H * 0.22, len = lerp(W * 0.1, W * 0.35, r()), sp = lerp(0.6, 1.4, r());
+          var xx = ((r() * 3 + t * sp) % 3) * W - W * 1.5 + off;
+          ctx.fillStyle = "rgba(255,255,255,0.35)"; ctx.fillRect(xx, yy, len, 1.5);
         }
-        var lift = eOut(seg(t, 0.05, 0.2)), flip = seg(t, 0.15, 0.3), sx = Math.abs(Math.cos(flip * Math.PI));
-        if (t < 0.42) {
-          ctx.save(); ctx.translate(x, lerp(H * 0.8, y, lift)); ctx.scale(Math.max(sx, 0.04) * 1.05, 1.05);
-          if (flip < 0.5) stsCard(ctx, cw, ch, 0); else yellowCard(ctx, cw, ch);
+        ctx.restore();
+        var fs = Math.round(H * 0.17);
+        ctx.font = fs + "px 'Archivo Black', sans-serif"; ctx.textBaseline = "middle";
+        var txt = "MYRIAD TRUTHS", tx = -W * 0.42 + toff, ty = -H * 0.02;
+        function drawText(color) { ctx.save(); ctx.translate(tx, ty); ctx.transform(1, 0, -0.22, 1, 0, 0); ctx.fillStyle = color; ctx.fillText(txt, 0, 0); ctx.restore(); }
+        ctx.save(); ctx.globalAlpha = 0.35; ctx.save(); ctx.translate(H * 0.012, H * 0.012); drawText("#5a3a00"); ctx.restore(); ctx.restore();
+        ctx.save(); ctx.beginPath(); ctx.rect(-W * 1.2 + off, -H * 0.14, W * 2.4, H * 0.24); ctx.clip(); drawText(ORANGE); ctx.restore();
+        ctx.save(); ctx.beginPath(); ctx.rect(-W * 3, -H * 3, W * 6, H * 6); ctx.rect(-W * 1.2 + off, -H * 0.14, W * 2.4, H * 0.24); ctx.clip("evenodd"); drawText(Y); ctx.restore();
+        var stars = [[0.15, -0.2, 0.6], [0.55, -0.27, 0.8], [0.3, 0.18, 1.0], [0.7, 0.05, 1.15], [-0.05, 0.2, 0.9]];
+        stars.forEach(function (s2, i2) {
+          var k = seg(t, s2[2], s2[2] + 0.25), k2 = seg(t, s2[2] + 0.5, s2[2] + 0.9);
+          var rr = H * 0.035 * Math.sin(Math.min(1, k) * Math.PI / 2) * (1 - k2);
+          if (i2 % 2) star4(ctx, s2[0] * W + off * 0.6, s2[1] * H, rr, 0.22, 1, "#ff5a2a"); else star4(ctx, s2[0] * W + off * 0.6, s2[1] * H, rr * 0.7, 0.16, 1, "#ffffff");
+        });
+        ctx.restore();
+        for (var d = 0; d < 5; d++) {
+          var dk = (t * 1.6 + d * 0.21) % 1, a2 = Math.sin(dk * Math.PI) * inK * (1 - outK);
+          ctx.save(); ctx.globalAlpha = a2; ctx.fillStyle = d % 2 ? LIME : Y; ctx.fillRect(lerp(-W * 0.1, W * 0.35, dk), H * (0.62 + d * 0.05), W * 0.06, H * 0.012); ctx.restore();
+        }
+        figure(ctx, W * 0.22, H * 0.94, H * 0.5, Y);
+        enemy(ctx, W * 0.82, H * 0.64, H * 0.12, Math.sin(t * 3));
+      } },
+    { id: "collide", name: "撞色", dur: 2.8, start: 1.2,
+      desc: "我理解的撞色：黄块里是橙字 A，橙块里是黄字 B；两块撞到一起以后，字跟着色块的分界线变色：A 越过分界线进到橙块里的那一部分变成黄色，B 进到黄块里的部分变成橙色。分界线本身也在被推来推去。不对的话告诉我原版是怎样换的。",
+      draw: function (ctx, W, H, t) {
+        stageBg(ctx, W, H, "#141418");
+        var ph = H * 0.62, sk = H * 0.16, cy = H * 0.5, top = cy - ph / 2, bot = cy + ph / 2;
+        var inA = eOut(seg(t, 0.05, 0.55)), inB = eOut(seg(t, 0.12, 0.6));
+        var push = Math.sin(seg(t, 0.6, 2.6) * Math.PI * 2) * W * 0.07;
+        var X = W * 0.5 + push;
+        var aL = lerp(-W * 0.6, W * 0.08, inA), aR = lerp(-W * 0.1, X, inA);
+        var bL = lerp(W * 1.1, X, inB), bR = lerp(W * 1.6, W * 0.92, inB);
+        function para(l, r) { ctx.beginPath(); ctx.moveTo(l + sk, top); ctx.lineTo(r + sk, top); ctx.lineTo(r - sk, bot); ctx.lineTo(l - sk, bot); ctx.closePath(); }
+        var lk = eInOut(seg(t, 0.8, 1.7)) - eInOut(seg(t, 1.9, 2.6));
+        var ax = lerp(W * 0.27, W * 0.6, lk), bx = lerp(W * 0.73, W * 0.4, lk);
+        function letter(ch, x, color) { ctx.save(); ctx.fillStyle = color; ctx.font = Math.round(ph * 0.78) + "px 'Archivo Black', sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.translate(x, cy + ph * 0.04); ctx.transform(1, 0, -0.18, 1, 0, 0); ctx.fillText(ch, 0, 0); ctx.restore(); }
+        ctx.save(); para(aL, aR); ctx.fillStyle = Y; ctx.fill(); ctx.clip(); letter("A", ax, ORANGE); letter("B", bx, ORANGE); ctx.restore();
+        ctx.save(); para(bL, bR); ctx.fillStyle = ORANGE; ctx.fill(); ctx.clip(); letter("A", ax, Y); letter("B", bx, Y); ctx.restore();
+        ctx.save(); ctx.lineWidth = 3; ctx.strokeStyle = "#111"; para(aL, aR); ctx.stroke(); para(bL, bR); ctx.stroke(); ctx.restore();
+      } },
+    { id: "burst", name: "拍手那种光效", dur: 2.2, start: 0.55,
+      desc: "照 BATON 那段：接触点先闪一下，射出彩虹色细光束；接着粉、黄、绿几圈圆环和内侧细白环扩散出去；周围的星星按位置一个个亮起：白色小四角星、金色大四角星、彩色五角星、小花、圆点，分布均匀。想用在烧牌的手牌联动、无惧疼痛这些地方。",
+      draw: function (ctx, W, H, t) {
+        stageBg(ctx, W, H, "#2a1206");
+        var bg = ctx.createRadialGradient(W * 0.5, H * 0.5, 0, W * 0.5, H * 0.5, W * 0.6);
+        bg.addColorStop(0, "rgba(255,150,40,0.35)"); bg.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+        ctx.save(); ctx.globalAlpha = 0.18; ctx.fillStyle = Y; ctx.font = Math.round(H * 0.5) + "px 'Archivo Black', sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.translate(W * 0.5 - t * W * 0.03, H * 0.52); ctx.transform(1, 0, -0.2, 1, 0, 0); ctx.fillText("CRUSH", 0, 0); ctx.restore();
+        var P = [W * 0.5, H * 0.48];
+        var fl = 1 - seg(t, 0, 0.12);
+        if (fl > 0) { ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = fl; var g = ctx.createRadialGradient(P[0], P[1], 0, P[0], P[1], H * 0.2); g.addColorStop(0, "#fff"); g.addColorStop(1, "rgba(255,255,255,0)"); ctx.fillStyle = g; ctx.fillRect(P[0] - H * 0.2, P[1] - H * 0.2, H * 0.4, H * 0.4); ctx.restore(); }
+        var cols = ["#39d4ff", "#ff5fa8", "#ffe94a", "#8cf05a", "#ffffff", "#39d4ff", "#ffe94a", "#ff5fa8", "#8cf05a"];
+        var bk = eOut(seg(t, 0.02, 0.3)), bf = 1 - seg(t, 0.4, 0.75);
+        if (bf > 0) {
+          ctx.save(); ctx.globalCompositeOperation = "lighter";
+          cols.forEach(function (c, i) {
+            var a = -2.6 + i * 0.62 + t * 0.15, L = H * lerp(0.5, 0.95, (i * 37 % 10) / 10) * bk, w = H * 0.014;
+            ctx.save(); ctx.translate(P[0], P[1]); ctx.rotate(a); ctx.globalAlpha = bf;
+            ctx.beginPath(); ctx.moveTo(H * 0.02, -w / 2); ctx.lineTo(L, 0); ctx.lineTo(H * 0.02, w / 2); ctx.closePath(); ctx.fillStyle = c; ctx.fill(); ctx.restore();
+          });
           ctx.restore();
         }
-        var g = seg(t, 0.3, 0.46);
-        if (g > 0 && g < 1) star4(ctx, x + cw * 0.2, y - ch * 0.25, H * 0.08, 0.12, Math.sin(g * Math.PI));
-        if (t >= 0.42) {
-          var st = t - 0.42;
-          var sh = makeShards(5, 16, { dir: Math.PI / 2, spread: 2.6, vmin: H * 0.2, vmax: H * 0.7, smin: H * 0.01, smax: H * 0.028 });
-          sh.forEach(function (s) { var p = shardPos(s, st, 2.0, H * 1.4); drawShard(ctx, x + p[0], y + p[1], s, st, 1, Y, 1 - seg(st, 0.35, 0.7)); });
+        var ringCols = ["#ff3fae", "#ffe100", "#53e04f"];
+        ringCols.forEach(function (c, i) {
+          var k = seg(t, 0.12 + i * 0.06, 1.0 + i * 0.06), r = lerp(H * 0.08, H * (0.62 - i * 0.07), eOut(k));
+          ctx.save(); ctx.shadowColor = c; ctx.shadowBlur = H * 0.03; ring(ctx, P[0], P[1], r, H * 0.022, c, 1 - seg(t, 0.75 + i * 0.06, 1.25 + i * 0.06)); ctx.restore();
+        });
+        [0, 1].forEach(function (i) { var k = seg(t, 0.2 + i * 0.08, 1.0 + i * 0.08); ring(ctx, P[0], P[1], lerp(H * 0.05, H * (0.38 - i * 0.07), eOut(k)), 2, "#ffffff", 0.8 * (1 - seg(t, 0.8, 1.3))); });
+        var r = rng(31);
+        for (var i = 0; i < 18; i++) {
+          var a = (i / 18) * Math.PI * 2 + r() * 0.3, d = H * lerp(0.22, 0.58, r()), x = P[0] + Math.cos(a) * d * 1.35, y = P[1] + Math.sin(a) * d;
+          var t0 = 0.18 + r() * 0.45, k = seg(t, t0, t0 + 0.12), kf = seg(t, t0 + 0.6, t0 + 1.0);
+          if (k <= 0 || kf >= 1) continue;
+          var sc = eBack(k) * (1 - kf), type = i % 5, tw = 0.85 + 0.15 * Math.sin(t * 20 + i);
+          if (type === 0) star4(ctx, x, y, H * 0.03 * sc * tw, 0.14, 1, "#ffffff");
+          else if (type === 1) { ctx.save(); ctx.shadowColor = "#ffcf4a"; ctx.shadowBlur = H * 0.02; star4(ctx, x, y, H * 0.06 * sc, 0.2, 1, "#ffc93a"); ctx.restore(); }
+          else if (type === 2) star5(ctx, x, y, H * 0.018 * sc, a, i % 2 ? "#4d7cff" : "#ff9a2e");
+          else if (type === 3) flower(ctx, x, y, H * 0.022 * sc, a, "#ffb02e");
+          else { ctx.save(); ctx.globalAlpha = 1 - kf; ctx.fillStyle = "#5fe0ff"; ctx.beginPath(); ctx.arc(x, y, H * 0.008 * sc, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
         }
       } },
-    { id: "ui", name: "UI 式特效", dur: 2.8,
-      desc: "我理解的系统层特效：圆角显像管框弹出锁定敌人 → 带声波括号的伤害数字弹出 → 1 MORE：黄色、红色斜带先后扫进来，大字砸下，星星炸开，然后整体滑走。",
+    { id: "ui2", name: "UI 式特效 v2", dur: 2.8, start: 1.35,
+      desc: "按你的意见加了细节，也改正了电视框：开头几层倾斜的圆角框（黄、红、绿）从中间一层层放大到画面边缘，最后留成整个画面的黄色边框，这是战斗开始那段动画，不是锁定框；1 MORE 的黄带上缘一排网点，带子里有流动的亮线，红带下面几条细线；大字后面压一层深色错位影子，进场后轻微抖动；星星有大有小，配白色小闪光。",
       draw: function (ctx, W, H, t) {
         battleFloor(ctx, W, H);
         var ex = W * 0.62, ey = H * 0.58;
         enemy(ctx, ex, ey, H * 0.14, Math.sin(t * 3));
         figure(ctx, W * 0.2, H * 0.9, H * 0.46, Y);
-        var fk = seg(t, 0.08, 0.36);
-        if (fk > 0 && t < 2.2) crtFrame(ctx, ex, ey, H * 0.5, H * 0.42, -0.07, lerp(1.35, 1, eBack(fk)), Y);
-        var dk = t - 0.55;
-        if (dk > 0 && t < 2.2) damageBadge(ctx, ex + W * 0.08, ey - H * 0.26, 23, seg(dk, 0, 0.2), 1);
+        /* battle-start frames: yellow, red, green CRT frames grow from the centre to the edges, leaving the yellow bezel */
+        [[Y, 12, 0, 0], ["#ff3b5c", 3, 0.06, 26], [LIME, 3, 0.12, 38]].forEach(function (sp) {
+          var k = eOut(seg(t, 0.02 + sp[2], 0.5 + sp[2]));
+          if (k <= 0) return;
+          ctx.save(); ctx.translate(W / 2, H / 2); ctx.rotate(lerp(-0.16, 0, k)); ctx.scale(lerp(0.3, 1, k), lerp(0.3, 1, k));
+          crtPath(ctx, W * 0.96 - sp[3], H * 0.92 - sp[3] * 0.9); ctx.lineJoin = "round";
+          if (sp[1] > 6) { ctx.lineWidth = sp[1] + 5; ctx.strokeStyle = "#111"; ctx.stroke(); }
+          ctx.lineWidth = sp[1]; ctx.strokeStyle = sp[0]; ctx.stroke(); ctx.restore();
+        });
+        var dk = t - 0.6;
+        if (dk > 0 && t < 2.25) damageBadge(ctx, ex + W * 0.08, ey - H * 0.26, 23, seg(dk, 0, 0.2), 1);
         var bin = eOut(seg(t, 0.95, 1.15)), bout = eIn(seg(t, 2.05, 2.35));
         if (bin > 0 && bout < 1) {
           ctx.save(); ctx.translate(W * 0.5, H * 0.42); ctx.rotate(-0.28);
           var shift = (1 - bin) * -W * 1.4 + bout * W * 1.4;
           ctx.fillStyle = Y; ctx.fillRect(-W + shift, -H * 0.09, W * 2, H * 0.18);
-          var bin2 = eOut(seg(t, 1.02, 1.22));
-          ctx.fillStyle = "#e0304b"; ctx.fillRect(-W + (1 - bin2) * -W * 1.4 + bout * W * 1.4, H * 0.1, W * 2, H * 0.05);
+          ctx.fillStyle = ORANGE; for (var dx = -W; dx < W; dx += H * 0.02) { ctx.beginPath(); ctx.arc(dx + shift, -H * 0.075, H * 0.005, 0, Math.PI * 2); ctx.fill(); }
+          ctx.save(); ctx.beginPath(); ctx.rect(-W + shift, -H * 0.09, W * 2, H * 0.18); ctx.clip();
+          var rr = rng(5);
+          for (var i = 0; i < 10; i++) { var yy = -H * 0.06 + rr() * H * 0.14, xx = ((rr() * 2 + t * 1.2) % 2) * W - W + shift; ctx.fillStyle = "rgba(255,255,255,0.45)"; ctx.fillRect(xx, yy, W * lerp(0.08, 0.3, rr()), 1.5); }
+          ctx.restore();
+          var bin2 = eOut(seg(t, 1.02, 1.22)), s2 = (1 - bin2) * -W * 1.4 + bout * W * 1.4;
+          ctx.fillStyle = "#e0304b"; ctx.fillRect(-W + s2, H * 0.1, W * 2, H * 0.05);
+          ctx.fillStyle = "#e0304b"; for (var l = 0; l < 3; l++) ctx.fillRect(-W + s2, H * 0.165 + l * H * 0.012, W * 2, H * 0.004);
           var tk = seg(t, 1.12, 1.26);
           if (tk > 0) {
-            var sc = lerp(1.9, 1, eOut(tk));
-            ctx.save(); ctx.translate(shift * 0.6, 0); ctx.scale(sc, sc); ctx.transform(1, 0, -0.22, 1, 0, 0);
-            ctx.font = Math.round(H * 0.17) + "px 'Archivo Black', sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-            ctx.lineJoin = "round"; ctx.lineWidth = H * 0.02; ctx.strokeStyle = YH; ctx.strokeText("1MORE", 0, H * 0.01);
+            var sc = lerp(1.9, 1, eOut(tk)), jit = t < 1.5 ? Math.sin(t * 80) * H * 0.002 : 0;
+            ctx.save(); ctx.translate(shift * 0.6 + jit, jit * 0.5); ctx.scale(sc, sc); ctx.transform(1, 0, -0.22, 1, 0, 0);
+            ctx.font = Math.round(H * 0.17) + "px 'Archivo Black', sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.lineJoin = "round";
+            ctx.fillStyle = "rgba(120,40,0,0.55)"; ctx.fillText("1MORE", H * 0.014, H * 0.024);
+            ctx.lineWidth = H * 0.02; ctx.strokeStyle = YH; ctx.strokeText("1MORE", 0, H * 0.01);
             ctx.fillStyle = "#111"; ctx.fillText("1MORE", 0, H * 0.01);
             ctx.restore();
             var r = rng(42), sk = seg(t, 1.2, 1.7);
-            for (var i = 0; i < 9; i++) {
-              var a = r() * 6.28, d = lerp(H * 0.12, H * 0.4, r()) * eOut(sk), s = lerp(H * 0.02, H * 0.045, r()) * (1 - seg(t, 1.8, 2.1));
-              if (s > 0.5) star5(ctx, Math.cos(a) * d * 1.6 + shift * 0.6, Math.sin(a) * d, s, r() * 3 + t * 2, r() < 0.5 ? YH : "#f8a800");
+            for (var j = 0; j < 11; j++) {
+              var a = r() * 6.28, d = lerp(H * 0.12, H * 0.42, r()) * eOut(sk), s = lerp(H * 0.016, H * 0.045, r()) * (1 - seg(t, 1.8, 2.1));
+              if (s > 0.5) { if (j % 3 === 0) star4(ctx, Math.cos(a) * d * 1.6 + shift * 0.6, Math.sin(a) * d, s * 0.9, 0.15, 1, "#ffffff"); else star5(ctx, Math.cos(a) * d * 1.6 + shift * 0.6, Math.sin(a) * d, s, r() * 3 + t * 2, r() < 0.5 ? YH : ORANGE, "#111"); }
             }
           }
           ctx.restore();
         }
+      } },
+    { id: "single", name: "单张消耗（轻量，已过）", dur: 1.2, start: 0.35,
+      desc: "你说像，先保持：手里那张牌原地翻成黄卡 → 星芒一闪 → 碎成小片往下落，约 0.4 秒。",
+      draw: function (ctx, W, H, t) {
+        battleFloor(ctx, W, H);
+        var cw = W * 0.11, ch = cw * 1.38, x = W * 0.5, y = H * 0.68;
+        for (var i = -2; i <= 2; i++) { if (i === 0) continue; ctx.save(); ctx.translate(x + i * cw * 0.82, H * 0.82 + Math.abs(i) * H * 0.02); ctx.rotate(i * 0.1); stsCard(ctx, cw, ch, (i + 3) % 3); ctx.restore(); }
+        var lift = eOut(seg(t, 0.05, 0.2)), flip = seg(t, 0.15, 0.3), sx = Math.abs(Math.cos(flip * Math.PI));
+        if (t < 0.42) { ctx.save(); ctx.translate(x, lerp(H * 0.8, y, lift)); ctx.scale(Math.max(sx, 0.04) * 1.05, 1.05); if (flip < 0.5) stsCard(ctx, cw, ch, 0); else yellowCard(ctx, cw, ch); ctx.restore(); }
+        var g = seg(t, 0.3, 0.46); if (g > 0 && g < 1) star4(ctx, x + cw * 0.2, y - ch * 0.25, H * 0.08, 0.12, Math.sin(g * Math.PI));
+        if (t >= 0.42) { var st = t - 0.42; makeShards(5, 16, { dir: Math.PI / 2, spread: 2.6, vmin: H * 0.2, vmax: H * 0.7, smin: H * 0.01, smax: H * 0.028 }).forEach(function (s) { var p = shardPos(s, st, 2.0, H * 1.4); drawShard(ctx, x + p[0], y + p[1], s, st, Y, 1 - seg(st, 0.35, 0.7)); }); }
+      } },
+    { id: "fiend", name: "恶魔之焰（手牌联动，旧版）", dur: 3.4, start: 1.0,
+      desc: "第一轮的手牌联动草图，捏碎方式还是旧的。确认新版捏碎以后，这里会换成：手牌飞到电视里伸出来的那只手上，一握全碎，碎片变成刀光，一张牌一刀。",
+      draw: function (ctx, W, H, tr) {
+        var BEAT = 1.25, t = hs(tr, BEAT, 0.08);
+        var shake = tr > BEAT && tr < BEAT + 0.16 ? (1 - (tr - BEAT) / 0.16) * H * 0.01 : 0;
+        ctx.save(); if (shake) ctx.translate(Math.sin(tr * 90) * shake, Math.cos(tr * 70) * shake);
+        battleFloor(ctx, W, H);
+        var palm = [W * 0.27, H * 0.3];
+        figure(ctx, W * 0.24, H * 0.86, H * 0.5, Y);
+        var ex = W * 0.74, ey = H * 0.6; enemy(ctx, ex, ey, H * 0.13, Math.sin(tr * 3));
+        var N = 5, cw = W * 0.075, ch = cw * 1.38, hk = eOut(seg(t, 0.85, 1.1));
+        for (var i = 0; i < N && t < BEAT; i++) {
+          var hxp = W * 0.5 + (i - 2) * cw * 0.8, hyp = H * 0.98, ha = (i - 2) * 0.12, fa = (i - 2) * 0.33, fr = H * 0.16;
+          var fxp = palm[0] + Math.sin(fa) * fr, fyp = palm[1] - Math.cos(fa) * fr * 0.6;
+          var mk = eInOut(seg(t, 0.25 + i * 0.06, 0.65 + i * 0.06));
+          var mx = lerp(hxp, fxp, mk), my = lerp(hyp, fyp, mk) - Math.sin(mk * Math.PI) * H * 0.18;
+          var flip = seg(t, 0.5 + i * 0.06, 0.66 + i * 0.06), sx = Math.abs(Math.cos(flip * Math.PI));
+          ctx.save(); ctx.translate(mx, my + Math.sin(t * 30 + i) * H * 0.003 * hk); ctx.rotate(lerp(ha, fa, mk)); ctx.scale(lerp(1, 0.72, mk) * Math.max(sx, 0.04), lerp(1, 0.72, mk));
+          if (flip < 0.5) stsCard(ctx, cw, ch, i % 3); else yellowCard(ctx, cw, ch); ctx.restore();
+        }
+        if (tr >= BEAT) {
+          var lt = tr - BEAT, st = Math.max(0, t - BEAT);
+          var sk = 1 - seg(lt, 0, 0.28); if (sk > 0) { star4(ctx, palm[0], palm[1], H * 0.32, 0.05, sk); ray(ctx, palm[0], palm[1], -0.45, W * 0.45, 3, sk); }
+          for (var c = 0; c < N; c++) {
+            var fa2 = (c - 2) * 0.33, ox = palm[0] + Math.sin(fa2) * H * 0.16, oy = palm[1] - Math.cos(fa2) * H * 0.1;
+            var launch = 0.32 + c * 0.13, fl = seg(st, launch, launch + 0.22);
+            makeShards(100 + c, 9, { vmin: H * 0.5, vmax: H * 1.4, smin: H * 0.01, smax: H * 0.03 }).forEach(function (s, j) {
+              var p = shardPos(s, Math.min(st, launch), 3.2, 0), x = ox + p[0], y = oy + p[1];
+              if (fl > 0) { var k2 = eIn(fl), mxp = (x + ex) / 2, myp = Math.min(y, ey) - H * 0.25; var a1 = lerp(x, mxp, k2), b1 = lerp(y, myp, k2), a2 = lerp(mxp, ex, k2), b2 = lerp(myp, ey, k2); x = lerp(a1, a2, k2) + (j - 4) * H * 0.004 * (1 - k2); y = lerp(b1, b2, k2); }
+              if (fl < 1) drawShard(ctx, x, y, s, st, fl > 0.3 ? "#9fe6ff" : Y, 1);
+            });
+            var hk2 = st - (launch + 0.22);
+            if (hk2 > 0) { slashArc(ctx, ex, ey, H * 0.2, -2.4 + c * 0.55, 2.2, seg(hk2, 0, 0.1), 1 - seg(hk2, 0.12, 0.3)); damageBadge(ctx, ex + (c - 2) * W * 0.035, ey - H * 0.24 - c * H * 0.035, 7, seg(hk2, 0, 0.18), 1 - seg(hk2, 0.7, 1.0)); }
+          }
+        }
+        ctx.restore();
       } }
   ];
 
   var canvas = $("stage"), ctx = canvas.getContext("2d");
-  var cur = DEMOS[0], T = 0.62, playing = false, speed = 1, last = 0, dpr = 1, CW = 0, CH = 0;
+  var cur = DEMOS[0], T = DEMOS[0].start, playing = false, speed = 1, last = 0, dpr = 1, CW = 0, CH = 0;
   var demoFeedback = {};
   function resize() {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
     CW = canvas.clientWidth; CH = canvas.clientHeight;
-    canvas.width = Math.round(CW * dpr); canvas.height = Math.round(CH * dpr);
+    canvas.width = Math.max(1, Math.round(CW * dpr)); canvas.height = Math.max(1, Math.round(CH * dpr));
     render();
   }
   function render() {
     if (!CW) return;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, CW, CH);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, CW, CH);
     try { cur.draw(ctx, CW, CH, T); } catch (e) { console.error(e); }
-    $("scrub").value = String(T / cur.dur);
-    $("tlabel").textContent = T.toFixed(2) + " s";
+    $("scrub").value = String(T / cur.dur); $("tlabel").textContent = T.toFixed(2) + " s";
   }
   function loop(ts) {
     if (!playing) return;
     var dt = last ? (ts - last) / 1000 : 0; last = ts;
     T += dt * speed;
     if (T >= cur.dur) { T = cur.dur; playing = false; $("play").textContent = "重播"; }
-    render();
-    if (playing) requestAnimationFrame(loop);
+    render(); if (playing) requestAnimationFrame(loop);
   }
-  function play() {
-    if (T >= cur.dur - 0.001) T = 0;
-    playing = true; last = 0; $("play").textContent = "暂停";
-    requestAnimationFrame(loop);
-  }
+  function play() { if (T >= cur.dur - 0.001) T = 0; playing = true; last = 0; $("play").textContent = "暂停"; requestAnimationFrame(loop); }
   function pause() { playing = false; $("play").textContent = "播放"; }
   function selectDemo(d) {
-    cur = d; pause(); T = d.id === "crush" ? 0.62 : d.id === "fiend" ? 1.0 : d.id === "single" ? 0.35 : 1.35;
+    cur = d; pause(); T = d.start;
     document.querySelectorAll("#demoTabs .chip").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.id === d.id ? "true" : "false"); });
     $("demoDesc").textContent = d.desc;
-    var fb = demoFeedback[d.id] || {};
-    $("demoNote").value = fb.note || "";
-    syncVerdict();
-    render();
+    $("demoNote").value = (demoFeedback[d.id] || {}).note || "";
+    syncVerdict(); render();
   }
   function syncVerdict() {
     var fb = demoFeedback[cur.id] || {};
     document.querySelectorAll("#demoVerdict .chip").forEach(function (b) { b.setAttribute("aria-pressed", fb.verdict === b.dataset.v ? "true" : "false"); });
   }
   function renderDemoUI() {
-    var tabs = $("demoTabs");
     DEMOS.forEach(function (d) {
       var b = el("button", "chip", d.name); b.type = "button"; b.dataset.id = d.id; b.setAttribute("role", "tab");
-      b.addEventListener("click", function () { selectDemo(d); });
-      tabs.appendChild(b);
+      b.addEventListener("click", function () { selectDemo(d); }); $("demoTabs").appendChild(b);
     });
-    var v = $("demoVerdict");
     [["like", "像"], ["half", "有点像"], ["no", "不像"]].forEach(function (o) {
       var b = el("button", "chip", o[1]); b.type = "button"; b.dataset.v = o[0]; b.setAttribute("aria-pressed", "false");
-      b.addEventListener("click", function () {
-        demoFeedback[cur.id] = Object.assign({}, demoFeedback[cur.id], { verdict: o[0] });
-        syncVerdict();
-        saveDoc("demos/" + cur.id, demoFeedback[cur.id], "st-demos");
-      });
-      v.appendChild(b);
+      b.addEventListener("click", function () { demoFeedback[cur.id] = Object.assign({}, demoFeedback[cur.id], { verdict: o[0] }); syncVerdict(); saveDoc("demos/" + cur.id, demoFeedback[cur.id], "st-demos"); });
+      $("demoVerdict").appendChild(b);
     });
-    $("demoNote").addEventListener("input", function () {
-      demoFeedback[cur.id] = Object.assign({}, demoFeedback[cur.id], { note: $("demoNote").value });
-      saveDoc("demos/" + cur.id, demoFeedback[cur.id], "st-demos");
-    });
-    $("insertTime").addEventListener("click", function () {
-      var n = $("demoNote"); n.value = (n.value ? n.value + "\n" : "") + "[" + T.toFixed(2) + "s] ";
-      n.focus(); n.dispatchEvent(new Event("input"));
-    });
+    $("demoNote").addEventListener("input", function () { demoFeedback[cur.id] = Object.assign({}, demoFeedback[cur.id], { note: $("demoNote").value }); saveDoc("demos/" + cur.id, demoFeedback[cur.id], "st-demos"); });
+    $("insertTime").addEventListener("click", function () { var n = $("demoNote"); n.value = (n.value ? n.value + "\n" : "") + "[" + T.toFixed(2) + "s] "; n.focus(); n.dispatchEvent(new Event("input")); });
     $("play").addEventListener("click", function () { playing ? pause() : play(); });
-    $("slow").addEventListener("click", function () {
-      speed = speed === 1 ? 0.3 : 1; $("slow").setAttribute("aria-pressed", speed !== 1 ? "true" : "false");
-    });
+    $("slow").addEventListener("click", function () { speed = speed === 1 ? 0.3 : 1; $("slow").setAttribute("aria-pressed", speed !== 1 ? "true" : "false"); });
     $("scrub").addEventListener("input", function () { pause(); T = parseFloat($("scrub").value) * cur.dur; render(); });
     window.addEventListener("resize", resize);
+    loadImg("eyes", "img/yu_eyes.png"); loadImg("glint", "img/megane_kiran.png");
     selectDemo(DEMOS[0]);
   }
 
-  /* ---------- annotation (screenshots + uploaded images) ---------- */
+  /* ---------- annotation ---------- */
   function annotator(box, img, onChange) {
     var c = el("canvas"); box.appendChild(c);
     var g = c.getContext("2d"), strokes = [], drawing = null;
-    function size() {
-      var r = box.getBoundingClientRect(), d = Math.min(window.devicePixelRatio || 1, 2);
-      c.width = Math.max(1, Math.round(r.width * d)); c.height = Math.max(1, Math.round(r.height * d));
-      paint();
-    }
+    function size() { var r = box.getBoundingClientRect(), d = Math.min(window.devicePixelRatio || 1, 2); c.width = Math.max(1, Math.round(r.width * d)); c.height = Math.max(1, Math.round(r.height * d)); paint(); }
     function paint() {
       g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, c.width, c.height);
       var w = c.width, h = c.height;
@@ -1018,48 +1060,54 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     }
     function pt(e) { var r = c.getBoundingClientRect(); return [clamp((e.clientX - r.left) / r.width, 0, 1), clamp((e.clientY - r.top) / r.height, 0, 1)]; }
     c.addEventListener("pointerdown", function (e) { e.preventDefault(); c.setPointerCapture(e.pointerId); var p = pt(e); drawing = { p: [+p[0].toFixed(4), +p[1].toFixed(4)] }; });
-    c.addEventListener("pointermove", function (e) {
-      if (!drawing) return; var p = pt(e), q = drawing.p, n = q.length;
-      if (Math.hypot(p[0] - q[n - 2], p[1] - q[n - 1]) < 0.004) return;
-      q.push(+p[0].toFixed(4), +p[1].toFixed(4)); paint();
-    });
+    c.addEventListener("pointermove", function (e) { if (!drawing) return; var p = pt(e), q = drawing.p, n = q.length; if (Math.hypot(p[0] - q[n - 2], p[1] - q[n - 1]) < 0.004) return; q.push(+p[0].toFixed(4), +p[1].toFixed(4)); paint(); });
     function end() { if (!drawing) return; if (drawing.p.length >= 4) { strokes.push(drawing); onChange(strokes.slice()); } drawing = null; paint(); }
     c.addEventListener("pointerup", end); c.addEventListener("pointercancel", end);
     if (img.complete) size(); else img.addEventListener("load", size);
     window.addEventListener("resize", size);
-    return {
-      undo: function () { strokes.pop(); paint(); onChange(strokes.slice()); },
-      clear: function () { strokes = []; paint(); onChange([]); },
-      set: function (s) { strokes = Array.isArray(s) ? s.slice() : []; paint(); }
-    };
+    return { undo: function () { strokes.pop(); paint(); onChange(strokes.slice()); }, clear: function () { strokes = []; paint(); onChange([]); }, set: function (s) { strokes = Array.isArray(s) ? s.slice() : []; paint(); }, resize: size };
   }
 
+  /* ---------- round 2 sections ---------- */
+  function renderVideo() {
+    var list = $("vlist");
+    renderVerdicts(list, VIDEO, videoStore, function (id) { return "video/" + id; }, "st-video", function (v) {
+      var c = el("div", "card vitem");
+      var fr = el("div", "frames");
+      v.frames.forEach(function (src) { var im = el("img"); im.src = src; im.alt = v.title; im.loading = "lazy"; fr.appendChild(im); });
+      c.appendChild(fr); c.appendChild(el("h3", null, v.title)); c.appendChild(el("p", null, v.text)); c.appendChild(el("p", "use", v.use));
+      return c;
+    });
+  }
+
+  /* ---------- round 1 sections ---------- */
   var shotState = {}, shotAnn = {};
-  function renderShots() {
+  function renderRound1() {
+    renderChipQuestions("qlist", QUESTIONS, answers, "answers/main", "st-answers");
+    renderVerdicts($("ulist"), UNDERSTANDING.map(function (u) { return { id: u[0], text: u[1] }; }), understanding,
+      function () { return "understanding/main"; }, "st-understanding", function (u) { var c = el("div", "card u"); c.appendChild(el("p", null, u.text)); return c; });
+    /* understanding is one document holding every item */
+    $("ulist").querySelectorAll(".chip").forEach(function (b) {
+      b.addEventListener("click", function () { setTimeout(function () { saveDoc("understanding/main", { items: understanding }, "st-understanding"); }, 0); }, true);
+    });
+    $("ulist").querySelectorAll("textarea").forEach(function (t) {
+      t.addEventListener("input", function () { setTimeout(function () { saveDoc("understanding/main", { items: understanding }, "st-understanding"); }, 0); });
+    });
     var list = $("shotList");
     SHOTS.forEach(function (s, idx) {
-      var row = el("div", "card shot");
-      var box = el("div", "ann");
-      var img = el("img"); img.src = s.src; img.alt = s.title; img.draggable = false;
+      var row = el("div", "shot"), box = el("div", "ann"), img = el("img"); img.src = s.src; img.alt = s.title; img.draggable = false; img.loading = "lazy";
       box.appendChild(img);
-      var side = el("div");
-      side.appendChild(el("h3", null, (idx + 1) + ". " + s.title));
-      side.appendChild(el("p", "ask", s.ask));
-      var note = el("textarea"); note.rows = 3; note.id = "snote-" + s.id; note.placeholder = "写一句，或者只在图上圈";
-      side.appendChild(note);
-      var tools = el("div", "tools");
-      var u = el("button", "btn ghost", "撤销"); u.type = "button";
-      var cl = el("button", "btn ghost", "清除圈画"); cl.type = "button";
+      var side = el("div"); side.appendChild(el("h3", null, (idx + 1) + ". " + s.title)); side.appendChild(el("p", "ask", s.ask));
+      var note = el("textarea"); note.rows = 2; note.id = "snote-" + s.id; side.appendChild(note);
+      var tools = el("div", "tools"), u = el("button", "btn ghost", "撤销"), cl = el("button", "btn ghost", "清除圈画"); u.type = cl.type = "button";
       tools.appendChild(u); tools.appendChild(cl); side.appendChild(tools);
       row.appendChild(box); row.appendChild(side); list.appendChild(row);
       shotState[s.id] = { strokes: [], note: "" };
-      var ann = annotator(box, img, function (strokes) {
-        shotState[s.id].strokes = strokes; saveDoc("shots/" + s.id, shotState[s.id], "st-shots");
-      });
-      shotAnn[s.id] = ann;
-      u.addEventListener("click", ann.undo); cl.addEventListener("click", ann.clear);
+      var ann = annotator(box, img, function (strokes) { shotState[s.id].strokes = strokes; saveDoc("shots/" + s.id, shotState[s.id], "st-shots"); });
+      shotAnn[s.id] = ann; u.addEventListener("click", ann.undo); cl.addEventListener("click", ann.clear);
       note.addEventListener("input", function () { shotState[s.id].note = note.value; saveDoc("shots/" + s.id, shotState[s.id], "st-shots"); });
     });
+    document.querySelector("details.round1").addEventListener("toggle", function () { Object.keys(shotAnn).forEach(function (k) { shotAnn[k].resize(); }); });
   }
   function hydrateShot(id, d) {
     if (!shotState[id]) return;
@@ -1072,59 +1120,36 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   var uploads = {}, upEls = {};
   function renderUpload(docId, d) {
     if (upEls[docId]) return;
-    var row = el("div", "card up"), list = $("upList");
-    var isVideo = String(d.type || "").indexOf("video/") === 0;
-    var src = "/_blob/" + d.asset;
-    if (isVideo) {
-      var v = el("video"); v.controls = true; v.preload = "metadata"; v.src = src; row.appendChild(v);
-    } else {
-      var box = el("div", "ann"), img = el("img"); img.src = src; img.alt = d.name || "上传的截图"; img.draggable = false;
-      box.appendChild(img); row.appendChild(box);
-      var ann = annotator(box, img, function (strokes) {
-        uploads[docId] = Object.assign({}, uploads[docId], { strokes: strokes });
-        saveDoc("uploads/" + docId, uploads[docId], "st-uploads");
-      });
+    var row = el("div", "card up"), list = $("upList"), isVideo = String(d.type || "").indexOf("video/") === 0, src = "/_blob/" + d.asset;
+    if (isVideo) { var v = el("video"); v.controls = true; v.preload = "metadata"; v.src = src; row.appendChild(v); }
+    else {
+      var box = el("div", "ann"), img = el("img"); img.src = src; img.alt = d.name || "上传的截图"; img.draggable = false; box.appendChild(img); row.appendChild(box);
+      var ann = annotator(box, img, function (strokes) { uploads[docId] = Object.assign({}, uploads[docId], { strokes: strokes }); saveDoc("uploads/" + docId, uploads[docId], "st-uploads"); });
       ann.set(d.strokes);
-      var tools = el("div", "tools");
-      var u = el("button", "btn ghost", "撤销"); u.type = "button"; u.addEventListener("click", ann.undo);
-      var cl = el("button", "btn ghost", "清除圈画"); cl.type = "button"; cl.addEventListener("click", ann.clear);
-      tools.appendChild(u); tools.appendChild(cl); row.appendChild(tools);
+      var tools = el("div", "tools"), u = el("button", "btn ghost", "撤销"), cl = el("button", "btn ghost", "清除圈画"); u.type = cl.type = "button";
+      u.addEventListener("click", ann.undo); cl.addEventListener("click", ann.clear); tools.appendChild(u); tools.appendChild(cl); row.appendChild(tools);
     }
     row.appendChild(el("div", "meta", (d.name || "文件") + " · " + Math.round((d.size || 0) / 1024) + " KB"));
-    var note = el("textarea"); note.rows = 2; note.placeholder = isVideo ? "想让我看哪几秒？比如：0:12–0:15 捏碎，注意碎片和圆环" : "这张图想让我注意什么？";
-    note.value = d.note || "";
-    note.addEventListener("input", function () {
-      uploads[docId] = Object.assign({}, uploads[docId], { note: note.value });
-      saveDoc("uploads/" + docId, uploads[docId], "st-uploads");
-    });
-    row.appendChild(note);
-    list.insertBefore(row, list.firstChild);
-    upEls[docId] = row;
+    var note = el("textarea"); note.rows = 2; note.placeholder = isVideo ? "想让我看哪几秒？" : "这张图想让我注意什么？"; note.value = d.note || "";
+    note.addEventListener("input", function () { uploads[docId] = Object.assign({}, uploads[docId], { note: note.value }); saveDoc("uploads/" + docId, uploads[docId], "st-uploads"); });
+    row.appendChild(note); list.insertBefore(row, list.firstChild); upEls[docId] = row;
   }
   function guessType(f) {
     if (f.type) return f.type;
     var n = (f.name || "").toLowerCase();
-    if (/\.mp4$/.test(n)) return "video/mp4"; if (/\.webm$/.test(n)) return "video/webm";
-    if (/\.png$/.test(n)) return "image/png"; if (/\.jpe?g$/.test(n)) return "image/jpeg";
-    if (/\.webp$/.test(n)) return "image/webp"; if (/\.gif$/.test(n)) return "image/gif";
+    if (/\.mp4$/.test(n)) return "video/mp4"; if (/\.webm$/.test(n)) return "video/webm"; if (/\.png$/.test(n)) return "image/png";
+    if (/\.jpe?g$/.test(n)) return "image/jpeg"; if (/\.webp$/.test(n)) return "image/webp"; if (/\.gif$/.test(n)) return "image/gif";
     return "";
   }
   function handleFiles(files) {
     if (!ASSETS || !DB) { $("upHint").textContent = "现在不能上传（没连上存储）。请把链接和时间点写在下面的框里。"; return; }
     Array.prototype.forEach.call(files, function (f) {
       if (f.size > 20 * 1024 * 1024) { $("upHint").textContent = f.name + " 超过 20MB：请剪短或压缩，或者在下面贴链接。"; return; }
-      var type = guessType(f);
-      $("upHint").textContent = "正在上传 " + f.name + " …";
+      var type = guessType(f); $("upHint").textContent = "正在上传 " + f.name + " …";
       ASSETS.upload(f, type ? { type: type } : undefined).then(function (res) {
         var body = { asset: res.id, name: f.name, type: res.contentType, size: res.sizeBytes, note: "", strokes: [], at: new Date().toISOString() };
-        return DB.collection("uploads").add(body).then(function (ref) {
-          uploads[ref.id] = body; renderUpload(ref.id, body);
-          $("upHint").textContent = "已上传 " + f.name;
-        });
-      }).catch(function (e) {
-        var code = e && e.code;
-        $("upHint").textContent = "上传失败" + (code ? "（" + code + "）" : "") + (code === "too_large" ? "：文件太大" : code === "unsupported_type" ? "：格式不支持" : "");
-      });
+        return DB.collection("uploads").add(body).then(function (ref) { uploads[ref.id] = body; renderUpload(ref.id, body); $("upHint").textContent = "已上传 " + f.name; });
+      }).catch(function (e) { var code = e && e.code; $("upHint").textContent = "上传失败" + (code ? "（" + code + "）" : ""); });
     });
   }
   function setupUploads() {
@@ -1134,51 +1159,48 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     ["dragleave", "drop"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove("over"); }); });
     drop.addEventListener("drop", function (e) { if (e.dataTransfer && e.dataTransfer.files) handleFiles(e.dataTransfer.files); });
     $("links").addEventListener("input", function () { saveDoc("links/main", { text: $("links").value }, "st-links"); });
+    $("decisionsNote").addEventListener("input", function () { saveDoc("decisions/main", { note: $("decisionsNote").value }, "st-decisions"); });
   }
 
   /* ---------- boot ---------- */
   function setConn(kind, extra) {
-    var c = $("conn"), t = $("connText");
-    c.classList.remove("ok", "bad");
+    var c = $("conn"), t = $("connText"); c.classList.remove("ok", "bad");
     if (kind === "ok") { c.classList.add("ok"); t.textContent = "已连接：自动保存"; }
     else if (kind === "slow") { t.textContent = "连接较慢，内容可能还没加载出来"; }
     else { c.classList.add("bad"); t.textContent = extra || "未连接：这里的操作不会保存"; }
   }
   function boot() {
-    renderQuestions(); renderUnderstanding(); renderDemoUI(); renderShots(); setupUploads();
+    renderVideo(); renderChipQuestions("q2list", Q2, answers2, "answers2/main", "st-answers2");
+    renderDemoUI(); renderRound1(); setupUploads();
     requestAnimationFrame(resize);
     if (!window.claude || typeof window.claude.use !== "function") { setConn("bad", "本地预览：不会保存"); return; }
-    var timer = setTimeout(function () { setConn("slow"); }, 10000);
-    var hydrated = {};
+    var timer = setTimeout(function () { setConn("slow"); }, 10000), hydrated = {};
     window.claude.use("db").then(function (db) {
       if (!db) { clearTimeout(timer); setConn("bad", "存储不可用：请登录后再打开"); return; }
-      DB = db;
-      Object.keys(queues).forEach(flush);
+      DB = db; Object.keys(queues).forEach(flush);
       function sub(col, fn) {
-        DB.collection(col).onSnapshot(function (s) {
-          if (!s.metadata.fromCache) { clearTimeout(timer); setConn("ok"); }
-          fn(s);
-        }, function (e) { clearTimeout(timer); setConn("bad", "读取失败（" + (e && e.code) + "）"); });
+        DB.collection(col).onSnapshot(function (s) { if (!s.metadata.fromCache) { clearTimeout(timer); setConn("ok"); } fn(s); },
+          function (e) { clearTimeout(timer); setConn("bad", "读取失败（" + (e && e.code) + "）"); });
       }
-      sub("answers", function (s) { s.docs.forEach(function (d) { if (d.id === "main" && !hydrated.answers) { hydrated.answers = true; hydrateAnswers(d.data() || {}); } }); });
-      sub("understanding", function (s) { s.docs.forEach(function (d) { if (d.id === "main" && !hydrated.understanding) { hydrated.understanding = true; hydrateUnderstanding(d.data() || {}); } }); });
+      function once(key) { if (hydrated[key]) return false; hydrated[key] = true; return true; }
+      sub("answers", function (s) { s.docs.forEach(function (d) { if (d.id === "main" && once("answers")) hydrateChips("qlist", QUESTIONS, answers, d.data() || {}); }); });
+      sub("answers2", function (s) { s.docs.forEach(function (d) { if (d.id === "main" && once("answers2")) hydrateChips("q2list", Q2, answers2, d.data() || {}); }); });
+      sub("understanding", function (s) { s.docs.forEach(function (d) { if (d.id === "main" && once("understanding")) { var items = (d.data() || {}).items || {}; Object.keys(items).forEach(function (k) { understanding[k] = items[k]; }); syncVerdicts($("ulist"), understanding); fillVerdictNotes($("ulist"), understanding); } }); });
+      sub("video", function (s) { s.docs.forEach(function (d) { if (once("video-" + d.id)) { videoStore[d.id] = Object.assign({}, d.data()); delete videoStore[d.id].at; } }); syncVerdicts($("vlist"), videoStore); fillVerdictNotes($("vlist"), videoStore); });
       sub("demos", function (s) {
-        s.docs.forEach(function (d) { if (!hydrated["demo-" + d.id]) { hydrated["demo-" + d.id] = true; demoFeedback[d.id] = Object.assign({}, d.data()); } });
-        var fb = demoFeedback[cur.id] || {};
-        if (document.activeElement !== $("demoNote")) $("demoNote").value = fb.note || "";
+        s.docs.forEach(function (d) { if (once("demo-" + d.id)) demoFeedback[d.id] = Object.assign({}, d.data()); });
+        if (document.activeElement !== $("demoNote")) $("demoNote").value = (demoFeedback[cur.id] || {}).note || "";
         syncVerdict();
       });
-      sub("shots", function (s) { s.docs.forEach(function (d) { if (!hydrated["shot-" + d.id]) { hydrated["shot-" + d.id] = true; hydrateShot(d.id, d.data() || {}); } }); });
+      sub("shots", function (s) { s.docs.forEach(function (d) { if (once("shot-" + d.id)) hydrateShot(d.id, d.data() || {}); }); });
       sub("uploads", function (s) {
         s.docs.slice().sort(function (a, b) { return String((a.data() || {}).at).localeCompare(String((b.data() || {}).at)); })
           .forEach(function (d) { if (!uploads[d.id]) uploads[d.id] = Object.assign({}, d.data()); renderUpload(d.id, d.data() || {}); });
       });
-      sub("links", function (s) { s.docs.forEach(function (d) { if (d.id === "main" && !hydrated.links) { hydrated.links = true; if (document.activeElement !== $("links")) $("links").value = (d.data() || {}).text || ""; } }); });
+      sub("links", function (s) { s.docs.forEach(function (d) { if (d.id === "main" && once("links") && document.activeElement !== $("links")) $("links").value = (d.data() || {}).text || ""; }); });
+      sub("decisions", function (s) { s.docs.forEach(function (d) { if (d.id === "main" && once("decisions") && document.activeElement !== $("decisionsNote")) $("decisionsNote").value = (d.data() || {}).note || ""; }); });
     });
-    window.claude.use("assets").then(function (a) {
-      ASSETS = a;
-      if (!a) $("upHint").textContent = "这个视图不能上传文件（只有能编辑这一页的人可以）。可以把链接和时间点写在下面。";
-    });
+    window.claude.use("assets").then(function (a) { ASSETS = a; if (!a) $("upHint").textContent = "这个视图不能上传文件（只有能编辑这一页的人可以）。可以把链接和时间点写在下面。"; });
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
 })();
