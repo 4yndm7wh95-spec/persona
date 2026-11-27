@@ -896,6 +896,37 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     }
     ctx.restore();
   }
+  function quadP(a, c, b, k) { var u = 1 - k; return [u * u * a[0] + 2 * u * k * c[0] + k * k * b[0], u * u * a[1] + 2 * u * k * c[1] + k * k * b[1]]; }
+  /* P4R-style hit: jagged burst (white core, lemon body, orange glow), two long thin cross slashes, a ring, stars */
+  function p4rHit(ctx, x, y, H, k, seed, s) {
+    if (k <= 0 || k >= 1) return;
+    var r = rng(seed), a = 1 - seg(k, 0.45, 1), n = 11, R0 = H * 0.16 * s * (0.6 + 0.4 * eOut(seg(k, 0, 0.25))), rot = r() * 6.28;
+    ctx.save(); ctx.globalCompositeOperation = "lighter";
+    [[1, "rgba(243,154,30,0.55)"], [0.72, "rgba(230,235,26,0.92)"], [0.38, "rgba(255,255,255,1)"]].forEach(function (L) {
+      var rr = rng(seed + 5); ctx.globalAlpha = a; ctx.fillStyle = L[1]; ctx.beginPath();
+      for (var i = 0; i < n * 2; i++) { var ang = rot + i * Math.PI / n, rad = (i % 2 ? 0.38 : lerp(0.75, 1.15, rr())) * R0 * L[0]; ctx.lineTo(x + Math.cos(ang) * rad, y + Math.sin(ang) * rad * 0.85); }
+      ctx.closePath(); ctx.fill();
+    });
+    ctx.restore();
+    var sl = 1 - seg(k, 0.04, 0.4), a1 = r() * 3.14;
+    if (sl > 0) { ray(ctx, x, y, a1, H * 0.36 * s, 3, sl); ray(ctx, x, y, a1 + 1.2 + r() * 0.6, H * 0.26 * s, 2, sl * 0.8); }
+    ring(ctx, x, y, lerp(H * 0.04, H * 0.22 * s, eOut(seg(k, 0, 0.5))), lerp(H * 0.02, 1.5, seg(k, 0, 0.5)), YH, 1 - seg(k, 0.3, 0.6));
+    for (var j = 0; j < 4; j++) { var aj = r() * 6.28, dj = H * lerp(0.12, 0.22, r()) * s * eOut(seg(k, 0.05, 0.4)); star4(ctx, x + Math.cos(aj) * dj, y + Math.sin(aj) * dj, H * 0.025 * s * (1 - seg(k, 0.4, 0.8)), 0.15, 1, j % 2 ? "#ffffff" : YH); }
+  }
+  /* TV-signal glitch: a few horizontal strips of what is already drawn, shifted sideways, with cyan / magenta fringes */
+  function glitchStrips(ctx, x, y, w, h, k, seed) {
+    if (k <= 0 || k >= 1) return;
+    var r = rng(seed + Math.floor(k * 5) * 11);
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
+    for (var i = 0; i < 4; i++) {
+      var sx = clamp((x - w / 2) * dpr, 0, canvas.width - 2), sw = Math.min(w * dpr, canvas.width - sx);
+      var sy = clamp((y - h / 2 + r() * h) * dpr, 0, canvas.height - 2), sh = Math.min(h * lerp(0.05, 0.14, r()) * dpr, canvas.height - sy), dx = (r() - 0.5) * w * 0.22 * dpr;
+      if (sw < 2 || sh < 2) continue;
+      ctx.drawImage(canvas, sx, sy, sw, sh, sx + dx, sy, sw, sh);
+      ctx.globalAlpha = 0.5; ctx.fillStyle = i % 2 ? "rgba(0,255,255,0.6)" : "rgba(255,0,170,0.6)"; ctx.fillRect(sx + dx - 3 * dpr, sy, sw, Math.max(1, dpr)); ctx.globalAlpha = 1;
+    }
+    ctx.restore();
+  }
   /* placeholder Izanagi-no-Okami: white long coat with gold trims */
   function okamiBody(ctx, x, y, h) {
     ctx.save(); ctx.translate(x, y);
@@ -924,7 +955,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   /* ---------- demos ---------- */
   var DEMOS = [
     { id: "fiend5", name: "恶魔之焰 完整版（烧 7 张以上）", dur: 3.0, start: 0.55,
-      desc: "按你的意见：整体加快，中间不停。扫牌和转向电视现在是同一条连续的曲线：光团沿手牌弧线从慢到快扫过去，扫到右边不减速，顺着惯性往右上拐，走半圆弯回电视里伸出来的手，只在快到手的时候放慢落位。牌在路上跟着光团头部走，到手边收拢成一叠（每张稍微错开一点，看得出有几张），不展开，依次翻成黄色，整叠一起被捏碎。整段从亮起到捏碎约 1.5 秒（上一版约 2.2 秒）。",
+      desc: "按你的意见：整体加快，中间不停。扫牌和转向电视现在是同一条连续的曲线：光团沿手牌弧线从慢到快扫过去，扫到右边不减速，顺着惯性往右上拐，走半圆弯回电视里伸出来的手，只在快到手的时候放慢落位。牌在路上跟着光团头部走，到手边收拢成一叠（每张稍微错开一点，看得出有几张），不展开，依次翻成黄色，整叠一起被捏碎；每张牌化成一道黄色小彗星飞向敌人，命中是 P4R 式的锯齿爆光加电视信号错位，一张牌一下。整段从亮起到捏碎约 1.5 秒。",
       draw: function (ctx, W, H, tr) {
         var BEAT = 1.45, t = hs(tr, BEAT, 0.08);
         var shake = tr > BEAT && tr < BEAT + 0.16 ? (1 - (tr - BEAT) / 0.16) * H * 0.01 : 0;
@@ -1050,21 +1081,27 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
           }
           ring(ctx, Pc[0], Pc[1], lerp(H * 0.03, H * 0.6, eOut(seg(st, 0, 0.45))), lerp(H * 0.05, H * 0.004, seg(st, 0, 0.45)), "#ffffff", 1 - seg(st, 0.28, 0.5));
           ring(ctx, Pc[0], Pc[1], lerp(H * 0.02, H * 0.46, eOut(seg(st, 0.06, 0.5))), lerp(H * 0.03, H * 0.004, seg(st, 0.06, 0.5)), YH, 1 - seg(st, 0.34, 0.56));
+          makeShards(21, 30, { vmin: H * 0.8, vmax: H * 2.2, smin: H * 0.01, smax: H * 0.04 }).forEach(function (s) { var p = shardPos(s, st, 2.6, H * 0.35); drawShard(ctx, Pc[0] + p[0], Pc[1] + p[1], s, st, Y, 1 - seg(st, 0.4, 0.75)); });
+          /* each card becomes a small yellow comet that lands as a P4R-style hit */
           for (var c = 0; c < N; c++) {
-            var launch = 0.2 + c * 0.1, fl = seg(st, launch, launch + 0.17);
-            makeShards(300 + c, 8, { vmin: H * 0.5, vmax: H * 1.3, smin: H * 0.01, smax: H * 0.03 }).forEach(function (s) {
-              var p = shardPos(s, Math.min(st, launch), 3.4, 0), x = Pc[0] + p[0], y = Pc[1] + p[1];
-              if (fl > 0) { var k4 = eIn(fl), mx = (x + ex) / 2, my = Math.min(y, ey) - H * 0.2; x = lerp(lerp(x, mx, k4), lerp(mx, ex, k4), k4); y = lerp(lerp(y, my, k4), lerp(my, ey, k4), k4); }
-              if (fl < 1) drawShard(ctx, x, y, s, st, fl > 0.3 ? "#9fe6ff" : Y, 1 - (fl > 0 ? 0 : seg(st, 1.0, 1.3)));
-            });
-            var h2 = st - (launch + 0.17);
-            if (h2 > 0) { slashArc(ctx, ex, ey, H * 0.18, -2.4 + c * 0.55, 2.2, seg(h2, 0, 0.09), 1 - seg(h2, 0.11, 0.26)); damageBadge(ctx, ex - W * 0.05 + (c - 2) * W * 0.03, ey - H * 0.22 - c * H * 0.035, 7, seg(h2, 0, 0.16), 1 - seg(h2, 0.6, 0.9)); }
+            var l0 = 0.1 + c * 0.1, dur = 0.2, Es = [ex + (c - 2) * H * 0.025, ey + (c % 2 ? -1 : 1) * H * 0.03];
+            var Cs = [(Pc[0] + Es[0]) / 2 + (c - 2) * H * 0.04, Math.min(Pc[1], Es[1]) - H * (0.14 + 0.05 * c)];
+            if (st > l0 && st < l0 + dur + 0.05) {
+              var cp = []; for (var q = 0; q <= 11; q++) cp.push(quadP(Pc, Cs, Es, eIn(seg(st - q * 0.007, l0, l0 + dur))));
+              drawComet(ctx, cp, H * 0.035, tr, 1 - seg(st, l0 + dur, l0 + dur + 0.05));
+            }
+            var h2 = st - (l0 + dur);
+            if (h2 > 0) {
+              if (h2 < 0.07) glitchStrips(ctx, ex, ey, H * 0.5, H * 0.42, h2 / 0.07, 30 + c);
+              p4rHit(ctx, Es[0], Es[1], H, seg(h2, 0, 0.32), 40 + c, 1);
+              damageBadge(ctx, ex - W * 0.05 + (c - 2) * W * 0.03, ey - H * 0.22 - c * H * 0.035, 7, seg(h2, 0, 0.16), 1 - seg(h2, 0.6, 0.9));
+            }
           }
         }
         ctx.restore();
       } },
     { id: "fiendq", name: "恶魔之焰 快速版（烧 7 张以下）", dur: 1.4, start: 0.24,
-      desc: "烧不到 7 张时播这个：同一团彗星光，但只在手牌区快速扫一下（约 0.25 秒），不飞去电视、不伸手、不收叠；扫到哪张，哪张原地翻黄、立刻捏碎，碎片直接变成蓝色刀光飞向敌人，一张牌一刀，0.35 秒左右出第一刀，整段约 0.8 秒。",
+      desc: "烧不到 7 张时播这个：同一团彗星光，但只在手牌区快速扫一下（约 0.25 秒），不飞去电视、不伸手、不收叠；扫到哪张，哪张原地翻黄、立刻捏碎，再化成一道黄色小彗星飞向敌人，一张牌一下。命中是 P4R 式的：锯齿爆光（白芯、黄身、橙色外晕）+ 两道细长交叉斩线 + 黄环和小星星，命中瞬间敌人那块画面像电视信号一样横向错位一下。约 0.45 秒出第一下，整段约 0.9 秒。",
       draw: function (ctx, W, H, tr) {
         battleFloor(ctx, W, H);
         figure(ctx, W * 0.13, H * 0.92, H * 0.42, Y);
@@ -1083,16 +1120,18 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
             if (fl >= 0.5) yellowCard(ctx, cw, ch, true); else stsCard(ctx, cw, ch, i % 3);
             ctx.restore();
           } else {
-            var st = tr - tC, fl2 = seg(st, 0.04, 0.22);
-            star4(ctx, cx, cy - H * 0.03, H * 0.07 * (1 - seg(st, 0, 0.12)), 0.12, 1);
-            ring(ctx, cx, cy - H * 0.03, lerp(H * 0.02, H * 0.12, eOut(seg(st, 0, 0.2))), 2, "#ffffff", 1 - seg(st, 0.1, 0.25));
-            makeShards(700 + i, 7, { vmin: H * 0.4, vmax: H * 1.0, smin: H * 0.01, smax: H * 0.026 }).forEach(function (s) {
-              var p = shardPos(s, Math.min(st, 0.04), 3.0, 0), x = cx + p[0], y = cy - H * 0.03 + p[1];
-              if (fl2 > 0) { var k2 = eIn(fl2), mx = (x + ex) / 2, my = Math.min(y, ey) - H * 0.18; x = lerp(lerp(x, mx, k2), lerp(mx, ex, k2), k2); y = lerp(lerp(y, my, k2), lerp(my, ey, k2), k2); }
-              if (fl2 < 1) drawShard(ctx, x, y, s, st, fl2 > 0.3 ? "#9fe6ff" : Y, 1);
-            });
-            var h2 = st - 0.22;
-            if (h2 > 0) { slashArc(ctx, ex, ey, H * 0.17, -2.4 + i * 0.55, 2.2, seg(h2, 0, 0.08), 1 - seg(h2, 0.1, 0.22)); damageBadge(ctx, ex - W * 0.04 + (i - 2) * W * 0.03, ey - H * 0.21 - i * H * 0.035, 7, seg(h2, 0, 0.14), 1 - seg(h2, 0.45, 0.7)); }
+            var st = tr - tC, Sq = [cx, cy - H * 0.03];
+            star4(ctx, Sq[0], Sq[1], H * 0.07 * (1 - seg(st, 0, 0.12)), 0.12, 1);
+            ring(ctx, Sq[0], Sq[1], lerp(H * 0.02, H * 0.12, eOut(seg(st, 0, 0.2))), 2, "#ffffff", 1 - seg(st, 0.1, 0.25));
+            makeShards(700 + i, 7, { vmin: H * 0.4, vmax: H * 1.0, smin: H * 0.01, smax: H * 0.026 }).forEach(function (s) { var p = shardPos(s, st, 3.0, H * 1.2); drawShard(ctx, Sq[0] + p[0], Sq[1] + p[1], s, st, Y, 1 - seg(st, 0.15, 0.35)); });
+            var Eq = [ex + (i - 2) * H * 0.025, ey + (i % 2 ? -1 : 1) * H * 0.03], Cq = [(Sq[0] + Eq[0]) / 2, Math.min(Sq[1], Eq[1]) - H * (0.16 + 0.03 * i)];
+            if (st > 0.02 && st < 0.25) { var cq = []; for (var q = 0; q <= 10; q++) cq.push(quadP(Sq, Cq, Eq, eIn(seg(st - q * 0.007, 0.02, 0.2)))); drawComet(ctx, cq, H * 0.032, tr, 1 - seg(st, 0.2, 0.25)); }
+            var h2 = st - 0.2;
+            if (h2 > 0) {
+              if (h2 < 0.06) glitchStrips(ctx, ex, ey, H * 0.46, H * 0.4, h2 / 0.06, 60 + i);
+              p4rHit(ctx, Eq[0], Eq[1], H, seg(h2, 0, 0.28), 80 + i, 0.9);
+              damageBadge(ctx, ex - W * 0.04 + (i - 2) * W * 0.03, ey - H * 0.21 - i * H * 0.035, 7, seg(h2, 0, 0.14), 1 - seg(h2, 0.45, 0.7));
+            }
           }
         }
       } },
@@ -1439,13 +1478,19 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         }
       } },
     { id: "myriadq", name: "几万真言 快速版（力量 8 以下）", dur: 1.5, start: 0.34,
-      desc: "力量不到 8 时播这个：不出技能名、不转牌、不召出大神全身。悠手里的白金牌直接捏碎（0.1 秒）→ 杖带着一圈淡金色圆环在悠和敌人之间闪现，快速转一圈停住（约 0.3 秒）→ 金光竖直劈下四下，间隔 0.12 秒。约 0.45 秒出第一下，整段约 1.1 秒。",
+      desc: "力量不到 8 时播这个：不出技能名、不转牌。悠手里的白金牌直接捏碎（0.1 秒）→ 伊邪那岐大神照样在悠身后出现（0.15 秒快速浮现，最后快速淡出）；杖在悠和敌人之间闪现，快转一圈停住（约 0.3 秒）→ 金光竖直劈下四下，间隔 0.12 秒。约 0.45 秒出第一下，整段约 1.2 秒。",
       draw: function (ctx, W, H, tr) {
         var GOLD = "#f2c54b", PALE = "#fff3c4", t = hs(tr, 0.1, 0.04);
         battleFloor(ctx, W, H);
         ctx.save(); ctx.globalAlpha = 0.3 * seg(t, 0.05, 0.15) * (1 - seg(t, 1.0, 1.25)); ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H); ctx.restore();
         var foes = [[W * 0.74, H * 0.66], [W * 0.84, H * 0.56], [W * 0.91, H * 0.72]];
         foes.forEach(function (e, i) { enemy(ctx, e[0], e[1], H * 0.085, Math.sin(tr * 3 + i)); });
+        /* Izanagi-no-Okami still appears behind Yu, quickly in and quickly out */
+        var okq = eOut(seg(t, 0.1, 0.24)) * (1 - seg(t, 0.95, 1.2));
+        if (okq > 0) {
+          ctx.save(); ctx.globalAlpha = okq; ctx.shadowColor = GOLD; ctx.shadowBlur = H * 0.04; ring(ctx, W * 0.27, H * 0.34, H * 0.28 * (0.85 + 0.15 * okq), H * 0.018, GOLD, 1); ctx.restore();
+          ctx.save(); ctx.globalAlpha = okq; okamiBody(ctx, W * 0.27, H * 1.0 - (1 - okq) * H * 0.06, H * 0.92); ctx.restore();
+        }
         figure(ctx, W * 0.2, H * 0.94, H * 0.4, Y);
         var cpos = [W * 0.26, H * 0.5];
         if (t < 0.1) {
