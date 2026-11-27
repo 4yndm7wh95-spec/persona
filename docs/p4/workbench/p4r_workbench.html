@@ -941,6 +941,29 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     var tw = Math.sin(Math.min(1, seg(k, 0.12, 0.5)) * Math.PI);
     if (tw > 0) { var cA = Math.cos(ang), sA = Math.sin(ang); star4(ctx, x + cA * L * 0.42, y + sA * L * 0.42, H * 0.022 * s * tw, 0.15, 1, "#ffffff"); star4(ctx, x - cA * L * 0.36, y - sA * L * 0.36, H * 0.016 * s * tw, 0.15, 1, YH); }
   }
+  /* P4R ring hit: white disc → thick white ring, lemon ring with an orange inner line, a TV-dial tick ring that turns,
+     a halftone dot ring, twinkles on the ring; the last hit adds thin pink and green rings (the BATON rainbow) */
+  function p4rRing(ctx, x, y, H, k, seed, s, big) {
+    if (k <= 0 || k >= 1) return;
+    var dk = seg(k, 0, 0.08);
+    if (dk < 1) { ctx.save(); ctx.globalAlpha = 1 - dk * 0.4; ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(x, y, H * (0.03 + 0.05 * eOut(dk)) * s, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+    var k1 = seg(k, 0.05, 0.5), r1 = lerp(H * 0.08, H * 0.26, eOut(k1)) * s;
+    ring(ctx, x, y, r1, lerp(H * 0.04, H * 0.004, k1) * s, "#ffffff", 1 - seg(k, 0.32, 0.55));
+    var k2 = seg(k, 0.1, 0.55), r2 = lerp(H * 0.06, H * 0.19, eOut(k2)) * s, a2 = 1 - seg(k, 0.38, 0.62);
+    ring(ctx, x, y, r2, lerp(H * 0.026, H * 0.004, k2) * s, Y, a2);
+    ring(ctx, x, y, r2 * 0.86, 1.5, ORANGE, a2 * 0.9);
+    var k3 = seg(k, 0.08, 0.6), r3 = lerp(H * 0.1, H * 0.23, eOut(k3)) * s, ta = 1 - seg(k, 0.4, 0.65), rot = (seed % 2 ? 1 : -1) * k3 * 0.6;
+    if (ta > 0) {
+      ctx.save(); ctx.globalAlpha = ta; ctx.strokeStyle = "#ffffff"; ctx.lineWidth = Math.max(1.5, H * 0.004 * s);
+      for (var i = 0; i < 24; i++) { var a = rot + i * Math.PI / 12, l = (i % 3 === 0 ? 0.035 : 0.018) * H * s; ctx.beginPath(); ctx.moveTo(x + Math.cos(a) * r3, y + Math.sin(a) * r3); ctx.lineTo(x + Math.cos(a) * (r3 + l), y + Math.sin(a) * (r3 + l)); ctx.stroke(); }
+      ctx.restore();
+    }
+    var k4 = seg(k, 0.14, 0.62), r4 = lerp(H * 0.05, H * 0.14, eOut(k4)) * s, da = 1 - seg(k, 0.42, 0.66);
+    if (da > 0) { ctx.save(); ctx.globalAlpha = da; ctx.fillStyle = YH; for (var j = 0; j < 20; j++) { var b = j * Math.PI / 10 - rot; ctx.beginPath(); ctx.arc(x + Math.cos(b) * r4, y + Math.sin(b) * r4, H * 0.0045 * s, 0, Math.PI * 2); ctx.fill(); } ctx.restore(); }
+    if (big) { [["#ff3fae", 0], ["#53e04f", 1]].forEach(function (c) { var kk = seg(k, 0.18 + c[1] * 0.05, 0.65 + c[1] * 0.05); ring(ctx, x, y, lerp(H * 0.08, H * (0.3 + c[1] * 0.05), eOut(kk)) * s, lerp(H * 0.012, 1.2, kk), c[0], 1 - seg(k, 0.45, 0.75)); }); }
+    var tw = Math.sin(Math.min(1, seg(k, 0.15, 0.55)) * Math.PI);
+    if (tw > 0) [0.6, 2.4, 4.3].forEach(function (a, i) { star4(ctx, x + Math.cos(a + seed) * r1, y + Math.sin(a + seed) * r1, H * (i ? 0.016 : 0.024) * s * tw, 0.15, 1, i % 2 ? YH : "#ffffff"); });
+  }
   /* TV-signal glitch: a few horizontal strips of what is already drawn, shifted sideways, with cyan / magenta fringes */
   function glitchStrips(ctx, x, y, w, h, k, seed) {
     if (k <= 0 || k >= 1) return;
@@ -983,7 +1006,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   /* ---------- demos ---------- */
   var DEMOS = [
     { id: "fiend5", name: "恶魔之焰 完整版（烧 7 张以上）", dur: 3.0, start: 0.55,
-      desc: "按你的意见：整体加快，中间不停。扫牌和转向电视现在是同一条连续的曲线：光团沿手牌弧线从慢到快扫过去，扫到右边不减速，顺着惯性往右上拐，走半圆弯回电视里伸出来的手，只在快到手的时候放慢落位。牌在路上跟着光团头部走，到手边收拢成一叠（每张稍微错开一点，看得出有几张），不展开，依次翻成黄色，整叠一起被捏碎；每张牌化成一道黄色小彗星飞向敌人，命中是黄色斜条切过（条里敌人变黑色剪影的撞色）加白环、黄环和电视信号错位，一张牌一下，所有条平行、一条挨一条落下，叠成整齐的斜条纹。整段从亮起到捏碎约 1.5 秒。",
+      desc: "按你的意见：整体加快，中间不停。扫牌和转向电视现在是同一条连续的曲线：光团沿手牌弧线从慢到快扫过去，扫到右边不减速，顺着惯性往右上拐，走半圆弯回电视里伸出来的手，只在快到手的时候放慢落位。牌在路上跟着光团头部走，到手边收拢成一叠（每张稍微错开一点，看得出有几张），不展开，依次翻成黄色，整叠一起被捏碎；每张牌化成一道黄色小彗星飞向敌人，命中只用光环表达（白环、黄环、旋钮刻度环、网点环、小星星，最后一下加粉绿细环），加电视信号错位，一张牌一下。整段从亮起到捏碎约 1.5 秒。",
       draw: function (ctx, W, H, tr) {
         var BEAT = 1.45, t = hs(tr, BEAT, 0.08);
         var shake = tr > BEAT && tr < BEAT + 0.16 ? (1 - (tr - BEAT) / 0.16) * H * 0.01 : 0;
@@ -1121,8 +1144,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
             var h2 = st - (l0 + dur);
             if (h2 > 0) {
               if (h2 < 0.07) glitchStrips(ctx, ex, ey, H * 0.5, H * 0.42, h2 / 0.07, 30 + c);
-              var pa = -0.42, po = (c - 2) * H * 0.045;
-              p4rCut(ctx, ex - Math.sin(pa) * po, ey + Math.cos(pa) * po, H, seg(h2, 0, 0.38), 40 + c, 1, pa, [ex, ey, H * 0.11]);
+              p4rRing(ctx, ex + (c - 2) * H * 0.03, ey + (c % 2 ? -1 : 1) * H * 0.02, H, seg(h2, 0, 0.4), 40 + c, 1, c === N - 1);
               damageBadge(ctx, ex - W * 0.05 + (c - 2) * W * 0.03, ey - H * 0.22 - c * H * 0.035, 7, seg(h2, 0, 0.16), 1 - seg(h2, 0.6, 0.9));
             }
           }
@@ -1130,7 +1152,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         ctx.restore();
       } },
     { id: "fiendq", name: "恶魔之焰 快速版（烧 7 张以下）", dur: 1.4, start: 0.24,
-      desc: "烧不到 7 张时播这个：同一团彗星光，但只在手牌区快速扫一下（约 0.25 秒），不飞去电视、不伸手、不收叠；扫到哪张，哪张原地翻黄、立刻捏碎，再化成一道黄色小彗星飞向敌人，一张牌一下。命中用 P4R 的平面设计：一道黄色斜条切过敌人（白色上沿、黑色下沿、一排橙色网点），条压过的那块敌人变成黑色剪影（撞色），中心白点变白环、再一圈黄环扩散，两头各一颗小星星；所有条同一个角度，一条挨一条依次落下，叠成一组整齐的平行斜条纹。命中瞬间敌人那块画面像电视信号一样横向错位一下。约 0.45 秒出第一下，整段约 0.9 秒。",
+      desc: "烧不到 7 张时播这个：同一团彗星光，但只在手牌区快速扫一下（约 0.25 秒），不飞去电视、不伸手、不收叠；扫到哪张，哪张原地翻黄、立刻捏碎，再化成一道黄色小彗星飞向敌人，一张牌一下。命中只用光环表达：中心白点弹出变成粗白环，稍后一圈柠檬黄环（内侧一条细橙线），一圈像电视旋钮的刻度环边扩边转，一圈黄色网点环，白环上亮几颗小星星；最后一下多两圈粉、绿细环（BATON 那种彩虹环）收尾。命中瞬间敌人那块画面像电视信号一样横向错位一下。约 0.45 秒出第一下，整段约 0.9 秒。",
       draw: function (ctx, W, H, tr) {
         battleFloor(ctx, W, H);
         figure(ctx, W * 0.13, H * 0.92, H * 0.42, Y);
@@ -1159,8 +1181,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
             var h2 = st - 0.2 - di;
             if (h2 > 0) {
               if (h2 < 0.06) glitchStrips(ctx, ex, ey, H * 0.46, H * 0.4, h2 / 0.06, 60 + i);
-              var qa = -0.42, qo = (i - 2) * H * 0.045;
-              p4rCut(ctx, ex - Math.sin(qa) * qo, ey + Math.cos(qa) * qo, H, seg(h2, 0, 0.34), 80 + i, 0.9, qa, [ex, ey, H * 0.11]);
+              p4rRing(ctx, ex + (i - 2) * H * 0.03, ey + (i % 2 ? -1 : 1) * H * 0.02, H, seg(h2, 0, 0.36), 80 + i, 0.9, i === N - 1);
               damageBadge(ctx, ex - W * 0.04 + (i - 2) * W * 0.03, ey - H * 0.21 - i * H * 0.035, 7, seg(h2, 0, 0.14), 1 - seg(h2, 0.45, 0.7));
             }
           }
