@@ -514,3 +514,13 @@ P4AU PS4；悠一击必杀，雷击起手、大神正面、举杖挥转、竖直
 | [myriad_truths/p4au_5aFwK3xenwc/frame_0162.jpg](myriad_truths/p4au_5aFwK3xenwc/frame_0162.jpg) | [源视频 16.90s](https://www.youtube.com/watch?v=5aFwK3xenwc&t=16) | P4AU PS4；悠一击必杀，雷击起手、大神正面、举杖挥转、竖直光束与爆发；序列第 162 帧（10 fps） | 1920×1080 |
 | [myriad_truths/p4au_5aFwK3xenwc/frame_0163.jpg](myriad_truths/p4au_5aFwK3xenwc/frame_0163.jpg) | [源视频 17.00s](https://www.youtube.com/watch?v=5aFwK3xenwc&t=17) | P4AU PS4；悠一击必杀，雷击起手、大神正面、举杖挥转、竖直光束与爆发；序列第 163 帧（10 fps） | 1920×1080 |
 | [myriad_truths/p4au_5aFwK3xenwc/frame_0164.jpg](myriad_truths/p4au_5aFwK3xenwc/frame_0164.jpg) | [源视频 17.10s](https://www.youtube.com/watch?v=5aFwK3xenwc&t=17) | P4AU PS4；悠一击必杀，雷击起手、大神正面、举杖挥转、竖直光束与爆发；序列第 164 帧（10 fps） | 1920×1080 |
+
+## P4R 召唤眼神特写
+
+与用户片段 `research/p4r/user_clips/p4r_summon_baton.mp4` 中黄菱形眼睛是同一套镜头。重新从 ATLUS West 官方 1080P 预告提取，并非放大用户片段。保留完整 1920×1080 画幅，包含原始菱形构图。时间为请求截取的源视频秒数，实际取最近后续视频帧（源帧率 30000/1001）。
+
+| 文件 | 来源及时间 | 内容 | 分辨率 |
+|---|---|---|---|
+| [eyes/p4r_47.20s_closed.jpg](eyes/p4r_47.20s_closed.jpg) | [ATLUS West 官方 47.20s](https://www.youtube.com/watch?v=y5qy6ZO4w1g&t=47) | 闭眼，眼皮尚未抬起 | 1920×1080 |
+| [eyes/p4r_47.30s_opening.jpg](eyes/p4r_47.30s_opening.jpg) | [ATLUS West 官方 47.30s](https://www.youtube.com/watch?v=y5qy6ZO4w1g&t=47) | 睁开中，蓝色虹膜刚露出 | 1920×1080 |
+| [eyes/p4r_47.43s_open.jpg](eyes/p4r_47.43s_open.jpg) | [ATLUS West 官方 47.43s](https://www.youtube.com/watch?v=y5qy6ZO4w1g&t=47) | 全睁，蓝色眼睛与菱形边框清楚可见 | 1920×1080 |
