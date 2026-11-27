@@ -158,7 +158,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       <tr><td style="padding:4px 6px">几万真言</td><td style="padding:4px 6px">力量 ≥ 8：约 2.1 秒落第一下，约 3.5 秒结束（之前约 4.4 秒）</td><td style="padding:4px 6px">约 0.45 秒捏碎，约 1 秒落第一下（之前约 2 秒），约 1.6 秒打完</td></tr>
     </table>
     恶魔之焰：光团不再慢慢起步，一开始就在动，扫过手牌越来越快，一口气拐上去到电视里的手，只在最后落到手上时稍微收一下；牌收叠好马上捏碎。快速版扫牌同速，扫完光团直接冲出画面。<br>几万真言：快速版杖快速转一圈就停，停住马上劈。完整版捏碎提前，杖转得稍快，停住后不再空等，四下间隔 0.24 秒，结尾圆环紧跟最后一下。<br>
-    <b>召唤整段连起来了：</b>草图第 7 个「召唤（眼神特写 → 翻页 → 手里捏碎）」。眼神特写照原版排版（菱形大小、位置、角度、眼睛的摆法都是从官方截图量的），然后翻页落到电视里伸出的手上、捏碎、伊邪那岐出现，约 1.25 秒捏碎。眼睛先用第一批的图占位；第一批有几帧怪（闭眼那帧镜片被一整块平涂的青色盖死，睁开后大小还变了），已经写好重画第三版的任务。
+    <b>眼神特写换了做法：</b>不再让 AI 画中间帧（Codex 两张就跑位了）。只用一张睁眼图（Codex 这次的第一张），闭眼、睁开、镜片反光都叠在上面画：眼皮是一条会动的线，反光透过镜片遮罩叠上去。眼睛不可能变大小，也是连续动画，没有逐帧感；瞳孔一直清楚，不会发白。看草图第 7 个「召唤（眼神特写 → 翻页 → 手里捏碎）」，0.17 秒是闭眼、0.24 秒是半睁。
   </div>
 
   <section id="decisions">
@@ -333,7 +333,10 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   ];
   var refStore = {};
   var GEN = [
-    { id: "gen_eyes", frames: ["gen/eye_01_closed.jpg", "gen/eye_02_slit.jpg", "gen/eye_03_half.jpg", "gen/eye_04_most.jpg", "gen/eye_05_open.jpg", "gen/eye_06_glint.jpg"], title: "眼神特写 6 帧（第一批，要重画）",
+    { id: "gen_eye_master", frames: ["gen/eye_master.jpg"], title: "眼神特写：唯一的一张睁眼底图（新）",
+      text: "Codex 第三版的第一张。闭眼、睁开、反光都在这张图上叠着画，不再生成中间帧，所以眼睛不会跑位、不会变大小。",
+      use: "觉得这张眼睛本身还要改（比如眼神再锐利一点、瞳孔再小一点），只改这一张就行，动画不用重做。" },
+    { id: "gen_eyes", frames: ["gen/eye_01_closed.jpg", "gen/eye_02_slit.jpg", "gen/eye_03_half.jpg", "gen/eye_04_most.jpg", "gen/eye_05_open.jpg", "gen/eye_06_glint.jpg"], title: "眼神特写 6 帧（第一批，不用了）",
       text: "你说得对，有几帧很怪：闭眼那帧镜片被一整块不透明的平涂青色盖死，闭着的眼睛只是在上面画了一条线；睁开以后眼睛大小还变了（每帧都是重新生成的）。",
       use: "第三版任务已写好：先画睁眼那帧当底图，其余帧只改镜片里面，最后把镜片以外的像素全部换回底图，大小位置不会变；闭眼、睁开过程、睁开后的样子都照原版写清楚了。召唤草图里先用这组占位。" },
     { id: "gen_eyes_turn", frames: ["gen/eye_t01.jpg", "gen/eye_t02.jpg", "gen/eye_t03.jpg", "gen/eye_t04.jpg", "gen/eye_t05.jpg", "gen/eye_t06.jpg", "gen/eye_t07.jpg", "gen/eye_t08.jpg", "gen/eye_t09.jpg"], title: "眼神特写 逐帧重画 9 帧（不用了）",
@@ -1229,21 +1232,96 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     var cx = lerp(W * 0.432, VX - A, k), cy = lerp(H * 0.55, VY, k);
     return { cx: cx, cy: cy, a: A * s, b: B * s, vx: cx + A * s };
   }
-  /* closed ~0.1 s, opens in ~0.13 s with continuous cross-fades, holds; a slight camera settle keeps the picture moving.
-     yellowOut 0..1 floods the window back to yellow before the page turn. Returns the frame shown, for labels. */
+  /* one master picture (open eye); closing / opening and the lens glare are drawn on top, so the eye can never move or
+     change size. Coordinates are pixels of the 1536x1024 master. */
+  var EYE_POLY = [[498,626],[506,580],[515,540],[525,512],[560,500],[600,480],[640,456],[680,440],[720,426],[760,416],[795,414],[812,420],[816,470],[812,505],[795,535],[760,570],[720,600],[680,618],[640,627],[600,631],[540,631]];
+  function eyeOpen(t) { return t < 0.19 ? 0 : t < 0.33 ? 0.8 * eOut(seg(t, 0.19, 0.33)) : lerp(0.8, 0.72, eInOut(seg(t, 0.33, 0.45))); }
+  var eyeOffC = null, eyeLidC = null;
+  function eyeLayers(ctx, t, ox, oy, kx, ky) {
+    function P(x, y) { return [ox + x * kx, oy + y * ky]; }
+    var o = eyeOpen(t);
+    var I = P(498, 626), O = P(815, lerp(505, 418, o)), C = P(lerp(650, 560, o), lerp(690, 360, o));
+    function curve(u) {
+      var a = (1 - u) * (1 - u), b = 2 * u * (1 - u), c = u * u;
+      var dx = 2 * (1 - u) * (C[0] - I[0]) + 2 * u * (O[0] - C[0]), dy = 2 * (1 - u) * (C[1] - I[1]) + 2 * u * (O[1] - C[1]), L = Math.hypot(dx, dy) || 1;
+      return { x: a * I[0] + b * C[0] + c * O[0], y: a * I[1] + b * C[1] + c * O[1], nx: -dy / L, ny: dx / L, tx: dx / L, ty: dy / L };
+    }
+    /* eyelid skin above the lid edge, painted in image space with a feathered edge so it melts into the skin around it;
+       colours follow what surrounds the eye: hair shadow at the top, skin toward the lash line */
+    if (!eyeLidC) { eyeLidC = document.createElement("canvas"); eyeLidC.width = 768; eyeLidC.height = 512; }
+    var lc = eyeLidC.getContext("2d"); lc.setTransform(1, 0, 0, 1, 0, 0); lc.globalCompositeOperation = "source-over"; lc.clearRect(0, 0, 768, 512);
+    var ec = [655, 530];
+    lc.save(); lc.filter = "blur(5px)"; lc.beginPath();
+    EYE_POLY.forEach(function (q, i) { var dx = q[0] - ec[0], dy = q[1] - ec[1], d = Math.hypot(dx, dy) || 1, f = 1 + 12 / d, x = (ec[0] + dx * f) / 2, y = (ec[1] + dy * f) / 2; if (i) lc.lineTo(x, y); else lc.moveTo(x, y); });
+    lc.closePath(); lc.fillStyle = "#fff"; lc.fill(); lc.restore();
+    lc.globalCompositeOperation = "source-in";
+    var lg = lc.createLinearGradient(0, 415 / 2, 0, 630 / 2);
+    lg.addColorStop(0, "rgb(22,20,30)"); lg.addColorStop(0.45, "rgb(92,80,82)"); lg.addColorStop(1, "rgb(152,133,108)");
+    lc.fillStyle = lg; lc.fillRect(0, 0, 768, 512);
+    /* keep only what is above the lid edge (crisp; the lash line sits on it) */
+    lc.globalCompositeOperation = "destination-out"; lc.beginPath();
+    var Ii = [498 / 2, 626 / 2], Oi = [815 / 2, lerp(505, 418, o) / 2], Ci = [lerp(650, 560, o) / 2, lerp(690, 360, o) / 2];
+    lc.moveTo(Ii[0] - 40, Ii[1]); lc.lineTo(Ii[0], Ii[1]); lc.quadraticCurveTo(Ci[0], Ci[1], Oi[0], Oi[1]); lc.lineTo(Oi[0] + 40, Oi[1]); lc.lineTo(Oi[0] + 40, 512); lc.lineTo(Ii[0] - 40, 512); lc.closePath();
+    lc.fillStyle = "#000"; lc.fill(); lc.globalCompositeOperation = "source-over";
+    ctx.drawImage(eyeLidC, ox, oy, 1536 * kx, 1024 * ky);
+    /* lash line on the lid edge: thin at the inner corner, thickest toward the outer corner */
+    var up = [], dn = [];
+    for (var i = 0; i <= 28; i++) {
+      var u = i / 28, q = curve(u), w = (4 + 21 * Math.pow(u, 0.7) * (1 - Math.pow(u, 8))) * kx;
+      up.push([q.x - q.nx * w * 0.7, q.y - q.ny * w * 0.7]); dn.push([q.x + q.nx * w * 0.3, q.y + q.ny * w * 0.3]);
+    }
+    ctx.save(); ctx.beginPath(); up.forEach(function (p, j) { if (j) ctx.lineTo(p[0], p[1]); else ctx.moveTo(p[0], p[1]); });
+    for (var j2 = dn.length - 1; j2 >= 0; j2--) ctx.lineTo(dn[j2][0], dn[j2][1]); ctx.closePath(); ctx.fillStyle = "#110c13"; ctx.fill();
+    /* while closed: a few lashes at the outer corner and a soft crease above the lid */
+    var cl = 1 - seg(o, 0.15, 0.55);
+    if (cl > 0) {
+      ctx.globalAlpha = cl; ctx.strokeStyle = "#16111a"; ctx.lineCap = "round"; ctx.lineWidth = 3.5 * kx;
+      [[0.8, 16], [0.88, 22], [0.95, 18]].forEach(function (L2) { var q = curve(L2[0]); ctx.beginPath(); ctx.moveTo(q.x, q.y); ctx.quadraticCurveTo(q.x + (q.nx * 0.5 + q.tx * 0.5) * L2[1] * kx, q.y + (q.ny * 0.5 + q.ty * 0.5) * L2[1] * kx, q.x + (q.nx * 0.8 + q.tx * 0.7) * L2[1] * kx, q.y + (q.ny * 0.8 + q.ty * 0.7) * L2[1] * kx); ctx.stroke(); });
+      ctx.globalAlpha = cl * 0.6; ctx.lineWidth = 3 * kx; ctx.strokeStyle = "rgb(78,62,62)"; ctx.beginPath();
+      for (var k3 = 0; k3 <= 12; k3++) { var q3 = curve(0.18 + k3 / 12 * 0.64); var px = q3.x - q3.nx * 26 * kx, py = q3.y - q3.ny * 26 * kx; if (k3) ctx.lineTo(px, py); else ctx.moveTo(px, py); }
+      ctx.stroke();
+    }
+    ctx.restore();
+    /* lens glare through the lens mask: a see-through cyan reflection over the lower-left that recedes to the left while the eye
+       opens, and a vertical light band sweeping right to left */
+    /* the iris stays clear blue the whole time (no milky glow); a small star flicks on its highlight as it opens */
+    var sk = seg(t, 0.29, 0.4); if (sk > 0 && sk < 1) { var hp = P(742, 440); star4(ctx, hp[0], hp[1], 46 * kx * Math.sin(sk * Math.PI), 0.14, 1); }
+    var refl = 0.6 * (1 - seg(t, 0.19, 0.3)), bandA = 0.4 * seg(t, 0.12, 0.16) * (1 - seg(t, 0.28, 0.34)), bx = lerp(0.78, 0.12, eInOut(seg(t, 0.14, 0.32)));
+    if ((refl > 0.01 || bandA > 0.01) && ready("elens")) {
+      if (!eyeOffC) { eyeOffC = document.createElement("canvas"); eyeOffC.width = 768; eyeOffC.height = 512; }
+      var oc = eyeOffC.getContext("2d"); oc.setTransform(1, 0, 0, 1, 0, 0); oc.globalCompositeOperation = "source-over"; oc.clearRect(0, 0, 768, 512);
+      var ex = lerp(0.12, 0.74, refl / 0.6) * 768;
+      if (refl > 0.01) {
+        var g1 = oc.createLinearGradient(0.12 * 768, 0, ex, 0);
+        g1.addColorStop(0, "rgba(160,238,255," + refl + ")"); g1.addColorStop(0.6, "rgba(90,200,255," + (refl * 0.45) + ")"); g1.addColorStop(1, "rgba(90,200,255,0)");
+        oc.fillStyle = g1; oc.fillRect(0, 0, 768, 512);
+        var g2 = oc.createLinearGradient(0, 0.35 * 512, 0, 0.9 * 512); g2.addColorStop(0, "rgba(255,255,255,0)"); g2.addColorStop(1, "rgba(235,252,255," + (refl * 0.35) + ")");
+        oc.fillStyle = g2; oc.fillRect(0, 0, ex, 512);
+      }
+      if (bandA > 0.01) {
+        var bw = 0.07 * 768, x0 = bx * 768, g3 = oc.createLinearGradient(x0 - bw, 0, x0 + bw, 0);
+        g3.addColorStop(0, "rgba(255,255,255,0)"); g3.addColorStop(0.5, "rgba(240,255,255," + bandA + ")"); g3.addColorStop(1, "rgba(255,255,255,0)");
+        oc.save(); oc.translate(x0, 256); oc.transform(1, 0, -0.18, 1, 0, 0); oc.translate(-x0, -256); oc.fillStyle = g3; oc.fillRect(x0 - bw * 1.5, -40, bw * 3, 600); oc.restore();
+      }
+      oc.globalCompositeOperation = "destination-in"; oc.drawImage(IMG.elens, 0, 0, 768, 512); oc.globalCompositeOperation = "source-over";
+      ctx.drawImage(eyeOffC, ox, oy, 1536 * kx, 1024 * ky);
+    }
+    return o;
+  }
+  /* closed ~0.1 s, opens in ~0.14 s and settles a little half-lidded; a slight camera settle keeps the picture moving.
+     yellowOut 0..1 floods the window back to yellow before the page turn. Returns how open the eye is. */
   function eyeCutIn(ctx, W, H, t, yellowOut, skill) {
-    if (!IMG.ec0) EYEF.forEach(function (n, k) { loadImg("ec" + k, "gen/" + n + ".jpg"); });
-    var g = eyeRhombus(W, H, t);
+    if (!IMG.emaster) { loadImg("emaster", "gen/eye_master.jpg"); loadImg("elens", "gen/eye_lens_mask.png"); }
+    var g = eyeRhombus(W, H, t), o = 0;
     function rh() { ctx.beginPath(); ctx.moveTo(g.cx, g.cy - g.b); ctx.lineTo(g.cx + g.a, g.cy); ctx.lineTo(g.cx, g.cy + g.b); ctx.lineTo(g.cx - g.a, g.cy); ctx.closePath(); }
-    var fi = 0, fb = 0;
-    if (t >= 0.2 && t < 0.3333) { var f = (t - 0.2) / 0.03333; fi = Math.min(3, Math.floor(f)); fb = f - fi; } else if (t >= 0.3333) fi = 4;
     ctx.save(); rh(); ctx.clip();
     ctx.fillStyle = Y; ctx.fillRect(0, 0, W, H);
     if (t >= 0.1) {
-      var cam = eOut(seg(t, 0.1, 0.55)), ih = H * 1.05, iw = ih * 1.5, sc = lerp(1.07, 1, cam);
+      /* the iris (680, 480 in the master) lands where the P4R iris is: 36.7% across, 42.7% down */
+      var cam = eOut(seg(t, 0.1, 0.55)), ih = H * 1.1, iw = ih * 1.5, sc = lerp(1.07, 1, cam), kx = iw / 1536, ky = ih / 1024;
       ctx.save(); ctx.translate(W * 0.367 + lerp(W * 0.03, 0, cam), H * 0.427 + lerp(-H * 0.04, 0, cam)); ctx.rotate(lerp(-0.09, 0, cam)); ctx.scale(sc, sc);
-      var pic = function (i, al) { var key = "ec" + i; if (al <= 0 || !ready(key)) return; ctx.globalAlpha = al; ctx.drawImage(IMG[key], -0.54 * iw, -0.42 * ih, iw, ih); };
-      pic(fi, 1); if (fb > 0 && fi < 4) pic(fi + 1, fb);
+      if (ready("emaster")) ctx.drawImage(IMG.emaster, -680 * kx, -480 * ky, iw, ih);
+      o = eyeLayers(ctx, t, -680 * kx, -480 * ky, kx, ky);
       ctx.restore();
       var tint = Math.max((1 - seg(t, 0.1, 0.14)) * 0.85, yellowOut || 0);
       if (tint > 0) { ctx.save(); ctx.globalAlpha = tint; ctx.fillStyle = Y; ctx.fillRect(0, 0, W, H); ctx.restore(); }
@@ -1262,7 +1340,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       ctx.moveTo(tx0 + th0 * 0.3, ty0 + th0 + H * 0.01); ctx.lineTo(tx0 + tw0 + W * 0.004, ty0 + th0 + H * 0.01); ctx.quadraticCurveTo(tx0 + tw0 + W * 0.016, ty0 + th0 + H * 0.004, tx0 + tw0 + W * 0.02, ty0 + th0 * 0.3); ctx.stroke();
       ctx.restore();
     }
-    return { fi: fi, fb: fb };
+    return o;
   }
 
   var DEMOS = [
@@ -2204,8 +2282,8 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         var sk2 = seg(t, 0, 0.5);
         if (sk2 > 0 && sk2 < 1) stripes(ctx, W, H, sk2, ["#ffffff", PALE, GOLD, "#ffffff", "#e8cf72"], GOLD);
       } },
-    { id: "crush3", name: "召唤（眼神特写 → 翻页 → 手里捏碎）", dur: 2.5, start: 0.4,
-      desc: "整段召唤连起来了：眼神特写照原版排版（菱形大小、位置、角度和眼睛在里面的摆法都是从官方截图量的；小黄菱形 4 帧冲大 → 画面从黄色里透出来 → 闭眼约 0.1 秒 → 0.13 秒睁开（相邻帧连续淡入淡出，整张图有很轻的镜头移动）→ 镜框闪一下 → 变黄）→ 菱形以右尖角为轴翻页，一路落到电视里伸出来的手上变成黄卡 → 卡在掌心转两下 → 一握捏碎 → 伊邪那岐在蓝焰里出现。约 1.25 秒捏碎（之前 1.85 秒）。眼睛现在先用第一批的图占位，Codex 重画的第三版到了就换上。",
+    { id: "crush3", name: "召唤（眼神特写 → 翻页 → 手里捏碎）", dur: 2.5, start: 0.25,
+      desc: "整段召唤：眼神特写照原版排版（菱形大小、位置、角度和眼睛的摆法都是从官方截图量的）→ 菱形以右尖角为轴翻页，落到电视里伸出来的手上变成黄卡 → 卡在掌心转两下 → 一握捏碎 → 伊邪那岐在蓝焰里出现，约 1.25 秒捏碎。眼睛这次只用一张睁眼图（Codex 第三版的第一张），闭眼、睁开、反光都是叠在上面画的：眼皮是一条会动的线，线下面露出图里的眼睛，线上面是眼皮皮肤，沿线画粗睫毛（闭着时外眼角有几根睫毛和眼皮褶）；镜片上的青色反光透过镜片遮罩叠上去，眼睛睁开前就退掉，一道竖光带从右往左扫过。所以眼睛永远是同一张图里的同一只，不会变大小，而且是连续动画、没有逐帧感。瞳孔一直是清楚的亮蓝，睁开时高光处闪一颗小星星。拖时间条停在 0.17 秒看闭眼，0.24 秒看半睁。",
       draw: function (ctx, W, H, t) { var d = DEMOS.filter(function (x) { return x.id === "crush2"; })[0]; d.draw.call({ big: true }, ctx, W, H, t); } },
     { id: "crush2", hidden: true, name: "召唤 小版（手和卡小一号）", dur: 2.5, start: 0.4,
       desc: "照你的思路：黄菱形出现、往左放大到半屏，里面是悠的眼睛（从闭到睁）→ 菱形以右边为轴翻页，一路缩小落到手上变成卡 → 背景舞台大屏里伸出一只光做的手，屏幕表面起涟漪 → 卡在掌心上方转 → 握拳：中心白光、细长光线交叉、纯黄碎片往外炸、白色和黄色实心圆环一圈圈扩散 → 手退回电视，伊邪那岐在蓝焰里出现。这里的手只是平面占位；游戏里用最新版毒性爆发同款的着色器立体手（近大远小、边缘融掉、没有描边），材质换成 P4 的。",
