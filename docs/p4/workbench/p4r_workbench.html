@@ -151,6 +151,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
 <main class="wrap">
   <div class="notice">
     <b>新做：添柴（第一版草图）。</b>就是草图的前两个。添柴的效果是消耗所有手牌，每消耗一张加一张随机牌，所以演出是：整手牌一握全碎 → 碎片在场地中间拼成一圈转动的卡牌转盘（Shuffle Time 洗牌）→ 转到最前面的牌依次甩出来，翻开变成新牌落回手牌。分档建议和恶魔之焰一样：一次烧 7 张以上播完整版，其余播快速版（剪段落、不加速）。<br>
+    <b>另外：</b>Codex 第一批图到了（眼神特写 + 伊邪那岐），放在下面「生图结果」里，看有没有画走样。<br>
     <b>上一轮：快速版不加速，只剪段落</b>，留下来的每一段都和完整版一样的速度。
     <table style="width:100%;margin:10px 0 4px;border-collapse:collapse;font-size:14px">
       <tr style="text-align:left;color:var(--dim)"><th style="padding:4px 6px">牌</th><th style="padding:4px 6px">完整版（条件）</th><th style="padding:4px 6px">快速版（其余情况）</th></tr>
@@ -206,9 +207,15 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     </div>
   </details>
 
+  <section id="gencheck">
+    <h2><span class="pill">新</span>生图结果（Codex 第一批） <span class="status" id="st-gencheck"></span></h2>
+    <p class="lead">眼神特写和伊邪那岐到了，伊邪那岐大神 Codex 还在画。看有没有画走样，每项点一个，要改的写一句。</p>
+    <div class="vlist" id="genlist"></div>
+  </section>
+
   <section id="demos">
     <h2><span class="pill">03</span>草图 <span class="status" id="st-demos"></span></h2>
-    <p class="lead">前两个是这一轮改过的，后面是之前的。人物、手、人格面具、眼睛特写都是占位图形，之后换成生图的素材。可以慢放、拖时间条停在任意一帧。</p>
+    <p class="lead">前两个是新做的添柴，后面是之前的。人物、手、人格面具、眼睛特写都是占位图形，之后换成生图的素材。可以慢放、拖时间条停在任意一帧。</p>
     <div class="tabs" id="demoTabs" role="tablist"></div>
     <div class="stage"><canvas id="stage"></canvas></div>
     <div class="controls">
@@ -326,6 +333,18 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       use: "Codex 也会上网找 P4R 官方的高清图。" }
   ];
   var refStore = {};
+  var GEN = [
+    { id: "gen_eyes", frames: ["gen/eye_01_closed.jpg", "gen/eye_02_slit.jpg", "gen/eye_03_half.jpg", "gen/eye_04_most.jpg", "gen/eye_05_open.jpg", "gen/eye_06_glint.jpg"], title: "眼神特写 6 帧",
+      text: "闭眼 → 睁开一条缝 → 睁开一半 → 大半 → 全睁 → 镜框上闪一下。画风、眼镜框、彩条、镜片反光都贴 P4R。但你说得对：这 6 帧是从同一张图改的，只有眨眼，没有原作那点扭头。",
+      use: "已经写了逐帧重画的任务：照原片第 4–12 帧一帧对一帧画（头从斜着往下看转向镜头、镜框跟着变平下移、反光从青扫到黄），设计照这一批。这一批先留着不删。" },
+    { id: "gen_izanagi", frames: ["gen/izanagi_full.webp", "gen/izanagi_body.webp"], title: "伊邪那岐：全身 / 去掉薙刀的身体",
+      text: "黑色长大衣、红色内衬、银色头盔面甲、黄色眼睛、肩上的黄色徽章、腿上一排白扣带。身后那两条白色长飘带 P4G 设定图和 P4R 截图里都有，不是多画的。我对照下来没看出走样。",
+      use: "第二张是给引擎用的：薙刀单独做成一张，引擎里再拿到他手上挥。" },
+    { id: "gen_naginata", frames: ["gen/izanagi_naginata.webp"], title: "伊邪那岐的薙刀（单独一张）",
+      text: "只有这里我觉得和原作不太一样：这把刀身弯得厉害，P4G 设定图和 P4R 截图里的刀身更直、更长，刀背带锯齿。",
+      use: "选「要小改」的话，我写一个让 Codex 照原作把刀身改直的任务。" }
+  ];
+  var genStore = {};
   var Q3 = [
     { id: "q8", title: "几万真言的「几万」怎么表现？",
       opts: [["spears", "大神转杖以后，几万道金白光矛从天上落向全体敌人（草图里的做法）", true], ["sweep", "转杖带出一圈圈光刃横扫过去"], ["both", "两个都要：光矛落下，最后一记横扫收尾"]] }
@@ -2442,6 +2461,15 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       return c;
     }, [["yes", "是他"], ["no", "不是"], ["part", "不确定"]]);
   }
+  function renderGen() {
+    renderVerdicts($("genlist"), GEN, genStore, function (id) { return "gencheck/" + id; }, "st-gencheck", function (v) {
+      var c = el("div", "card vitem");
+      var fr = el("div", "frames");
+      v.frames.forEach(function (src) { var im = el("img"); im.src = src; im.alt = v.title; im.loading = "lazy"; im.style.background = "#2a2a30"; fr.appendChild(im); });
+      c.appendChild(fr); c.appendChild(el("h3", null, v.title)); c.appendChild(el("p", null, v.text)); c.appendChild(el("p", "use", v.use));
+      return c;
+    }, [["ok", "可以用"], ["fix", "要小改"], ["redo", "重画"]]);
+  }
 
   /* ---------- round 1 sections ---------- */
   var shotState = {}, shotAnn = {};
@@ -2535,7 +2563,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   function boot() {
     renderVideo(); renderChipQuestions("q2list", Q2, answers2, "answers2/main", "st-answers2");
     renderChipQuestions("q3list", Q3, answers3, "answers3/main", "st-answers3");
-    renderRefs();
+    renderRefs(); renderGen();
     renderDemoUI(); renderRound1(); setupUploads();
     requestAnimationFrame(resize);
     if (!window.claude || typeof window.claude.use !== "function") { setConn("bad", "本地预览：不会保存"); return; }
@@ -2551,6 +2579,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       sub("answers", function (s) { s.docs.forEach(function (d) { if (d.id === "main" && once("answers")) hydrateChips("qlist", QUESTIONS, answers, d.data() || {}); }); });
       sub("answers2", function (s) { s.docs.forEach(function (d) { if (d.id === "main" && once("answers2")) hydrateChips("q2list", Q2, answers2, d.data() || {}); }); });
       sub("refcheck", function (s) { s.docs.forEach(function (d) { if (once("ref-" + d.id)) { refStore[d.id] = Object.assign({}, d.data()); delete refStore[d.id].at; } }); syncVerdicts($("reflist"), refStore); fillVerdictNotes($("reflist"), refStore); });
+      sub("gencheck", function (s) { s.docs.forEach(function (d) { if (once("gen-" + d.id)) { genStore[d.id] = Object.assign({}, d.data()); delete genStore[d.id].at; } }); syncVerdicts($("genlist"), genStore); fillVerdictNotes($("genlist"), genStore); });
       sub("answers3", function (s) { s.docs.forEach(function (d) { if (d.id === "main" && once("answers3")) hydrateChips("q3list", Q3, answers3, d.data() || {}); }); });
       sub("understanding", function (s) { s.docs.forEach(function (d) { if (d.id === "main" && once("understanding")) { var items = (d.data() || {}).items || {}; Object.keys(items).forEach(function (k) { understanding[k] = items[k]; }); syncVerdicts($("ulist"), understanding); fillVerdictNotes($("ulist"), understanding); } }); });
       sub("video", function (s) { s.docs.forEach(function (d) { if (once("video-" + d.id)) { videoStore[d.id] = Object.assign({}, d.data()); delete videoStore[d.id].at; } }); syncVerdicts($("vlist"), videoStore); fillVerdictNotes($("vlist"), videoStore); });
