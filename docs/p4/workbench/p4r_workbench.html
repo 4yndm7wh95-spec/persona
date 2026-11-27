@@ -1331,7 +1331,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     var gk = seg(t, 0.38, 0.48); if (gk > 0 && gk < 1) star4(ctx, W * 0.585, H * 0.12, H * 0.05 * Math.sin(gk * Math.PI), 0.12, 1);
     ctx.save(); rh(); ctx.lineJoin = "miter"; ctx.lineWidth = H * 0.022; ctx.strokeStyle = "#f4e81a"; ctx.stroke(); ctx.restore();
     /* skill name tag, top left, as in P4R: dark rounded tab, white name, a yellow line underneath ending in a small hook */
-    var tg = eOut(seg(t, 0.06, 0.14)) * (1 - (yellowOut || 0));
+    var tg = skill ? eOut(seg(t, 0.06, 0.14)) * (1 - (yellowOut || 0)) : 0;
     if (tg > 0) {
       ctx.save(); ctx.globalAlpha = tg; ctx.translate(lerp(-W * 0.08, 0, tg), 0);
       var tx0 = W * 0.015, ty0 = H * 0.075, tw0 = W * 0.25, th0 = H * 0.062;
@@ -2313,7 +2313,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         /* eye cut-in in the P4R layout (floods back to yellow at the end), then the rhombus turns like a page around its
            right corner and lands on the palm as the card */
         var FL0 = 0.5, FL1 = 0.86;
-        if (t < FL0) eyeCutIn(ctx, W, H, t, seg(t, 0.44, 0.5), "Zio");
+        if (t < FL0) eyeCutIn(ctx, W, H, t, seg(t, 0.44, 0.5), null);
         else if (t < FL1) {
           var g = eyeRhombus(W, H, 1), cy = g.cy, hinge = g.vx, th = eInOut(seg(t, FL0, FL1)) * Math.PI;
           var dia = [[g.cx, cy - g.b], [g.cx + g.a, cy], [g.cx, cy + g.b], [g.cx - g.a, cy]];
@@ -2334,12 +2334,24 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
             if (lines > 0) { ctx.save(); quad(ctx, pts); ctx.clip(); for (var li = 0; li < 6; li++) ray(ctx, pts[0][0], cy, -0.6 + li * 0.25, W * 0.4, 2, lines * 0.6); ctx.restore(); }
           }
         }
-        /* card on the palm: turns a couple of times, then the fist closes on it */
+        /* card hovering over the palm, turning in 3D like P4R: spins round, tilts and leans, with perspective; then the fist closes on it */
         if (t >= FL1 && t < BEAT) {
-          var spin = Math.cos((t - FL1) * 9), cs = 1 - 0.75 * close;
-          ctx.save(); ctx.translate(cardC[0], cardC[1] + Math.sin(t * 5) * H * 0.006 + close * hs2 * 0.9); ctx.scale(Math.max(Math.abs(spin), 0.05) * cs, cs);
-          yellowCard(ctx, CWc, CHc); ctx.restore();
-          var rk = seg(t, BEAT - 0.25, BEAT - 0.05); if (rk > 0) ring(ctx, cardC[0], cardC[1], H * (0.05 + 0.06 * rk), 2, "#ffffff", Math.sin(rk * Math.PI));
+          var ht = t - FL1, cs = 1 - 0.75 * close, amp = eOut(seg(ht, 0, 0.15));
+          var yaw = ht * 10, tilt = amp * (-0.3 + 0.45 * Math.sin(ht * 4.2)), pitch = amp * 0.3 * Math.sin(ht * 5.3 + 1);
+          var cc = [cardC[0], cardC[1] + Math.sin(t * 5) * H * 0.006 + close * hs2 * 0.9], f3 = H * 1.6;
+          var corners = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(function (k) {
+            var x = k[0] * CWc * cs / 2, y = k[1] * CHc * cs / 2;
+            var x1 = x * Math.cos(yaw), z1 = x * Math.sin(yaw);
+            var y2 = y * Math.cos(pitch) - z1 * Math.sin(pitch), z2 = y * Math.sin(pitch) + z1 * Math.cos(pitch);
+            var X = x1 * Math.cos(tilt) - y2 * Math.sin(tilt), Yv = x1 * Math.sin(tilt) + y2 * Math.cos(tilt), sp = f3 / (f3 + z2);
+            return [cc[0] + X * sp, cc[1] + Yv * sp];
+          });
+          var face = Math.abs(Math.cos(yaw) * Math.cos(pitch));
+          quad(ctx, corners); ctx.fillStyle = face > 0.55 ? Y : (face > 0.25 ? "#d6d016" : "#b5ae0c"); ctx.fill();
+          ctx.lineJoin = "round"; ctx.lineWidth = 1.5; ctx.strokeStyle = "#9c960c"; ctx.stroke();
+          /* just before the crush: a thin ring round the card and thin crossing light lines */
+          var rk = seg(t, BEAT - 0.2, BEAT); if (rk > 0) ring(ctx, cc[0], cc[1], CHc * lerp(0.55, 0.75, rk), 1.5, "#ffffff", 0.85 * Math.sin(rk * Math.PI));
+          var lk = seg(t, BEAT - 0.1, BEAT); if (lk > 0) { ray(ctx, cc[0], cc[1], -0.38, W * 0.5, 1.5, lk); ray(ctx, cc[0], cc[1], 0.22, W * 0.4, 1.2, lk * 0.8); }
         }
         if (tr >= BEAT) {
           var lt = tr - BEAT, st = Math.max(0, t - BEAT), P = [cardC[0], hy - hs2 * 0.6];
@@ -2350,15 +2362,17 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
             ctx.fillStyle = cg; ctx.fillRect(P[0] - H * 0.3, P[1] - H * 0.3, H * 0.6, H * 0.6); ctx.restore();
             ray(ctx, P[0], P[1], -0.32, W * 0.75, 2, core); ray(ctx, P[0], P[1], 1.0, W * 0.4, 1.5, core * 0.8); ray(ctx, P[0], P[1], -1.35, W * 0.3, 1.2, core * 0.6);
           }
-          ring(ctx, P[0], P[1], lerp(H * 0.03, H * 0.62, eOut(seg(st, 0, 0.5))), lerp(H * 0.05, H * 0.004, seg(st, 0, 0.5)), "#ffffff", 1 - seg(st, 0.3, 0.55));
-          ring(ctx, P[0], P[1], lerp(H * 0.02, H * 0.48, eOut(seg(st, 0.07, 0.55))), lerp(H * 0.03, H * 0.004, seg(st, 0.07, 0.55)), YH, 1 - seg(st, 0.38, 0.62));
-          ring(ctx, P[0], P[1], lerp(H * 0.02, H * 0.36, eOut(seg(st, 0.12, 0.6))), 2, "#ffffff", 0.8 * (1 - seg(st, 0.4, 0.66)));
-          ring(ctx, P[0], P[1], lerp(H * 0.02, H * 0.28, eOut(seg(st, 0.17, 0.62))), 1.5, "#ffffff", 0.6 * (1 - seg(st, 0.42, 0.7)));
+          /* as in P4R: thin light rings, big translucent yellow pieces bursting toward the camera, then the smaller shards */
+          ring(ctx, P[0], P[1], lerp(CHc * 0.5, H * 0.6, eOut(seg(st, 0, 0.45))), 2, "#ffffff", 0.9 * (1 - seg(st, 0.25, 0.45)));
+          ring(ctx, P[0], P[1], lerp(CHc * 0.4, H * 0.45, eOut(seg(st, 0.06, 0.5))), 1.2, "#ffffff", 0.6 * (1 - seg(st, 0.3, 0.5)));
+          makeShards(77, 8, { vmin: H * 1.2, vmax: H * 2.2, smin: 1, smax: 1 }).forEach(function (s, bi) {
+            var k = eOut(seg(st, 0, 0.2)), d = k * H * lerp(0.3, 0.6, (bi % 3) / 2), a = Math.atan2(s.vy, s.vx);
+            var big = Object.assign({}, s, { size: H * lerp(0.06, lerp(0.15, 0.26, (bi % 4) / 3), k), hot: false });
+            ctx.save(); ctx.globalAlpha = 0.5 * (1 - seg(st, 0.07, 0.2)); drawShard(ctx, P[0] + Math.cos(a) * d, P[1] + Math.sin(a) * d, big, st, "#fff27a", 1); ctx.restore();
+          });
           makeShards(21, 34, { vmin: H * 0.9, vmax: H * 2.4, smin: H * 0.012, smax: H * 0.045 }).forEach(function (s) {
             var p = shardPos(s, st, 2.6, H * 0.35); drawShard(ctx, P[0] + p[0], P[1] + p[1], s, st, Y, 1 - seg(st, 0.6, 1.0));
           });
-          var r6 = rng(9);
-          for (var si = 0; si < 6; si++) { var a6 = r6() * 6.28, d6 = H * lerp(0.2, 0.45, r6()), sk6 = seg(st, 0.08 + si * 0.03, 0.4 + si * 0.03); star4(ctx, P[0] + Math.cos(a6) * d6, P[1] + Math.sin(a6) * d6, H * 0.025 * Math.sin(sk6 * Math.PI), 0.18, 1); }
         }
         ctx.restore();
       } },
