@@ -150,16 +150,15 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
 
 <main class="wrap">
   <div class="notice">
-    <b>新做：添柴（第一版草图）。</b>就是草图的前两个。添柴的效果是消耗所有手牌，每消耗一张加一张随机牌，所以演出是：整手牌一握全碎 → 碎片在场地中间拼成一圈转动的卡牌转盘（Shuffle Time 洗牌）→ 转到最前面的牌依次甩出来，翻开变成新牌落回手牌。分档建议和恶魔之焰一样：一次烧 7 张以上播完整版，其余播快速版（剪段落、不加速）。<br>
-    <b>另外：</b>Codex 第一批图都到了（眼神特写、伊邪那岐、伊邪那岐大神），放在下面「生图结果」里，看有没有画走样。<br>
-    <b>上一轮：快速版不加速，只剪段落</b>，留下来的每一段都和完整版一样的速度。
+    <b>这一轮：去掉拖的地方。</b>快速版尽量一打出去就见效果（伤害牌尽快出伤害），完整版只去掉没必要的停顿；都不加速、不删表演。添柴你说正合适，没动。草图顺序：添柴完整版、添柴快速版、恶魔之焰完整版、恶魔之焰快速版、几万真言完整版、几万真言快速版。
     <table style="width:100%;margin:10px 0 4px;border-collapse:collapse;font-size:14px">
       <tr style="text-align:left;color:var(--dim)"><th style="padding:4px 6px">牌</th><th style="padding:4px 6px">完整版（条件）</th><th style="padding:4px 6px">快速版（其余情况）</th></tr>
-      <tr><td style="padding:4px 6px">添柴（新）</td><td style="padding:4px 6px">建议烧 ≥ 7 张：约 0.5 秒捏碎，约 2.3 秒新牌发完</td><td style="padding:4px 6px">剪掉背景字、去色和转盘。约 0.4 秒捏碎，约 1.2 秒新牌全部到手</td></tr>
-      <tr><td style="padding:4px 6px">恶魔之焰</td><td style="padding:4px 6px">烧 ≥ 7 张：约 1.5 秒到捏碎，再约 0.4 秒出第一下，0.8 秒打完</td><td style="padding:4px 6px">剪掉飞去电视、伸手、收叠。约 0.8 秒出第一下，之后每张牌隔 0.1 秒一下，5 张约 1.2 秒打完</td></tr>
-      <tr><td style="padding:4px 6px">几万真言</td><td style="padding:4px 6px">力量 ≥ 8：约 4 秒</td><td style="padding:4px 6px">剪掉技能名和召唤大神。约 0.6 秒捏碎，约 1.95 秒落第一下金光，约 2.9 秒四下打完</td></tr>
+      <tr><td style="padding:4px 6px">添柴（没动）</td><td style="padding:4px 6px">建议烧 ≥ 7 张：约 0.5 秒捏碎，约 2.3 秒新牌发完</td><td style="padding:4px 6px">约 0.4 秒捏碎，约 1.2 秒新牌全部到手</td></tr>
+      <tr><td style="padding:4px 6px">恶魔之焰</td><td style="padding:4px 6px">烧 ≥ 7 张：约 1 秒捏碎（之前 1.5 秒），约 1.4 秒出第一下</td><td style="padding:4px 6px">约 0.6 秒出第一下（之前 0.8 秒），5 张约 1 秒打完</td></tr>
+      <tr><td style="padding:4px 6px">几万真言</td><td style="padding:4px 6px">力量 ≥ 8：约 2.1 秒落第一下，约 3.5 秒结束（之前约 4.4 秒）</td><td style="padding:4px 6px">约 0.45 秒捏碎，约 1 秒落第一下（之前约 2 秒），约 1.6 秒打完</td></tr>
     </table>
-    恶魔之焰：光团扫牌、小彗星飞行、光环命中都和完整版同速。扫到的牌几乎同时被捏碎，所以每张碎完先留一颗小火星，再按完整版的间隔一张一张飞出去。<br>几万真言：掏牌、转牌、捏碎和完整版同速，只是转牌短一点；捏碎后杖直接出现，转速和完整版一样，只少转一圈；四下金光每一下的动画速度不变，只是相邻两下的间隔从 0.3 秒缩到 0.22 秒。
+    恶魔之焰：光团不再慢慢起步，一开始就在动，扫过手牌越来越快，一口气拐上去到电视里的手，只在最后落到手上时稍微收一下；牌收叠好马上捏碎。快速版扫牌同速，扫完光团直接冲出画面。<br>几万真言：快速版杖快速转一圈就停，停住马上劈。完整版捏碎提前，杖转得稍快，停住后不再空等，四下间隔 0.24 秒，结尾圆环紧跟最后一下。<br>
+    <b>另外：</b>Codex 第一批图都到了（眼神特写、伊邪那岐、伊邪那岐大神），放在下面「生图结果」里。
   </div>
 
   <section id="decisions">
@@ -493,6 +492,16 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   function eIn(k) { return k * k * k; }
   function eInOut(k) { return k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; }
   function eInOutQuad(k) { return k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; }
+  /* Fiend Fire sweep: already moving at the start (no slow crawl), speeds up through the hand, full speed through the turn,
+     only a short settle at the very end. Integral of the speed profile, normalised to 0..1. */
+  function sweepEase(u) {
+    u = clamp(u, 0, 1);
+    var I;
+    if (u <= 0.4) { var x = u / 0.4; I = 0.25 * u + 0.3 * (x * x * x - x * x * x * x / 2); }
+    else if (u <= 0.82) I = 0.25 + (u - 0.4);
+    else { var y = (u - 0.82) / 0.18; I = 0.67 + (u - 0.82) - 0.153 * (y * y * y - y * y * y * y / 2); }
+    return I / 0.7735;
+  }
   function eBack(k) { var c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); }
   function rng(seed) {
     return function () {
@@ -1212,22 +1221,22 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     { id: "stokeq", name: "添柴 快速版（烧 7 张以下）", dur: 1.6, start: 0.7,
       desc: "不加速，只剪段落：剪掉 SHUFFLE TIME 背景字、去色和中间的转盘。翻牌、一握捏碎和完整版同样速度；碎片不飞走，在每张牌原来的位置转一圈拼回去（用时和完整版飞上转盘一样），拼好马上翻开成新牌、落回原位，亮一圈白环和黄边。约 0.4 秒捏碎，约 1.2 秒新牌全部到手。",
       draw: function (ctx, W, H, tr) { stokeScene(ctx, W, H, tr, false); } },
-    { id: "fiend5", name: "恶魔之焰 完整版（烧 7 张以上）", dur: 3.0, start: 0.55,
-      desc: "按你的意见：整体加快，中间不停。扫牌和转向电视现在是同一条连续的曲线：光团沿手牌弧线从慢到快扫过去，扫到右边不减速，顺着惯性往右上拐，走半圆弯回电视里伸出来的手，只在快到手的时候放慢落位。牌在路上跟着光团头部走，到手边收拢成一叠（每张稍微错开一点，看得出有几张），不展开，依次翻成黄色，整叠一起被捏碎；每张牌化成一道黄色小彗星飞向敌人，命中只用光环表达（白环、黄环、旋钮刻度环、网点环、小星星，最后一下加粉绿细环），加电视信号错位，一张牌一下。整段从亮起到捏碎约 1.5 秒。",
+    { id: "fiend5", name: "恶魔之焰 完整版（烧 7 张以上）", dur: 2.6, start: 0.4,
+      desc: "这一版去掉了拖的地方：光团一开始就在动，不再慢慢起步，扫过手牌越来越快，一口气拐上去到电视里伸出来的手，只在最后落到手上时稍微收一下；牌收叠好马上捏碎。扫牌和转向电视是同一条连续的曲线：光团沿手牌弧线扫过去，扫到右边不减速，顺着惯性往右上拐，走半圆弯回那只手。牌在路上跟着光团头部走，到手边收拢成一叠（每张稍微错开一点，看得出有几张），不展开，依次翻成黄色，整叠一起被捏碎；每张牌化成一道黄色小彗星飞向敌人，命中只用光环表达（白环、黄环、旋钮刻度环、网点环、小星星，最后一下加粉绿细环），加电视信号错位，一张牌一下。约 1 秒捏碎（之前 1.5 秒），捏碎后约 0.3 秒出第一下。",
       draw: function (ctx, W, H, tr) {
-        var BEAT = 1.45, t = hs(tr, BEAT, 0.08);
+        var BEAT = 1.02, t = hs(tr, BEAT, 0.08);
         var shake = tr > BEAT && tr < BEAT + 0.16 ? (1 - (tr - BEAT) / 0.16) * H * 0.01 : 0;
         ctx.save(); if (shake) ctx.translate(Math.sin(tr * 90) * shake, Math.cos(tr * 70) * shake);
         battleFloor(ctx, W, H);
-        ctx.save(); ctx.globalAlpha = 0.4 * eOut(seg(t, 0.25, 0.6)) * (1 - seg(t, 2.5, 3.0)); ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H); ctx.restore();
+        ctx.save(); ctx.globalAlpha = 0.4 * eOut(seg(t, 0.1, 0.4)) * (1 - seg(t, 1.9, 2.3)); ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H); ctx.restore();
         var tvx = W * 0.56, tvy = H * 0.3, tvw = W * 0.4, tvh = H * 0.44;
-        stageTV(ctx, W, H, tr, tvx, tvy, tvw, tvh, seg(t, 0.3, 0.6) * (1 - seg(t, 1.9, 2.3)) * 0.8, 0.42);
+        stageTV(ctx, W, H, tr, tvx, tvy, tvw, tvh, seg(t, 0.12, 0.36) * (1 - seg(t, 1.45, 1.8)) * 0.8, 0.2);
         figure(ctx, W * 0.13, H * 0.92, H * 0.42, Y);
         var ex = W * 0.87, ey = H * 0.62; enemy(ctx, ex, ey, H * 0.11, Math.sin(tr * 3));
-        var hk = eOut(seg(t, 0.6, 0.95)) * (1 - eIn(seg(t, 1.8, 2.15)));
+        var hk = eOut(seg(t, 0.3, 0.6)) * (1 - eIn(seg(t, 1.35, 1.7)));
         var hx = lerp(tvx, W * 0.56, hk), hy = lerp(tvy, H * 0.8, hk), hsz = lerp(H * 0.05, H * 0.3, hk);
-        var close = eInOut(seg(t, 1.33, 1.45));
-        lightHand(ctx, W, H, hx, hy, hsz, close, 0, seg(t, 0.6, 0.68) * (1 - seg(t, 2.0, 2.15)), [tvx, tvy]);
+        var close = eInOut(seg(t, 0.9, 1.02));
+        lightHand(ctx, W, H, hx, hy, hsz, close, 0, seg(t, 0.3, 0.38) * (1 - seg(t, 1.55, 1.7)), [tvx, tvy]);
         var palm = [W * 0.56, H * 0.8 - H * 0.3 * 1.55];
         /* one continuous path: along the hand's arc, then on into a half circle up to the hand (tangents match at the join) */
         var key = W + "x" + H, PATH = this.__path && this.__path.key === key ? this.__path : null;
@@ -1250,10 +1259,10 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
           var seg2 = PATH.cum[hi] - PATH.cum[lo] || 1, f = (s - PATH.cum[lo]) / seg2;
           return [lerp(PATH.pts[lo][0], PATH.pts[hi][0], f), lerp(PATH.pts[lo][1], PATH.pts[hi][1], f)];
         }
-        var T0 = 0.1, T1 = 1.05;
-        function sAt(tt) { return PATH.total * eInOutQuad(seg(tt, T0, T1)); }
+        var T0 = 0.05, T1 = 0.75;
+        function sAt(tt) { return PATH.total * sweepEase(seg(tt, T0, T1)); }
         function head(tt) { return at(sAt(tt)); }
-        var alive = seg(t, 0.0, 0.1) * (1 - seg(t, 0.98, 1.14));
+        var alive = seg(t, 0.0, 0.08) * (1 - seg(t, 0.7, 0.84));
         var R = H * 0.1 * (0.6 + 0.4 * seg(t, 0.0, 0.18)), N = 5, cw = W * 0.08, ch = cw * 1.38;
         var pts = []; for (var k2 = 0; k2 <= 26; k2++) pts.push(head(t - k2 * 0.008));
         var nrm = [], rad = [], last = [1, 0];
@@ -1300,16 +1309,16 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
           var rise = clamp((sF - PATH.lenA) / (PATH.total - PATH.lenA), 0, 1);
           var x = lerp(hx0, fp[0], eOut(catchK)), y = lerp(hy0, fp[1] - H * 0.01, eOut(catchK));
           var a = lerp(a0, lerp(0.05, -0.6, rise), catchK), sc = lerp(1, 0.9, catchK);
-          var d3 = i3 * 0.02, fk = eOut(seg(t, 0.96, 1.16)), flip = seg(t, 1.0 + d3, 1.12 + d3);
+          var d3 = i3 * 0.02, fk = eOut(seg(t, 0.64, 0.8)), flip = seg(t, 0.68 + d3, 0.8 + d3);
           if (fk > 0) {
             /* one stack above the palm, each card nudged a little so the count reads; no fan */
-            var o = i3 - (N - 1) / 2, sway = Math.sin(t * 7) * 0.03 * seg(t, 1.16, 1.3);
+            var o = i3 - (N - 1) / 2, sway = Math.sin(t * 7) * 0.03 * seg(t, 0.8, 0.9);
             x = lerp(x, palm[0] + o * W * 0.016, fk); y = lerp(y, palm[1] + H * 0.03 - o * H * 0.013, fk);
             a = lerp(a, -0.06 + o * 0.05 + sway, fk); sc = lerp(sc, 1.25, fk);
           }
           if (close > 0) { sc *= 1 - 0.55 * close; y += close * H * 0.06; }
           var sx = flip > 0 && flip < 1 ? Math.abs(Math.cos(flip * Math.PI)) : 1;
-          ctx.save(); ctx.translate(x, y + Math.sin(t * 28 + i3) * H * 0.002 * seg(t, 1.16, 1.35)); ctx.rotate(a); ctx.scale(sc * Math.max(sx, 0.05), sc);
+          ctx.save(); ctx.translate(x, y + Math.sin(t * 28 + i3) * H * 0.002 * seg(t, 0.8, 0.95)); ctx.rotate(a); ctx.scale(sc * Math.max(sx, 0.05), sc);
           if (flip >= 0.5) yellowCard(ctx, cw, ch, true); else stsCard(ctx, cw, ch, i3 % 3);
           ctx.restore();
         }
@@ -1342,7 +1351,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
           makeShards(21, 30, { vmin: H * 0.8, vmax: H * 2.2, smin: H * 0.01, smax: H * 0.04 }).forEach(function (s) { var p = shardPos(s, st, 2.6, H * 0.35); drawShard(ctx, Pc[0] + p[0], Pc[1] + p[1], s, st, Y, 1 - seg(st, 0.4, 0.75)); });
           /* each card becomes a small yellow comet that lands as a P4R-style hit */
           for (var c = 0; c < N; c++) {
-            var l0 = 0.1 + c * 0.1, dur = 0.2, Es = [ex + (c - 2) * H * 0.025, ey + (c % 2 ? -1 : 1) * H * 0.03];
+            var l0 = 0.06 + c * 0.09, dur = 0.2, Es = [ex + (c - 2) * H * 0.025, ey + (c % 2 ? -1 : 1) * H * 0.03];
             var Cs = [(Pc[0] + Es[0]) / 2 + (c - 2) * H * 0.04, Math.min(Pc[1], Es[1]) - H * (0.14 + 0.05 * c)];
             if (st > l0 && st < l0 + dur + 0.05) {
               var cp = []; for (var q = 0; q <= 11; q++) cp.push(quadP(Pc, Cs, Es, eIn(seg(st - q * 0.007, l0, l0 + dur))));
@@ -1358,19 +1367,25 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         }
         ctx.restore();
       } },
-    { id: "fiendq", name: "恶魔之焰 快速版（烧 7 张以下）", dur: 2.0, start: 0.42,
-      desc: "烧不到 7 张时播这个：不加速，只剪段落。彗星光团用和完整版一样的速度从左往右扫过手牌（约 0.5 秒），剪掉飞去电视、伸手、收叠这几段；扫到哪张，哪张原地翻黄、立刻捏碎。几张牌几乎是同时碎的，所以每张碎完先留一颗小火星，再按完整版的间隔（0.1 秒）一张一张化成黄色小彗星飞向敌人，一张牌一下。命中只用光环表达：中心白点弹出变成粗白环，稍后一圈柠檬黄环（内侧一条细橙线），一圈像电视旋钮的刻度环边扩边转，一圈黄色网点环，白环上亮几颗小星星；最后一下多两圈粉、绿细环（BATON 那种彩虹环）收尾。命中瞬间敌人那块画面像电视信号一样横向错位一下。约 0.8 秒出第一下，5 张约 1.2 秒打完。",
+    { id: "fiendq", name: "恶魔之焰 快速版（烧 7 张以下）", dur: 1.7, start: 0.35,
+      desc: "烧不到 7 张时播这个：不加速，只剪段落。彗星光团用和完整版一样的速度从左往右扫过手牌（约 0.4 秒），扫完直接冲出画面，剪掉飞去电视、伸手、收叠这几段；扫到哪张，哪张原地翻黄、立刻捏碎。几张牌几乎是同时碎的，所以每张碎完先留一颗小火星，再按完整版的间隔（0.09 秒）一张一张化成黄色小彗星飞向敌人，一张牌一下。命中只用光环表达：中心白点弹出变成粗白环，稍后一圈柠檬黄环（内侧一条细橙线），一圈像电视旋钮的刻度环边扩边转，一圈黄色网点环，白环上亮几颗小星星；最后一下多两圈粉、绿细环（BATON 那种彩虹环）收尾。命中瞬间敌人那块画面像电视信号一样横向错位一下。约 0.6 秒出第一下，5 张约 1 秒打完。",
       draw: function (ctx, W, H, tr) {
         battleFloor(ctx, W, H);
         figure(ctx, W * 0.13, H * 0.92, H * 0.42, Y);
         var ex = W * 0.82, ey = H * 0.6; enemy(ctx, ex, ey, H * 0.11, Math.sin(tr * 3));
-        /* same sweep speed as the full version; only the TV / hand / stack part is cut */
-        var N = 5, cw = W * 0.08, ch = cw * 1.38, x0 = W * 0.06, x1 = W * 0.86, T0 = 0.1, T1 = 0.62;
+        /* same sweep speed as the hand part of the full version's curve; the TV / hand / stack part is cut and the light runs on off screen */
+        var N = 5, cw = W * 0.08, ch = cw * 1.38, x0 = W * 0.06, x1 = W * 0.86, UA = 0.5755, T0 = 0.05, T1 = T0 + UA * 0.7, FA = sweepEase(UA);
         function baseY(x) { var u = (x - W * 0.5) / (W * 0.42); return H * 0.9 - H * 0.035 * (1 - u * u); }
-        function head(tt) { var x = lerp(x0, x1, eIn(seg(tt, T0, T1))); return [x, baseY(x)]; }
+        function fr(tt) { return sweepEase(seg(tt, T0, T1) * UA) / FA; }
+        var vEnd = (x1 - x0) * ((FA - sweepEase(UA - 0.01)) / 0.01) * UA / (FA * (T1 - T0));
+        function head(tt) { var x = tt <= T1 ? lerp(x0, x1, fr(tt)) : x1 + (tt - T1) * vEnd; return [x, baseY(Math.min(x, x1))]; }
         var pts = []; for (var k = 0; k <= 26; k++) pts.push(head(tr - k * 0.008));
-        drawComet(ctx, pts, H * 0.1 * (0.6 + 0.4 * seg(tr, 0, 0.18)), tr, seg(tr, 0.0, 0.1) * (1 - seg(tr, 0.62, 0.76)));
-        function tCof(j) { var cj = W * 0.5 + (j - 2) * cw * 0.85; return T0 + Math.cbrt(clamp((cj - x0) / (x1 - x0), 0, 1)) * (T1 - T0) + 0.05; }
+        drawComet(ctx, pts, H * 0.1 * (0.6 + 0.4 * seg(tr, 0, 0.18)), tr, seg(tr, 0.0, 0.08) * (1 - seg(tr, 0.45, 0.58)));
+        function tCof(j) {
+          var cj = W * 0.5 + (j - 2) * cw * 0.85, target = clamp((cj - x0) / (x1 - x0), 0, 1), lo = T0, hi = T1;
+          for (var it = 0; it < 24; it++) { var mid = (lo + hi) / 2; if (fr(mid) < target) lo = mid; else hi = mid; }
+          return (lo + hi) / 2 + 0.05;
+        }
         var tC0 = tCof(0);
         for (var i = 0; i < N; i++) {
           var cx = W * 0.5 + (i - 2) * cw * 0.85, cy = H * 0.93 + Math.abs(i - 2) * H * 0.012;
@@ -1387,7 +1402,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
             makeShards(700 + i, 7, { vmin: H * 0.4, vmax: H * 1.0, smin: H * 0.01, smax: H * 0.026 }).forEach(function (s) { var p = shardPos(s, st, 3.0, H * 1.2); drawShard(ctx, Sq[0] + p[0], Sq[1] + p[1], s, st, Y, 1 - seg(st, 0.15, 0.35)); });
             var Eq = [ex + (i - 2) * H * 0.025, ey + (i % 2 ? -1 : 1) * H * 0.03], Cq = [(Sq[0] + Eq[0]) / 2, Math.min(Sq[1], Eq[1]) - H * (0.16 + 0.03 * i)];
             /* the sweep crushes the cards almost together; each one waits as a small spark and launches 0.1 s after the previous one, the same spacing as the full version */
-            var di = tC0 + 0.06 + i * 0.1 - tC, ek = 1 - seg(st, 0.02 + di, 0.06 + di);
+            var di = tC0 + 0.06 + i * 0.09 - tC, ek = 1 - seg(st, 0.02 + di, 0.06 + di);
             if (st > 0.05 && ek > 0) {
               var ea = ek * seg(st, 0.05, 0.1), pulse = 0.85 + 0.15 * Math.sin(tr * 38 + i * 2);
               ctx.save(); ctx.globalAlpha = ea;
@@ -1626,12 +1641,12 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         }
         ctx.restore();
       } },
-    { id: "myriad3", name: "几万真言 完整版（力量 8 以上）", dur: 4.4, start: 0.55,
-      desc: "按你的节奏：出牌 → 背景划出技能名（只是背景，压在人物后面）；同时悠掏出那张白金色的牌，在手里转。→ 捏碎的一瞬间三件事同时发生：技能名背景退出去，伊邪那岐大神在悠身后出现，他一出现就转杖；杖在悠和敌人之间、中间偏右，不在他脸上。→ 杖由慢到快转、再慢下来停住 → 金光从敌人头顶竖直劈下，连劈四下 → 黄色圆环收尾。金光草图比上一版细了一些（分层的光柱、抖动的边、带分叉的闪电、落点光晕、上升的光点），游戏里会用着色器做。",
+    { id: "myriad3", name: "几万真言 完整版（力量 8 以上）", dur: 3.7, start: 0.5,
+      desc: "这一版去掉了拖的地方（表演不删）：捏碎提前到约 0.8 秒，杖转得稍快（约 1 秒转两圈半），停住后马上劈，四下间隔 0.24 秒，结尾圆环紧跟最后一下；约 2.1 秒落第一下，约 3.5 秒结束（之前约 4.4 秒）。节奏：出牌 → 背景划出技能名（只是背景，压在人物后面）；同时悠掏出那张白金色的牌，在手里转。→ 捏碎的一瞬间三件事同时发生：技能名背景退出去，伊邪那岐大神在悠身后出现，他一出现就转杖；杖在悠和敌人之间、中间偏右，不在他脸上。→ 杖由慢到快转、再慢下来停住 → 金光从敌人头顶竖直劈下，连劈四下 → 黄色圆环收尾。金光草图比上一版细了一些（分层的光柱、抖动的边、带分叉的闪电、落点光晕、上升的光点），游戏里会用着色器做。",
       draw: function (ctx, W, H, tr) {
         var GOLD = "#f2c54b", PALE = "#fff3c4";
-        var CRUSH = 0.95, STOP = 2.15, t = hs(hs(tr, CRUSH, 0.08), STOP, 0.12);
-        var gray = t > CRUSH && t < 3.85;
+        var CRUSH = 0.8, STOP = 1.8, t = hs(hs(tr, CRUSH, 0.08), STOP, 0.1);
+        var gray = t > CRUSH && t < 2.95;
         battleFloor(ctx, W, H, gray);
         var foes = [[W * 0.74, H * 0.66], [W * 0.84, H * 0.56], [W * 0.91, H * 0.72]];
         foes.forEach(function (e, i) {
@@ -1641,14 +1656,14 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         /* background skill name: in on play, out at the crush (the same slide continued) */
         skillBand(ctx, W, H, t, 0.0, CRUSH, { cx: W * 0.57, cy: H * 0.3, rot: -0.24, alpha: 0.9, text: "MYRIAD TRUTHS", gold: GOLD, pale: PALE });
         /* at the crush: gold disk and Izanagi-no-Okami behind Yu */
-        var dk = eOut(seg(t, CRUSH, CRUSH + 0.3)) * (1 - seg(t, 3.6, 3.9));
+        var dk = eOut(seg(t, CRUSH, CRUSH + 0.3)) * (1 - seg(t, 2.75, 3.05));
         if (dk > 0) {
           ctx.save(); ctx.globalAlpha = dk;
           var dg = ctx.createRadialGradient(W * 0.24, H * 0.5, 0, W * 0.24, H * 0.5, H * 0.46);
           dg.addColorStop(0, PALE); dg.addColorStop(0.7, GOLD); dg.addColorStop(1, "rgba(242,197,75,0)");
           ctx.fillStyle = dg; ctx.beginPath(); ctx.arc(W * 0.24, H * 0.5, H * 0.46 * dk, 0, Math.PI * 2); ctx.fill(); ctx.restore();
         }
-        var ok = eOut(seg(t, CRUSH, CRUSH + 0.25)) * (1 - seg(t, 3.55, 3.95));
+        var ok = eOut(seg(t, CRUSH, CRUSH + 0.25)) * (1 - seg(t, 2.7, 3.1));
         var ox = W * 0.27, oy = H * 1.0 - (1 - ok) * H * 0.08;
         if (ok > 0) {
           ctx.save(); ctx.globalAlpha = ok; ctx.shadowColor = GOLD; ctx.shadowBlur = H * 0.04;
@@ -1657,7 +1672,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         }
         /* the staff: between Yu and the enemies, a little right of centre; spins as soon as he appears */
         var gc = [W * 0.58, H * 0.44], L = H * 0.8;
-        var appear = eOut(seg(t, CRUSH + 0.02, CRUSH + 0.22)), fadeS = 1 - seg(t, STOP + 0.3, STOP + 0.6);
+        var appear = eOut(seg(t, CRUSH + 0.02, CRUSH + 0.22)), fadeS = 1 - seg(t, STOP + 0.25, STOP + 0.5);
         if (appear > 0 && fadeS > 0) {
           var spk = seg(t, CRUSH + 0.05, STOP), e1 = eInOut(spk), e2 = eInOut(seg(t + 0.01, CRUSH + 0.05, STOP));
           var target = -Math.PI / 2, ang = target - (1 - e1) * Math.PI * 5, omega = (e2 - e1) / 0.01 * Math.PI * 5;
@@ -1685,7 +1700,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
           ctx.scale(Math.max(0.06, Math.abs(Math.cos(t * 9))), 1);
           ctx.shadowColor = PALE; ctx.shadowBlur = H * 0.045;
           roundRect(ctx, -H * 0.065, -H * 0.1, H * 0.13, H * 0.2, 4); ctx.fillStyle = PALE; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = GOLD; ctx.stroke(); ctx.restore();
-          var ak = seg(t, 0.72, CRUSH); if (ak > 0) ring(ctx, cpos[0], cpos[1], H * (0.07 + 0.08 * ak), 2, "#ffffff", Math.sin(ak * Math.PI));
+          var ak = seg(t, CRUSH - 0.23, CRUSH); if (ak > 0) ring(ctx, cpos[0], cpos[1], H * (0.07 + 0.08 * ak), 2, "#ffffff", Math.sin(ak * Math.PI));
         } else {
           var st = t - CRUSH, lt = tr - CRUSH;
           if (lt < 0.14) { ctx.save(); ctx.globalAlpha = (1 - lt / 0.14) * 0.6; ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, W, H); ctx.restore(); }
@@ -1696,7 +1711,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         }
         /* golden strikes straight down, four hits: layered column with a wavering edge, forked bolts, impact bloom, rising motes */
         for (var w = 0; w < 4; w++) {
-          var tw = STOP + 0.3 + w * 0.3;
+          var tw = STOP + 0.12 + w * 0.24;
           foes.forEach(function (e, i) {
             var t0 = tw + i * 0.035, lk2 = seg(t, t0, t0 + 0.28);
             if (lk2 <= 0 || lk2 >= 1) return;
@@ -1742,27 +1757,27 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
           foes.forEach(function (e, i) { var bk = t - (tw + 0.1 + i * 0.035); if (bk > 0) damageBadge(ctx, e[0] + (w - 1.5) * H * 0.05, e[1] - H * 0.15 - w * H * 0.04, w === 3 ? 31 : 18, seg(bk, 0, 0.16), 1 - seg(bk, 0.55, 0.85)); });
           if (w === 3) { var fl = 1 - seg(t, tw + 0.08, tw + 0.32); if (fl > 0 && fl < 1) { ctx.save(); ctx.globalAlpha = fl * 0.6; ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, W, H); ctx.restore(); } }
         }
-        var yk = seg(t, 3.75, 4.3);
+        var yk = seg(t, 2.85, 3.4);
         if (yk > 0 && yk < 1) {
           ring(ctx, W * 0.5, H * 0.5, lerp(H * 0.16, Math.hypot(W, H) * 0.6, eOut(yk)), lerp(H * 0.05, H * 0.006, yk), Y, 1 - seg(yk, 0.6, 1));
           ring(ctx, W * 0.5, H * 0.5, lerp(H * 0.1, Math.hypot(W, H) * 0.45, eOut(seg(yk, 0.1, 1))), 3, "#ffffff", 1 - seg(yk, 0.5, 1));
         }
       } },
-    { id: "myriadq", name: "几万真言 快速版（力量 8 以下）", dur: 3.4, start: 0.5,
-      desc: "按你的意见：不加速，只剪段落。悠掏牌、转牌、捏碎这一段和完整版一样的速度（只是转牌时间短一点），约 0.6 秒捏碎；捏碎后不召唤大神、不出技能名，杖直接在悠和敌人之间出现，转的速度和完整版一样，只转一圈半；停住以后金光竖直劈下四下，每一下的动画速度也和完整版一样，只是相邻两下的间隔从 0.3 秒缩到 0.22 秒。约 1.95 秒落第一下，约 2.9 秒四下打完。",
+    { id: "myriadq", name: "几万真言 快速版（力量 8 以下）", dur: 2.4, start: 0.4,
+      desc: "按你的意见改得干脆：不召唤大神、不出技能名。悠掏出牌就捏碎（掏牌和捏碎的动作和完整版一样，只是牌在手里转得短），杖直接在悠和敌人之间出现，快速转一圈就停，停住马上竖直劈下四下金光，每一下的动画速度不变，间隔 0.16 秒。约 0.45 秒捏碎，约 1 秒落第一下，约 1.6 秒打完（上一版第一下要等约 2 秒）。",
       draw: function (ctx, W, H, tr) {
         var GOLD = "#f2c54b", PALE = "#fff3c4";
-        var CRUSH = 0.62, STOP = 1.45, t = hs(hs(tr, CRUSH, 0.08), STOP, 0.12);
+        var CRUSH = 0.45, STOP = 0.83, t = hs(hs(tr, CRUSH, 0.06), STOP, 0.06);
         battleFloor(ctx, W, H);
-        ctx.save(); ctx.globalAlpha = 0.3 * seg(t, CRUSH, CRUSH + 0.2) * (1 - seg(t, 2.75, 3.05)); ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H); ctx.restore();
+        ctx.save(); ctx.globalAlpha = 0.3 * seg(t, CRUSH, CRUSH + 0.15) * (1 - seg(t, 1.75, 2.05)); ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H); ctx.restore();
         var foes = [[W * 0.74, H * 0.66], [W * 0.84, H * 0.56], [W * 0.91, H * 0.72]];
         foes.forEach(function (e, i) { enemy(ctx, e[0], e[1], H * 0.085, Math.sin(tr * 3 + i)); });
-        /* the staff alone (no Okami): same spin speed as the full version, fewer turns */
+        /* the staff alone (no Okami): one quick turn, then it strikes at once */
         var gc = [W * 0.58, H * 0.44], L = H * 0.8;
-        var appear = eOut(seg(t, CRUSH + 0.02, CRUSH + 0.22)), fadeS = 1 - seg(t, STOP + 0.3, STOP + 0.6);
+        var appear = eOut(seg(t, CRUSH, CRUSH + 0.1)), fadeS = 1 - seg(t, STOP + 0.2, STOP + 0.45);
         if (appear > 0 && fadeS > 0) {
-          var e1 = eInOut(seg(t, CRUSH + 0.05, STOP)), e2 = eInOut(seg(t + 0.01, CRUSH + 0.05, STOP));
-          var ang = -Math.PI / 2 - (1 - e1) * Math.PI * 3, omega = (e2 - e1) / 0.01 * Math.PI * 3;
+          var e1 = eInOut(seg(t, CRUSH + 0.03, STOP)), e2 = eInOut(seg(t + 0.01, CRUSH + 0.03, STOP));
+          var ang = -Math.PI / 2 - (1 - e1) * Math.PI * 2, omega = (e2 - e1) / 0.01 * Math.PI * 2;
           if (omega > 3) {
             for (var gi = 1; gi <= 8; gi++) { var ga = ang - gi * omega * 0.01; ctx.save(); ctx.globalAlpha = appear * fadeS * 0.3 * (1 - gi / 9); ctx.strokeStyle = GOLD; ctx.lineWidth = H * 0.014; ctx.beginPath(); ctx.moveTo(gc[0] - Math.cos(ga) * L / 2, gc[1] - Math.sin(ga) * L / 2); ctx.lineTo(gc[0] + Math.cos(ga) * L / 2, gc[1] + Math.sin(ga) * L / 2); ctx.stroke(); ctx.restore(); }
             ring(ctx, gc[0], gc[1], L / 2, H * 0.006, PALE, appear * fadeS * Math.min(1, omega / 30));
@@ -1779,11 +1794,11 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         figure(ctx, W * 0.2, H * 0.94, H * 0.4, Y);
         var cpos = [W * 0.26, H * 0.48];
         if (t < CRUSH) {
-          var pull = eOut(seg(t, 0.08, 0.35)), cy2 = lerp(H * 0.64, cpos[1], pull);
+          var pull = eOut(seg(t, 0.06, 0.3)), cy2 = lerp(H * 0.64, cpos[1], pull);
           ctx.save(); ctx.globalAlpha = pull; ctx.translate(cpos[0], cy2 + Math.sin(t * 6) * H * 0.006); ctx.scale(Math.max(0.06, Math.abs(Math.cos(t * 9))), 1);
           ctx.shadowColor = PALE; ctx.shadowBlur = H * 0.045;
           roundRect(ctx, -H * 0.065, -H * 0.1, H * 0.13, H * 0.2, 4); ctx.fillStyle = PALE; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = GOLD; ctx.stroke(); ctx.restore();
-          var ak = seg(t, CRUSH - 0.23, CRUSH); if (ak > 0) ring(ctx, cpos[0], cpos[1], H * (0.07 + 0.08 * ak), 2, "#ffffff", Math.sin(ak * Math.PI));
+          var ak = seg(t, CRUSH - 0.2, CRUSH); if (ak > 0) ring(ctx, cpos[0], cpos[1], H * (0.07 + 0.08 * ak), 2, "#ffffff", Math.sin(ak * Math.PI));
         } else {
           var st = t - CRUSH, lt = tr - CRUSH;
           if (lt < 0.14) { ctx.save(); ctx.globalAlpha = (1 - lt / 0.14) * 0.45; ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, W, H); ctx.restore(); }
@@ -1793,7 +1808,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
           makeShards(61, 24, { vmin: H * 0.7, vmax: H * 1.9, smin: H * 0.01, smax: H * 0.03 }).forEach(function (s) { var p = shardPos(s, st, 2.6, H * 0.3); drawShard(ctx, cpos[0] + p[0], cpos[1] + p[1], s, st, PALE, 1 - seg(st, 0.5, 0.9)); });
         }
         for (var w = 0; w < 4; w++) {
-          var tw = STOP + 0.3 + w * 0.22;
+          var tw = STOP + 0.08 + w * 0.16;
           foes.forEach(function (e, i) {
             goldStrike(ctx, H, e[0], e[1] - H * 0.01, seg(t, tw + i * 0.035, tw + 0.28 + i * 0.035), tr, w * 3 + i, w === 3 ? 1.6 : 1);
             var bk = t - (tw + 0.1 + i * 0.035); if (bk > 0) damageBadge(ctx, e[0] + (w - 1.5) * H * 0.05, e[1] - H * 0.15 - w * H * 0.04, 9, seg(bk, 0, 0.16), 1 - seg(bk, 0.55, 0.85));
