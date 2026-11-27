@@ -913,6 +913,34 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     ring(ctx, x, y, lerp(H * 0.04, H * 0.22 * s, eOut(seg(k, 0, 0.5))), lerp(H * 0.02, 1.5, seg(k, 0, 0.5)), YH, 1 - seg(k, 0.3, 0.6));
     for (var j = 0; j < 4; j++) { var aj = r() * 6.28, dj = H * lerp(0.12, 0.22, r()) * s * eOut(seg(k, 0.05, 0.4)); star4(ctx, x + Math.cos(aj) * dj, y + Math.sin(aj) * dj, H * 0.025 * s * (1 - seg(k, 0.4, 0.8)), 0.15, 1, j % 2 ? "#ffffff" : YH); }
   }
+  /* P4R graphic hit (no spiky burst): a yellow band cuts across (white top edge, black bottom edge, orange dot row),
+     the foe turns into a black silhouette inside the band (colour collision), a white disc becomes a ring, a yellow ring follows */
+  function p4rCut(ctx, x, y, H, k, seed, s, ang, foe) {
+    if (k <= 0 || k >= 1) return;
+    var L = H * 0.75 * s, th0 = H * 0.065 * s, wipe = eOut(seg(k, 0, 0.14)), thin = seg(k, 0.3, 0.7), slide = eIn(seg(k, 0.3, 0.7)) * L * 0.25;
+    var th = th0 * (1 - thin), a0 = -L / 2 + slide, a1 = lerp(-L / 2, L / 2, wipe) + slide;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
+    if (th > 0.5 && a1 > a0) {
+      var sk = th * 0.6;
+      ctx.beginPath(); ctx.moveTo(a0 + sk, -th / 2); ctx.lineTo(a1 + sk, -th / 2); ctx.lineTo(a1 - sk, th / 2); ctx.lineTo(a0 - sk, th / 2); ctx.closePath();
+      ctx.fillStyle = Y; ctx.fill();
+      if (foe) { ctx.save(); ctx.clip(); ctx.rotate(-ang); ctx.translate(-x, -y); ctx.fillStyle = "#111"; ctx.beginPath(); ctx.ellipse(foe[0], foe[1], foe[2], foe[2] * 0.8, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+      ctx.lineWidth = Math.max(1.5, H * 0.004);
+      ctx.strokeStyle = "#ffffff"; ctx.beginPath(); ctx.moveTo(a0 + sk, -th / 2); ctx.lineTo(a1 + sk, -th / 2); ctx.stroke();
+      ctx.strokeStyle = "#111"; ctx.beginPath(); ctx.moveTo(a0 - sk, th / 2); ctx.lineTo(a1 - sk, th / 2); ctx.stroke();
+      ctx.fillStyle = ORANGE;
+      for (var d = a0 + H * 0.02; d < a1 - H * 0.01; d += H * 0.018) { ctx.beginPath(); ctx.arc(d, th * 0.22, Math.min(H * 0.005, th * 0.18), 0, Math.PI * 2); ctx.fill(); }
+    }
+    var sl = 1 - seg(k, 0.15, 0.6);
+    if (sl > 0) { ctx.globalAlpha = sl; ctx.fillStyle = "#ffffff"; [-1.6, 1.8, 2.6].forEach(function (o, i) { ctx.fillRect(-L * 0.3 + slide * 1.5 + i * H * 0.03, o * th0, L * (0.35 + 0.15 * i), 1.6); }); ctx.globalAlpha = 1; }
+    ctx.restore();
+    var dk = seg(k, 0, 0.1);
+    if (dk < 1) { ctx.save(); ctx.globalAlpha = 1 - dk * 0.3; ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(x, y, H * (0.03 + 0.05 * eOut(dk)) * s, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+    ring(ctx, x, y, lerp(H * 0.08, H * 0.24, eOut(seg(k, 0.08, 0.5))) * s, lerp(H * 0.03, 1.5, seg(k, 0.08, 0.5)), "#ffffff", 1 - seg(k, 0.3, 0.55));
+    ring(ctx, x, y, lerp(H * 0.05, H * 0.17, eOut(seg(k, 0.14, 0.55))) * s, lerp(H * 0.018, 1.5, seg(k, 0.14, 0.55)), YH, 1 - seg(k, 0.35, 0.6));
+    var tw = Math.sin(Math.min(1, seg(k, 0.12, 0.5)) * Math.PI);
+    if (tw > 0) { var cA = Math.cos(ang), sA = Math.sin(ang); star4(ctx, x + cA * L * 0.42, y + sA * L * 0.42, H * 0.022 * s * tw, 0.15, 1, "#ffffff"); star4(ctx, x - cA * L * 0.36, y - sA * L * 0.36, H * 0.016 * s * tw, 0.15, 1, YH); }
+  }
   /* TV-signal glitch: a few horizontal strips of what is already drawn, shifted sideways, with cyan / magenta fringes */
   function glitchStrips(ctx, x, y, w, h, k, seed) {
     if (k <= 0 || k >= 1) return;
@@ -955,7 +983,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   /* ---------- demos ---------- */
   var DEMOS = [
     { id: "fiend5", name: "恶魔之焰 完整版（烧 7 张以上）", dur: 3.0, start: 0.55,
-      desc: "按你的意见：整体加快，中间不停。扫牌和转向电视现在是同一条连续的曲线：光团沿手牌弧线从慢到快扫过去，扫到右边不减速，顺着惯性往右上拐，走半圆弯回电视里伸出来的手，只在快到手的时候放慢落位。牌在路上跟着光团头部走，到手边收拢成一叠（每张稍微错开一点，看得出有几张），不展开，依次翻成黄色，整叠一起被捏碎；每张牌化成一道黄色小彗星飞向敌人，命中是 P4R 式的锯齿爆光加电视信号错位，一张牌一下。整段从亮起到捏碎约 1.5 秒。",
+      desc: "按你的意见：整体加快，中间不停。扫牌和转向电视现在是同一条连续的曲线：光团沿手牌弧线从慢到快扫过去，扫到右边不减速，顺着惯性往右上拐，走半圆弯回电视里伸出来的手，只在快到手的时候放慢落位。牌在路上跟着光团头部走，到手边收拢成一叠（每张稍微错开一点，看得出有几张），不展开，依次翻成黄色，整叠一起被捏碎；每张牌化成一道黄色小彗星飞向敌人，命中是黄色斜条切过（条里敌人变黑色剪影的撞色）加白环、黄环和电视信号错位，一张牌一下，所有条平行、一条挨一条落下，叠成整齐的斜条纹。整段从亮起到捏碎约 1.5 秒。",
       draw: function (ctx, W, H, tr) {
         var BEAT = 1.45, t = hs(tr, BEAT, 0.08);
         var shake = tr > BEAT && tr < BEAT + 0.16 ? (1 - (tr - BEAT) / 0.16) * H * 0.01 : 0;
@@ -1093,7 +1121,8 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
             var h2 = st - (l0 + dur);
             if (h2 > 0) {
               if (h2 < 0.07) glitchStrips(ctx, ex, ey, H * 0.5, H * 0.42, h2 / 0.07, 30 + c);
-              p4rHit(ctx, Es[0], Es[1], H, seg(h2, 0, 0.32), 40 + c, 1);
+              var pa = -0.42, po = (c - 2) * H * 0.045;
+              p4rCut(ctx, ex - Math.sin(pa) * po, ey + Math.cos(pa) * po, H, seg(h2, 0, 0.38), 40 + c, 1, pa, [ex, ey, H * 0.11]);
               damageBadge(ctx, ex - W * 0.05 + (c - 2) * W * 0.03, ey - H * 0.22 - c * H * 0.035, 7, seg(h2, 0, 0.16), 1 - seg(h2, 0.6, 0.9));
             }
           }
@@ -1101,7 +1130,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         ctx.restore();
       } },
     { id: "fiendq", name: "恶魔之焰 快速版（烧 7 张以下）", dur: 1.4, start: 0.24,
-      desc: "烧不到 7 张时播这个：同一团彗星光，但只在手牌区快速扫一下（约 0.25 秒），不飞去电视、不伸手、不收叠；扫到哪张，哪张原地翻黄、立刻捏碎，再化成一道黄色小彗星飞向敌人，一张牌一下。命中是 P4R 式的：锯齿爆光（白芯、黄身、橙色外晕）+ 两道细长交叉斩线 + 黄环和小星星，命中瞬间敌人那块画面像电视信号一样横向错位一下。约 0.45 秒出第一下，整段约 0.9 秒。",
+      desc: "烧不到 7 张时播这个：同一团彗星光，但只在手牌区快速扫一下（约 0.25 秒），不飞去电视、不伸手、不收叠；扫到哪张，哪张原地翻黄、立刻捏碎，再化成一道黄色小彗星飞向敌人，一张牌一下。命中用 P4R 的平面设计：一道黄色斜条切过敌人（白色上沿、黑色下沿、一排橙色网点），条压过的那块敌人变成黑色剪影（撞色），中心白点变白环、再一圈黄环扩散，两头各一颗小星星；所有条同一个角度，一条挨一条依次落下，叠成一组整齐的平行斜条纹。命中瞬间敌人那块画面像电视信号一样横向错位一下。约 0.45 秒出第一下，整段约 0.9 秒。",
       draw: function (ctx, W, H, tr) {
         battleFloor(ctx, W, H);
         figure(ctx, W * 0.13, H * 0.92, H * 0.42, Y);
@@ -1125,11 +1154,13 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
             ring(ctx, Sq[0], Sq[1], lerp(H * 0.02, H * 0.12, eOut(seg(st, 0, 0.2))), 2, "#ffffff", 1 - seg(st, 0.1, 0.25));
             makeShards(700 + i, 7, { vmin: H * 0.4, vmax: H * 1.0, smin: H * 0.01, smax: H * 0.026 }).forEach(function (s) { var p = shardPos(s, st, 3.0, H * 1.2); drawShard(ctx, Sq[0] + p[0], Sq[1] + p[1], s, st, Y, 1 - seg(st, 0.15, 0.35)); });
             var Eq = [ex + (i - 2) * H * 0.025, ey + (i % 2 ? -1 : 1) * H * 0.03], Cq = [(Sq[0] + Eq[0]) / 2, Math.min(Sq[1], Eq[1]) - H * (0.16 + 0.03 * i)];
-            if (st > 0.02 && st < 0.25) { var cq = []; for (var q = 0; q <= 10; q++) cq.push(quadP(Sq, Cq, Eq, eIn(seg(st - q * 0.007, 0.02, 0.2)))); drawComet(ctx, cq, H * 0.032, tr, 1 - seg(st, 0.2, 0.25)); }
-            var h2 = st - 0.2;
+            var di = i * 0.05;
+            if (st > 0.02 + di && st < 0.25 + di) { var cq = []; for (var q = 0; q <= 10; q++) cq.push(quadP(Sq, Cq, Eq, eIn(seg(st - q * 0.007, 0.02 + di, 0.2 + di)))); drawComet(ctx, cq, H * 0.032, tr, 1 - seg(st, 0.2 + di, 0.25 + di)); }
+            var h2 = st - 0.2 - di;
             if (h2 > 0) {
               if (h2 < 0.06) glitchStrips(ctx, ex, ey, H * 0.46, H * 0.4, h2 / 0.06, 60 + i);
-              p4rHit(ctx, Eq[0], Eq[1], H, seg(h2, 0, 0.28), 80 + i, 0.9);
+              var qa = -0.42, qo = (i - 2) * H * 0.045;
+              p4rCut(ctx, ex - Math.sin(qa) * qo, ey + Math.cos(qa) * qo, H, seg(h2, 0, 0.34), 80 + i, 0.9, qa, [ex, ey, H * 0.11]);
               damageBadge(ctx, ex - W * 0.04 + (i - 2) * W * 0.03, ey - H * 0.21 - i * H * 0.035, 7, seg(h2, 0, 0.14), 1 - seg(h2, 0.45, 0.7));
             }
           }
