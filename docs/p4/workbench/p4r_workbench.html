@@ -1,0 +1,1185 @@
+<title>P4R 美感工作台</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Noto+Sans+SC:wght@400;700;900&display=swap">
+<style>
+/* Layout: one working column. Order = what the user does first: answer → check my understanding → watch demos → mark screenshots → upload.
+   Deliberately single dark theme: P4R's battle UI is lemon yellow on near-black. */
+:root {
+  --ink: #0e0e10;
+  --panel: #18181b;
+  --panel-2: #222226;
+  --line: #34343a;
+  --fg: #f2f1e8;
+  --dim: #a4a39a;
+  --yellow: #e6eb1a;
+  --yellow-hot: #fcf800;
+  --blue: #33c3ff;
+  --red: #ff3b5c;
+  --mark: #ff2d55;
+  --font-display: "Archivo Black", "Noto Sans SC", system-ui, sans-serif;
+  --font-body: "Noto Sans SC", system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--ink);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+}
+.wrap {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+/* Header: a slanted lemon-yellow plate, like P4R's skill-name panels */
+.hero {
+  position: relative;
+  margin-top: calc(-1 * env(safe-area-inset-top, 0px));
+  padding-top: calc(env(safe-area-inset-top, 0px) + 28px);
+  padding-bottom: 26px;
+  background: var(--ink);
+  overflow: hidden;
+}
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0 -10% 0 62%;
+  background: var(--yellow);
+  transform: skewX(-18deg);
+  transform-origin: bottom left;
+}
+@media (max-width: 700px) { .hero::before { inset: 0 -40% 0 80%; } }
+.hero .wrap { position: relative; padding-block: 0; }
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 5vw, 44px);
+  line-height: 1.1;
+  margin: 0;
+  letter-spacing: 0.01em;
+  text-wrap: balance;
+}
+.hero h1 .tag {
+  display: inline-block;
+  background: var(--ink);
+  color: var(--yellow);
+  border: 3px solid var(--yellow);
+  border-radius: 999px;
+  padding: 2px 16px 4px;
+  transform: rotate(-3deg);
+}
+.hero p { margin: 14px 0 0; max-width: 30em; color: var(--fg); }
+.conn {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 12px;
+  font-size: 13px;
+  background: var(--ink);
+  color: var(--dim);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 2px 12px;
+}
+.conn i { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); display: inline-block; }
+.conn.ok i { background: #6be36b; }
+.conn.bad i { background: var(--red); }
+
+.notice {
+  margin: 22px 0 0;
+  border-left: 6px solid var(--yellow);
+  background: var(--panel);
+  padding: 12px 16px;
+  border-radius: 0 10px 10px 0;
+}
+section { margin-top: 44px; }
+section > h2 {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  font-size: 22px; margin: 0 0 6px; text-wrap: balance;
+}
+section > h2 .pill {
+  font-family: var(--font-display);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  background: var(--yellow);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 2px 12px;
+  transform: rotate(-3deg);
+}
+.lead { color: var(--dim); margin: 0 0 16px; max-width: 46em; }
+.status { font-size: 12px; color: var(--dim); margin-left: auto; min-height: 1em; }
+.status.saved { color: #8fe08f; }
+.status.err { color: var(--red); }
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+}
+.stack { display: grid; gap: 12px; }
+.q h3 { margin: 0 0 10px; font-size: 16px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font: inherit; font-size: 14px;
+  color: var(--fg);
+  background: var(--panel-2);
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 14px;
+  cursor: pointer;
+}
+.chip:hover { border-color: var(--dim); }
+.chip[aria-pressed="true"] { background: var(--yellow); color: var(--ink); border-color: var(--yellow); font-weight: 700; }
+.chip.rec::after { content: " 推荐"; font-size: 11px; opacity: 0.75; }
+.chip:focus-visible, button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+textarea, input[type="text"] {
+  width: 100%;
+  font: inherit; font-size: 14px;
+  color: var(--fg);
+  background: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-top: 10px;
+  resize: vertical;
+}
+textarea::placeholder, input::placeholder { color: #6f6e67; }
+
+/* Understanding checklist */
+.u { display: grid; grid-template-columns: 1fr auto; gap: 8px 14px; align-items: start; }
+.u p { margin: 0; min-width: 0; }
+.u .chips { justify-content: flex-end; }
+.u textarea { grid-column: 1 / -1; margin-top: 0; }
+@media (max-width: 640px) { .u { grid-template-columns: 1fr; } .u .chips { justify-content: flex-start; } }
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; margin-top: 4px; }
+.sw { border-radius: 8px; overflow: hidden; border: 1px solid var(--line); background: var(--panel-2); }
+.sw b { display: block; height: 38px; }
+.sw span { display: block; font-size: 12px; padding: 4px 8px; color: var(--dim); }
+
+/* Demos */
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-width: 100%;
+  background: #05060a;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+.stage canvas { width: 100%; height: 100%; display: block; }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px; }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 700;
+  background: var(--yellow); color: var(--ink);
+  border: none; border-radius: 8px;
+  padding: 7px 16px; cursor: pointer;
+}
+.btn.ghost { background: var(--panel-2); color: var(--fg); border: 1px solid var(--line); font-weight: 400; }
+.btn[aria-pressed="true"] { outline: 2px solid var(--yellow); }
+.controls input[type="range"] { flex: 1 1 200px; min-width: 0; accent-color: var(--yellow); }
+.tlabel { font-variant-numeric: tabular-nums; font-size: 13px; color: var(--dim); min-width: 5.5em; }
+.demo-desc { margin: 10px 0 0; color: var(--dim); }
+
+/* Screenshots to mark */
+.shots { display: grid; gap: 18px; }
+.shot { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 16px; align-items: start; }
+@media (max-width: 760px) { .shot { grid-template-columns: 1fr; } }
+.ann { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); background: #000; touch-action: none; }
+.ann img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
+.ann canvas { position: absolute; inset: 0; width: 100%; height: 100%; cursor: crosshair; }
+.shot h3 { margin: 0 0 6px; font-size: 16px; }
+.shot .ask { margin: 0; }
+.shot .src { font-size: 12px; color: var(--dim); margin-top: 6px; word-break: break-all; }
+.tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+
+/* Uploads */
+.drop {
+  display: grid; place-items: center; gap: 6px; text-align: center;
+  border: 2px dashed var(--line); border-radius: 12px;
+  padding: 26px 16px; background: var(--panel);
+}
+.drop.over { border-color: var(--yellow); }
+.uplist { display: grid; gap: 16px; margin-top: 16px; }
+.up video { width: 100%; border-radius: 10px; background: #000; display: block; }
+.up .meta { font-size: 12px; color: var(--dim); margin-top: 6px; word-break: break-all; }
+.muted { color: var(--dim); }
+footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
+@media (prefers-reduced-motion: reduce) { .chip, .btn { transition: none; } }
+</style>
+
+<header class="hero">
+  <div class="wrap">
+    <h1><span class="tag">P4R</span> 美感工作台</h1>
+    <p>在这里点选、圈画、写备注、上传视频。所有内容自动保存，我这边可以直接读到。</p>
+    <span class="conn" id="conn"><i></i><span id="connText">正在连接…</span></span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="notice">
+    你上一条说的<b>那段视频</b>，和<b>4 个问题的回答</b>，我这边都没有收到（问卷弹窗回来是空的，消息里也没有附件）。视频可以在本页最下面上传；4 个问题在下面点一下就行。
+  </div>
+
+  <!-- 1. Questions -->
+  <section id="questions">
+    <h2><span class="pill">01</span>4 个问题 <span class="status" id="st-answers"></span></h2>
+    <p class="lead">点一个选项就保存。想补充的写在框里。</p>
+    <div class="stack" id="qlist"></div>
+  </section>
+
+  <!-- 2. Understanding -->
+  <section id="understanding">
+    <h2><span class="pill">02</span>我理解的 P4R 特效做法 <span class="status" id="st-understanding"></span></h2>
+    <p class="lead">这是我从截图里总结的做法。每条点「对 / 不对 / 不全」，不对的地方写一句，或者去下面的截图上圈出来。</p>
+    <div class="stack" id="ulist"></div>
+    <div class="card" style="margin-top:12px">
+      <p style="margin:0 0 8px">截图里量到的颜色（大概值）：</p>
+      <div class="swatches" id="swatches"></div>
+    </div>
+  </section>
+
+  <!-- 3. Demos -->
+  <section id="demos">
+    <h2><span class="pill">03</span>小演示：我理解的样子 <span class="status" id="st-demos"></span></h2>
+    <p class="lead">用图形占位做的动态草图，只看结构、节奏和形状语言，不是成品画风。可以慢放、拖时间条停在任意一帧，告诉我哪里不像。</p>
+    <div class="tabs" id="demoTabs" role="tablist"></div>
+    <div class="stage"><canvas id="stage"></canvas></div>
+    <div class="controls">
+      <button class="btn" id="play" type="button">播放</button>
+      <button class="btn ghost" id="slow" type="button" aria-pressed="false">慢放 ×0.3</button>
+      <input type="range" id="scrub" min="0" max="1" step="0.01" value="0" aria-label="时间">
+      <span class="tlabel" id="tlabel">0.00 s</span>
+    </div>
+    <p class="demo-desc" id="demoDesc"></p>
+    <div class="card" style="margin-top:12px">
+      <div class="chips" id="demoVerdict"></div>
+      <textarea id="demoNote" rows="2" placeholder="哪里不像？可以先点「插入当前时间」再写，比如：[0.92s] 碎片应该更大、更少"></textarea>
+      <div class="tools"><button class="btn ghost" id="insertTime" type="button">插入当前时间</button></div>
+    </div>
+  </section>
+
+  <!-- 4. Screenshots -->
+  <section id="shots">
+    <h2><span class="pill">04</span>我没看懂的截图 <span class="status" id="st-shots"></span></h2>
+    <p class="lead">在图上直接拿手指或鼠标圈画，旁边写一句。截图来自 B 站 360P 视频放大，比较糊；看不清的地方，你按原版告诉我就行。</p>
+    <div class="shots" id="shotList"></div>
+  </section>
+
+  <!-- 5. Uploads -->
+  <section id="uploads">
+    <h2><span class="pill">05</span>上传你说的那段视频 <span class="status" id="st-uploads"></span></h2>
+    <p class="lead">视频（mp4 / webm）或截图都可以，单个文件不超过 20MB。传上来以后，可以在截图上圈画、在视频下面写想让我看哪几秒。</p>
+    <label class="drop" id="drop" for="file">
+      <strong>点这里选文件，或者把文件拖进来</strong>
+      <span class="muted" id="upHint">mp4 / webm / png / jpg，每个 20MB 以内</span>
+    </label>
+    <input type="file" id="file" accept="video/mp4,video/webm,image/png,image/jpeg,image/webp,image/gif" multiple hidden>
+    <div class="uplist" id="upList"></div>
+    <div class="card" style="margin-top:16px">
+      <label for="links"><b>视频太大传不了？</b> 把链接和时间点写在这里，比如：B 站链接 + 「1:23–1:31 召唤」。</label>
+      <textarea id="links" rows="3" placeholder="链接和时间点"></textarea>
+      <span class="status" id="st-links"></span>
+    </div>
+  </section>
+
+  <footer>全部自动保存。我回来会读这一页的内容，再改方案和演示。</footer>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- content ---------- */
+  var QUESTIONS = [
+    { id: "q1", title: "文字：P4R 里文字演出很多（技能名条、1 MORE、CRITICAL 大字）。我们放多少？",
+      opts: [["gold", "只给金卡打技能名", true], ["none", "完全不要文字"], ["full", "像 P4R 一样多用"]] },
+    { id: "q2", title: "特写：捏碎牌时，要不要做悠的半身大特写（伸手 → 握拳捏碎）？",
+      opts: [["big", "只给大烧牌和金卡", true], ["none", "都不要，只在战场上捏"], ["all", "每次召唤都特写"]] },
+    { id: "q3", title: "单张消耗（自带消耗的牌、坚毅随机消耗等）也改成「变黄 → 捏碎」吗？",
+      opts: [["light", "改，用轻量版", true], ["bigonly", "只改大烧牌"]] },
+    { id: "q4", title: "几万真言（焚烧）的配色？伊邪那岐大神本身是白衣、金色圆环。",
+      opts: [["whitegold", "白金为主、黄色收尾", true], ["yellow", "全部用 P4 黄"]] }
+  ];
+
+  var UNDERSTANDING = [
+    ["u1", "黄色当底板用：特效先切进一大块平涂黄（斜面板、圆、圆环），人物和动作压在上面。黄色是舞台背景板，不是光。"],
+    ["u2", "人物外面有一圈很粗的黄色描边，把角色从画面里「剪」出来，像贴在电视画面上的剪影。"],
+    ["u3", "光很少用柔和渐变，多数是硬边：十字星芒、细长直光线、平涂多边形碎片。真正发光的只有人格面具的蓝焰和雷。"],
+    ["u4", "节奏：快速滑入 → 停一下 → 一个最满的拍（捏碎 / 命中）→ 用几何遮罩（圆环收拢、斜切）快速切走。一段 1 秒左右，很干脆。"],
+    ["u5", "电视语言用在系统层：圆角显像管框（轮到谁、锁定）、整墙屏幕（结算）、雪花、聚光灯舞台（总攻击）。"],
+    ["u6", "文字本身就是特效：1 MORE、CRITICAL、技能名条都倾斜、带描边、配星星，砸进画面。"],
+    ["u7", "颜色分工：黄 = 我方和系统节奏；蓝 = 人格面具；红 / 粉 = 敌人、暴击、伤害；黄橙绿三色彩带 = 队伍和总攻击。战斗里的黄偏绿（柠檬黄），宣传图的黄偏暖。"]
+  ];
+
+  var SWATCHES = [
+    ["#e5eb18", "战斗柠檬黄（捏碎的卡）"], ["#fcf800", "1 MORE 的黄"], ["#f8d420", "宣传图暖黄"],
+    ["#33c3ff", "人格面具蓝焰"], ["#ff3b5c", "暴击红粉"], ["#f8a800", "彩带橙"], ["#a6e34a", "彩带绿 / 回合框绿"]
+  ];
+
+  var SHOTS = [
+    { id: "card-appear", src: "shots/card_appear.jpg", title: "黄卡出现",
+      ask: "卡是纯黄色、没有图案的平面卡吗？它是从掌心升起来，还是凭空放大出现？" },
+    { id: "card-iris", src: "shots/card_iris.jpg", title: "黄色圆环收拢",
+      ask: "这个黄色圆环是从外往里收、最后对准拳头收没吗？收完是直接切回战场，还是先整屏黄一下？" },
+    { id: "card-shards", src: "shots/card_shards.jpg", title: "捏碎的碎片",
+      ask: "碎片是纯平涂黄，还是有亮边、渐变？是从拳头往四周炸，还是往镜头飞？" },
+    { id: "outline", src: "shots/yu_outline.jpg", title: "人物的粗黄描边",
+      ask: "悠外面这圈粗黄边是静止的，还是会抖动、闪烁、带残影？描边的粗细会变吗？" },
+    { id: "damage", src: "shots/damage_number.jpg", title: "伤害数字",
+      ask: "数字两边的黑色括号像声波，我理解是电视 / 广播的意思，对吗？数字出现时会弹跳或抖动吗？" },
+    { id: "turn-frame", src: "shots/turn_frame.jpg", title: "圆角屏幕框",
+      ask: "这个圆角框是「轮到谁就框住谁」吗？这里是绿色，另一张截图里是黄色，颜色有区别吗？" },
+    { id: "onemore", src: "shots/one_more.jpg", title: "1 MORE",
+      ask: "1 MORE 的字是怎么进场的：砸下来、滑进来，还是弹出来？后面的斜带按什么顺序出现？" },
+    { id: "critical", src: "shots/critical.jpg", title: "CRITICAL",
+      ask: "CRITICAL 的红蓝错位，是一直在抖的故障效果，还是只有出现那一下？" },
+    { id: "slash", src: "shots/yellow_slash.jpg", title: "黄色刀光",
+      ask: "这道黄色刀光是平涂的形状（像贴纸），还是发光的？红黑碎片是命中时才出来的吗？" }
+  ];
+
+  /* ---------- helpers ---------- */
+  function $(id) { return document.getElementById(id); }
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function setStatus(id, kind, extra) {
+    var s = $(id); if (!s) return;
+    s.classList.remove("saved", "err");
+    if (kind === "saving") s.textContent = "保存中…";
+    else if (kind === "saved") { s.textContent = "已保存"; s.classList.add("saved"); }
+    else if (kind === "offline") { s.textContent = "未连接，暂时存不了"; s.classList.add("err"); }
+    else if (kind === "error") { s.textContent = "保存失败" + (extra ? "（" + extra + "）" : ""); s.classList.add("err"); }
+    else s.textContent = "";
+  }
+
+  /* ---------- persistence (db) ---------- */
+  var DB = null, ASSETS = null;
+  var queues = {};
+  function saveDoc(path, body, statusId) {
+    var q = queues[path] || (queues[path] = { busy: false, next: null, timer: null, status: statusId });
+    q.next = body; q.status = statusId;
+    setStatus(statusId, "saving");
+    clearTimeout(q.timer);
+    q.timer = setTimeout(function () { flush(path); }, 500);
+  }
+  function flush(path) {
+    var q = queues[path];
+    if (!q || q.busy || !q.next) return;
+    if (!DB) { setStatus(q.status, "offline"); return; }
+    var body = q.next; q.next = null; q.busy = true;
+    var data = Object.assign({}, body, { at: new Date().toISOString() });
+    DB.doc(path).set(data).then(function () {
+      setStatus(q.status, "saved");
+    }, function (e) {
+      setStatus(q.status, "error", e && e.code);
+    }).then(function () {
+      q.busy = false;
+      if (q.next) flush(path);
+    });
+  }
+
+  /* ---------- 1. questions ---------- */
+  var answers = {};
+  function renderQuestions() {
+    var list = $("qlist");
+    QUESTIONS.forEach(function (q) {
+      var c = el("div", "card q");
+      c.appendChild(el("h3", null, q.title));
+      var chips = el("div", "chips");
+      q.opts.forEach(function (o) {
+        var b = el("button", "chip" + (o[2] ? " rec" : ""), o[1]);
+        b.type = "button"; b.dataset.q = q.id; b.dataset.v = o[0];
+        b.setAttribute("aria-pressed", "false");
+        b.addEventListener("click", function () {
+          answers[q.id] = o[0];
+          syncQuestionChips();
+          saveDoc("answers/main", answers, "st-answers");
+        });
+        chips.appendChild(b);
+      });
+      c.appendChild(chips);
+      var t = el("textarea"); t.rows = 1; t.id = "note-" + q.id; t.placeholder = "补充（可不填）";
+      t.addEventListener("input", function () {
+        answers[q.id + "_note"] = t.value;
+        saveDoc("answers/main", answers, "st-answers");
+      });
+      c.appendChild(t);
+      list.appendChild(c);
+    });
+  }
+  function syncQuestionChips() {
+    document.querySelectorAll("#qlist .chip").forEach(function (b) {
+      b.setAttribute("aria-pressed", answers[b.dataset.q] === b.dataset.v ? "true" : "false");
+    });
+  }
+  function hydrateAnswers(d) {
+    answers = Object.assign({}, d); delete answers.at;
+    syncQuestionChips();
+    QUESTIONS.forEach(function (q) {
+      var t = $("note-" + q.id);
+      if (t && document.activeElement !== t) t.value = answers[q.id + "_note"] || "";
+    });
+  }
+
+  /* ---------- 2. understanding ---------- */
+  var understanding = {};
+  function renderUnderstanding() {
+    var list = $("ulist");
+    UNDERSTANDING.forEach(function (u) {
+      var c = el("div", "card u");
+      c.appendChild(el("p", null, u[1]));
+      var chips = el("div", "chips");
+      [["yes", "对"], ["no", "不对"], ["part", "不全"]].forEach(function (o) {
+        var b = el("button", "chip", o[1]);
+        b.type = "button"; b.dataset.u = u[0]; b.dataset.v = o[0];
+        b.setAttribute("aria-pressed", "false");
+        b.addEventListener("click", function () {
+          understanding[u[0]] = Object.assign({}, understanding[u[0]], { v: o[0] });
+          syncUnderstanding();
+          saveDoc("understanding/main", { items: understanding }, "st-understanding");
+        });
+        chips.appendChild(b);
+      });
+      c.appendChild(chips);
+      var t = el("textarea"); t.rows = 1; t.id = "unote-" + u[0]; t.placeholder = "不对的话，原版是怎样的？";
+      t.addEventListener("input", function () {
+        understanding[u[0]] = Object.assign({}, understanding[u[0]], { note: t.value });
+        saveDoc("understanding/main", { items: understanding }, "st-understanding");
+      });
+      c.appendChild(t);
+      list.appendChild(c);
+    });
+    var sw = $("swatches");
+    SWATCHES.forEach(function (s) {
+      var d = el("div", "sw");
+      var b = el("b"); b.style.background = s[0];
+      d.appendChild(b);
+      d.appendChild(el("span", null, s[1] + " " + s[0].toUpperCase()));
+      sw.appendChild(d);
+    });
+  }
+  function syncUnderstanding() {
+    document.querySelectorAll("#ulist .chip").forEach(function (b) {
+      var it = understanding[b.dataset.u];
+      b.setAttribute("aria-pressed", it && it.v === b.dataset.v ? "true" : "false");
+    });
+  }
+  function hydrateUnderstanding(d) {
+    understanding = Object.assign({}, d.items || {});
+    syncUnderstanding();
+    UNDERSTANDING.forEach(function (u) {
+      var t = $("unote-" + u[0]);
+      if (t && document.activeElement !== t) t.value = (understanding[u[0]] && understanding[u[0]].note) || "";
+    });
+  }
+
+  /* ---------- 3. demos (canvas) ---------- */
+  var Y = "#e6eb1a", YH = "#fcf800", BLUE = "#33c3ff", SKIN = "#f3d8c2";
+  function clamp(x, a, b) { return x < a ? a : x > b ? b : x; }
+  function seg(t, a, b) { return clamp((t - a) / (b - a), 0, 1); }
+  function lerp(a, b, k) { return a + (b - a) * k; }
+  function eOut(k) { return 1 - Math.pow(1 - k, 3); }
+  function eIn(k) { return k * k * k; }
+  function eInOut(k) { return k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; }
+  function eBack(k) { var c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); }
+  function rng(seed) {
+    return function () {
+      seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+      var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  /* hit-stop: freeze animation time for d seconds at b */
+  function hs(t, b, d) { return t < b ? t : (t < b + d ? b : t - d); }
+
+  function star4(ctx, x, y, r, thin, alpha, color) {
+    ctx.save(); ctx.globalAlpha = alpha; ctx.fillStyle = color || "#fff";
+    ctx.beginPath();
+    for (var i = 0; i < 8; i++) {
+      var a = i * Math.PI / 4 - Math.PI / 2;
+      var rr = i % 2 === 0 ? r : r * thin;
+      ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr);
+    }
+    ctx.closePath(); ctx.fill(); ctx.restore();
+  }
+  function star5(ctx, x, y, r, rot, color) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.fillStyle = color;
+    ctx.beginPath();
+    for (var i = 0; i < 10; i++) {
+      var a = i * Math.PI / 5 - Math.PI / 2, rr = i % 2 === 0 ? r : r * 0.45;
+      ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
+    }
+    ctx.closePath(); ctx.fill();
+    ctx.lineWidth = Math.max(1, r * 0.12); ctx.strokeStyle = "#111"; ctx.stroke();
+    ctx.restore();
+  }
+  function ray(ctx, x, y, ang, len, w, alpha) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(ang); ctx.globalAlpha = alpha;
+    var g = ctx.createLinearGradient(-len, 0, len, 0);
+    g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(0.5, "rgba(255,255,255,1)"); g.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = g; ctx.fillRect(-len, -w / 2, len * 2, w); ctx.restore();
+  }
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath();
+  }
+  /* shards with damped motion evaluated analytically, so scrubbing is exact */
+  function makeShards(seed, n, opts) {
+    var r = rng(seed), out = [];
+    for (var i = 0; i < n; i++) {
+      var a = (opts.dir != null ? opts.dir + (r() - 0.5) * opts.spread : r() * Math.PI * 2);
+      var sp = lerp(opts.vmin, opts.vmax, r());
+      var verts = [], k = 3 + Math.floor(r() * 3);
+      for (var j = 0; j < k; j++) {
+        var aa = (j / k) * Math.PI * 2 + (r() - 0.5) * 0.9;
+        verts.push([Math.cos(aa) * lerp(0.55, 1, r()), Math.sin(aa) * lerp(0.55, 1, r())]);
+      }
+      out.push({ vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, size: lerp(opts.smin, opts.smax, r()),
+        rot: r() * 6.28, w: (r() - 0.5) * 14, verts: verts, hot: r() < 0.25 });
+    }
+    return out;
+  }
+  function shardPos(s, t, k, g) {
+    var e = Math.exp(-k * t);
+    return [s.vx / k * (1 - e), s.vy / k * (1 - e) + g / k * (t - (1 - e) / k)];
+  }
+  function drawShard(ctx, x, y, s, t, scale, color, alpha) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(s.rot + s.w * (1 - Math.exp(-2 * t)) / 2);
+    ctx.globalAlpha = alpha;
+    ctx.beginPath();
+    s.verts.forEach(function (v, i) { var px = v[0] * s.size * scale, py = v[1] * s.size * scale; if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py); });
+    ctx.closePath();
+    ctx.fillStyle = s.hot ? YH : color; ctx.fill();
+    ctx.restore();
+  }
+  function iris(ctx, W, H, cx, cy, r, color) {
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, H);
+    ctx.moveTo(cx + Math.max(r, 0), cy); ctx.arc(cx, cy, Math.max(r, 0), 0, Math.PI * 2, true);
+    ctx.fillStyle = color; ctx.fill("evenodd");
+    if (r > 2) { ctx.lineWidth = Math.max(2, r * 0.02); ctx.strokeStyle = "rgba(0,0,0,0.55)"; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke(); }
+    ctx.restore();
+  }
+  function flames(ctx, W, H, t, x0, y0, width, height, seed, alpha) {
+    var r = rng(seed);
+    ctx.save(); ctx.globalCompositeOperation = "lighter";
+    for (var i = 0; i < 46; i++) {
+      var ph = r(), xo = (r() - 0.5) * width, sp = lerp(0.7, 1.4, r()), sz = lerp(0.5, 1, r());
+      var age = (t * sp + ph) % 1;
+      var x = x0 + xo + Math.sin((age * 4 + ph * 9)) * width * 0.05;
+      var y = y0 - age * height;
+      var s = (1 - age) * height * 0.22 * sz;
+      ctx.globalAlpha = alpha * Math.sin(age * Math.PI) * 0.55;
+      var g = ctx.createRadialGradient(x, y, 0, x, y, s);
+      g.addColorStop(0, "rgba(190,240,255,1)"); g.addColorStop(0.4, "rgba(51,160,255,0.9)"); g.addColorStop(1, "rgba(10,40,140,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.ellipse(x, y, s * 0.55, s, 0, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+  /* placeholder hand: palm toward camera, yellow outer outline like P4R cut-ins */
+  function hand(ctx, x, y, s, close, rot) {
+    var fingers = [[-0.36, 0.92, -0.2], [-0.12, 1.06, -0.06], [0.12, 1.0, 0.06], [0.35, 0.8, 0.2]];
+    function parts(pass) {
+      ctx.beginPath(); roundRect(ctx, -0.5 * s, -0.05 * s, s, 0.82 * s, 0.22 * s);
+      pass();
+      fingers.forEach(function (f) {
+        var len = f[1] * s * (1 - 0.62 * close), wv = 0.2 * s;
+        ctx.save(); ctx.translate(f[0] * s, 0.02 * s); ctx.rotate(f[2] * (1 - close));
+        ctx.beginPath(); roundRect(ctx, -wv / 2, -len, wv, len + 0.1 * s, wv / 2);
+        pass(); ctx.restore();
+      });
+      ctx.save(); ctx.translate(-0.48 * s, 0.38 * s); ctx.rotate(-1.0 + 0.55 * close);
+      var tl = 0.66 * s * (1 - 0.35 * close), tw = 0.24 * s;
+      ctx.beginPath(); roundRect(ctx, -tw / 2, -tl, tw, tl + 0.1 * s, tw / 2);
+      pass(); ctx.restore();
+    }
+    ctx.save(); ctx.translate(x, y); ctx.rotate(rot || 0);
+    ctx.lineJoin = "round";
+    parts(function () { ctx.lineWidth = s * 0.16; ctx.strokeStyle = Y; ctx.stroke(); });
+    parts(function () { ctx.fillStyle = SKIN; ctx.fill(); });
+    if (close > 0.5) {
+      ctx.strokeStyle = "rgba(90,50,40,0.45)"; ctx.lineWidth = s * 0.02;
+      for (var i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo((-0.3 + i * 0.22) * s, -0.3 * s); ctx.lineTo((-0.3 + i * 0.22) * s, -0.05 * s); ctx.stroke(); }
+    }
+    ctx.restore();
+  }
+  function stageBg(ctx, W, H, tint) {
+    var g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, tint || "#0b1024"); g.addColorStop(1, "#04050b");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  }
+  /* P4R-like battle floor: black/white checker with a red carpet */
+  function battleFloor(ctx, W, H) {
+    stageBg(ctx, W, H, "#141018");
+    var hy = H * 0.42;
+    function P(u, v) { var vv = Math.pow(v, 1.35); return [W / 2 + (u - 0.5) * W * (0.5 + 2.2 * vv), hy + (H - hy) * vv]; }
+    var rows = 9, cols = 12;
+    for (var i = 0; i < rows; i++) for (var j = 0; j < cols; j++) {
+      var a = P(j / cols, i / rows), b = P((j + 1) / cols, i / rows), c = P((j + 1) / cols, (i + 1) / rows), d = P(j / cols, (i + 1) / rows);
+      ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.lineTo(c[0], c[1]); ctx.lineTo(d[0], d[1]); ctx.closePath();
+      ctx.fillStyle = (i + j) % 2 ? "#2a2a2e" : "#8d8c88"; ctx.fill();
+    }
+    var c1 = P(0.5, 0.22), c2 = P(0.78, 0.55), c3 = P(0.5, 0.92), c4 = P(0.22, 0.55);
+    ctx.beginPath(); ctx.moveTo(c1[0], c1[1]); ctx.lineTo(c2[0], c2[1]); ctx.lineTo(c3[0], c3[1]); ctx.lineTo(c4[0], c4[1]); ctx.closePath();
+    ctx.fillStyle = "#7a1a1f"; ctx.fill();
+    var vg = ctx.createRadialGradient(W / 2, H * 0.55, H * 0.2, W / 2, H * 0.55, H * 0.95);
+    vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,0.65)");
+    ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+  }
+  function figure(ctx, x, y, h, outline) {
+    ctx.save(); ctx.translate(x, y);
+    ctx.beginPath();
+    ctx.moveTo(-0.09 * h, -0.86 * h); ctx.lineTo(0.09 * h, -0.86 * h); ctx.lineTo(0.15 * h, -0.45 * h);
+    ctx.lineTo(0.12 * h, 0); ctx.lineTo(-0.12 * h, 0); ctx.lineTo(-0.15 * h, -0.45 * h); ctx.closePath();
+    ctx.lineJoin = "round"; ctx.lineWidth = h * 0.03; ctx.strokeStyle = outline; ctx.stroke();
+    ctx.fillStyle = "#15151a"; ctx.fill();
+    ctx.beginPath(); ctx.arc(0, -0.93 * h, 0.075 * h, 0, Math.PI * 2);
+    ctx.stroke(); ctx.fillStyle = "#b9b4ab"; ctx.fill();
+    ctx.restore();
+  }
+  function enemy(ctx, x, y, s, wob) {
+    ctx.save(); ctx.translate(x, y);
+    ctx.beginPath(); ctx.ellipse(0, 0, s * (1 + 0.03 * wob), s * 0.8, 0, 0, Math.PI * 2);
+    ctx.fillStyle = "#3a0c14"; ctx.fill(); ctx.lineWidth = s * 0.06; ctx.strokeStyle = "#e0304b"; ctx.stroke();
+    ctx.fillStyle = "#e0304b";
+    ctx.beginPath(); ctx.ellipse(-s * 0.3, -s * 0.15, s * 0.14, s * 0.2, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(s * 0.3, -s * 0.15, s * 0.14, s * 0.2, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+  function stsCard(ctx, w, h, kind) {
+    roundRect(ctx, -w / 2, -h / 2, w, h, w * 0.08);
+    ctx.fillStyle = "#2b2420"; ctx.fill(); ctx.lineWidth = w * 0.05; ctx.strokeStyle = "#cdb88c"; ctx.stroke();
+    var art = kind === 0 ? "#b33b2e" : kind === 1 ? "#2f6fb3" : "#7a4bb3";
+    ctx.fillStyle = art; ctx.fillRect(-w * 0.38, -h * 0.36, w * 0.76, h * 0.38);
+    ctx.fillStyle = "#e9e2d0"; ctx.fillRect(-w * 0.34, h * 0.1, w * 0.68, h * 0.05); ctx.fillRect(-w * 0.3, h * 0.2, w * 0.6, h * 0.04);
+    ctx.beginPath(); ctx.arc(-w * 0.38, -h * 0.42, w * 0.13, 0, Math.PI * 2); ctx.fillStyle = "#c2392b"; ctx.fill();
+  }
+  function yellowCard(ctx, w, h) {
+    roundRect(ctx, -w / 2, -h / 2, w, h, w * 0.05);
+    ctx.fillStyle = Y; ctx.fill();
+  }
+  function damageBadge(ctx, x, y, n, k, alpha) {
+    var sc = k < 1 ? eBack(k) : 1;
+    ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc); ctx.globalAlpha = alpha;
+    var w = 70, h = 40;
+    roundRect(ctx, -w / 2, -h / 2, w, h, h / 2); ctx.fillStyle = YH; ctx.fill();
+    ctx.lineWidth = 3; ctx.strokeStyle = "#111"; ctx.stroke();
+    ctx.strokeStyle = "#111"; ctx.lineWidth = 4;
+    [1, 2].forEach(function (i) {
+      ctx.beginPath(); ctx.arc(-w / 2 - 2 + 0, 0, h * 0.4 + i * 9, Math.PI * 0.72, Math.PI * 1.28); ctx.stroke();
+      ctx.beginPath(); ctx.arc(w / 2 + 2, 0, h * 0.4 + i * 9, -Math.PI * 0.28, Math.PI * 0.28); ctx.stroke();
+    });
+    ctx.fillStyle = "#111"; ctx.font = "26px 'Archivo Black', sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(String(n), 0, 2);
+    ctx.restore();
+  }
+  function crtFrame(ctx, x, y, w, h, tilt, scale, color) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(tilt); ctx.scale(scale, scale);
+    var b = Math.min(w, h) * 0.06, r = Math.min(w, h) * 0.16, hw = w / 2, hh = h / 2;
+    ctx.beginPath();
+    ctx.moveTo(-hw + r, -hh); ctx.quadraticCurveTo(0, -hh - b, hw - r, -hh);
+    ctx.quadraticCurveTo(hw, -hh, hw, -hh + r); ctx.quadraticCurveTo(hw + b, 0, hw, hh - r);
+    ctx.quadraticCurveTo(hw, hh, hw - r, hh); ctx.quadraticCurveTo(0, hh + b, -hw + r, hh);
+    ctx.quadraticCurveTo(-hw, hh, -hw, hh - r); ctx.quadraticCurveTo(-hw - b, 0, -hw, -hh + r);
+    ctx.quadraticCurveTo(-hw, -hh, -hw + r, -hh); ctx.closePath();
+    ctx.lineJoin = "round";
+    ctx.lineWidth = 16; ctx.strokeStyle = "#111"; ctx.stroke();
+    ctx.lineWidth = 10; ctx.strokeStyle = color; ctx.stroke();
+    ctx.restore();
+  }
+  function slashArc(ctx, x, y, R, a0, sweep, p, alpha) {
+    if (p <= 0) return;
+    ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = alpha;
+    var steps = 18;
+    for (var i = 0; i < steps; i++) {
+      var k0 = i / steps, k1 = (i + 1) / steps;
+      if (k0 > p) break;
+      var w = Math.sin(Math.PI * k0) * R * 0.16 + 1;
+      ctx.beginPath(); ctx.arc(x, y, R, a0 + sweep * k0, a0 + sweep * Math.min(k1, p));
+      ctx.lineWidth = w; ctx.strokeStyle = BLUE; ctx.stroke();
+      ctx.lineWidth = w * 0.35; ctx.strokeStyle = "#ffffff"; ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  var DEMOS = [
+    { id: "crush", name: "捏碎（特写版）", dur: 2.6,
+      desc: "照 P4R 的召唤特写：黄色面板扫过画面、切进特写 → 掌心上方出现黄卡（星芒、细光线）→ 握拳 → 十字星芒 + 黄色碎片炸开（顿帧）→ 黄色圆环收拢到拳头 → 圆环张开，蓝焰里伊邪那岐出现。手和伊邪那岐都是占位图形。",
+      draw: function (ctx, W, H, tr) {
+        var BEAT = 0.92, t = hs(tr, BEAT, 0.08);
+        var shake = tr > BEAT && tr < BEAT + 0.16 ? (1 - (tr - BEAT) / 0.16) * H * 0.012 : 0;
+        ctx.save(); if (shake) ctx.translate(Math.sin(tr * 90) * shake, Math.cos(tr * 77) * shake);
+        stageBg(ctx, W, H);
+        flames(ctx, W, H, tr, W * 0.5, H * 1.05, W * 0.9, H * 0.45, 7, 0.8);
+        var hx = W * 0.6, hy = lerp(H * 1.25, H * 0.72, eOut(seg(t, 0.12, 0.42))), hsz = H * 0.3;
+        var close = eInOut(seg(t, 0.8, 0.92));
+        var fx = hx, fy = hy - hsz * 0.25;
+        var ck = seg(t, 0.4, 0.55);
+        if (t < 0.92 && ck > 0) {
+          var cs = eBack(ck) * (1 - 0.7 * close);
+          var cy = lerp(hy - hsz * 1.25, fy, close);
+          ctx.save(); ctx.translate(hx, cy + Math.sin(t * 6) * H * 0.006); ctx.rotate(-0.17); ctx.scale(cs, cs * (1 - 0.5 * close));
+          yellowCard(ctx, H * 0.24, H * 0.36); ctx.restore();
+          var gl = seg(t, 0.45, 0.75);
+          if (gl > 0 && gl < 1) {
+            var ga = Math.sin(gl * Math.PI);
+            star4(ctx, hx + H * 0.08, cy - H * 0.14, H * 0.07, 0.16, ga);
+            ray(ctx, hx + H * 0.08, cy - H * 0.14, -0.35, W * 0.45, 2, ga * 0.9);
+            ray(ctx, hx + H * 0.08, cy - H * 0.14, 1.2, W * 0.3, 1.5, ga * 0.7);
+            ctx.save(); ctx.globalAlpha = ga * 0.8; ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(hx, cy, H * (0.1 + 0.22 * gl), 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+          }
+        }
+        hand(ctx, hx, hy, hsz, close, -0.08);
+        /* yellow panel sweeps right → left: battle scene on its left, the cut-in on its right */
+        var wk = eInOut(seg(t, 0, 0.3));
+        if (wk < 1) {
+          var Lx = lerp(W * 1.05, -W * 1.35, wk), PW = W * 0.95, skw = H * 0.35;
+          ctx.save(); ctx.beginPath();
+          ctx.moveTo(-20, -20); ctx.lineTo(Lx + skw, -20); ctx.lineTo(Lx, H + 20); ctx.lineTo(-20, H + 20); ctx.closePath(); ctx.clip();
+          battleFloor(ctx, W, H); figure(ctx, W * 0.22, H * 0.92, H * 0.38, Y);
+          ctx.restore();
+          ctx.save(); ctx.fillStyle = Y; ctx.beginPath();
+          ctx.moveTo(Lx + skw, -20); ctx.lineTo(Lx + skw + PW, -20); ctx.lineTo(Lx + PW, H + 20); ctx.lineTo(Lx, H + 20); ctx.closePath(); ctx.fill();
+          ctx.lineWidth = 6; ctx.strokeStyle = "#111"; ctx.stroke(); ctx.restore();
+        }
+        if (tr >= BEAT) {
+          var lt = tr - BEAT;
+          if (lt < 0.14) { ctx.save(); ctx.globalAlpha = (1 - lt / 0.14) * 0.7; ctx.fillStyle = "#fff"; ctx.fillRect(-20, -20, W + 40, H + 40); ctx.restore(); }
+          var sk = 1 - seg(lt, 0, 0.3);
+          if (sk > 0) {
+            star4(ctx, fx, fy, H * 0.45 * (0.6 + 0.4 * eOut(seg(lt, 0, 0.06))), 0.05, sk);
+            ray(ctx, fx, fy, -0.5, W * 0.6, 3, sk); ray(ctx, fx, fy, 0.9, W * 0.5, 2, sk * 0.8);
+          }
+          var sh = makeShards(11, 38, { vmin: H * 0.9, vmax: H * 2.6, smin: H * 0.012, smax: H * 0.05 });
+          var st = Math.max(0, t - BEAT);
+          sh.forEach(function (s) {
+            var p = shardPos(s, st, 2.6, H * 0.5);
+            drawShard(ctx, fx + p[0], fy + p[1], s, st, 1, Y, 1 - seg(st, 0.7, 1.1));
+          });
+        }
+        var ir = seg(t, 1.02, 1.36);
+        if (ir > 0) {
+          var diag = Math.hypot(W, H);
+          var open = seg(t, 1.5, 1.85);
+          if (open <= 0) iris(ctx, W, H, fx, fy, lerp(diag, 0, eIn(ir)), Y);
+        }
+        ctx.restore();
+        var op = seg(t, 1.5, 1.85);
+        if (op > 0) {
+          ctx.save();
+          ctx.beginPath(); ctx.arc(W * 0.5, H * 0.55, Math.hypot(W, H) * eOut(op), 0, Math.PI * 2); ctx.clip();
+          battleFloor(ctx, W, H);
+          var rise = eOut(seg(t, 1.6, 2.2));
+          flames(ctx, W, H, tr, W * 0.32, H * 0.92, W * 0.22, H * 0.7, 3, 1);
+          ctx.save(); ctx.globalAlpha = rise;
+          ctx.translate(0, (1 - rise) * H * 0.12);
+          ctx.save(); ctx.shadowColor = BLUE; ctx.shadowBlur = 24; figure(ctx, W * 0.32, H * 0.9, H * 0.66, "#7fd8ff"); ctx.restore();
+          ctx.restore();
+          figure(ctx, W * 0.22, H * 0.92, H * 0.38, Y);
+          ctx.restore();
+          if (op < 1) iris(ctx, W, H, W * 0.5, H * 0.55, Math.hypot(W, H) * eOut(op), Y);
+        }
+      } },
+    { id: "fiend", name: "恶魔之焰（手牌联动）", dur: 3.4,
+      desc: "大烧牌的完整版：手牌真的飞到悠的掌心上方排成扇形，翻成黄卡，一握全碎（顿帧）；碎片分成几股变成蓝色刀光，一张牌一刀，伤害数字一个个弹出来。",
+      draw: function (ctx, W, H, tr) {
+        var BEAT = 1.25, t = hs(tr, BEAT, 0.08);
+        var shake = 0;
+        if (tr > BEAT && tr < BEAT + 0.16) shake = (1 - (tr - BEAT) / 0.16) * H * 0.01;
+        ctx.save(); if (shake) ctx.translate(Math.sin(tr * 90) * shake, Math.cos(tr * 70) * shake);
+        battleFloor(ctx, W, H);
+        var yx = W * 0.24, yy = H * 0.86, palm = [W * 0.27, H * 0.3];
+        figure(ctx, yx, yy, H * 0.5, Y);
+        var ex = W * 0.74, ey = H * 0.6;
+        enemy(ctx, ex, ey, H * 0.13, Math.sin(tr * 3));
+        var N = 5, cw = W * 0.075, ch = cw * 1.38;
+        var hk = eOut(seg(t, 0.85, 1.1));
+        if (t > 0.6) { star4(ctx, palm[0], palm[1] + H * 0.08, H * 0.03 * (1 - seg(t, 1.25, 1.4)), 0.3, 0.9, Y); }
+        for (var i = 0; i < N; i++) {
+          var hxp = W * 0.5 + (i - 2) * cw * 0.8, hyp = H * 0.98, ha = (i - 2) * 0.12;
+          var fa = (i - 2) * 0.33, fr = H * 0.16;
+          var fxp = palm[0] + Math.sin(fa) * fr, fyp = palm[1] - Math.cos(fa) * fr * 0.6;
+          var mk = eInOut(seg(t, 0.25 + i * 0.06, 0.65 + i * 0.06));
+          if (t >= BEAT) break;
+          var mx = lerp(hxp, fxp, mk), my = lerp(hyp, fyp, mk) - Math.sin(mk * Math.PI) * H * 0.18;
+          var ang = lerp(ha, fa, mk), sc = lerp(1, 0.72, mk);
+          var flip = seg(t, 0.5 + i * 0.06, 0.66 + i * 0.06);
+          var sx = Math.abs(Math.cos(flip * Math.PI));
+          ctx.save(); ctx.translate(mx, my + Math.sin(t * 30 + i) * H * 0.003 * hk); ctx.rotate(ang); ctx.scale(sc * Math.max(sx, 0.04), sc);
+          if (flip < 0.5) stsCard(ctx, cw, ch, i % 3); else yellowCard(ctx, cw, ch);
+          ctx.restore();
+        }
+        if (t > 0.95 && t < BEAT) {
+          var g2 = seg(t, 0.95, 1.2);
+          ray(ctx, palm[0], palm[1] - H * 0.05, -0.3, W * 0.3, 2, Math.sin(g2 * Math.PI) * 0.8);
+        }
+        if (tr >= BEAT) {
+          var lt = tr - BEAT;
+          if (lt < 0.12) { ctx.save(); ctx.globalAlpha = (1 - lt / 0.12) * 0.55; ctx.fillStyle = "#fff"; ctx.fillRect(-20, -20, W + 40, H + 40); ctx.restore(); }
+          var sk = 1 - seg(lt, 0, 0.28);
+          if (sk > 0) { star4(ctx, palm[0], palm[1], H * 0.32, 0.05, sk); ray(ctx, palm[0], palm[1], -0.45, W * 0.45, 3, sk); }
+          var st = Math.max(0, t - BEAT);
+          for (var c = 0; c < N; c++) {
+            var fa2 = (c - 2) * 0.33;
+            var ox = palm[0] + Math.sin(fa2) * H * 0.16, oy = palm[1] - Math.cos(fa2) * H * 0.1;
+            var sh = makeShards(100 + c, 9, { vmin: H * 0.5, vmax: H * 1.4, smin: H * 0.01, smax: H * 0.03 });
+            var launch = 0.32 + c * 0.13, fl = seg(st, launch, launch + 0.22);
+            sh.forEach(function (s, j) {
+              var p = shardPos(s, Math.min(st, launch), 3.2, 0);
+              var x = ox + p[0], y = oy + p[1];
+              if (fl > 0) {
+                var k2 = eIn(fl), mxp = (x + ex) / 2, myp = Math.min(y, ey) - H * 0.25;
+                var a1 = lerp(x, mxp, k2), b1 = lerp(y, myp, k2), a2 = lerp(mxp, ex, k2), b2 = lerp(myp, ey, k2);
+                x = lerp(a1, a2, k2) + (j - 4) * H * 0.004 * (1 - k2); y = lerp(b1, b2, k2);
+              }
+              if (fl < 1) drawShard(ctx, x, y, s, st, 1, fl > 0.3 ? "#9fe6ff" : Y, 1);
+            });
+            var hitT = launch + 0.22, hk2 = st - hitT;
+            if (hk2 > 0) {
+              slashArc(ctx, ex, ey, H * 0.2, -2.4 + c * 0.55, 2.2, seg(hk2, 0, 0.1), 1 - seg(hk2, 0.12, 0.3));
+              damageBadge(ctx, ex + (c - 2) * W * 0.035, ey - H * 0.24 - c * H * 0.035, 7, seg(hk2, 0, 0.18), 1 - seg(hk2, 0.7, 1.0));
+            }
+          }
+        }
+        ctx.restore();
+      } },
+    { id: "single", name: "单张消耗（轻量版）", dur: 1.2,
+      desc: "每回合可能出现很多次，所以很轻：手里那张牌原地翻成黄卡 → 星芒一闪 → 碎成小片往下落，约 0.4 秒。",
+      draw: function (ctx, W, H, t) {
+        battleFloor(ctx, W, H);
+        var cw = W * 0.11, ch = cw * 1.38, x = W * 0.5, y = H * 0.68;
+        for (var i = -2; i <= 2; i++) {
+          if (i === 0) continue;
+          ctx.save(); ctx.translate(x + i * cw * 0.82, H * 0.82 + Math.abs(i) * H * 0.02); ctx.rotate(i * 0.1); stsCard(ctx, cw, ch, (i + 3) % 3); ctx.restore();
+        }
+        var lift = eOut(seg(t, 0.05, 0.2)), flip = seg(t, 0.15, 0.3), sx = Math.abs(Math.cos(flip * Math.PI));
+        if (t < 0.42) {
+          ctx.save(); ctx.translate(x, lerp(H * 0.8, y, lift)); ctx.scale(Math.max(sx, 0.04) * 1.05, 1.05);
+          if (flip < 0.5) stsCard(ctx, cw, ch, 0); else yellowCard(ctx, cw, ch);
+          ctx.restore();
+        }
+        var g = seg(t, 0.3, 0.46);
+        if (g > 0 && g < 1) star4(ctx, x + cw * 0.2, y - ch * 0.25, H * 0.08, 0.12, Math.sin(g * Math.PI));
+        if (t >= 0.42) {
+          var st = t - 0.42;
+          var sh = makeShards(5, 16, { dir: Math.PI / 2, spread: 2.6, vmin: H * 0.2, vmax: H * 0.7, smin: H * 0.01, smax: H * 0.028 });
+          sh.forEach(function (s) { var p = shardPos(s, st, 2.0, H * 1.4); drawShard(ctx, x + p[0], y + p[1], s, st, 1, Y, 1 - seg(st, 0.35, 0.7)); });
+        }
+      } },
+    { id: "ui", name: "UI 式特效", dur: 2.8,
+      desc: "我理解的系统层特效：圆角显像管框弹出锁定敌人 → 带声波括号的伤害数字弹出 → 1 MORE：黄色、红色斜带先后扫进来，大字砸下，星星炸开，然后整体滑走。",
+      draw: function (ctx, W, H, t) {
+        battleFloor(ctx, W, H);
+        var ex = W * 0.62, ey = H * 0.58;
+        enemy(ctx, ex, ey, H * 0.14, Math.sin(t * 3));
+        figure(ctx, W * 0.2, H * 0.9, H * 0.46, Y);
+        var fk = seg(t, 0.08, 0.36);
+        if (fk > 0 && t < 2.2) crtFrame(ctx, ex, ey, H * 0.5, H * 0.42, -0.07, lerp(1.35, 1, eBack(fk)), Y);
+        var dk = t - 0.55;
+        if (dk > 0 && t < 2.2) damageBadge(ctx, ex + W * 0.08, ey - H * 0.26, 23, seg(dk, 0, 0.2), 1);
+        var bin = eOut(seg(t, 0.95, 1.15)), bout = eIn(seg(t, 2.05, 2.35));
+        if (bin > 0 && bout < 1) {
+          ctx.save(); ctx.translate(W * 0.5, H * 0.42); ctx.rotate(-0.28);
+          var shift = (1 - bin) * -W * 1.4 + bout * W * 1.4;
+          ctx.fillStyle = Y; ctx.fillRect(-W + shift, -H * 0.09, W * 2, H * 0.18);
+          var bin2 = eOut(seg(t, 1.02, 1.22));
+          ctx.fillStyle = "#e0304b"; ctx.fillRect(-W + (1 - bin2) * -W * 1.4 + bout * W * 1.4, H * 0.1, W * 2, H * 0.05);
+          var tk = seg(t, 1.12, 1.26);
+          if (tk > 0) {
+            var sc = lerp(1.9, 1, eOut(tk));
+            ctx.save(); ctx.translate(shift * 0.6, 0); ctx.scale(sc, sc); ctx.transform(1, 0, -0.22, 1, 0, 0);
+            ctx.font = Math.round(H * 0.17) + "px 'Archivo Black', sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.lineJoin = "round"; ctx.lineWidth = H * 0.02; ctx.strokeStyle = YH; ctx.strokeText("1MORE", 0, H * 0.01);
+            ctx.fillStyle = "#111"; ctx.fillText("1MORE", 0, H * 0.01);
+            ctx.restore();
+            var r = rng(42), sk = seg(t, 1.2, 1.7);
+            for (var i = 0; i < 9; i++) {
+              var a = r() * 6.28, d = lerp(H * 0.12, H * 0.4, r()) * eOut(sk), s = lerp(H * 0.02, H * 0.045, r()) * (1 - seg(t, 1.8, 2.1));
+              if (s > 0.5) star5(ctx, Math.cos(a) * d * 1.6 + shift * 0.6, Math.sin(a) * d, s, r() * 3 + t * 2, r() < 0.5 ? YH : "#f8a800");
+            }
+          }
+          ctx.restore();
+        }
+      } }
+  ];
+
+  var canvas = $("stage"), ctx = canvas.getContext("2d");
+  var cur = DEMOS[0], T = 0.62, playing = false, speed = 1, last = 0, dpr = 1, CW = 0, CH = 0;
+  var demoFeedback = {};
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    CW = canvas.clientWidth; CH = canvas.clientHeight;
+    canvas.width = Math.round(CW * dpr); canvas.height = Math.round(CH * dpr);
+    render();
+  }
+  function render() {
+    if (!CW) return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, CW, CH);
+    try { cur.draw(ctx, CW, CH, T); } catch (e) { console.error(e); }
+    $("scrub").value = String(T / cur.dur);
+    $("tlabel").textContent = T.toFixed(2) + " s";
+  }
+  function loop(ts) {
+    if (!playing) return;
+    var dt = last ? (ts - last) / 1000 : 0; last = ts;
+    T += dt * speed;
+    if (T >= cur.dur) { T = cur.dur; playing = false; $("play").textContent = "重播"; }
+    render();
+    if (playing) requestAnimationFrame(loop);
+  }
+  function play() {
+    if (T >= cur.dur - 0.001) T = 0;
+    playing = true; last = 0; $("play").textContent = "暂停";
+    requestAnimationFrame(loop);
+  }
+  function pause() { playing = false; $("play").textContent = "播放"; }
+  function selectDemo(d) {
+    cur = d; pause(); T = d.id === "crush" ? 0.62 : d.id === "fiend" ? 1.0 : d.id === "single" ? 0.35 : 1.35;
+    document.querySelectorAll("#demoTabs .chip").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.id === d.id ? "true" : "false"); });
+    $("demoDesc").textContent = d.desc;
+    var fb = demoFeedback[d.id] || {};
+    $("demoNote").value = fb.note || "";
+    syncVerdict();
+    render();
+  }
+  function syncVerdict() {
+    var fb = demoFeedback[cur.id] || {};
+    document.querySelectorAll("#demoVerdict .chip").forEach(function (b) { b.setAttribute("aria-pressed", fb.verdict === b.dataset.v ? "true" : "false"); });
+  }
+  function renderDemoUI() {
+    var tabs = $("demoTabs");
+    DEMOS.forEach(function (d) {
+      var b = el("button", "chip", d.name); b.type = "button"; b.dataset.id = d.id; b.setAttribute("role", "tab");
+      b.addEventListener("click", function () { selectDemo(d); });
+      tabs.appendChild(b);
+    });
+    var v = $("demoVerdict");
+    [["like", "像"], ["half", "有点像"], ["no", "不像"]].forEach(function (o) {
+      var b = el("button", "chip", o[1]); b.type = "button"; b.dataset.v = o[0]; b.setAttribute("aria-pressed", "false");
+      b.addEventListener("click", function () {
+        demoFeedback[cur.id] = Object.assign({}, demoFeedback[cur.id], { verdict: o[0] });
+        syncVerdict();
+        saveDoc("demos/" + cur.id, demoFeedback[cur.id], "st-demos");
+      });
+      v.appendChild(b);
+    });
+    $("demoNote").addEventListener("input", function () {
+      demoFeedback[cur.id] = Object.assign({}, demoFeedback[cur.id], { note: $("demoNote").value });
+      saveDoc("demos/" + cur.id, demoFeedback[cur.id], "st-demos");
+    });
+    $("insertTime").addEventListener("click", function () {
+      var n = $("demoNote"); n.value = (n.value ? n.value + "\n" : "") + "[" + T.toFixed(2) + "s] ";
+      n.focus(); n.dispatchEvent(new Event("input"));
+    });
+    $("play").addEventListener("click", function () { playing ? pause() : play(); });
+    $("slow").addEventListener("click", function () {
+      speed = speed === 1 ? 0.3 : 1; $("slow").setAttribute("aria-pressed", speed !== 1 ? "true" : "false");
+    });
+    $("scrub").addEventListener("input", function () { pause(); T = parseFloat($("scrub").value) * cur.dur; render(); });
+    window.addEventListener("resize", resize);
+    selectDemo(DEMOS[0]);
+  }
+
+  /* ---------- annotation (screenshots + uploaded images) ---------- */
+  function annotator(box, img, onChange) {
+    var c = el("canvas"); box.appendChild(c);
+    var g = c.getContext("2d"), strokes = [], drawing = null;
+    function size() {
+      var r = box.getBoundingClientRect(), d = Math.min(window.devicePixelRatio || 1, 2);
+      c.width = Math.max(1, Math.round(r.width * d)); c.height = Math.max(1, Math.round(r.height * d));
+      paint();
+    }
+    function paint() {
+      g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, c.width, c.height);
+      var w = c.width, h = c.height;
+      strokes.concat(drawing ? [drawing] : []).forEach(function (s) {
+        var p = s.p; if (p.length < 4) return;
+        g.lineCap = "round"; g.lineJoin = "round";
+        g.lineWidth = Math.max(3, w * 0.006) + 3; g.strokeStyle = "rgba(0,0,0,0.6)";
+        g.beginPath(); g.moveTo(p[0] * w, p[1] * h); for (var i = 2; i < p.length; i += 2) g.lineTo(p[i] * w, p[i + 1] * h); g.stroke();
+        g.lineWidth = Math.max(3, w * 0.006); g.strokeStyle = "#ff2d55"; g.stroke();
+      });
+    }
+    function pt(e) { var r = c.getBoundingClientRect(); return [clamp((e.clientX - r.left) / r.width, 0, 1), clamp((e.clientY - r.top) / r.height, 0, 1)]; }
+    c.addEventListener("pointerdown", function (e) { e.preventDefault(); c.setPointerCapture(e.pointerId); var p = pt(e); drawing = { p: [+p[0].toFixed(4), +p[1].toFixed(4)] }; });
+    c.addEventListener("pointermove", function (e) {
+      if (!drawing) return; var p = pt(e), q = drawing.p, n = q.length;
+      if (Math.hypot(p[0] - q[n - 2], p[1] - q[n - 1]) < 0.004) return;
+      q.push(+p[0].toFixed(4), +p[1].toFixed(4)); paint();
+    });
+    function end() { if (!drawing) return; if (drawing.p.length >= 4) { strokes.push(drawing); onChange(strokes.slice()); } drawing = null; paint(); }
+    c.addEventListener("pointerup", end); c.addEventListener("pointercancel", end);
+    if (img.complete) size(); else img.addEventListener("load", size);
+    window.addEventListener("resize", size);
+    return {
+      undo: function () { strokes.pop(); paint(); onChange(strokes.slice()); },
+      clear: function () { strokes = []; paint(); onChange([]); },
+      set: function (s) { strokes = Array.isArray(s) ? s.slice() : []; paint(); }
+    };
+  }
+
+  var shotState = {}, shotAnn = {};
+  function renderShots() {
+    var list = $("shotList");
+    SHOTS.forEach(function (s, idx) {
+      var row = el("div", "card shot");
+      var box = el("div", "ann");
+      var img = el("img"); img.src = s.src; img.alt = s.title; img.draggable = false;
+      box.appendChild(img);
+      var side = el("div");
+      side.appendChild(el("h3", null, (idx + 1) + ". " + s.title));
+      side.appendChild(el("p", "ask", s.ask));
+      var note = el("textarea"); note.rows = 3; note.id = "snote-" + s.id; note.placeholder = "写一句，或者只在图上圈";
+      side.appendChild(note);
+      var tools = el("div", "tools");
+      var u = el("button", "btn ghost", "撤销"); u.type = "button";
+      var cl = el("button", "btn ghost", "清除圈画"); cl.type = "button";
+      tools.appendChild(u); tools.appendChild(cl); side.appendChild(tools);
+      row.appendChild(box); row.appendChild(side); list.appendChild(row);
+      shotState[s.id] = { strokes: [], note: "" };
+      var ann = annotator(box, img, function (strokes) {
+        shotState[s.id].strokes = strokes; saveDoc("shots/" + s.id, shotState[s.id], "st-shots");
+      });
+      shotAnn[s.id] = ann;
+      u.addEventListener("click", ann.undo); cl.addEventListener("click", ann.clear);
+      note.addEventListener("input", function () { shotState[s.id].note = note.value; saveDoc("shots/" + s.id, shotState[s.id], "st-shots"); });
+    });
+  }
+  function hydrateShot(id, d) {
+    if (!shotState[id]) return;
+    shotState[id] = { strokes: Array.isArray(d.strokes) ? d.strokes : [], note: d.note || "" };
+    shotAnn[id].set(shotState[id].strokes);
+    var n = $("snote-" + id); if (n && document.activeElement !== n) n.value = shotState[id].note;
+  }
+
+  /* ---------- uploads ---------- */
+  var uploads = {}, upEls = {};
+  function renderUpload(docId, d) {
+    if (upEls[docId]) return;
+    var row = el("div", "card up"), list = $("upList");
+    var isVideo = String(d.type || "").indexOf("video/") === 0;
+    var src = "/_blob/" + d.asset;
+    if (isVideo) {
+      var v = el("video"); v.controls = true; v.preload = "metadata"; v.src = src; row.appendChild(v);
+    } else {
+      var box = el("div", "ann"), img = el("img"); img.src = src; img.alt = d.name || "上传的截图"; img.draggable = false;
+      box.appendChild(img); row.appendChild(box);
+      var ann = annotator(box, img, function (strokes) {
+        uploads[docId] = Object.assign({}, uploads[docId], { strokes: strokes });
+        saveDoc("uploads/" + docId, uploads[docId], "st-uploads");
+      });
+      ann.set(d.strokes);
+      var tools = el("div", "tools");
+      var u = el("button", "btn ghost", "撤销"); u.type = "button"; u.addEventListener("click", ann.undo);
+      var cl = el("button", "btn ghost", "清除圈画"); cl.type = "button"; cl.addEventListener("click", ann.clear);
+      tools.appendChild(u); tools.appendChild(cl); row.appendChild(tools);
+    }
+    row.appendChild(el("div", "meta", (d.name || "文件") + " · " + Math.round((d.size || 0) / 1024) + " KB"));
+    var note = el("textarea"); note.rows = 2; note.placeholder = isVideo ? "想让我看哪几秒？比如：0:12–0:15 捏碎，注意碎片和圆环" : "这张图想让我注意什么？";
+    note.value = d.note || "";
+    note.addEventListener("input", function () {
+      uploads[docId] = Object.assign({}, uploads[docId], { note: note.value });
+      saveDoc("uploads/" + docId, uploads[docId], "st-uploads");
+    });
+    row.appendChild(note);
+    list.insertBefore(row, list.firstChild);
+    upEls[docId] = row;
+  }
+  function guessType(f) {
+    if (f.type) return f.type;
+    var n = (f.name || "").toLowerCase();
+    if (/\.mp4$/.test(n)) return "video/mp4"; if (/\.webm$/.test(n)) return "video/webm";
+    if (/\.png$/.test(n)) return "image/png"; if (/\.jpe?g$/.test(n)) return "image/jpeg";
+    if (/\.webp$/.test(n)) return "image/webp"; if (/\.gif$/.test(n)) return "image/gif";
+    return "";
+  }
+  function handleFiles(files) {
+    if (!ASSETS || !DB) { $("upHint").textContent = "现在不能上传（没连上存储）。请把链接和时间点写在下面的框里。"; return; }
+    Array.prototype.forEach.call(files, function (f) {
+      if (f.size > 20 * 1024 * 1024) { $("upHint").textContent = f.name + " 超过 20MB：请剪短或压缩，或者在下面贴链接。"; return; }
+      var type = guessType(f);
+      $("upHint").textContent = "正在上传 " + f.name + " …";
+      ASSETS.upload(f, type ? { type: type } : undefined).then(function (res) {
+        var body = { asset: res.id, name: f.name, type: res.contentType, size: res.sizeBytes, note: "", strokes: [], at: new Date().toISOString() };
+        return DB.collection("uploads").add(body).then(function (ref) {
+          uploads[ref.id] = body; renderUpload(ref.id, body);
+          $("upHint").textContent = "已上传 " + f.name;
+        });
+      }).catch(function (e) {
+        var code = e && e.code;
+        $("upHint").textContent = "上传失败" + (code ? "（" + code + "）" : "") + (code === "too_large" ? "：文件太大" : code === "unsupported_type" ? "：格式不支持" : "");
+      });
+    });
+  }
+  function setupUploads() {
+    var drop = $("drop"), file = $("file");
+    file.addEventListener("change", function () { handleFiles(file.files); file.value = ""; });
+    ["dragenter", "dragover"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add("over"); }); });
+    ["dragleave", "drop"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove("over"); }); });
+    drop.addEventListener("drop", function (e) { if (e.dataTransfer && e.dataTransfer.files) handleFiles(e.dataTransfer.files); });
+    $("links").addEventListener("input", function () { saveDoc("links/main", { text: $("links").value }, "st-links"); });
+  }
+
+  /* ---------- boot ---------- */
+  function setConn(kind, extra) {
+    var c = $("conn"), t = $("connText");
+    c.classList.remove("ok", "bad");
+    if (kind === "ok") { c.classList.add("ok"); t.textContent = "已连接：自动保存"; }
+    else if (kind === "slow") { t.textContent = "连接较慢，内容可能还没加载出来"; }
+    else { c.classList.add("bad"); t.textContent = extra || "未连接：这里的操作不会保存"; }
+  }
+  function boot() {
+    renderQuestions(); renderUnderstanding(); renderDemoUI(); renderShots(); setupUploads();
+    requestAnimationFrame(resize);
+    if (!window.claude || typeof window.claude.use !== "function") { setConn("bad", "本地预览：不会保存"); return; }
+    var timer = setTimeout(function () { setConn("slow"); }, 10000);
+    var hydrated = {};
+    window.claude.use("db").then(function (db) {
+      if (!db) { clearTimeout(timer); setConn("bad", "存储不可用：请登录后再打开"); return; }
+      DB = db;
+      Object.keys(queues).forEach(flush);
+      function sub(col, fn) {
+        DB.collection(col).onSnapshot(function (s) {
+          if (!s.metadata.fromCache) { clearTimeout(timer); setConn("ok"); }
+          fn(s);
+        }, function (e) { clearTimeout(timer); setConn("bad", "读取失败（" + (e && e.code) + "）"); });
+      }
+      sub("answers", function (s) { s.docs.forEach(function (d) { if (d.id === "main" && !hydrated.answers) { hydrated.answers = true; hydrateAnswers(d.data() || {}); } }); });
+      sub("understanding", function (s) { s.docs.forEach(function (d) { if (d.id === "main" && !hydrated.understanding) { hydrated.understanding = true; hydrateUnderstanding(d.data() || {}); } }); });
+      sub("demos", function (s) {
+        s.docs.forEach(function (d) { if (!hydrated["demo-" + d.id]) { hydrated["demo-" + d.id] = true; demoFeedback[d.id] = Object.assign({}, d.data()); } });
+        var fb = demoFeedback[cur.id] || {};
+        if (document.activeElement !== $("demoNote")) $("demoNote").value = fb.note || "";
+        syncVerdict();
+      });
+      sub("shots", function (s) { s.docs.forEach(function (d) { if (!hydrated["shot-" + d.id]) { hydrated["shot-" + d.id] = true; hydrateShot(d.id, d.data() || {}); } }); });
+      sub("uploads", function (s) {
+        s.docs.slice().sort(function (a, b) { return String((a.data() || {}).at).localeCompare(String((b.data() || {}).at)); })
+          .forEach(function (d) { if (!uploads[d.id]) uploads[d.id] = Object.assign({}, d.data()); renderUpload(d.id, d.data() || {}); });
+      });
+      sub("links", function (s) { s.docs.forEach(function (d) { if (d.id === "main" && !hydrated.links) { hydrated.links = true; if (document.activeElement !== $("links")) $("links").value = (d.data() || {}).text || ""; } }); });
+    });
+    window.claude.use("assets").then(function (a) {
+      ASSETS = a;
+      if (!a) $("upHint").textContent = "这个视图不能上传文件（只有能编辑这一页的人可以）。可以把链接和时间点写在下面。";
+    });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
+})();
+</script>

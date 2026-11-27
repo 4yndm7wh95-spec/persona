@@ -1,5 +1,7 @@
 # P4Yu 特效方案（草案，2026-11-27）
 
+> 和用户沟通用的工作台（截图圈画、动态草图、问题、上传视频）：https://claude.ai/artifact/NvbgtKwhCZKSMEkstmTBco ，源文件 `docs/p4/workbench/p4r_workbench.html`。用户的回答存在工作台的数据库里（answers / understanding / demos / shots / uploads / links），用 ArtifactData 读。
+
 ## 用户这次的要求（2026-11-27）
 - 先做特效，开工前先定哪些牌更重要。金卡大部分要做得比较隆重。
 - **焚烧**做成伊邪那岐大神的**几万真言**。
