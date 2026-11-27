@@ -150,7 +150,13 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
 
 <main class="wrap">
   <div class="notice">
-    <b>第五轮：</b>恶魔之焰定稿（v5，牌收成一叠不展开）。几万真言 v3 按你的节奏重排，在草图第二个：技能名只当背景；悠先掏出牌在手里转；捏碎的一瞬间技能名退出、大神出现并马上转杖；杖在悠和敌人之间偏右。<br>按你第三轮的意见改了两段草图：恶魔之焰换成纯色光柱一次扫进 + 明显的拖尾；几万真言的技能名改到出牌一开始，杖出现在敌人面前转，停下以后金光竖直劈下来。另外新加「参考图确认」：生图前先确认参考没错。捏碎的手你说得对，草图里是平面的，游戏里会用从电视里伸出来的立体手。
+    <b>第六轮：分档。</b>完整版只在大场面播，平时播快速版。草图按顺序是：恶魔之焰完整版、恶魔之焰快速版、几万真言完整版、几万真言快速版。
+    <table style="width:100%;margin:10px 0 4px;border-collapse:collapse;font-size:14px">
+      <tr style="text-align:left;color:var(--dim)"><th style="padding:4px 6px">牌</th><th style="padding:4px 6px">完整版（条件）</th><th style="padding:4px 6px">快速版（其余情况）</th></tr>
+      <tr><td style="padding:4px 6px">恶魔之焰</td><td style="padding:4px 6px">烧 ≥ 7 张：约 1.5 秒到捏碎，再 0.6 秒出完刀</td><td style="padding:4px 6px">约 0.35 秒出第一刀，整段约 0.8 秒</td></tr>
+      <tr><td style="padding:4px 6px">几万真言</td><td style="padding:4px 6px">力量 ≥ 8：约 4 秒</td><td style="padding:4px 6px">约 0.45 秒出第一下，整段约 1.1 秒</td></tr>
+    </table>
+    快速版保留牌的「招牌」（彗星光团捏碎 / 杖 + 竖直金光），去掉技能名、转牌、召唤全身、拿着牌飞的那些铺垫，阶段之间互相重叠，只在捏碎时有 40 毫秒的小顿帧。<br>按你第三轮的意见改了两段草图：恶魔之焰换成纯色光柱一次扫进 + 明显的拖尾；几万真言的技能名改到出牌一开始，杖出现在敌人面前转，停下以后金光竖直劈下来。另外新加「参考图确认」：生图前先确认参考没错。捏碎的手你说得对，草图里是平面的，游戏里会用从电视里伸出来的立体手。
   </div>
 
   <section id="decisions">
@@ -307,6 +313,12 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     { id: "okami", frames: ["ref/okami_p4g.png"], title: "伊邪那岐大神（P4G 图鉴设定图）",
       text: "白色长大衣、金色纽扣和饰边、大衣内侧红色、暗红黑色的头部，身后一个金色大圆环，手里一根很长的杖（一端是枪尖，枪尖下有十字形护手）。你在对话里已经确认：伊邪那岐大神用白色这个。",
       use: "P4R 还没公开大神的样子。Codex 会上网再找同一个设计更清楚的官方图，一起当生图参考。" },
+    { id: "izanagi_p4r", frames: ["ref/izanagi_p4r_1.jpg", "ref/izanagi_p4r_2.jpg", "ref/izanagi_p4r_3.jpg", "ref/izanagi_p4r_4.jpg"], title: "伊邪那岐（P4R 官方视频截图，Codex 找的）",
+      text: "ATLUS 官方 1080p 主角介绍视频里的伊邪那岐：面甲正面、全身和薙刀、头盔侧面、施法。生图以这几张为准，对吗？",
+      use: "确认以后，伊邪那岐的生图就用这几张当参考。" },
+    { id: "eyes_p4r", frames: ["ref/eyes_p4r_1.jpg", "ref/eyes_p4r_2.jpg", "ref/eyes_p4r_3.jpg"], title: "P4R 召唤时的眼神特写（官方视频截图，Codex 找的）",
+      text: "闭眼 → 睁开中 → 全睁。眼神特写的序列帧照这个画，对吗？",
+      use: "确认以后，眼神特写的生图就照这三张的样子出序列帧。" },
     { id: "izanagi", frames: ["ref/izanagi_p4g.png"], title: "伊邪那岐（P4G 图鉴设定图）",
       text: "黑色高领长大衣、银白色头盔面甲、大衣内侧红色、长刃薙刀。P4R 里的伊邪那岐设计以 P4R 截图为准，这张只看结构。",
       use: "Codex 也会上网找 P4R 官方的高清图。" }
@@ -820,6 +832,70 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     }
     ctx.restore();
   }
+  /* compact comet body for the quick versions: glow, lemon body, white core, edge lines, bright head */
+  function drawComet(ctx, pts, R, tr, alive) {
+    if (alive <= 0 || pts.length < 2) return;
+    var nrm = [], rad = [], last = [1, 0];
+    for (var k = 0; k < pts.length; k++) {
+      var a = pts[Math.min(pts.length - 1, k + 1)], b = pts[Math.max(0, k - 1)], dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy);
+      var d = L > 0.6 ? [dx / L, dy / L] : last; last = d; nrm.push([-d[1], d[0], d[0], d[1]]);
+      rad.push(R * Math.pow(1 - k / (pts.length - 1), 0.95));
+    }
+    function body(sT, sB, upto) {
+      var n = Math.max(2, Math.round((pts.length - 1) * (upto || 1)) + 1);
+      ctx.beginPath();
+      for (var i = 0; i < n; i++) { var w = 1 + 0.16 * Math.sin(i * 0.85 + tr * 17) * (i / n); ctx.lineTo(pts[i][0] - nrm[i][0] * rad[i] * sT * w, pts[i][1] - nrm[i][1] * rad[i] * sT * w); }
+      for (var j = n - 1; j >= 0; j--) ctx.lineTo(pts[j][0] + nrm[j][0] * rad[j] * sB, pts[j][1] + nrm[j][1] * rad[j] * sB);
+      var r0 = rad[0] * (sT + sB) / 2;
+      ctx.quadraticCurveTo(pts[0][0] + nrm[0][2] * r0 * 2, pts[0][1] + nrm[0][3] * r0 * 2, pts[0][0] - nrm[0][0] * rad[0] * sT, pts[0][1] - nrm[0][1] * rad[0] * sT);
+      ctx.closePath();
+    }
+    ctx.save(); ctx.globalAlpha = alive * 0.6; ctx.globalCompositeOperation = "lighter"; ctx.shadowColor = YH; ctx.shadowBlur = R * 1.4; ctx.fillStyle = "rgba(230,235,26,0.55)"; body(1.45, 1.3, 1); ctx.fill(); ctx.restore();
+    ctx.save(); ctx.globalAlpha = alive; ctx.fillStyle = Y; body(1, 0.88, 1); ctx.fill(); ctx.restore();
+    [[-0.6, LIME, 0.12], [0.66, ORANGE, 0.14]].forEach(function (e) {
+      ctx.save(); ctx.strokeStyle = e[1]; ctx.lineCap = "round";
+      for (var i = 1; i < pts.length * 0.8; i++) { ctx.lineWidth = Math.max(0.8, rad[i] * e[2]); ctx.globalAlpha = alive * (1 - i / pts.length); ctx.beginPath(); ctx.moveTo(pts[i - 1][0] + nrm[i - 1][0] * rad[i - 1] * e[0], pts[i - 1][1] + nrm[i - 1][1] * rad[i - 1] * e[0]); ctx.lineTo(pts[i][0] + nrm[i][0] * rad[i] * e[0], pts[i][1] + nrm[i][1] * rad[i] * e[0]); ctx.stroke(); }
+      ctx.restore();
+    });
+    ctx.save(); ctx.globalAlpha = alive * 0.95; ctx.fillStyle = "#fffbe0"; body(0.42, 0.3, 0.55); ctx.fill(); ctx.restore();
+    ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = alive;
+    var hg = ctx.createRadialGradient(pts[0][0], pts[0][1], 0, pts[0][0], pts[0][1], R * 1.4); hg.addColorStop(0, "rgba(255,255,255,1)"); hg.addColorStop(0.35, "rgba(255,252,200,0.7)"); hg.addColorStop(1, "rgba(230,235,26,0)");
+    ctx.fillStyle = hg; ctx.fillRect(pts[0][0] - R * 1.5, pts[0][1] - R * 1.5, R * 3, R * 3); ctx.restore();
+  }
+  /* one vertical golden strike (life 0→1): lead line, layered wavering column, forked bolts, impact bloom and ground ring */
+  function goldStrike(ctx, H, x, y1, life, tr, seed, big) {
+    if (life <= 0 || life >= 1) return;
+    var top = -H * 0.05, flick = life < 0.45 ? (((Math.floor(tr * 50) + seed) % 4) === 0 ? 0.4 : 1) : 1, a = flick * (1 - seg(life, 0.5, 1)), lead = seg(life, 0, 0.12);
+    ctx.save(); ctx.globalCompositeOperation = "lighter";
+    if (lead < 1) { ctx.fillStyle = "rgba(255,250,220,0.9)"; ctx.fillRect(x - 1, top, 2, (y1 - top) * lead); }
+    else {
+      var rw = rng(seed * 97 + Math.floor(tr * 24));
+      [[0.11, "rgba(242,197,75,0.22)"], [0.055, "rgba(242,197,75,0.5)"], [0.022, "rgba(255,244,200,0.9)"], [0.008, "rgba(255,255,255,1)"]].forEach(function (L2) {
+        var hw = H * L2[0] * big; ctx.globalAlpha = a; ctx.fillStyle = L2[1]; ctx.beginPath();
+        for (var s = 0; s <= 12; s++) ctx.lineTo(x - hw * (1 + (rw() - 0.5) * 0.35) * (0.55 + 0.45 * s / 12), lerp(top, y1, s / 12));
+        for (var s2 = 12; s2 >= 0; s2--) ctx.lineTo(x + hw * (1 + (rw() - 0.5) * 0.35) * (0.55 + 0.45 * s2 / 12), lerp(top, y1, s2 / 12));
+        ctx.closePath(); ctx.fill();
+      });
+      ctx.shadowColor = "#fff3c4"; ctx.shadowBlur = H * 0.03;
+      [0, 1].forEach(function (b) {
+        var rb = rng(Math.floor(tr * 30) * 7 + seed * 13 + b * 5);
+        ctx.globalAlpha = a * (b ? 0.7 : 1); ctx.strokeStyle = b ? "#fff3c4" : "#ffffff"; ctx.lineWidth = H * (b ? 0.003 : 0.005) * big;
+        ctx.beginPath(); ctx.moveTo(x, top);
+        for (var s3 = 1; s3 <= 10; s3++) { var nx = x + (s3 < 10 ? (rb() - 0.5) * H * 0.09 * big : 0), ny = lerp(top, y1, s3 / 10); ctx.lineTo(nx, ny); if (rb() < 0.22 && s3 < 9) { ctx.moveTo(nx, ny); ctx.lineTo(nx + (rb() - 0.5) * H * 0.12, ny + H * 0.05); ctx.moveTo(nx, ny); } }
+        ctx.stroke();
+      });
+      ctx.shadowBlur = 0;
+    }
+    var ik = seg(life, 0.1, 0.7);
+    if (ik > 0) {
+      ctx.globalAlpha = a;
+      var ig = ctx.createRadialGradient(x, y1, 0, x, y1, H * 0.16 * big); ig.addColorStop(0, "rgba(255,255,255,1)"); ig.addColorStop(0.4, "rgba(255,236,160,0.6)"); ig.addColorStop(1, "rgba(242,197,75,0)");
+      ctx.fillStyle = ig; ctx.fillRect(x - H * 0.18 * big, y1 - H * 0.18 * big, H * 0.36 * big, H * 0.36 * big);
+      ctx.globalAlpha = (1 - ik) * flick; ctx.strokeStyle = "#fff3c4"; ctx.lineWidth = lerp(H * 0.02, 1.5, ik);
+      ctx.beginPath(); ctx.ellipse(x, y1 + H * 0.04, lerp(H * 0.03, H * 0.2 * big, eOut(ik)), lerp(H * 0.01, H * 0.06 * big, eOut(ik)), 0, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.restore();
+  }
   /* placeholder Izanagi-no-Okami: white long coat with gold trims */
   function okamiBody(ctx, x, y, h) {
     ctx.save(); ctx.translate(x, y);
@@ -847,7 +923,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
 
   /* ---------- demos ---------- */
   var DEMOS = [
-    { id: "fiend5", name: "恶魔之焰 v5（一条顺滑的轨迹）", dur: 3.0, start: 0.55,
+    { id: "fiend5", name: "恶魔之焰 完整版（烧 7 张以上）", dur: 3.0, start: 0.55,
       desc: "按你的意见：整体加快，中间不停。扫牌和转向电视现在是同一条连续的曲线：光团沿手牌弧线从慢到快扫过去，扫到右边不减速，顺着惯性往右上拐，走半圆弯回电视里伸出来的手，只在快到手的时候放慢落位。牌在路上跟着光团头部走，到手边收拢成一叠（每张稍微错开一点，看得出有几张），不展开，依次翻成黄色，整叠一起被捏碎。整段从亮起到捏碎约 1.5 秒（上一版约 2.2 秒）。",
       draw: function (ctx, W, H, tr) {
         var BEAT = 1.45, t = hs(tr, BEAT, 0.08);
@@ -986,6 +1062,39 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
           }
         }
         ctx.restore();
+      } },
+    { id: "fiendq", name: "恶魔之焰 快速版（烧 7 张以下）", dur: 1.4, start: 0.24,
+      desc: "烧不到 7 张时播这个：同一团彗星光，但只在手牌区快速扫一下（约 0.25 秒），不飞去电视、不伸手、不收叠；扫到哪张，哪张原地翻黄、立刻捏碎，碎片直接变成蓝色刀光飞向敌人，一张牌一刀，0.35 秒左右出第一刀，整段约 0.8 秒。",
+      draw: function (ctx, W, H, tr) {
+        battleFloor(ctx, W, H);
+        figure(ctx, W * 0.13, H * 0.92, H * 0.42, Y);
+        var ex = W * 0.82, ey = H * 0.6; enemy(ctx, ex, ey, H * 0.11, Math.sin(tr * 3));
+        var N = 5, cw = W * 0.08, ch = cw * 1.38, x0 = W * 0.22, x1 = W * 0.8, T0 = 0.03, T1 = 0.28;
+        function baseY(x) { var u = (x - W * 0.5) / (W * 0.42); return H * 0.9 - H * 0.035 * (1 - u * u); }
+        function head(tt) { var x = lerp(x0, x1, eIn(seg(tt, T0, T1))); return [x, baseY(x)]; }
+        var pts = []; for (var k = 0; k <= 18; k++) pts.push(head(tr - k * 0.007));
+        drawComet(ctx, pts, H * 0.075, tr, seg(tr, 0.0, 0.05) * (1 - seg(tr, 0.28, 0.38)));
+        for (var i = 0; i < N; i++) {
+          var cx = W * 0.5 + (i - 2) * cw * 0.85, cy = H * 0.93 + Math.abs(i - 2) * H * 0.012;
+          var tPass = T0 + Math.cbrt(clamp((cx - x0) / (x1 - x0), 0, 1)) * (T1 - T0), tC = tPass + 0.05;
+          if (tr < tC) {
+            var fl = seg(tr, tPass - 0.02, tPass + 0.03), sx = Math.abs(Math.cos(fl * Math.PI));
+            ctx.save(); ctx.translate(cx, cy - eOut(fl) * H * 0.03); ctx.rotate((i - 2) * 0.1); ctx.scale(Math.max(sx, 0.05), 1);
+            if (fl >= 0.5) yellowCard(ctx, cw, ch, true); else stsCard(ctx, cw, ch, i % 3);
+            ctx.restore();
+          } else {
+            var st = tr - tC, fl2 = seg(st, 0.04, 0.22);
+            star4(ctx, cx, cy - H * 0.03, H * 0.07 * (1 - seg(st, 0, 0.12)), 0.12, 1);
+            ring(ctx, cx, cy - H * 0.03, lerp(H * 0.02, H * 0.12, eOut(seg(st, 0, 0.2))), 2, "#ffffff", 1 - seg(st, 0.1, 0.25));
+            makeShards(700 + i, 7, { vmin: H * 0.4, vmax: H * 1.0, smin: H * 0.01, smax: H * 0.026 }).forEach(function (s) {
+              var p = shardPos(s, Math.min(st, 0.04), 3.0, 0), x = cx + p[0], y = cy - H * 0.03 + p[1];
+              if (fl2 > 0) { var k2 = eIn(fl2), mx = (x + ex) / 2, my = Math.min(y, ey) - H * 0.18; x = lerp(lerp(x, mx, k2), lerp(mx, ex, k2), k2); y = lerp(lerp(y, my, k2), lerp(my, ey, k2), k2); }
+              if (fl2 < 1) drawShard(ctx, x, y, s, st, fl2 > 0.3 ? "#9fe6ff" : Y, 1);
+            });
+            var h2 = st - 0.22;
+            if (h2 > 0) { slashArc(ctx, ex, ey, H * 0.17, -2.4 + i * 0.55, 2.2, seg(h2, 0, 0.08), 1 - seg(h2, 0.1, 0.22)); damageBadge(ctx, ex - W * 0.04 + (i - 2) * W * 0.03, ey - H * 0.21 - i * H * 0.035, 7, seg(h2, 0, 0.14), 1 - seg(h2, 0.45, 0.7)); }
+          }
+        }
       } },
     { id: "fiend4", hidden: true, name: "恶魔之焰 v4（彗星光团扫牌）", dur: 3.9, start: 0.5,
       desc: "按你示意图的意思（不是照着描）：一团横着的光从左往右、沿着手牌的弧线扫过去，由慢到快，扫到的牌被卷进光团头部带走。光团像一笔彗星：前面是圆钝发亮的头，后面的尾巴越拉越细，还分出两缕细丝；上沿有一点起伏，不规整。分了几层：外圈柔光、柠檬黄本体、偏前的白芯、头部白色亮边，尾巴里有细的白色速度线，上下边沿各一条细的黄绿、橙色线，尾巴后面拖一串小圆点，沿途掉一些小星星。扫到右边顿一下，同一团光直接拐上去，走大半圆飞到电视里伸出来的手上方，它自己的尾巴就是拖尾。然后散开成扇形 → 捏碎 → 一张牌一刀。",
@@ -1207,7 +1316,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         }
         ctx.restore();
       } },
-    { id: "myriad3", name: "几万真言 v3（悠先转牌，捏碎时大神出现）", dur: 4.4, start: 0.55,
+    { id: "myriad3", name: "几万真言 完整版（力量 8 以上）", dur: 4.4, start: 0.55,
       desc: "按你的节奏：出牌 → 背景划出技能名（只是背景，压在人物后面）；同时悠掏出那张白金色的牌，在手里转。→ 捏碎的一瞬间三件事同时发生：技能名背景退出去，伊邪那岐大神在悠身后出现，他一出现就转杖；杖在悠和敌人之间、中间偏右，不在他脸上。→ 杖由慢到快转、再慢下来停住 → 金光从敌人头顶竖直劈下，连劈四下 → 黄色圆环收尾。金光草图比上一版细了一些（分层的光柱、抖动的边、带分叉的闪电、落点光晕、上升的光点），游戏里会用着色器做。",
       draw: function (ctx, W, H, tr) {
         var GOLD = "#f2c54b", PALE = "#fff3c4";
@@ -1327,6 +1436,43 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         if (yk > 0 && yk < 1) {
           ring(ctx, W * 0.5, H * 0.5, lerp(H * 0.16, Math.hypot(W, H) * 0.6, eOut(yk)), lerp(H * 0.05, H * 0.006, yk), Y, 1 - seg(yk, 0.6, 1));
           ring(ctx, W * 0.5, H * 0.5, lerp(H * 0.1, Math.hypot(W, H) * 0.45, eOut(seg(yk, 0.1, 1))), 3, "#ffffff", 1 - seg(yk, 0.5, 1));
+        }
+      } },
+    { id: "myriadq", name: "几万真言 快速版（力量 8 以下）", dur: 1.5, start: 0.34,
+      desc: "力量不到 8 时播这个：不出技能名、不转牌、不召出大神全身。悠手里的白金牌直接捏碎（0.1 秒）→ 杖带着一圈淡金色圆环在悠和敌人之间闪现，快速转一圈停住（约 0.3 秒）→ 金光竖直劈下四下，间隔 0.12 秒。约 0.45 秒出第一下，整段约 1.1 秒。",
+      draw: function (ctx, W, H, tr) {
+        var GOLD = "#f2c54b", PALE = "#fff3c4", t = hs(tr, 0.1, 0.04);
+        battleFloor(ctx, W, H);
+        ctx.save(); ctx.globalAlpha = 0.3 * seg(t, 0.05, 0.15) * (1 - seg(t, 1.0, 1.25)); ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H); ctx.restore();
+        var foes = [[W * 0.74, H * 0.66], [W * 0.84, H * 0.56], [W * 0.91, H * 0.72]];
+        foes.forEach(function (e, i) { enemy(ctx, e[0], e[1], H * 0.085, Math.sin(tr * 3 + i)); });
+        figure(ctx, W * 0.2, H * 0.94, H * 0.4, Y);
+        var cpos = [W * 0.26, H * 0.5];
+        if (t < 0.1) {
+          var pk = eBack(seg(t, 0, 0.06));
+          ctx.save(); ctx.translate(cpos[0], cpos[1]); ctx.scale(pk, pk); roundRect(ctx, -H * 0.05, -H * 0.075, H * 0.1, H * 0.15, 3); ctx.fillStyle = PALE; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = GOLD; ctx.stroke(); ctx.restore();
+        } else {
+          var st = t - 0.1;
+          ring(ctx, cpos[0], cpos[1], lerp(H * 0.02, H * 0.36, eOut(seg(st, 0, 0.3))), lerp(H * 0.03, 2, seg(st, 0, 0.3)), "#ffffff", 1 - seg(st, 0.18, 0.34));
+          ring(ctx, cpos[0], cpos[1], lerp(H * 0.02, H * 0.26, eOut(seg(st, 0.04, 0.34))), 2, GOLD, 1 - seg(st, 0.2, 0.38));
+          makeShards(61, 16, { vmin: H * 0.7, vmax: H * 1.6, smin: H * 0.01, smax: H * 0.026 }).forEach(function (s) { var p = shardPos(s, st, 2.8, H * 0.3); drawShard(ctx, cpos[0] + p[0], cpos[1] + p[1], s, st, PALE, 1 - seg(st, 0.3, 0.55)); });
+        }
+        var gc = [W * 0.58, H * 0.44], L = H * 0.72, ap = eOut(seg(t, 0.1, 0.18)) * (1 - seg(t, 0.5, 0.7));
+        if (ap > 0) {
+          ring(ctx, gc[0], gc[1], H * 0.26, H * 0.012, GOLD, ap * 0.5);
+          var sp = eInOut(seg(t, 0.12, 0.42)), ang = -Math.PI / 2 - (1 - sp) * Math.PI * 2, om = Math.sin(sp * Math.PI);
+          for (var gi = 1; gi <= 6 && om > 0.2; gi++) { var ga = ang - gi * 0.12 * om; ctx.save(); ctx.globalAlpha = ap * 0.28 * (1 - gi / 7); ctx.strokeStyle = GOLD; ctx.lineWidth = H * 0.012; ctx.beginPath(); ctx.moveTo(gc[0] - Math.cos(ga) * L / 2, gc[1] - Math.sin(ga) * L / 2); ctx.lineTo(gc[0] + Math.cos(ga) * L / 2, gc[1] + Math.sin(ga) * L / 2); ctx.stroke(); ctx.restore(); }
+          ctx.save(); ctx.globalAlpha = ap; ctx.translate(gc[0], gc[1]); ctx.rotate(ang); ctx.shadowColor = PALE; ctx.shadowBlur = H * (t > 0.42 && t < 0.5 ? 0.08 : 0.025);
+          ctx.fillStyle = "#efe9d8"; ctx.fillRect(-L / 2, -H * 0.007, L, H * 0.014);
+          ctx.fillStyle = GOLD; ctx.beginPath(); ctx.moveTo(L / 2, -H * 0.022); ctx.lineTo(L / 2 + H * 0.11, 0); ctx.lineTo(L / 2, H * 0.022); ctx.closePath(); ctx.fill();
+          ctx.restore();
+        }
+        for (var w = 0; w < 4; w++) {
+          var tw = 0.45 + w * 0.12;
+          foes.forEach(function (e, i) {
+            goldStrike(ctx, H, e[0], e[1] - H * 0.01, seg(t, tw + i * 0.02, tw + 0.2 + i * 0.02), tr, w * 3 + i, w === 3 ? 1.35 : 0.9);
+            var bk = t - (tw + 0.06 + i * 0.02); if (bk > 0) damageBadge(ctx, e[0] + (w - 1.5) * H * 0.05, e[1] - H * 0.15 - w * H * 0.04, 9, seg(bk, 0, 0.12), 1 - seg(bk, 0.35, 0.6));
+          });
         }
       } },
     { id: "myriad2", hidden: true, name: "几万真言 v2（分镜）", dur: 5.5, start: 3.0,
