@@ -150,7 +150,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
 
 <main class="wrap">
   <div class="notice">
-    <b>第四轮。</b>按你第三轮的意见改了两段草图：恶魔之焰换成纯色光柱一次扫进 + 明显的拖尾；几万真言的技能名改到出牌一开始，杖出现在敌人面前转，停下以后金光竖直劈下来。另外新加「参考图确认」：生图前先确认参考没错。捏碎的手你说得对，草图里是平面的，游戏里会用从电视里伸出来的立体手。
+    <b>第四轮（更新）：</b>恶魔之焰照你画的改成横着扫过去的彗星光团（v4，在草图第一个）；伊邪那岐大神按你说的用白色那个。<br>按你第三轮的意见改了两段草图：恶魔之焰换成纯色光柱一次扫进 + 明显的拖尾；几万真言的技能名改到出牌一开始，杖出现在敌人面前转，停下以后金光竖直劈下来。另外新加「参考图确认」：生图前先确认参考没错。捏碎的手你说得对，草图里是平面的，游戏里会用从电视里伸出来的立体手。
   </div>
 
   <section id="decisions">
@@ -305,8 +305,8 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   ];
   var REFS = [
     { id: "okami", frames: ["ref/okami_p4g.png"], title: "伊邪那岐大神（P4G 图鉴设定图）",
-      text: "白色长大衣、金色纽扣和饰边、大衣内侧红色、暗红黑色的头部，身后一个金色大圆环，手里一根很长的杖（一端是枪尖，枪尖下有十字形护手）。这是不是伊邪那岐大神？",
-      use: "P4R 还没公开大神的样子。确认是他以后，Codex 会上网再找更清楚的官方图，一起当生图参考。" },
+      text: "白色长大衣、金色纽扣和饰边、大衣内侧红色、暗红黑色的头部，身后一个金色大圆环，手里一根很长的杖（一端是枪尖，枪尖下有十字形护手）。你在对话里已经确认：伊邪那岐大神用白色这个。",
+      use: "P4R 还没公开大神的样子。Codex 会上网再找同一个设计更清楚的官方图，一起当生图参考。" },
     { id: "izanagi", frames: ["ref/izanagi_p4g.png"], title: "伊邪那岐（P4G 图鉴设定图）",
       text: "黑色高领长大衣、银白色头盔面甲、大衣内侧红色、长刃薙刀。P4R 里的伊邪那岐设计以 P4R 截图为准，这张只看结构。",
       use: "Codex 也会上网找 P4R 官方的高清图。" }
@@ -789,7 +789,132 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
 
   /* ---------- demos ---------- */
   var DEMOS = [
-    { id: "fiend3", name: "恶魔之焰 v3（光柱扫牌 + 明显拖尾）", dur: 3.9, start: 1.2,
+    { id: "fiend4", name: "恶魔之焰 v4（彗星光团扫牌）", dur: 3.9, start: 0.5,
+      desc: "按你示意图的意思（不是照着描）：一团横着的光从左往右、沿着手牌的弧线扫过去，由慢到快，扫到的牌被卷进光团头部带走。光团像一笔彗星：前面是圆钝发亮的头，后面的尾巴越拉越细，还分出两缕细丝；上沿有一点起伏，不规整。分了几层：外圈柔光、柠檬黄本体、偏前的白芯、头部白色亮边，尾巴里有细的白色速度线，上下边沿各一条细的黄绿、橙色线，尾巴后面拖一串小圆点，沿途掉一些小星星。扫到右边顿一下，同一团光直接拐上去，走大半圆飞到电视里伸出来的手上方，它自己的尾巴就是拖尾。然后散开成扇形 → 捏碎 → 一张牌一刀。",
+      draw: function (ctx, W, H, tr) {
+        var BEAT = 2.15, t = hs(tr, BEAT, 0.08);
+        var shake = tr > BEAT && tr < BEAT + 0.16 ? (1 - (tr - BEAT) / 0.16) * H * 0.01 : 0;
+        ctx.save(); if (shake) ctx.translate(Math.sin(tr * 90) * shake, Math.cos(tr * 70) * shake);
+        battleFloor(ctx, W, H);
+        ctx.save(); ctx.globalAlpha = 0.4 * eOut(seg(t, 0.7, 1.0)) * (1 - seg(t, 3.3, 3.8)); ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H); ctx.restore();
+        var tvx = W * 0.56, tvy = H * 0.3, tvw = W * 0.4, tvh = H * 0.44;
+        stageTV(ctx, W, H, tr, tvx, tvy, tvw, tvh, seg(t, 0.8, 1.1) * (1 - seg(t, 2.6, 3.0)) * 0.8, 1.15);
+        figure(ctx, W * 0.13, H * 0.92, H * 0.42, Y);
+        var ex = W * 0.87, ey = H * 0.62; enemy(ctx, ex, ey, H * 0.11, Math.sin(tr * 3));
+        var hk = eOut(seg(t, 1.15, 1.55)) * (1 - eIn(seg(t, 2.5, 2.85)));
+        var hx = lerp(tvx, W * 0.56, hk), hy = lerp(tvy, H * 0.8, hk), hsz = lerp(H * 0.05, H * 0.3, hk);
+        var close = eInOut(seg(t, 2.02, 2.15));
+        lightHand(ctx, W, H, hx, hy, hsz, close, 0, seg(t, 1.15, 1.25) * (1 - seg(t, 2.7, 2.85)), [tvx, tvy]);
+        var palm = [W * 0.56, H * 0.8 - H * 0.3 * 1.55];
+        function baseY(x) { var u = (x - W * 0.5) / (W * 0.42); return H * 0.9 - H * 0.035 * (1 - u * u); }
+        var stack = [W * 0.84, baseY(W * 0.84)];
+        var P = [stack, [W * 1.02, H * 0.42], [W * 0.88, H * 0.0], palm];
+        function head(tt) {
+          if (tt < 0.7) { var x = lerp(W * 0.05, stack[0], eIn(seg(tt, 0.12, 0.7))); return [x, baseY(x)]; }
+          if (tt < 0.86) return [stack[0], stack[1] - Math.sin(seg(tt, 0.7, 0.86) * Math.PI) * H * 0.025];
+          var u = seg(tt, 0.86, 1.45); return bez(P[0], P[1], P[2], P[3], eIn(u) * 0.85 + u * 0.15);
+        }
+        var alive = seg(t, 0.02, 0.14) * (1 - seg(t, 1.45, 1.62));
+        var R = H * 0.1 * (0.6 + 0.4 * seg(t, 0.02, 0.2)), N = 5, cw = W * 0.08, ch = cw * 1.38;
+        var pts = []; for (var k = 0; k <= 26; k++) pts.push(head(t - k * 0.009));
+        /* geometry along the tail: normals, radii, a little wobble on the upper edge */
+        var nrm = [], rad = [], last = [1, 0];
+        for (var k2 = 0; k2 < pts.length; k2++) {
+          var a2 = pts[Math.min(pts.length - 1, k2 + 1)], b2 = pts[Math.max(0, k2 - 1)], dx = b2[0] - a2[0], dy = b2[1] - a2[1], Ld = Math.hypot(dx, dy);
+          var d = Ld > 0.6 ? [dx / Ld, dy / Ld] : last; last = d; nrm.push([-d[1], d[0], d[0], d[1]]);
+          rad.push(R * Math.pow(1 - k2 / (pts.length - 1), 0.95));
+        }
+        function body(sTop, sBot, upto) {
+          var n = Math.max(2, Math.round((pts.length - 1) * (upto || 1)) + 1);
+          ctx.beginPath();
+          for (var i = 0; i < n; i++) { var w2 = 1 + 0.16 * Math.sin(i * 0.85 + tr * 17) * (i / n); ctx.lineTo(pts[i][0] - nrm[i][0] * rad[i] * sTop * w2, pts[i][1] - nrm[i][1] * rad[i] * sTop * w2); }
+          for (var j = n - 1; j >= 0; j--) ctx.lineTo(pts[j][0] + nrm[j][0] * rad[j] * sBot, pts[j][1] + nrm[j][1] * rad[j] * sBot);
+          var r0 = rad[0] * (sTop + sBot) / 2;
+          ctx.quadraticCurveTo(pts[0][0] + nrm[0][2] * r0 * 2.0, pts[0][1] + nrm[0][3] * r0 * 2.0, pts[0][0] - nrm[0][0] * rad[0] * sTop, pts[0][1] - nrm[0][1] * rad[0] * sTop);
+          ctx.closePath();
+        }
+        function edge(off, color, wmul, upto) {
+          var n = Math.round((pts.length - 1) * upto);
+          ctx.save(); ctx.strokeStyle = color; ctx.lineCap = "round";
+          for (var i = 1; i <= n; i++) {
+            ctx.lineWidth = Math.max(0.8, rad[i] * wmul); ctx.globalAlpha = alive * (1 - i / (n + 1));
+            ctx.beginPath(); ctx.moveTo(pts[i - 1][0] + nrm[i - 1][0] * rad[i - 1] * off, pts[i - 1][1] + nrm[i - 1][1] * rad[i - 1] * off); ctx.lineTo(pts[i][0] + nrm[i][0] * rad[i] * off, pts[i][1] + nrm[i][1] * rad[i] * off); ctx.stroke();
+          }
+          ctx.restore();
+        }
+        if (alive > 0) {
+          /* dots trailing behind the tail */
+          for (var dd = 1; dd <= 9; dd++) { var dp = head(t - 0.24 - dd * 0.022); ctx.save(); ctx.globalAlpha = alive * (1 - dd / 10); ctx.fillStyle = dd % 2 ? YH : ORANGE; ctx.beginPath(); ctx.arc(dp[0], dp[1] + Math.sin(dd * 1.7) * R * 0.5, H * 0.006, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+          /* outer soft glow */
+          ctx.save(); ctx.globalAlpha = alive * 0.6; ctx.globalCompositeOperation = "lighter"; ctx.shadowColor = YH; ctx.shadowBlur = R * 1.4; ctx.fillStyle = "rgba(230,235,26,0.55)"; body(1.45, 1.3, 1); ctx.fill(); ctx.restore();
+          /* two thin strands split off the tail */
+          [[1.32, LIME], [-1.2, ORANGE]].forEach(function (s) {
+            ctx.save(); ctx.strokeStyle = s[1]; ctx.lineCap = "round";
+            for (var i = 6; i <= 20; i++) { ctx.lineWidth = Math.max(0.8, rad[i] * 0.2); ctx.globalAlpha = alive * 0.85 * (1 - (i - 6) / 15); ctx.beginPath(); ctx.moveTo(pts[i - 1][0] - nrm[i - 1][0] * rad[i - 1] * s[0], pts[i - 1][1] - nrm[i - 1][1] * rad[i - 1] * s[0]); ctx.lineTo(pts[i][0] - nrm[i][0] * rad[i] * s[0], pts[i][1] - nrm[i][1] * rad[i] * s[0]); ctx.stroke(); }
+            ctx.restore();
+          });
+          /* lemon body */
+          ctx.save(); ctx.globalAlpha = alive; ctx.fillStyle = Y; body(1, 0.88, 1); ctx.fill(); ctx.restore();
+          edge(-0.6, LIME, 0.12, 0.8); edge(0.66, ORANGE, 0.14, 0.85);
+        }
+        /* cards: scooped into the head, then carried along the same path */
+        for (var i3 = 0; i3 < N && t < BEAT; i3++) {
+          var hx0 = W * 0.5 + (i3 - 2) * cw * 0.85, hy0 = H * 0.93 + Math.abs(i3 - 2) * H * 0.012, a0 = (i3 - 2) * 0.1;
+          var x = hx0, y = hy0, a = a0, sc = 1, hd = head(t);
+          var caughtAt = hd[0] >= hx0 - cw * 0.25 || t >= 0.7;
+          if (caughtAt && t < 0.86) {
+            var ck2 = t >= 0.7 ? 1 : clamp((hd[0] - hx0 + cw * 0.25) / (W * 0.07), 0, 1);
+            x = lerp(hx0, hd[0] - (N - 1 - i3) * W * 0.006, eOut(ck2)); y = lerp(hy0, hd[1] - H * 0.01 - i3 * 2, eOut(ck2)); a = lerp(a0, 0.05, ck2); sc = lerp(1, 0.9, ck2);
+          }
+          if (t >= 0.86) { var fp = head(t - i3 * 0.028); x = fp[0]; y = fp[1]; a = lerp(0.05, -0.6, seg(t, 0.86, 1.45)); sc = 0.9; }
+          var d3 = i3 * 0.03, fk = eOut(seg(t, 1.45 + d3, 1.65 + d3)), flip = seg(t, 1.5 + d3, 1.64 + d3);
+          if (fk > 0) { var fa = (i3 - 2) * 0.28, fr = H * 0.12; x = lerp(palm[0], palm[0] + Math.sin(fa) * fr * 1.7, fk); y = lerp(palm[1], palm[1] - Math.cos(fa) * fr * 0.5 + fr * 0.3, fk); a = lerp(-0.6, fa, fk); sc = lerp(0.9, 1.15, fk); }
+          var sx = flip > 0 && flip < 1 ? Math.abs(Math.cos(flip * Math.PI)) : 1;
+          ctx.save(); ctx.translate(x, y + Math.sin(t * 28 + i3) * H * 0.002 * seg(t, 1.7, 2.0)); ctx.rotate(a); ctx.scale(sc * Math.max(sx, 0.05), sc);
+          if (flip >= 0.5) yellowCard(ctx, cw, ch); else stsCard(ctx, cw, ch, i3 % 3);
+          ctx.restore();
+        }
+        if (alive > 0) {
+          /* white core toward the head, speed lines, bright rim, shed sparkles */
+          ctx.save(); ctx.globalAlpha = alive * 0.95; ctx.fillStyle = "#fffbe0"; body(0.42, 0.3, 0.55); ctx.fill(); ctx.restore();
+          [-0.25, 0.1, 0.4].forEach(function (o, li) {
+            ctx.save(); ctx.strokeStyle = "rgba(255,255,255,0.6)"; ctx.lineWidth = 1.4; ctx.globalAlpha = alive;
+            var s0 = 4 + li * 2, s1 = 15 + li * 3; ctx.beginPath();
+            for (var i = s0; i <= Math.min(s1, pts.length - 1); i++) { var px = pts[i][0] - nrm[i][0] * rad[i] * o, py = pts[i][1] - nrm[i][1] * rad[i] * o; if (i === s0) ctx.moveTo(px, py); else ctx.lineTo(px, py); }
+            ctx.stroke(); ctx.restore();
+          });
+          ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = alive;
+          var hg = ctx.createRadialGradient(pts[0][0] + nrm[0][2] * R * 0.5, pts[0][1] + nrm[0][3] * R * 0.5, 0, pts[0][0], pts[0][1], R * 1.4);
+          hg.addColorStop(0, "rgba(255,255,255,1)"); hg.addColorStop(0.35, "rgba(255,252,200,0.7)"); hg.addColorStop(1, "rgba(230,235,26,0)");
+          ctx.fillStyle = hg; ctx.fillRect(pts[0][0] - R * 1.5, pts[0][1] - R * 1.5, R * 3, R * 3); ctx.restore();
+          var rs2 = rng(Math.floor(tr * 12) + 3);
+          for (var sp2 = 0; sp2 < 7; sp2++) { var ki = 3 + Math.floor(rs2() * 20), side = (rs2() - 0.5) * 3; star4(ctx, pts[ki][0] - nrm[ki][0] * rad[ki] * side, pts[ki][1] - nrm[ki][1] * rad[ki] * side, H * lerp(0.01, 0.022, rs2()) * alive, 0.16, 1, sp2 % 2 ? "#ffffff" : YH); }
+        }
+        if (tr >= BEAT) {
+          var lt = tr - BEAT, st = Math.max(0, t - BEAT), Pc = [palm[0], palm[1] + H * 0.08];
+          var core = 1 - seg(lt, 0.02, 0.3);
+          if (core > 0) {
+            ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = core;
+            var cg = ctx.createRadialGradient(Pc[0], Pc[1], 0, Pc[0], Pc[1], H * 0.28); cg.addColorStop(0, "#ffffff"); cg.addColorStop(1, "rgba(255,250,200,0)");
+            ctx.fillStyle = cg; ctx.fillRect(Pc[0] - H * 0.3, Pc[1] - H * 0.3, H * 0.6, H * 0.6); ctx.restore();
+            ray(ctx, Pc[0], Pc[1], -0.3, W * 0.75, 2, core); ray(ctx, Pc[0], Pc[1], 1.05, W * 0.4, 1.5, core * 0.8);
+          }
+          ring(ctx, Pc[0], Pc[1], lerp(H * 0.03, H * 0.6, eOut(seg(st, 0, 0.5))), lerp(H * 0.05, H * 0.004, seg(st, 0, 0.5)), "#ffffff", 1 - seg(st, 0.3, 0.55));
+          ring(ctx, Pc[0], Pc[1], lerp(H * 0.02, H * 0.46, eOut(seg(st, 0.07, 0.55))), lerp(H * 0.03, H * 0.004, seg(st, 0.07, 0.55)), YH, 1 - seg(st, 0.38, 0.62));
+          for (var c = 0; c < N; c++) {
+            var launch = 0.28 + c * 0.13, fl = seg(st, launch, launch + 0.2);
+            makeShards(300 + c, 8, { vmin: H * 0.5, vmax: H * 1.3, smin: H * 0.01, smax: H * 0.03 }).forEach(function (s) {
+              var p = shardPos(s, Math.min(st, launch), 3.2, 0), x = Pc[0] + p[0], y = Pc[1] + p[1];
+              if (fl > 0) { var k3 = eIn(fl), mx = (x + ex) / 2, my = Math.min(y, ey) - H * 0.2; x = lerp(lerp(x, mx, k3), lerp(mx, ex, k3), k3); y = lerp(lerp(y, my, k3), lerp(my, ey, k3), k3); }
+              if (fl < 1) drawShard(ctx, x, y, s, st, fl > 0.3 ? "#9fe6ff" : Y, 1 - (fl > 0 ? 0 : seg(st, 1.2, 1.5)));
+            });
+            var h2 = st - (launch + 0.2);
+            if (h2 > 0) { slashArc(ctx, ex, ey, H * 0.18, -2.4 + c * 0.55, 2.2, seg(h2, 0, 0.1), 1 - seg(h2, 0.12, 0.3)); damageBadge(ctx, ex - W * 0.05 + (c - 2) * W * 0.03, ey - H * 0.22 - c * H * 0.035, 7, seg(h2, 0, 0.18), 1 - seg(h2, 0.7, 1.0)); }
+          }
+        }
+        ctx.restore();
+      } },
+    { id: "fiend3", hidden: true, name: "恶魔之焰 v3（光柱扫牌 + 明显拖尾）", dur: 3.9, start: 1.2,
       desc: "按你的意见改：一竖纯色的黄色光柱由慢到快从左往右扫过手牌，一次把牌全扫进光柱里，带到右边；顿一下，整叠牌变成一团光沿大半圆飞进电视里伸出来的手上方。拖尾是一条宽的发光黄带，加三色光带和星星，比上一版明显很多。然后散开成黄色扇形 → 握拳捏碎 → 一张牌一刀。",
       draw: function (ctx, W, H, tr) {
         var BEAT = 2.15, t = hs(tr, BEAT, 0.08);

@@ -18,7 +18,7 @@
   - 官方设定图 / 立绘（副岛成记画的原画，或官方画集里的图）；
   - 游戏里的模型图（P4G、P4 Arena Ultimax、P5R 里都出现过）。
 - 角度和局部：正面全身至少 1 张，其他角度尽量有；头部、杖（长枪尖下面有十字护手）、身后金色圆环的特写。共 4–10 张。
-- 仓库里已有一张 P4G 图鉴图 `research/p4g/persona/camp__persona__pst_0bd.png`，找到的图要和它是同一个人格面具。
+- 仓库里已有一张 P4G 图鉴图 `research/p4g/persona/camp__persona__pst_0bd.png`（白色大衣的那个），**用户已确认它就是伊邪那岐大神**。找到的图要和它是同一个设计；黑色大衣的是伊邪那岐，不要混进来。
 
 ### 2. 伊邪那岐（Izanagi，以 P4R 为准）→ `art/p4/ref/izanagi/`
 - P4R（Persona 4 Revival）官方的高清截图、宣传图、预告片画面：官网、新闻稿、官方 YouTube / B 站 1080p 视频截图。

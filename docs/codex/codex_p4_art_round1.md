@@ -54,7 +54,7 @@
 提交信息：`art(p4): Izanagi body, naginata and full pose`，推送。
 
 ### B2. 伊邪那岐大神 → `art/p4/persona/okami/`
-**参考**：P4R 还没有公开伊邪那岐大神，设计照 P4G 设定图 `research/p4g/persona/camp__persona__pst_0bd.png`，按上面的 P4R 风格重画。
+**参考**：P4R 还没有公开伊邪那岐大神，设计照 P4G 设定图 `research/p4g/persona/camp__persona__pst_0bd.png`（白色大衣，用户已确认就是伊邪那岐大神），加上 `art/p4/ref/okami/` 里用户确认过的图，按上面的 P4R 风格重画。
 
 **设计**：
 - 白色长大衣，金色纽扣和饰边，大衣内侧红色；暗红黑色头部，有金色细节；银白色护腿。
