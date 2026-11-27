@@ -592,7 +592,10 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     ctx.fillStyle = "#e9e2d0"; ctx.fillRect(-w * 0.34, h * 0.1, w * 0.68, h * 0.05); ctx.fillRect(-w * 0.3, h * 0.2, w * 0.6, h * 0.04);
     ctx.beginPath(); ctx.arc(-w * 0.38, -h * 0.42, w * 0.13, 0, Math.PI * 2); ctx.fillStyle = "#c2392b"; ctx.fill();
   }
-  function yellowCard(ctx, w, h) { roundRect(ctx, -w / 2, -h / 2, w, h, w * 0.05); ctx.fillStyle = Y; ctx.fill(); }
+  function yellowCard(ctx, w, h, edge) {
+    roundRect(ctx, -w / 2, -h / 2, w, h, w * 0.05); ctx.fillStyle = Y; ctx.fill();
+    if (edge) { ctx.lineWidth = Math.max(1.5, w * 0.022); ctx.strokeStyle = "#9c960c"; ctx.stroke(); }
+  }
   function damageBadge(ctx, x, y, n, k, alpha) {
     if (alpha <= 0) return;
     var sc = k < 1 ? eBack(k) : 1;
@@ -791,7 +794,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   /* ---------- demos ---------- */
   var DEMOS = [
     { id: "fiend5", name: "恶魔之焰 v5（一条顺滑的轨迹）", dur: 3.0, start: 0.55,
-      desc: "按你的意见：整体加快，中间不停。扫牌和转向电视现在是同一条连续的曲线：光团沿手牌弧线从慢到快扫过去，扫到右边不减速，顺着惯性往右上拐，走半圆弯回电视里伸出来的手，只在快到手的时候放慢落位。牌在路上跟着光团头部走，到手边时一边减速一边散开成扇形。整段从亮起到捏碎约 1.5 秒（上一版约 2.2 秒）。",
+      desc: "按你的意见：整体加快，中间不停。扫牌和转向电视现在是同一条连续的曲线：光团沿手牌弧线从慢到快扫过去，扫到右边不减速，顺着惯性往右上拐，走半圆弯回电视里伸出来的手，只在快到手的时候放慢落位。牌在路上跟着光团头部走，到手边收拢成一叠（每张稍微错开一点，看得出有几张），不展开，依次翻成黄色，整叠一起被捏碎。整段从亮起到捏碎约 1.5 秒（上一版约 2.2 秒）。",
       draw: function (ctx, W, H, tr) {
         var BEAT = 1.45, t = hs(tr, BEAT, 0.08);
         var shake = tr > BEAT && tr < BEAT + 0.16 ? (1 - (tr - BEAT) / 0.16) * H * 0.01 : 0;
@@ -878,11 +881,17 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
           var rise = clamp((sF - PATH.lenA) / (PATH.total - PATH.lenA), 0, 1);
           var x = lerp(hx0, fp[0], eOut(catchK)), y = lerp(hy0, fp[1] - H * 0.01, eOut(catchK));
           var a = lerp(a0, lerp(0.05, -0.6, rise), catchK), sc = lerp(1, 0.9, catchK);
-          var d3 = i3 * 0.02, fk = eOut(seg(t, 0.96 + d3, 1.16 + d3)), flip = seg(t, 1.0 + d3, 1.12 + d3);
-          if (fk > 0) { var fa = (i3 - 2) * 0.28, fr = H * 0.12; x = lerp(x, palm[0] + Math.sin(fa) * fr * 1.7, fk); y = lerp(y, palm[1] - Math.cos(fa) * fr * 0.5 + fr * 0.3, fk); a = lerp(a, fa, fk); sc = lerp(sc, 1.15, fk); }
+          var d3 = i3 * 0.02, fk = eOut(seg(t, 0.96, 1.16)), flip = seg(t, 1.0 + d3, 1.12 + d3);
+          if (fk > 0) {
+            /* one stack above the palm, each card nudged a little so the count reads; no fan */
+            var o = i3 - (N - 1) / 2, sway = Math.sin(t * 7) * 0.03 * seg(t, 1.16, 1.3);
+            x = lerp(x, palm[0] + o * W * 0.016, fk); y = lerp(y, palm[1] + H * 0.03 - o * H * 0.013, fk);
+            a = lerp(a, -0.06 + o * 0.05 + sway, fk); sc = lerp(sc, 1.25, fk);
+          }
+          if (close > 0) { sc *= 1 - 0.55 * close; y += close * H * 0.06; }
           var sx = flip > 0 && flip < 1 ? Math.abs(Math.cos(flip * Math.PI)) : 1;
           ctx.save(); ctx.translate(x, y + Math.sin(t * 28 + i3) * H * 0.002 * seg(t, 1.16, 1.35)); ctx.rotate(a); ctx.scale(sc * Math.max(sx, 0.05), sc);
-          if (flip >= 0.5) yellowCard(ctx, cw, ch); else stsCard(ctx, cw, ch, i3 % 3);
+          if (flip >= 0.5) yellowCard(ctx, cw, ch, true); else stsCard(ctx, cw, ch, i3 % 3);
           ctx.restore();
         }
         if (alive > 0) {
