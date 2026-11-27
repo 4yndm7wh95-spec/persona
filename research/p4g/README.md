@@ -18,3 +18,19 @@ The catalog uses the [TGE preappfile source at eadddcd](https://github.com/tge-w
 & $dotnet "$temp/catalog/bin/Debug/net10.0/Catalog.dll" $game "$temp/art_extraction_catalog.txt" "$temp/targets.tsv"
 py -3 "$temp/art.py" $temp
 ```
+
+## Audio
+
+- `sfx/menu/` contains the `comse00` cue group from both sound banks. `sfx/unsorted/` contains the battle and common effects whose numbered cue names do not reliably label individual moves. The indexes retain the bank, original cue name or number, stream index and duration.
+- `voice/yu/jp/` and `voice/yu/en/` contain the `bc001_*` battle cue sets located through `COMSE.xsb` and `COMSE_E.xsb`, respectively. Both cue sets resolve to different stream indexes in `SND/COMSE.xwb`.
+- The additional `snd04_comse.acb` common-effects bank contains a CRI CPK inside the AWB field, with ATRAC9 WAVE records. The conversion read the bank's ITOC and aligned offsets and resolved direct and synth cue names where available. ACB index paths include the byte offset of the original waveform.
+- No files from the BGM banks are included.
+
+The XWB streams were decoded with [vgmstream](https://github.com/vgmstream/vgmstream) r2117 and converted to Vorbis with FFmpeg 9.0.2. The ACB waveforms were passed individually to FFmpeg as WAVE input.
+
+```powershell
+& $vgmstream -m -s 1 -S 0 "$game/SND/COMSE.xwb"
+& $vgmstream -i -s $index -o $wav "$game/SND/COMSE.xwb"
+& $ffmpeg -v error -i $wav -map 0:a:0 -c:a libvorbis -q:a 4 $ogg
+& $ffmpeg -v error -f wav -i $atrac9Wave -c:a libvorbis -q:a 4 $ogg
+```
