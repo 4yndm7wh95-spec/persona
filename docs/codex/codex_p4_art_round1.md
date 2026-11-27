@@ -1,6 +1,7 @@
 # Codex 生图任务：P4Yu 第一批素材（眼神特写序列帧 + 伊邪那岐 + 伊邪那岐大神）
 
-> **先别做。** 先做 `docs/codex/codex_p4_ref_round1.md`（上网找参考图），等用户在工作台确认参考图没错，再做这一份。到时候每部分除了下面列的参考，还要加上 `art/p4/ref/` 里对应目录下用户确认过的图（大神看 `art/p4/ref/okami/`，伊邪那岐看 `art/p4/ref/izanagi/`，眼睛看 `art/p4/ref/eyes/`），以那些为准。
+> **可以做了。** 用户已在工作台确认参考图（2026-11-27）：`art/p4/ref/eyes/` 3 张、`art/p4/ref/izanagi/` 4 张、`art/p4/ref/okami/` 1 张都没错。每部分都以这些确认过的图为准。
+> **最重要：人物不能画走样（OOC）。** 脸、头盔、服装、武器都照参考图画，不要自己发挥设计。
 
 你在用户的 Windows 电脑上工作，用 imagegen 生图（参考图 / 图像编辑模式）。不改 mod 代码，不编译，不启动游戏。生完直接提交推送，不用自查，不用写报告。
 
@@ -12,9 +13,12 @@
 - 只 `git add` 本任务新增的 `art/p4/` 下的文件；工作区里别的未提交改动原样保留。
 
 ## A. 眼神特写序列帧 → `art/p4/cutin/eyes/`
-**参考**（先看视频，再看帧）：
-- 视频 `research/p4r/user_clips/p4r_summon_baton.mp4` 开头约 0.1–0.45 秒（第 4–13 帧）。这是 P4R 召唤时，黄色菱形里出现的悠的眼睛特写。
-- 关键帧 `research/p4r/user_clips/frames/B011.jpg`（睁开的眼睛）。要看更多帧可以自己用 ffmpeg 从视频里导出，导出的帧不用提交。
+**参考**（用户确认过的三张为准，构图照它们：眼睛的位置、眼镜框的角度、镜框上的彩条、头发的位置）：
+- `art/p4/ref/eyes/p4r_47.20s_closed.jpg`：闭眼，镜片上一大片反光。
+- `art/p4/ref/eyes/p4r_47.30s_opening.jpg`：睁开中，蓝色虹膜刚露出。
+- `art/p4/ref/eyes/p4r_47.43s_open.jpg`：完全睁开。
+- 补充：视频 `research/p4r/user_clips/p4r_summon_baton.mp4` 开头约 0.1–0.45 秒（第 4–13 帧）是同一个镜头，关键帧 `research/p4r/user_clips/frames/B011.jpg`。要看更多帧可以自己用 ffmpeg 导出，导出的帧不用提交。
+- 参考图里的**黄色菱形边框、技能名标签（Zio / 吉欧）、右下角血条头像都不要画**。只画窗口里面的人物画面：菱形窗口和黄边之后在引擎里做。
 
 **画面内容**：
 - 鸣上悠右眼的超近景（眼睛在画面中间偏左），隔着眼镜。
@@ -36,13 +40,14 @@
 **风格**（两个人格面具都一样）：P4R 游戏里的动画赛璐璐风格，干净的细黑线，两三档硬阴影，高光清楚，不要厚涂和写实。**真透明底**：PNG RGBA，轮廓外 alpha = 0，不要背景、地面阴影、光晕、文字。全身完整入画，四周留白至少 60px。
 
 ### B1. 伊邪那岐 → `art/p4/persona/izanagi/`
-**参考**：
-- P4R 截图（设计以这些为准）：
-  - `research/p4r/izanagi/S06_0106_izanagi_model_viewer_full_body_naginata_coat_lore_text_blue_circle_bg_en.jpg`（全身）
-  - `research/p4r/izanagi/S01_0540_izanagi_full_body_beside_yu_glowing_eyes.jpg`
-  - `research/p4r/izanagi/S04_0032_izanagi_helmet_closeup_yellow_eye_blue_rim_light.jpg`（头盔）
-  - `research/p4r/izanagi/S07_0036_izanagi_mask_closeup_yellow_eyes.jpg`
-- P4G 设定图（只看结构细节）：`research/p4g/persona/camp__persona__pst_001.png`。
+**参考**（用户的意思：P4G 那张很完整，P4R 画风更新；看得清的地方用 P4R 的）：
+- 用户确认过的 P4R 官方截图，**画风、线条、头盔和面甲的造型细节照这些**：
+  - `art/p4/ref/izanagi/p4r_006.00s_faceplate_front.jpg`（头盔、面甲侧前方、肩部）
+  - `art/p4/ref/izanagi/p4r_033.00s_full_body_naginata.jpg`（全身、长衣、薙刀）
+  - `art/p4/ref/izanagi/p4r_038.50s_helmet_profile.jpg`（头盔侧面、领子）
+  - `art/p4/ref/izanagi/p4r_049.75s_zio_cast.jpg`（战斗中全身和薙刀）
+  - 补充：`research/p4r/izanagi/` 里的 S01 / S04 / S06 / S07 几张。
+- **整体结构和本来的颜色照 P4G 设定图** `research/p4g/persona/camp__persona__pst_001.png`：P4R 截图都被蓝光染了色，看不出本色；P4R 截图里看不清的部位（背面、腿、薙刀细节）也照这张。
 
 **设计**：黑色高领长大衣、银白色头盔面甲（V 形纹）、发光的黄色眼睛，大衣内侧红色，银色靴子；武器是一把长刃薙刀。
 
@@ -54,7 +59,7 @@
 提交信息：`art(p4): Izanagi body, naginata and full pose`，推送。
 
 ### B2. 伊邪那岐大神 → `art/p4/persona/okami/`
-**参考**：P4R 还没有公开伊邪那岐大神，设计照 P4G 设定图 `research/p4g/persona/camp__persona__pst_0bd.png`（白色大衣，用户已确认就是伊邪那岐大神），加上 `art/p4/ref/okami/` 里用户确认过的图，按上面的 P4R 风格重画。
+**参考**：P4R 还没有公开伊邪那岐大神。设计照用户确认过的 `art/p4/ref/okami/p4g_compendium_0bd.png`（白色大衣那张，和 `research/p4g/persona/camp__persona__pst_0bd.png` 是同一张），按上面伊邪那岐的 P4R 画风重画。
 
 **设计**：
 - 白色长大衣，金色纽扣和饰边，大衣内侧红色；暗红黑色头部，有金色细节；银白色护腿。
