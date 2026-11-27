@@ -1,0 +1,11 @@
+file,source,dimensions,description
+camp__persona__pst_001.png,data.cpk/camp/persona/pst_001.tmx,1024x1024,Compendium portrait or summoning texture identified by archive asset ID.
+card__persona__i_prc001.png,data.cpk/card/persona/i_prc001.tmx,512x512,Compendium portrait or summoning texture identified by archive asset ID.
+tex2__battle__cutin__syoukan__sykn_1__000__megane_kiran.png,data.cpk/tex2/battle/cutin/syoukan/sykn_1/000/megane_kiran.dds,64x128,Compendium portrait or summoning texture identified by archive asset ID.
+tex2__battle__cutin__syoukan__sykn_1__000__sykn_1.png,data.cpk/tex2/battle/cutin/syoukan/sykn_1/000/sykn_1.dds,1024x256,Compendium portrait or summoning texture identified by archive asset ID.
+tex2__battle__cutin__syoukan__sykn_1__000__syoukan_haigo.png,data.cpk/tex2/battle/cutin/syoukan/sykn_1/000/syoukan_haigo.dds,512x128,Compendium portrait or summoning texture identified by archive asset ID.
+tex2__battle__cutin__syoukan__sykn_1__000__syoukan_kasan01.png,data.cpk/tex2/battle/cutin/syoukan/sykn_1/000/syoukan_kasan01.dds,512x128,Compendium portrait or summoning texture identified by archive asset ID.
+tex2__battle__cutin__syoukan__sykn_1__000__syoukan_kasan02.png,data.cpk/tex2/battle/cutin/syoukan/sykn_1/000/syoukan_kasan02.dds,512x128,Compendium portrait or summoning texture identified by archive asset ID.
+tex2__battle__cutin__syoukan__sykn_1__001__syoukan_moji.png,data.cpk/tex2/battle/cutin/syoukan/sykn_1/001/syoukan_moji.dds,512x512,Compendium portrait or summoning texture identified by archive asset ID.
+camp__persona__pst_0bd.png,data.cpk/camp/persona/pst_0bd.tmx,1024x1024,Compendium portrait or summoning texture identified by archive asset ID.
+card__persona__i_prc0bd.png,data.cpk/card/persona/i_prc0bd.tmx,512x512,Compendium portrait or summoning texture identified by archive asset ID.
