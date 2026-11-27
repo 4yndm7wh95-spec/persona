@@ -151,7 +151,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
 <main class="wrap">
   <div class="notice">
     <b>新做：添柴（第一版草图）。</b>就是草图的前两个。添柴的效果是消耗所有手牌，每消耗一张加一张随机牌，所以演出是：整手牌一握全碎 → 碎片在场地中间拼成一圈转动的卡牌转盘（Shuffle Time 洗牌）→ 转到最前面的牌依次甩出来，翻开变成新牌落回手牌。分档建议和恶魔之焰一样：一次烧 7 张以上播完整版，其余播快速版（剪段落、不加速）。<br>
-    <b>另外：</b>Codex 第一批图到了（眼神特写 + 伊邪那岐），放在下面「生图结果」里，看有没有画走样。<br>
+    <b>另外：</b>Codex 第一批图都到了（眼神特写、伊邪那岐、伊邪那岐大神），放在下面「生图结果」里，看有没有画走样。<br>
     <b>上一轮：快速版不加速，只剪段落</b>，留下来的每一段都和完整版一样的速度。
     <table style="width:100%;margin:10px 0 4px;border-collapse:collapse;font-size:14px">
       <tr style="text-align:left;color:var(--dim)"><th style="padding:4px 6px">牌</th><th style="padding:4px 6px">完整版（条件）</th><th style="padding:4px 6px">快速版（其余情况）</th></tr>
@@ -209,7 +209,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
 
   <section id="gencheck">
     <h2><span class="pill">新</span>生图结果（Codex 第一批） <span class="status" id="st-gencheck"></span></h2>
-    <p class="lead">眼神特写和伊邪那岐到了，伊邪那岐大神 Codex 还在画。看有没有画走样，每项点一个，要改的写一句。</p>
+    <p class="lead">眼神特写、伊邪那岐、伊邪那岐大神都到了。人物我对照原作没看出走样；两把武器和原作不一样，眼神特写要逐帧重画（你说的扭头）。每项点一个，要改的写一句。</p>
     <div class="vlist" id="genlist"></div>
   </section>
 
@@ -341,8 +341,14 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       text: "黑色长大衣、红色内衬、银色头盔面甲、黄色眼睛、肩上的黄色徽章、腿上一排白扣带。身后那两条白色长飘带 P4G 设定图和 P4R 截图里都有，不是多画的。我对照下来没看出走样。",
       use: "第二张是给引擎用的：薙刀单独做成一张，引擎里再拿到他手上挥。" },
     { id: "gen_naginata", frames: ["gen/izanagi_naginata.webp"], title: "伊邪那岐的薙刀（单独一张）",
-      text: "只有这里我觉得和原作不太一样：这把刀身弯得厉害，P4G 设定图和 P4R 截图里的刀身更直、更长，刀背带锯齿。",
-      use: "选「要小改」的话，我写一个让 Codex 照原作把刀身改直的任务。" }
+      text: "这里和原作不一样：原作刀身又宽又直，刀背靠近刀尖有一排锯齿，靠护手的地方有一条镂空槽，护手是一大块长方形横板；这张刀身细、弯得厉害，护手太小。",
+      use: "已经写好照原作改的任务（新图另存 v2，人物不动），和大神的杖一起改。你觉得不用改就点「可以用」。" },
+    { id: "gen_okami", frames: ["gen/okami_full.webp", "gen/okami_body.webp"], title: "伊邪那岐大神：全身 / 去掉杖和圆环的身体",
+      text: "白色长大衣、金扣、红领红内衬、黄领带、头顶那片很长的白色刃形头饰、腿上一排白扣带，和 P4G 白色那张一致。我看着没走样。",
+      use: "第二张给引擎用：杖和圆环单独做，引擎里让杖绕着手转。" },
+    { id: "gen_okami_parts", frames: ["gen/okami_ring.webp", "gen/okami_staff.webp"], title: "伊邪那岐大神：圆环 / 杖（单独）",
+      text: "圆环没问题。杖和原作不一样：原作杖头是一段又宽又长的银色直刃，下面是很大的十字形护手；这张是短圆锥枪尖加小方块护手，全身图里的杖头又是另一种样子。几万真言快速版只出这根杖，最显眼。",
+      use: "已经写好照原作改的任务（和薙刀一起，新图另存 v2）。" }
   ];
   var genStore = {};
   var Q3 = [
