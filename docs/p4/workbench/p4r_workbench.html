@@ -1235,11 +1235,12 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   /* one master picture (open eye); closing / opening and the lens glare are drawn on top, so the eye can never move or
      change size. Coordinates are pixels of the 1536x1024 master. */
   var EYE_POLY = [[498,626],[506,580],[515,540],[525,512],[560,500],[600,480],[640,456],[680,440],[720,426],[760,416],[795,414],[812,420],[816,470],[812,505],[795,535],[760,570],[720,600],[680,618],[640,627],[600,631],[540,631]];
-  function eyeOpen(t) { return t < 0.19 ? 0 : t < 0.33 ? 0.8 * eOut(seg(t, 0.19, 0.33)) : lerp(0.8, 0.72, eInOut(seg(t, 0.33, 0.45))); }
+  /* at 0.86 the drawn lid edge sits on the master's own upper lid line, so "fully open" = the master as painted; no settling back */
+  function eyeOpen(t) { return 0.86 * eOut(seg(t, 0.19, 0.34)); }
   var eyeOffC = null, eyeLidC = null;
   function eyeLayers(ctx, t, ox, oy, kx, ky) {
     function P(x, y) { return [ox + x * kx, oy + y * ky]; }
-    var o = eyeOpen(t);
+    var o = eyeOpen(t), lidA = 1 - seg(o, 0.78, 0.86);   /* the drawn lid hands over to the master's own lid line at the end */
     var I = P(498, 626), O = P(815, lerp(505, 418, o)), C = P(lerp(650, 560, o), lerp(690, 360, o));
     function curve(u) {
       var a = (1 - u) * (1 - u), b = 2 * u * (1 - u), c = u * u;
@@ -1263,7 +1264,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     var Ii = [498 / 2, 626 / 2], Oi = [815 / 2, lerp(505, 418, o) / 2], Ci = [lerp(650, 560, o) / 2, lerp(690, 360, o) / 2];
     lc.moveTo(Ii[0] - 40, Ii[1]); lc.lineTo(Ii[0], Ii[1]); lc.quadraticCurveTo(Ci[0], Ci[1], Oi[0], Oi[1]); lc.lineTo(Oi[0] + 40, Oi[1]); lc.lineTo(Oi[0] + 40, 512); lc.lineTo(Ii[0] - 40, 512); lc.closePath();
     lc.fillStyle = "#000"; lc.fill(); lc.globalCompositeOperation = "source-over";
-    ctx.drawImage(eyeLidC, ox, oy, 1536 * kx, 1024 * ky);
+    if (lidA > 0) { ctx.save(); ctx.globalAlpha = lidA; ctx.drawImage(eyeLidC, ox, oy, 1536 * kx, 1024 * ky); ctx.restore(); }
     /* lash line on the lid edge: thin at the inner corner, thickest toward the outer corner */
     var up = [], dn = [];
     for (var i = 0; i <= 28; i++) {
@@ -1271,7 +1272,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       up.push([q.x - q.nx * w * 0.7, q.y - q.ny * w * 0.7]); dn.push([q.x + q.nx * w * 0.3, q.y + q.ny * w * 0.3]);
     }
     ctx.save(); ctx.beginPath(); up.forEach(function (p, j) { if (j) ctx.lineTo(p[0], p[1]); else ctx.moveTo(p[0], p[1]); });
-    for (var j2 = dn.length - 1; j2 >= 0; j2--) ctx.lineTo(dn[j2][0], dn[j2][1]); ctx.closePath(); ctx.fillStyle = "#110c13"; ctx.fill();
+    for (var j2 = dn.length - 1; j2 >= 0; j2--) ctx.lineTo(dn[j2][0], dn[j2][1]); ctx.closePath(); ctx.fillStyle = "#110c13"; ctx.globalAlpha = lidA; if (lidA > 0) ctx.fill(); ctx.globalAlpha = 1;
     /* while closed: a few lashes at the outer corner and a soft crease above the lid */
     var cl = 1 - seg(o, 0.15, 0.55);
     if (cl > 0) {
