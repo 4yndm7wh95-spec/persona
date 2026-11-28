@@ -158,7 +158,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       <tr><td style="padding:4px 6px">几万真言</td><td style="padding:4px 6px">力量 ≥ 8：约 2.1 秒落第一下，约 3.5 秒结束（之前约 4.4 秒）</td><td style="padding:4px 6px">约 0.45 秒捏碎，约 1 秒落第一下（之前约 2 秒），约 1.6 秒打完</td></tr>
     </table>
     恶魔之焰：光团不再慢慢起步，一开始就在动，扫过手牌越来越快，一口气拐上去到电视里的手，只在最后落到手上时稍微收一下；牌收叠好马上捏碎。快速版扫牌同速，扫完光团直接冲出画面。<br>几万真言：快速版杖快速转一圈就停，停住马上劈。完整版捏碎提前，杖转得稍快，停住后不再空等，四下间隔 0.24 秒，结尾圆环紧跟最后一下。<br>
-    <b>总攻击第六版（草图第 1 个，按你的分镜）：</b>最后一击打死敌人 → 敌人白闪、像电视信号断了一样错位碎成雪花块，被旁边冒出来的一台小电视吸进去 → P4R 彩带从右下进场，往左、再往上卷，由近到远收窄钻进这台电视。彩带改成真正的 3D 带子按透视投影（近处宽、最左边是灰带往左下摊出画面，远处收成尖），巨字 FINALE 不框在彩带里：压在画面上半透明，压在每条色带上换撞色；「总攻击！」标签和 SERIES，停一拍 → 彩带钻进电视，镜头跟着推进去（电视里本来就在播演播室，推满屏直接接上，不切）→ 演播室三台电视：左右亮着、中间黑着，停一拍 → 镜头猛推中间那台，它随之开机，亮出悠的立绘和结算画面，装饰落位、电视框收拢，停住 → 关机进结算页。约 3.5 秒。悠的姿势改成扛刀、推眼镜（占位，等新生图），伊邪那岐出招图也还是占位。<br>
+    <b>总攻击第七版（草图第 1 个）：</b>彩带是另一个会话重新设计的平滑版（一整条进场、前端长出原版倒钩箭头、钻进屏幕中心的入口、被吸进去，镜头跟着冲进去；电视由敌人的雪花拼成；演播室缓推→猛推中间电视，四周只剩彩框，黑屏→亮点→闪亮）。这一轮又改了三处：①敌人死亡特效更丰富、停留约 1.3 秒（错位切片乱跳、红蓝错色、雪花、故障条、黑紫烟、彩色圆环，最后收成一点）；②彩带一进场镜头就开始慢慢推，收回时正式推进，先慢后快、速度连续；③中间电视黑屏多停一会（0.5 秒）。电视机、演播室、悠和伊邪那岐还是占位，等 Codex 生图。<br>
     <b>电视框状态第二版（草图第 2 个）：</b>边往外鼓、四角厚边上薄、角里有网点、红绿线不同心、压着标签和一台小电视（显示剩余次数）；出现和消失都是几层歪框转着收拢 / 散开。<br>
     <b>眼神特写换了做法：</b>不再让 AI 画中间帧（Codex 两张就跑位了）。只用一张睁眼图（Codex 这次的第一张），闭眼、睁开、镜片反光都叠在上面画：眼皮是一条会动的线，反光透过镜片遮罩叠上去。眼睛不可能变大小，也是连续动画，没有逐帧感；瞳孔一直清楚，不会发白。看草图第 7 个「召唤（眼神特写 → 翻页 → 手里捏碎）」，0.17 秒是闭眼、0.24 秒是半睁。
   </div>
@@ -1625,10 +1625,20 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     /* ribbon: in from the right RE0..TA, creeps into the TV TA..P1A (it switches on at TVON), pulled in with the camera P1A..P1B;
        studio, a beat, push to the middle TV P2A..P2B (it stays dark, its frame in view), a beat, a glint FL0..FL1, the flash at FL1;
        the TV switches off OFF0..OFF1 */
-    var DS = 1.35, RE0 = 0.80, TA = 1.30, P1A = 1.44, P1B = 2.06, TVON = TA + 0.03, P2A = P1B + 0.34, P2B = P2A + 0.26, FL0 = P2B + 0.22, FL1 = FL0 + 0.12, OFF0 = FL1 + 1.35, OFF1 = OFF0 + 0.42;
+    var DS = 1.35, RE0 = 0.80, TA = 1.30, P1A = 1.44, P1B = 2.06, TVON = TA + 0.03, P2A = P1B + 0.34, P2B = P2A + 0.26, FL0 = P2B + 0.5, FL1 = FL0 + 0.14, OFF0 = FL1 + 1.35, OFF1 = OFF0 + 0.42;
     /* the camera: into the small TV (P1A..P1B) it arrives still moving, creeps on through the studio at that speed (+10 %), then rushes
        the middle TV (P2A..P2B) - one continuous move, never a dead stop */
     var DRIFT = Math.log(1.10) / (P2A - P1B), CV = DRIFT * (P1B - P1A) / Math.log(OV * W / SW);
+    /* (user 2026-11-28) the camera already creeps toward the TV while the ribbon comes in (RE0..P1A: from rest, +8 % zoom, gathering a
+       little speed); when the ribbon is pulled in the real push takes over at that same speed - slow, then fast, then settling into
+       the studio's creep. Progress p is in log-zoom (Z = ZF1^p); the TV's screen position moves toward the middle linearly in p. */
+    var ZF1 = OV * W / SW, CRP = Math.log(1.08) / Math.log(ZF1), CRV = 1.7 * CRP / (P1A - RE0);
+    function battleCamP(t) {
+      if (t <= RE0) return 0;
+      if (t < P1A) return CRP * herm(seg(t, RE0, P1A), 0, 1.7);
+      var u = seg(t, P1A, P1B), a = CRV * (P1B - P1A) / (1 - CRP), cE = CV / (1 - CRP);
+      return CRP + (1 - CRP) * (camEase(u, cE) + a * u * (1 - u) * (1 - u));
+    }
     if (!aoaRib7) aoaRib7 = RIB7.build();
     TX = W * aoaRib7.PC[0] / 1280; TY = H * aoaRib7.PC[1] / 720;   /* the TV screen's middle is on the ribbon's path */
     function eQuint(k) { return k < 0.5 ? 16 * Math.pow(k, 5) : 1 - Math.pow(-2 * k + 2, 5) / 2; }
@@ -1704,7 +1714,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     function studioCam(t) {
       if (t < P1B) return { z: 1, x: W / 2, y: H / 2 };
       if (t < P2A) return { z: OV * Math.exp(DRIFT * (t - P1B)), x: W / 2, y: H / 2 };   /* still creeping forward */
-      var zf = ZSF * (1 + 0.02 * eInOut(seg(t, FL1, OFF0))), p2 = pushP(t), z = ZS0 * Math.exp(p2 * Math.log(zf / ZS0)), m = ZS0 * (1 - p2) / z;
+      var zf = ZSF * (1 + 0.006 * eInOut(seg(t, P2B, FL1)) + 0.02 * eInOut(seg(t, FL1, OFF0))), p2 = pushP(t), z = ZS0 * Math.exp(p2 * Math.log(zf / ZS0)), m = ZS0 * (1 - p2) / z;
       return { z: z, x: T2X - (T2X - W / 2) * m, y: T2Y - (T2Y - H / 2) * m };
     }
     function sideTV(c, i, tv, t) {
@@ -1811,28 +1821,49 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         c.fillStyle = B.col; c.fillRect(px - w / 2, py - h / 2, w, h);
       });
     }
+    /* (user 2026-11-28) the enemy's death is richer and lingers: its signal breaks (two white flashes, then slices that keep jumping,
+       a wobbling colour split, static inside its outline, glitch bars), black-purple wisps rise off it (P4's shadows dissolve into
+       smoke) and P4R pop rings pulse out of it; it is hollowed out as its blocks fly off to build the TV, then fades as a ghost and
+       closes to a point with a last ring - about 1.3 s in all instead of vanishing when the TV forms */
     function deathFx(c, t) {   /* t here is the hit-stopped time slowed by DS */
-      if (t < 0.36) {
-        var wf = Math.sin(Math.PI * seg(t, 0.07, 0.2)), gl = seg(t, 0.16, 0.34), fade = 1 - seg(t, 0.28, 0.36);
-        if (gl <= 0) {
-          enemy(c, ex + (t > 0.05 ? Math.sin(t * 90) * H * 0.006 : 0), ey, H * 0.11, 0);
-          if (wf > 0) { c.save(); c.globalAlpha = wf; c.fillStyle = "#ffffff"; c.beginPath(); c.ellipse(ex, ey, H * 0.118, H * 0.094, 0, 0, Math.PI * 2); c.fill(); c.restore(); }
-        } else {
-          var rs = rng(91);
-          c.save(); c.globalCompositeOperation = "lighter"; c.globalAlpha = 0.55 * fade;
-          c.fillStyle = "#ff2050"; c.beginPath(); c.ellipse(ex - H * 0.05 * gl, ey, H * 0.11, H * 0.088, 0, 0, Math.PI * 2); c.fill();
-          c.fillStyle = "#20e0ff"; c.beginPath(); c.ellipse(ex + H * 0.05 * gl, ey, H * 0.11, H * 0.088, 0, 0, Math.PI * 2); c.fill();
-          c.restore();
-          c.save(); c.globalAlpha = fade;
-          for (var k = 0; k < 8; k++) {
-            var y0 = ey - H * 0.1 + k * H * 0.025, off = (rs() - 0.5) * H * 0.24 * gl, hgt = H * 0.025, lit = rs() < 0.35;
-            c.save(); c.beginPath(); c.rect(ex - H * 0.45, y0, H * 0.9, hgt + 0.6); c.clip(); c.translate(off, 0); enemy(c, ex, ey, H * 0.11, 0);
-            if (lit) { c.fillStyle = "rgba(255,255,255,0.7)"; c.fillRect(ex - H * 0.13, y0, H * 0.26, hgt); }
-            c.restore();
-          }
-          c.restore();
+      var wf = Math.max(Math.sin(Math.PI * seg(t, 0.07, 0.16)), 0.8 * Math.sin(Math.PI * seg(t, 0.18, 0.26)));
+      var live = 1 - seg(t, 0.62, 0.92), gl = seg(t, 0.16, 0.3), er = seg(t, 0.24, 0.62);
+      if (t > 0.14 && live > 0) {
+        var rw = rng(71);
+        for (var w = 0; w < 14; w++) {
+          var t0 = 0.14 + rw() * 0.6, life = 0.32 + rw() * 0.2, px = (rw() - 0.5) * H * 0.2, sz = H * (0.035 + rw() * 0.04), sway = rw() * 6.28;
+          var kw = seg(t, t0, t0 + life); if (kw <= 0 || kw >= 1) continue;
+          var wx = ex + px + Math.sin(sway + kw * 4) * H * 0.015, wy = ey - H * 0.02 - kw * H * 0.2, rr = sz * (0.6 + kw * 0.9), al = Math.sin(Math.PI * kw) * 0.55 * live;
+          var gw = c.createRadialGradient(wx, wy, 0, wx, wy, rr); gw.addColorStop(0, "rgba(40,10,48," + al + ")"); gw.addColorStop(1, "rgba(40,10,48,0)");
+          c.fillStyle = gw; c.fillRect(wx - rr, wy - rr, rr * 2, rr * 2);
         }
       }
+      if (gl <= 0) {
+        enemy(c, ex + (t > 0.05 ? Math.sin(t * 90) * H * 0.006 : 0), ey, H * 0.11, 0);
+      } else if (live > 0) {
+        var jit = 0.45 + 0.55 * Math.abs(Math.sin(t * 27)), body = live * (1 - 0.55 * er), dx = H * 0.045 * gl * jit;
+        c.save(); c.globalCompositeOperation = "lighter"; c.globalAlpha = 0.5 * body;
+        c.fillStyle = "#ff2050"; c.beginPath(); c.ellipse(ex - dx, ey, H * 0.11, H * 0.088, 0, 0, Math.PI * 2); c.fill();
+        c.fillStyle = "#20e0ff"; c.beginPath(); c.ellipse(ex + dx, ey + H * 0.004, H * 0.11, H * 0.088, 0, 0, Math.PI * 2); c.fill();
+        c.restore();
+        var rs = rng(91 + Math.floor(t * 30));
+        c.save(); c.globalAlpha = body;
+        for (var k = 0; k < 9; k++) {
+          var y0 = ey - H * 0.105 + k * H * 0.0235, off = (rs() - 0.5) * H * 0.2 * gl * jit, hgt = H * 0.0235, lit = rs() < 0.25, holed = rs() < er * 0.8;
+          if (holed) continue;
+          c.save(); c.beginPath(); c.rect(ex - H * 0.45, y0, H * 0.9, hgt + 0.6); c.clip(); c.translate(off, 0); enemy(c, ex, ey, H * 0.11, 0);
+          if (lit) { c.fillStyle = "rgba(255,255,255,0.75)"; c.fillRect(ex - H * 0.13, y0, H * 0.26, hgt); }
+          c.restore();
+        }
+        c.restore();
+        c.save(); c.beginPath(); c.ellipse(ex, ey, H * 0.115, H * 0.092, 0, 0, Math.PI * 2); c.clip(); c.globalAlpha = 0.35 * body * gl;
+        staticNoise(c, ex - H * 0.12, ey - H * 0.1, H * 0.24, H * 0.2, Math.floor(t * 60) + 5, 60); c.restore();
+        var gb = rng(Math.floor(t * 14) + 3);
+        for (var b2 = 0; b2 < 3; b2++) { var by2 = ey + (gb() - 0.5) * H * 0.22, bw2 = H * (0.18 + gb() * 0.25), bo = (gb() - 0.5) * H * 0.12, on = gb() < 0.55; if (on) { c.save(); c.globalAlpha = 0.7 * body; c.fillStyle = ["#ff3fae", "#33c3ff", YH][b2]; c.fillRect(ex - bw2 / 2 + bo, by2, bw2, H * 0.006); c.restore(); } }
+      }
+      [0.18, 0.3, 0.42, 0.54].forEach(function (r0, i) { var rk = seg(t, r0, r0 + 0.32); if (rk > 0 && rk < 1) ring(c, ex, ey, lerp(H * 0.08, H * 0.3, eOut(rk)), lerp(4, 1, rk), ["#ff3fae", YH, "#ffffff", LIME][i], (1 - rk) * 0.9); });
+      var pf = seg(t, 0.86, 1.02); if (pf > 0 && pf < 1) { ring(c, ex, ey, lerp(H * 0.12, H * 0.02, eIn(pf)), 2, "#ffffff", 1 - pf); star4(c, ex, ey, H * 0.05 * Math.sin(Math.PI * pf), 0.12, 1, "#ffffff"); }
+      if (wf > 0) { c.save(); c.globalAlpha = wf; c.fillStyle = "#ffffff"; c.beginPath(); c.ellipse(ex, ey, H * 0.118, H * 0.094, 0, 0, Math.PI * 2); c.fill(); c.restore(); }
       blockFlight(c, t);
     }
     function smallTV(c, t, th) {
@@ -1986,13 +2017,13 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       var th = hs(t, 0.05, 0.08);
       battleFloor(c, W, H, false);
       figure(c, W * 0.2, H * 0.92, H * 0.42, Y);
-      deathFx(c, th / DS);
       var dm = seg(t, 0.35, 0.7); if (dm > 0) { c.save(); c.globalAlpha = 0.5 * dm; c.fillStyle = "#06060e"; c.fillRect(-W, -H, W * 3, H * 3); c.restore(); }
+      deathFx(c, th / DS);
       var hk = seg(th, 0.02, 0.55); if (hk > 0 && hk < 1) p4rRing(c, ex, ey, H, hk, 5, 1.1, true);
       if (th > 0.04 && th < 0.12) glitchStrips(c, ex, ey, H * 0.5, H * 0.42, (th - 0.04) / 0.08, 33);
       if (th > 0.05) damageBadge(c, ex - W * 0.07, ey - H * 0.25, 42, seg(th, 0.05, 0.2), 1 - seg(th, 0.5, 0.7));
       var rs = rng(31);
-      for (var s = 0; s < 8; s++) { var sx = ex + (rs() - 0.5) * W * 0.3, sy = ey + (rs() - 0.6) * H * 0.5, sk = seg(th, 0.18 + s * 0.02, 0.3 + s * 0.02), so = 1 - seg(th, 0.4 + s * 0.02, 0.5 + s * 0.02); if (sk > 0 && so > 0) star4(c, sx, sy, H * (s % 3 ? 0.02 : 0.034) * Math.sin(Math.min(1, sk) * Math.PI / 2) * so, 0.15, 1, s % 2 ? "#ffffff" : YH); }
+      for (var s = 0; s < 8; s++) { var sx = ex + (rs() - 0.5) * W * 0.3, sy = ey + (rs() - 0.6) * H * 0.5, sk = seg(th, 0.18 + s * 0.04, 0.3 + s * 0.04), so = 1 - seg(th, 0.95 + s * 0.03, 1.1 + s * 0.03); if (sk > 0 && so > 0) star4(c, sx, sy, H * (s % 3 ? 0.02 : 0.034) * Math.sin(Math.min(1, sk) * Math.PI / 2) * so * (0.7 + 0.3 * Math.sin(t * 12 + s * 1.9)), 0.15, 1, s % 2 ? "#ffffff" : YH); }
       smallTV(c, t, th / DS);
       var rk = Math.min(seg(t, RE0, RE0 + 0.12), 1 - seg(t, P1A + 0.15, P1A + 0.3));
       if (rk > 0) {
@@ -2007,9 +2038,9 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     }
     /* timeline */
     if (tr < P1B) {
-      var p1 = camEase(seg(tr, P1A, P1B), CV), Zf = OV * W / SW, Z = Math.exp(p1 * Math.log(Zf)), m1 = (1 - p1) / Z;
+      var p1 = battleCamP(tr), Z = Math.exp(p1 * Math.log(ZF1)), m1 = (1 - p1) / Z, pm = clamp01((p1 - CRP) / (1 - CRP));
       ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(Z, Z); ctx.translate(-(TX - (TX - W / 2) * m1), -(TY - (TY - H / 2) * m1)); battle(ctx, tr); ctx.restore();
-      speedLines(ctx, W / 2 + (TX - W / 2) * (1 - p1), H / 2 + (TY - H / 2) * (1 - p1), Math.sin(Math.PI * p1) * 0.85, 61, 28, tr);
+      speedLines(ctx, W / 2 + (TX - W / 2) * (1 - p1), H / 2 + (TY - H / 2) * (1 - p1), Math.sin(Math.PI * pm) * 0.85, 61, 28, tr);
       var fl0 = 1 - seg(tr, 0.05, 0.12); if (tr > 0.05 && fl0 > 0) { ctx.save(); ctx.globalAlpha = fl0 * 0.35; ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H); ctx.restore(); }
       return;
     }
@@ -2032,8 +2063,8 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   }
 
   var DEMOS = [
-    { id: "aoa", name: "总攻击 第七版（电视由敌人信号拼成；彩带一整条进场、前端长出箭头、扎进屏幕中心的入口；被吸进去、镜头跟着冲进去；演播室缓推→猛推中间电视（只见彩框）、黑屏→亮点→闪亮，约 4.9 秒）", dur: 4.86, start: 0.95,
-      desc: "①最后一击打死敌人，碎成雪花被小电视吸进去（同第六版）→ ②彩带：箭头就是彩带的头，从右下领着整条彩带进来（起步稍慢、中段快，近处大远处小），后面每条色带各自是斜尖、一条比一条往后错开，松散的，不收成一束；巨字 FINALE 照原版 CHANCE 的位置，头部经过哪个字母那个字母就砸下来；快到电视时放慢，慢慢钻进电视（小停顿但不停死），电视随之开播 → ③马上从尾巴开始被吸进电视，尾巴也是一排斜尖，星星、细线跟着往里流；镜头和尾巴同一条速度曲线推进，尾巴进电视时屏幕正好推满 → 演播室三台电视，停一下 → 有节奏地猛推中间那台：推到能看见它的黄框、红框、绿框为止，屏幕是黑的 → 停一下，屏幕中间出现一个亮点拉成一条亮线 → 整个画面一闪，结算画面在电视框里亮出来（之后慢慢推近）→ 关机进结算页。约 4.5 秒。悠和伊邪那岐的图还是占位。",
+    { id: "aoa", name: "总攻击 第七版（敌人特效更丰富、停留更久；彩带一进场镜头就开始慢推，收回时正式推进；中间电视黑屏多停一会，约 5.2 秒）", dur: 5.16, start: 0.95,
+      desc: "①最后一击打死敌人：白闪两下，信号断掉——切片一直在跳、红蓝错色晃动、轮廓里有雪花、彩色故障条，黑紫色的烟往上飘（P4 阴影消散），彩色圆环一圈圈往外扩；它的雪花块一块块飞去拼成小电视，身体随之被掏空，残影慢慢淡掉，最后收成一点（共约 1.3 秒，不再一出电视就没了）→ ②彩带从右下领着箭头进来，**镜头从这时起就从静止开始慢慢往电视推**（约推近 8%，越推越快一点）；巨字 FINALE 照原版 CHANCE；快到电视时放慢、慢慢钻进屏幕中心的入口 → ③彩带从尾巴开始被吸进去，**正式推进接着慢推的速度起步，先慢后快**，冲进电视、减速接上演播室的缓推（速度全程连续）→ 演播室缓推 → 猛推中间电视，四周只剩彩框 → **黑屏多停一会（0.5 秒）**→ 屏幕中间亮点拉成亮线 → 整个画面一闪，结算画面亮出 → 关机进结算页。约 5.2 秒。悠、伊邪那岐、电视机都还是占位，等新生图。",
       draw: function (ctx, W, H, tr) { aoaScene(ctx, W, H, tr); } },
     { id: "tvstate", name: "电视框状态 第二版：连环拳（这回合下 2 张攻击额外打出）", dur: 2.7, start: 1.3,
       desc: "电视框照 P4R 改得不那么规整：黄色是屏幕外面那一圈，四条边往外微微鼓（像老电视），边上薄、四个角厚，角里有网点；里面的红线、绿线不完全同心；左上压着一个状态名标签，右上角一台小电视，屏幕上显示还剩几次。出现：几层歪着的黄、红、绿框从大到小转着收拢到位（P4R 进战斗那种）。每次额外打出：信号错位一下，小电视里的数字跳一下。用完（或回合结束）：几层框反着转开、散掉。",

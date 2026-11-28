@@ -18,6 +18,7 @@ const { chromium } = require('playwright');
   const tabs = await p.$$('#demoTabs .chip');
   await tabs[Number(tab)].click();
   await p.waitForTimeout(400);
+  await p.$eval('#scrub', el => { el.step = 'any'; });   /* the slider snaps to 0.005 steps otherwise */
   for (const t of times.split(',').map(Number)) {
     await p.$eval('#scrub', (el, v) => { el.value = String(v); el.dispatchEvent(new Event('input')); }, t / Number(dur));
     await p.waitForTimeout(90);

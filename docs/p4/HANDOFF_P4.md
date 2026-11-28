@@ -9,8 +9,9 @@
 
 ## 0. 接手第一步（新会话照做）
 1. 读完这份文档，再看 `docs/p4/FX_PLAN.md` 最上面几节（总攻击第六版、第五版……）和「当前进度」里列的文件。
-2. 合并最新的工作分支（**不要 rebase，不要 force push**）：目前最新的是 `claude/beautiful-planck-daid20`（2026-11-28 第二个会话），
-   更早的是 `claude/ecstatic-hawking-s9j6es`。`git fetch origin <分支> && git merge --no-edit FETCH_HEAD`。
+2. 合并最新的工作分支（**不要 rebase，不要 force push**）：两个会话各推自己的分支——第一个会话 `claude/ecstatic-hawking-s9j6es`、
+   第二个会话 `claude/beautiful-planck-daid20`。**开工先把对方的分支合进来**：`git fetch origin <对方分支> && git merge --no-edit FETCH_HEAD`
+   （2026-11-28 第一个会话回来时，把第二个会话的分支快进合进了自己的分支，之后在它的基础上继续改）。
    仓库很大（几 GB），**只 fetch 需要的分支**，不要 `git fetch origin` 全量拉。
 3. 工作台是一个 claude.ai Artifact：https://claude.ai/artifact/NvbgtKwhCZKSMEkstmTBco ，源文件 `docs/p4/workbench/p4r_workbench.html`。
    新会话第一次发布前要先用 Artifact 工具 `action: "read"` 读一次这个 URL，然后带 `url` 发布（同一个链接）。
@@ -54,6 +55,9 @@
 - 页面结构：顶部 `.notice`（这一轮改了什么，给用户看）→ 草图标签 `#demoTabs`（`DEMOS` 数组，顺序即标签顺序，`hidden` 的不显示）→ 画布 `.stage` + 进度条 `#scrub` → 生图检查区（`GEN` 列表）。
   Artifact 已存的附件：`gen/`（眼睛、伊邪那岐、大神的图）、`ref/`、`frames/`、`shots/`；重新发布不用再传，留着就在。
 - 每个草图：`{ id, name, dur, start, desc, draw(ctx, W, H, tr) }`，`tr` 是秒。常用工具函数：`seg(t,a,b)`、`lerp`、`eOut/eIn/eInOut`（三次）、`eBack`、`hs(t,b,d)`（顿帧）、`rng(seed)`（确定性随机，**循环里不要在 continue 之前少调用**，否则闪烁）、`ring`、`star4/star5`、`flower`、`roundRect`（会 beginPath）、`crtShape(ctx,cx,cy,w,h,r,bulge,rot,newPath)`、`tvFrameP4R(ctx,W,H,k,tr,{tag,count,pop})`、`tvIcon`、`p4rRing`、`glitchStrips`、`damageBadge`、`battleFloor`、`figure`、`enemy`、`blueBeam`、`eyeCutIn`、`stokeScene` 等。颜色常量 `Y`、`YH`、`LIME`、`ORANGE`。
+- 出视频给用户看（用户主要看 mp4）：`node docs/p4/workbench/tools/render_video.js <目录> 0 <时长> 60 <帧目录>`，再
+  `ffmpeg -y -framerate 60 -i <帧目录>/f%04d.png -vf "scale=1280:720:flags=lanczos,format=yuv420p" -c:v libx264 -crf 18 docs/p4/preview/<名字>.mp4`（半速用 `-framerate 30`），
+  用 SendUserFile 发给用户。注意进度条 `#scrub` 默认按 0.005 吸附，脚本里已经改成 `step = 'any'`，否则视频会重复帧。
 - 本地看效果：把 html 复制成某个目录下的 `index.html`，跑
   `node docs/p4/workbench/tools/render.js <目录> <标签序号> <时间列表> <前缀> <时长> [缩放]`，再用
   `python3 -I docs/p4/workbench/tools/sheet.py <输出前缀> <列数> <缩略宽> <图...>` 拼成联系表看。缺 `gen/` 图只是不画，需要的话用 Artifact `read` + `path: "gen/xxx"` 取下来。
@@ -136,6 +140,23 @@
   - 推镜三段速度连续：吸进小电视 `camEase(u, CV)` 末速 = 演播室缓推速度 `DRIFT`（0.34 秒推近 10%）= 猛推起速（`pushP`：`herm(u, DRIFT·T/ln(ZSF/ZS0), 0)`，0.26 秒），没有停死的时候；
   - 时间轴：0.80→1.30 进场 → 1.30→1.44 钻进入口 → 1.44→2.06 吸进去 + 推镜 → 2.06→2.40 演播室缓推 → 2.40→2.66 猛推中间电视 → 2.88→3.00 中间亮点 → 3.00 闪白 → 4.35→4.77 关机，共 4.86 秒。
 
+### 6.3e 第一个会话接回来（2026-11-28，视频 `allout_v7f*.mp4` 已发，等反馈）
+- 用户：第二个会话这版「已经差不多了」，还要改：① 推到最后一台电视时黑屏**再多停一会**；② 右下角彩带**一开始出来时镜头就要开始慢慢推进**，
+  彩带开始收回时再**正式拉近**，中间做曲线变速、由慢到快，更顺滑；③ 敌人身上的特效**再丰富一点、停留久一点**（之前电视一拼好它就没了，用户说保留一会儿没关系）；
+  ④ 电视机等素材照 P4G / P4R 的电视让 Codex 生成，其他想要的素材也生；⑤ 立绘还没生成，先给生图提示词，生完再合进来（纯代码画的电视不够好看、不够还原）。
+- 做法（`aoaScene`）：
+  - 黑屏：`FL0 = P2B + 0.5`（之前 0.22），亮点 `FL1 = FL0 + 0.14`；黑屏期间镜头再极慢地往前蹭 0.6%（不停死）。总长 5.16 秒。
+  - 战场镜头：`battleCamP(t)`——RE0（彩带进场）到 P1A 从静止开始慢推到 1.08 倍（`herm(u, 0, 1.7)`，越推越快一点）；P1A 起正式推进，
+    起速 = 慢推的末速（`camEase(u, cE) + a·u(1−u)²`），先慢后快、最后减速接上演播室缓推。已用数值检查：速度在 P1A 处连续（0.20→0.22 log-zoom/s）、全程单调。
+  - 敌人死亡（`deathFx`，用的时间是顿帧后再慢 DS 倍）：白闪两下 → 信号断掉：切片一直在跳（每 1/30 秒重新随机）、红蓝错色晃动、轮廓里有雪花、彩色故障条、
+    黑紫色烟往上飘（P4 阴影消散）、彩色圆环一圈圈往外扩；随雪花块飞去拼电视逐渐被掏空，0.62→0.92 残影淡掉，最后收成一点（白圈 + 星）。共约 1.3 秒。
+    场景压暗挪到敌人下面（不再压暗敌人的特效）；敌人周围的星星一直闪到它消失。
+  - 新工具 `docs/p4/workbench/tools/render_video.js`（见第 4 节）。
+- 生图任务 `docs/codex/codex_p4_art_round2_finale.md` 扩成 6 张（**等用户转发给 Codex**）：A 悠收尾立绘（扛刀推眼镜）、B 伊邪那岐出招、
+  C1 主电视（P4G 片头那台标志性复古电视：近黑机身 + 黄描边、右侧喇叭栅格 + 黄旋钮、V 天线、短腿）、C2 左边红色电视（照 P4R 限定版红电视）、
+  C3 右边象牙白电视、D 演播室背景（暗场、聚光灯、黑白格地面、中间留空）。电视屏幕挖成真透明、约 16:9，方便程序往里放画面。每张都附了可直接用的英文提示词。
+  图到了以后：量出屏幕透明区域的位置，替换 `smallTV` / `sideTV` / `middleTV` 里代码画的机身（屏幕外的 P4R 黄 / 红 / 绿框继续用代码画在上面），演播室背景换成 D。
+
 ### 6.4 以后要做（用户之前提过，这一轮先不动）
 - （高潮「暗 → 中间亮 → 闪亮」第二轮已做了第一版，见 6.3，等用户看。）
 - 结算画面：立绘和背景要有动态设计；加字幕、更多 P4R UI 平面设计细节。
@@ -143,6 +164,8 @@
   Codex 生图任务 `codex_p4_art_round2_finale.md`（悠：扛刀推眼镜；伊邪那岐出招）等用户转发；以后：伊邪那岐的招式、搭 mod 骨架、进游戏实现。
 
 ## 7. 更新日志（新的在上面）
+- 2026-11-28（第一个会话接回）：合并第二个会话的分支；黑屏多停 0.28 秒、彩带进场时镜头就开始慢推（速度连续接上正式推进）、敌人死亡特效更丰富并停留约 1.3 秒；
+  生图任务扩成 6 张（立绘、伊邪那岐、3 台电视、演播室）；加出视频脚本（`allout_v7f*.mp4`）。
 - 2026-11-28（第二个会话）：演播室不再停死（缓推 → 猛推，速度连续）；前半段放慢 1.35 倍、彩带等电视拼好再进（`allout_v7e*.mp4`）。
 - 2026-11-28（第二个会话）：屏幕里的透视映射把箭头压成细片、彩带被压没（用户批评没自己检查）→ 改成屏幕中心的发光入口，彩带原样飞进去、箭杆宽度不变、镜头先缓后冲（`allout_v7d*.mp4`）。
 - 2026-11-28（第二个会话）：第三轮——连续弧形头尾、前端长出原版箭头、钻向屏幕中心、电视由敌人信号拼成、最后只见彩框；修了箭头大小 / 接缝 / 卷曲顶部宽度（视频 `allout_v7c*.mp4`）。
