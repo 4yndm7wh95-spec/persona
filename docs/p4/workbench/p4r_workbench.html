@@ -1616,7 +1616,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   /* cubic Hermite position 0..1 with start speed a and end speed c (relative to the average): one smooth speed hump in between */
   function herm(u, a, c) { u = Math.max(0, Math.min(1, u)); var u2 = u * u, u3 = u2 * u; return (u3 - 2 * u2 + u) * a + (-2 * u3 + 3 * u2) + (u3 - u2) * c; }
   /* the camera into the TV: starts gently (the ribbon being pulled in stays in view), dives at the end, lands softly */
-  function camEase(u) { u = Math.max(0, Math.min(1, u)); return 1 - Math.pow(1 - u * u, 1.5); }
+  function camEase(u, c) { u = Math.max(0, Math.min(1, u)); c = c || 0; return (1 - c / 3) * (1 - Math.pow(1 - u * u, 1.5)) + c / 3 * u * u * u; }   /* end speed c */
   function sm5(k) { k = Math.max(0, Math.min(1, k)); return k * k * k * (k * (6 * k - 15) + 10); }
 
   function aoaScene(ctx, W, H, tr) {
@@ -1625,7 +1625,10 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     /* ribbon: in from the right RE0..TA, creeps into the TV TA..P1A (it switches on at TVON), pulled in with the camera P1A..P1B;
        studio, a beat, push to the middle TV P2A..P2B (it stays dark, its frame in view), a beat, a glint FL0..FL1, the flash at FL1;
        the TV switches off OFF0..OFF1 */
-    var RE0 = 0.40, TA = 0.88, P1A = 1.02, P1B = 1.64, TVON = TA + 0.03, P2A = P1B + 0.28, P2B = P2A + 0.32, FL0 = P2B + 0.22, FL1 = FL0 + 0.12, OFF0 = FL1 + 1.35, OFF1 = OFF0 + 0.42;
+    var DS = 1.35, RE0 = 0.80, TA = 1.30, P1A = 1.44, P1B = 2.06, TVON = TA + 0.03, P2A = P1B + 0.34, P2B = P2A + 0.26, FL0 = P2B + 0.22, FL1 = FL0 + 0.12, OFF0 = FL1 + 1.35, OFF1 = OFF0 + 0.42;
+    /* the camera: into the small TV (P1A..P1B) it arrives still moving, creeps on through the studio at that speed (+10 %), then rushes
+       the middle TV (P2A..P2B) - one continuous move, never a dead stop */
+    var DRIFT = Math.log(1.10) / (P2A - P1B), CV = DRIFT * (P1B - P1A) / Math.log(OV * W / SW);
     if (!aoaRib7) aoaRib7 = RIB7.build();
     TX = W * aoaRib7.PC[0] / 1280; TY = H * aoaRib7.PC[1] / 720;   /* the TV screen's middle is on the ribbon's path */
     function eQuint(k) { return k < 0.5 ? 16 * Math.pow(k, 5) : 1 - Math.pow(-2 * k + 2, 5) / 2; }
@@ -1696,11 +1699,12 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     }
     /* (3) the studio: three TVs on a dark stage; the side ones are on, the middle one is off until the camera pushes into it */
     var TVL = { x: W * 0.17, y: H * 0.4, w: W * 0.27, h: H * 0.33, r: -0.06 }, TVR = { x: W * 0.83, y: H * 0.4, w: W * 0.27, h: H * 0.33, r: 0.06 };
+    var ZS0 = OV * Math.exp(DRIFT * (P2A - P1B)), ZSF = H / (SH2 * 1.2);   /* where the rush starts / the framed middle TV */
+    function pushP(t) { return herm(seg(t, P2A, P2B), DRIFT * (P2B - P2A) / Math.log(ZSF / ZS0), 0); }
     function studioCam(t) {
       if (t < P1B) return { z: 1, x: W / 2, y: H / 2 };
-      var z0 = OV * 1.03, p2 = eQuint(seg(t, P2A, P2B));
-      if (p2 <= 0) return { z: OV * lerp(1, 1.03, eInOut(seg(t, P1B, P2A))), x: W / 2, y: H / 2 };
-      var zf = H / (SH2 * 1.2) * (1 + 0.02 * eInOut(seg(t, FL1, OFF0))), z = z0 * Math.exp(p2 * Math.log(zf / z0)), m = z0 * (1 - p2) / z;
+      if (t < P2A) return { z: OV * Math.exp(DRIFT * (t - P1B)), x: W / 2, y: H / 2 };   /* still creeping forward */
+      var zf = ZSF * (1 + 0.02 * eInOut(seg(t, FL1, OFF0))), p2 = pushP(t), z = ZS0 * Math.exp(p2 * Math.log(zf / ZS0)), m = ZS0 * (1 - p2) / z;
       return { z: z, x: T2X - (T2X - W / 2) * m, y: T2Y - (T2Y - H / 2) * m };
     }
     function sideTV(c, i, tv, t) {
@@ -1738,7 +1742,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       c.strokeStyle = "#3a3a46"; c.lineWidth = 4; c.lineCap = "round"; c.beginPath(); c.moveTo(M.x - M.w * 0.06, M.y - M.h / 2); c.lineTo(M.x - M.w * 0.2, M.y - M.h * 0.86); c.moveTo(M.x + M.w * 0.06, M.y - M.h / 2); c.lineTo(M.x + M.w * 0.22, M.y - M.h * 0.84); c.stroke();
       roundRect(c, M.x - M.w / 2, M.y - M.h / 2, M.w, M.h, M.h * 0.12); c.fillStyle = "#1c1c24"; c.fill(); c.lineWidth = 3; c.strokeStyle = "#3a3a46"; c.stroke();
       c.fillStyle = "#2c2c36"; c.fillRect(M.x - M.w * 0.32, M.y + M.h / 2 - 2, M.w * 0.06, M.h * 0.08); c.fillRect(M.x + M.w * 0.26, M.y + M.h / 2 - 2, M.w * 0.06, M.h * 0.08);
-      var lv = 1 - seg(t, P2A + 0.12, P2B), led = (kon > 0 ? 1 : 0.55 + 0.45 * Math.sin(t * 9)) * lv;
+      var lv = 1 - seg(t, P2A + 0.08, P2B), led = (kon > 0 ? 1 : 0.55 + 0.45 * Math.sin(t * 9)) * lv;
       c.fillStyle = "#ff3b5c"; c.globalAlpha = led; c.beginPath(); c.arc(M.x + M.w * 0.44, M.y - M.h * 0.1, M.h * 0.032, 0, Math.PI * 2); c.fill(); c.globalAlpha = lv;
       c.fillStyle = LIME; c.beginPath(); c.arc(M.x + M.w * 0.44, M.y + M.h * 0.06, M.h * 0.032, 0, Math.PI * 2); c.fill(); c.globalAlpha = 1;
       c.save(); crtShape(c, T2X, T2Y, SW2, SH2, r0, bu, 0); c.clip();
@@ -1770,12 +1774,12 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       c.restore();
       c.save(); c.globalAlpha = 0.12 + 0.2 * kon; c.translate(M.x, H * 0.7 + (H * 0.7 - M.y) * 0.25); c.scale(1, -0.25); roundRect(c, -M.w / 2, -M.h / 2, M.w, M.h, M.h * 0.12); c.fillStyle = kon > 0 ? "#ffe680" : "#30303a"; c.fill(); c.restore();
       /* framed on it: round the edges there is nothing but its coloured frame lines (no case, no lights, no other set) */
-      var fr = seg(t, P2A + 0.16, P2B);
+      var fr = seg(t, P2A + 0.1, P2B);
       if (fr > 0) { c.save(); c.globalAlpha = fr; c.beginPath(); c.rect(T2X - W * 2, T2Y - H * 2, W * 4, H * 4); crtShape(c, T2X, T2Y, SW2 + SH2 * 0.15 + 4, SH2 + SH2 * 0.15 + 4, SH2 * 0.16, bu, -0.006, false); c.fillStyle = "#16161c"; c.fill("evenodd"); c.restore(); }
       c.restore();
     }
     function studio(c, t) {
-      var cm = studioCam(t), p2 = eQuint(seg(t, P2A, P2B));
+      var cm = studioCam(t), p2 = pushP(t);
       c.save(); c.translate(W / 2, H / 2); c.scale(cm.z, cm.z); c.translate(-cm.x, -cm.y);
       c.fillStyle = "#07070c"; c.fillRect(0, 0, W, H);
       var fl = c.createLinearGradient(0, H * 0.68, 0, H); fl.addColorStop(0, "#15151d"); fl.addColorStop(1, "#050508"); c.fillStyle = fl; c.fillRect(0, H * 0.68, W, H * 0.32);
@@ -1807,7 +1811,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         c.fillStyle = B.col; c.fillRect(px - w / 2, py - h / 2, w, h);
       });
     }
-    function deathFx(c, t) {
+    function deathFx(c, t) {   /* t here is the hit-stopped time slowed by DS */
       if (t < 0.36) {
         var wf = Math.sin(Math.PI * seg(t, 0.07, 0.2)), gl = seg(t, 0.16, 0.34), fade = 1 - seg(t, 0.28, 0.36);
         if (gl <= 0) {
@@ -1856,7 +1860,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         var sw2 = seg(th, 0.48, 0.66); if (sw2 > 0) { c.save(); c.globalCompositeOperation = "lighter"; c.globalAlpha = Math.sin(Math.PI * sw2) * 0.8; var sg2 = c.createRadialGradient(TX, TY, 0, TX, TY, SW * 0.6); sg2.addColorStop(0, "#fffbd0"); sg2.addColorStop(1, "rgba(255,251,208,0)"); c.fillStyle = sg2; c.fillRect(TX - SW, TY - SH, SW * 2, SH * 2); c.restore(); }
       } else {
         c.save(); c.translate(TX - SW / 2, TY - SH / 2); c.scale(SW / W, SH / H); studio(c, t); c.restore();
-        var p1 = camEase(seg(t, P1A, P1B));
+        var p1 = camEase(seg(t, P1A, P1B), CV);
         if (p1 < 1) { c.fillStyle = "rgba(0,0,0," + (0.14 * (1 - p1)) + ")"; for (var y = TY - SH; y < TY + SH; y += SH * 0.04) c.fillRect(TX - SW, y, SW * 2, SH * 0.015); }
         if (en < 1) { c.save(); c.globalCompositeOperation = "lighter"; c.globalAlpha = 1 - eOut(en); c.fillStyle = "#fff6b0"; c.fillRect(TX - SW, TY - SH, SW * 2, SH * 2); c.restore(); }
       }
@@ -1982,14 +1986,14 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       var th = hs(t, 0.05, 0.08);
       battleFloor(c, W, H, false);
       figure(c, W * 0.2, H * 0.92, H * 0.42, Y);
-      deathFx(c, th);
-      var dm = seg(t, 0.3, 0.5); if (dm > 0) { c.save(); c.globalAlpha = 0.5 * dm; c.fillStyle = "#06060e"; c.fillRect(-W, -H, W * 3, H * 3); c.restore(); }
+      deathFx(c, th / DS);
+      var dm = seg(t, 0.35, 0.7); if (dm > 0) { c.save(); c.globalAlpha = 0.5 * dm; c.fillStyle = "#06060e"; c.fillRect(-W, -H, W * 3, H * 3); c.restore(); }
       var hk = seg(th, 0.02, 0.55); if (hk > 0 && hk < 1) p4rRing(c, ex, ey, H, hk, 5, 1.1, true);
       if (th > 0.04 && th < 0.12) glitchStrips(c, ex, ey, H * 0.5, H * 0.42, (th - 0.04) / 0.08, 33);
       if (th > 0.05) damageBadge(c, ex - W * 0.07, ey - H * 0.25, 42, seg(th, 0.05, 0.2), 1 - seg(th, 0.5, 0.7));
       var rs = rng(31);
       for (var s = 0; s < 8; s++) { var sx = ex + (rs() - 0.5) * W * 0.3, sy = ey + (rs() - 0.6) * H * 0.5, sk = seg(th, 0.18 + s * 0.02, 0.3 + s * 0.02), so = 1 - seg(th, 0.4 + s * 0.02, 0.5 + s * 0.02); if (sk > 0 && so > 0) star4(c, sx, sy, H * (s % 3 ? 0.02 : 0.034) * Math.sin(Math.min(1, sk) * Math.PI / 2) * so, 0.15, 1, s % 2 ? "#ffffff" : YH); }
-      smallTV(c, t, th);
+      smallTV(c, t, th / DS);
       var rk = Math.min(seg(t, RE0, RE0 + 0.12), 1 - seg(t, P1A + 0.15, P1A + 0.3));
       if (rk > 0) {
         var rr = rng(23); c.save(); c.lineCap = "round"; c.strokeStyle = "#ffffff";
@@ -2003,7 +2007,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     }
     /* timeline */
     if (tr < P1B) {
-      var p1 = camEase(seg(tr, P1A, P1B)), Zf = OV * W / SW, Z = Math.exp(p1 * Math.log(Zf)), m1 = (1 - p1) / Z;
+      var p1 = camEase(seg(tr, P1A, P1B), CV), Zf = OV * W / SW, Z = Math.exp(p1 * Math.log(Zf)), m1 = (1 - p1) / Z;
       ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(Z, Z); ctx.translate(-(TX - (TX - W / 2) * m1), -(TY - (TY - H / 2) * m1)); battle(ctx, tr); ctx.restore();
       speedLines(ctx, W / 2 + (TX - W / 2) * (1 - p1), H / 2 + (TY - H / 2) * (1 - p1), Math.sin(Math.PI * p1) * 0.85, 61, 28, tr);
       var fl0 = 1 - seg(tr, 0.05, 0.12); if (tr > 0.05 && fl0 > 0) { ctx.save(); ctx.globalAlpha = fl0 * 0.35; ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H); ctx.restore(); }
@@ -2011,8 +2015,8 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     }
     if (tr < OFF0) {
       studio(ctx, tr);
-      var p2 = eQuint(seg(tr, P2A, P2B)), z0 = OV * 1.03;
-      if (p2 > 0 && p2 < 1) speedLines(ctx, W / 2 + (T2X - W / 2) * z0 * (1 - p2), H / 2 + (T2Y - H / 2) * z0 * (1 - p2), Math.sin(Math.PI * p2), 62, 32, tr);
+      var p2 = pushP(tr);
+      if (p2 > 0 && p2 < 1) speedLines(ctx, W / 2 + (T2X - W / 2) * ZS0 * (1 - p2), H / 2 + (T2Y - H / 2) * ZS0 * (1 - p2), Math.sin(Math.PI * p2), 62, 32, tr);
       /* the flash: the whole frame goes white for an instant and the picture is there */
       var fk = seg(tr, FL1, FL1 + 0.24); if (fk > 0 && fk < 1) { ctx.save(); ctx.globalAlpha = 1 - eOut(fk); ctx.fillStyle = "#fffdf2"; ctx.fillRect(0, 0, W, H); ctx.restore(); }
       return;
@@ -2028,7 +2032,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   }
 
   var DEMOS = [
-    { id: "aoa", name: "总攻击 第七版（电视由敌人信号拼成；彩带一整条进场、前端长出箭头、扎进屏幕中心的入口；被吸进去、镜头跟着冲进去；中间电视只见彩框、黑屏→亮点→闪亮，约 4.4 秒）", dur: 4.44, start: 0.95,
+    { id: "aoa", name: "总攻击 第七版（电视由敌人信号拼成；彩带一整条进场、前端长出箭头、扎进屏幕中心的入口；被吸进去、镜头跟着冲进去；演播室缓推→猛推中间电视（只见彩框）、黑屏→亮点→闪亮，约 4.9 秒）", dur: 4.86, start: 0.95,
       desc: "①最后一击打死敌人，碎成雪花被小电视吸进去（同第六版）→ ②彩带：箭头就是彩带的头，从右下领着整条彩带进来（起步稍慢、中段快，近处大远处小），后面每条色带各自是斜尖、一条比一条往后错开，松散的，不收成一束；巨字 FINALE 照原版 CHANCE 的位置，头部经过哪个字母那个字母就砸下来；快到电视时放慢，慢慢钻进电视（小停顿但不停死），电视随之开播 → ③马上从尾巴开始被吸进电视，尾巴也是一排斜尖，星星、细线跟着往里流；镜头和尾巴同一条速度曲线推进，尾巴进电视时屏幕正好推满 → 演播室三台电视，停一下 → 有节奏地猛推中间那台：推到能看见它的黄框、红框、绿框为止，屏幕是黑的 → 停一下，屏幕中间出现一个亮点拉成一条亮线 → 整个画面一闪，结算画面在电视框里亮出来（之后慢慢推近）→ 关机进结算页。约 4.5 秒。悠和伊邪那岐的图还是占位。",
       draw: function (ctx, W, H, tr) { aoaScene(ctx, W, H, tr); } },
     { id: "tvstate", name: "电视框状态 第二版：连环拳（这回合下 2 张攻击额外打出）", dur: 2.7, start: 1.3,
