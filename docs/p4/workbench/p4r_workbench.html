@@ -158,6 +158,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       <tr><td style="padding:4px 6px">几万真言</td><td style="padding:4px 6px">力量 ≥ 8：约 2.1 秒落第一下，约 3.5 秒结束（之前约 4.4 秒）</td><td style="padding:4px 6px">约 0.45 秒捏碎，约 1 秒落第一下（之前约 2 秒），约 1.6 秒打完</td></tr>
     </table>
     恶魔之焰：光团不再慢慢起步，一开始就在动，扫过手牌越来越快，一口气拐上去到电视里的手，只在最后落到手上时稍微收一下；牌收叠好马上捏碎。快速版扫牌同速，扫完光团直接冲出画面。<br>几万真言：快速版杖快速转一圈就停，停住马上劈。完整版捏碎提前，杖转得稍快，停住后不再空等，四下间隔 0.24 秒，结尾圆环紧跟最后一下。<br>
+    <b>新做两个草图（第 1、2 个）：</b>①总攻击「Series Finale」，结构和时长照前两个 mod（精英 / Boss 战最后一击后、结算前，约 3.5 秒）：蓝色单色雷光十字 → 黄色转场带彩虹飘带 → 黄底收尾立绘卡（套在彩色电视框里）→ 电视关机露出结算页。②电视框当状态用：连环拳打出后整个画面框进彩色电视框，额外打出时像换台一样错位、次数减一，用完就关机。<br>
     <b>眼神特写换了做法：</b>不再让 AI 画中间帧（Codex 两张就跑位了）。只用一张睁眼图（Codex 这次的第一张），闭眼、睁开、镜片反光都叠在上面画：眼皮是一条会动的线，反光透过镜片遮罩叠上去。眼睛不可能变大小，也是连续动画，没有逐帧感；瞳孔一直清楚，不会发白。看草图第 7 个「召唤（眼神特写 → 翻页 → 手里捏碎）」，0.17 秒是闭眼、0.24 秒是半睁。
   </div>
 
@@ -1344,7 +1345,141 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     return o;
   }
 
+  /* P4R battle TV frame over the whole screen: dark bezel, yellow rounded CRT border with thin red and green lines inside, faint
+     scanlines and vignette. k: 0..1 powered on (CRT turn-on, a bright line opening up); k going back down = turning off. */
+  function tvFrameScreen(ctx, W, H, k, tr) {
+    if (k <= 0) return;
+    var open = eOut(seg(k, 0, 1)), m = H * 0.035, r = H * 0.09;
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0, H / 2 - H * open / 2, W, H * open); ctx.clip();
+    /* bezel outside the rounded screen (rounded rect added to the same path, no beginPath in between) */
+    ctx.beginPath(); ctx.rect(0, 0, W, H);
+    var bx = m, by = m, bw = W - 2 * m, bh = H - 2 * m;
+    ctx.moveTo(bx + r, by); ctx.lineTo(bx + bw - r, by); ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + r); ctx.lineTo(bx + bw, by + bh - r); ctx.quadraticCurveTo(bx + bw, by + bh, bx + bw - r, by + bh);
+    ctx.lineTo(bx + r, by + bh); ctx.quadraticCurveTo(bx, by + bh, bx, by + bh - r); ctx.lineTo(bx, by + r); ctx.quadraticCurveTo(bx, by, bx + r, by); ctx.closePath();
+    ctx.fillStyle = "rgba(10,10,14,0.92)"; ctx.fill("evenodd");
+    /* inside: scanlines + vignette */
+    ctx.save(); roundRect(ctx, m, m, W - 2 * m, H - 2 * m, r); ctx.clip();
+    ctx.fillStyle = "rgba(255,255,255,0.045)"; for (var y = m + ((tr * 40) % 4); y < H - m; y += 4) ctx.fillRect(m, y, W - 2 * m, 1);
+    var vg = ctx.createRadialGradient(W / 2, H / 2, H * 0.35, W / 2, H / 2, H * 0.85); vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,0.35)");
+    ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+    var roll = ((tr * 0.35) % 1.4 - 0.2) * H; ctx.fillStyle = "rgba(255,255,255,0.04)"; ctx.fillRect(m, roll, W - 2 * m, H * 0.08);
+    ctx.restore();
+    ctx.lineJoin = "round";
+    roundRect(ctx, m, m, W - 2 * m, H - 2 * m, r); ctx.lineWidth = H * 0.026; ctx.strokeStyle = "#111"; ctx.stroke();
+    ctx.lineWidth = H * 0.017; ctx.strokeStyle = Y; ctx.stroke();
+    roundRect(ctx, m + H * 0.022, m + H * 0.022, W - 2 * m - H * 0.044, H - 2 * m - H * 0.044, r * 0.8); ctx.lineWidth = 2.5; ctx.strokeStyle = "#ff3b5c"; ctx.stroke();
+    roundRect(ctx, m + H * 0.032, m + H * 0.032, W - 2 * m - H * 0.064, H - 2 * m - H * 0.064, r * 0.75); ctx.lineWidth = 2.5; ctx.strokeStyle = LIME; ctx.stroke();
+    ctx.restore();
+    /* the bright line while it opens / closes */
+    if (open < 0.98) { var la = 1 - open; ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = la; var lgr = ctx.createLinearGradient(0, H / 2 - H * 0.02, 0, H / 2 + H * 0.02); lgr.addColorStop(0, "rgba(255,255,255,0)"); lgr.addColorStop(0.5, "rgba(255,255,240,1)"); lgr.addColorStop(1, "rgba(255,255,255,0)"); ctx.fillStyle = lgr; ctx.fillRect(0, H / 2 - H * 0.02 - H * open / 2, W, H * 0.04); ctx.fillRect(0, H / 2 - H * 0.02 + H * open / 2, W, H * 0.04); ctx.restore(); }
+  }
+  /* blue lightning beam across the screen through (cx, cy): wide glow, mid band, white core, forked bolts */
+  function blueBeam(ctx, W, H, cx, cy, ang, k, a, seed, tr) {
+    if (k <= 0 || a <= 0) return;
+    var L = Math.hypot(W, H) * 0.75 * eOut(k);
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(ang); ctx.globalCompositeOperation = "lighter";
+    [[H * 0.09, "rgba(60,140,255,0.35)"], [H * 0.04, "rgba(130,200,255,0.75)"], [H * 0.012, "rgba(255,255,255,1)"]].forEach(function (b) {
+      ctx.globalAlpha = a; var g = ctx.createLinearGradient(-L, 0, L, 0); g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(0.15, b[1]); g.addColorStop(0.85, b[1]); g.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g; ctx.fillRect(-L, -b[0] / 2, 2 * L, b[0]);
+    });
+    ctx.strokeStyle = "#ffffff"; ctx.shadowColor = "#6fc4ff"; ctx.shadowBlur = H * 0.02;
+    for (var f = 0; f < 3; f++) {
+      var rr = rng(seed * 7 + f * 13 + Math.floor(tr * 30)); ctx.globalAlpha = a * (f ? 0.6 : 0.9); ctx.lineWidth = f ? 1.5 : 2.5; ctx.beginPath(); ctx.moveTo(-L, 0);
+      for (var s = 1; s <= 16; s++) { var x = lerp(-L, L, s / 16), y = (rr() - 0.5) * H * 0.07; ctx.lineTo(x, y); if (rr() < 0.18) { ctx.moveTo(x, y); ctx.lineTo(x + (rr() - 0.5) * H * 0.1, y + (rr() - 0.5) * H * 0.12); ctx.moveTo(x, y); } }
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
   var DEMOS = [
+    { id: "aoa", name: "总攻击（Series Finale，约 3.5 秒）", dur: 3.6, start: 1.4,
+      desc: "照前两个 mod 的结构和时长（P3 约 3.65 秒、P5 约 3.3 秒；精英 / Boss 战最后一击后、结算前播），换成 P4R 的东西：最后一击定格 0.12 秒 → 整个画面变蓝色单色，悠的剪影扑上去，一道、再一道巨大的蓝色雷光交叉劈过敌人（P4R「大结局」的招牌镜头），震屏闪白 → 黄色转场带着彩虹飘带和网点斜着扫过 → 0.82 秒硬切收尾立绘：黄底、背景大字 SERIES FINALE、白黄小花一朵朵弹出来转，整张卡套在彩色电视框里（扫描线）→ 停到 3 秒 → 电视「关机」：画面压成一条亮线、缩成一个点、熄掉，露出结算页。立绘现在是占位剪影，定了以后让 Codex 画悠的收尾立绘（照 P4R 那张扶眼镜的）。",
+      draw: function (ctx, W, H, tr) {
+        var ex = W * 0.72, ey = H * 0.58;
+        function card() {
+          ctx.fillStyle = Y; ctx.fillRect(0, 0, W, H);
+          var rg = ctx.createRadialGradient(W * 0.36, H * 0.45, H * 0.1, W * 0.36, H * 0.45, H * 0.95); rg.addColorStop(0, "rgba(255,255,230,0.75)"); rg.addColorStop(1, "rgba(255,255,230,0)");
+          ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H);
+          ctx.save(); ctx.translate(W * 0.62, H * 0.5); ctx.rotate(-0.12); ctx.font = Math.round(H * 0.2) + "px 'Archivo Black', sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          var drift = (tr - 0.82) * W * 0.02;
+          ctx.lineWidth = 2; ctx.strokeStyle = "rgba(120,110,0,0.55)"; ctx.strokeText("SERIES", drift, -H * 0.12); ctx.fillStyle = "rgba(150,140,0,0.28)"; ctx.fillText("FINALE", -drift, H * 0.1);
+          ctx.restore();
+          var FL = [[0.62, 0.2, 0.07, "#ffffff"], [0.86, 0.32, 0.05, "#fffbd0"], [0.74, 0.78, 0.06, "#ffffff"], [0.93, 0.7, 0.04, "#ffffff"], [0.52, 0.88, 0.045, "#fffbd0"], [0.08, 0.18, 0.05, "#ffffff"], [0.2, 0.82, 0.04, "#fffbd0"]];
+          FL.forEach(function (f, i) { var pk = seg(tr, 0.86 + i * 0.05, 1.06 + i * 0.05); if (pk <= 0) return; flower(ctx, W * f[0], H * f[1], H * f[2] * eBack(pk), tr * 0.8 + i, f[3]); ctx.beginPath(); ctx.arc(W * f[0], H * f[1], H * f[2] * 0.22 * eBack(pk), 0, Math.PI * 2); ctx.fillStyle = "#f2c54b"; ctx.fill(); });
+          var ek = eOut(seg(tr, 0.82, 1.08)), sc = lerp(1.14, 1, ek);
+          ctx.save(); ctx.translate(W * 0.3, H * 1.0); ctx.scale(sc, sc); figure(ctx, 0, 0, H * 0.98, "#ffffff"); ctx.restore();
+          ctx.save(); ctx.fillStyle = "rgba(0,0,0,0.55)"; ctx.font = Math.round(H * 0.028) + "px sans-serif"; ctx.textAlign = "center"; ctx.fillText("（悠的收尾立绘，生图后换上）", W * 0.3, H * 0.95); ctx.restore();
+          for (var s = 0; s < 5; s++) { var tw = 0.6 + 0.4 * Math.sin(tr * 9 + s * 2); star4(ctx, W * (0.5 + 0.09 * s), H * (0.12 + 0.17 * ((s * 3) % 5)), H * 0.022 * tw * seg(tr, 0.9 + s * 0.04, 1.0 + s * 0.04), 0.15, 1, s % 2 ? "#ffffff" : "#fff6b0"); }
+          tvFrameScreen(ctx, W, H, 1, tr);
+        }
+        if (tr < 0.82) {
+          /* the frozen last hit, then the blue monochrome slash */
+          var blue = seg(tr, 0.12, 0.16);
+          battleFloor(ctx, W, H, blue > 0);
+          if (blue > 0) { ctx.fillStyle = "#06102a"; ctx.beginPath(); ctx.ellipse(ex, ey, H * 0.11, H * 0.09, 0, 0, Math.PI * 2); ctx.fill(); }
+          else { enemy(ctx, ex, ey, H * 0.11, 0); p4rRing(ctx, ex, ey, H, 0.35, 5, 1, true); damageBadge(ctx, ex - W * 0.06, ey - H * 0.24, 31, 1, 1); figure(ctx, W * 0.2, H * 0.92, H * 0.42, Y); }
+          if (blue > 0) {
+            ctx.save(); ctx.globalCompositeOperation = "multiply"; ctx.globalAlpha = blue; ctx.fillStyle = "rgb(70,120,255)"; ctx.fillRect(0, 0, W, H); ctx.restore();
+            ctx.save(); ctx.globalCompositeOperation = "screen"; ctx.globalAlpha = blue * 0.5; ctx.fillStyle = "rgb(10,30,110)"; ctx.fillRect(0, 0, W, H); ctx.restore();
+            var lx = lerp(W * 0.18, W * 0.6, eOut(seg(tr, 0.14, 0.26)));
+            ctx.save(); ctx.globalAlpha = 0.9; figure(ctx, lx, H * 0.9, H * 0.44, "#bfe3ff"); ctx.restore();
+            var shake = tr > 0.2 && tr < 0.4 ? (1 - (tr - 0.2) / 0.2) * H * 0.012 : 0;
+            ctx.save(); if (shake) ctx.translate(Math.sin(tr * 90) * shake, Math.cos(tr * 70) * shake);
+            blueBeam(ctx, W, H, ex, ey, -0.42, seg(tr, 0.18, 0.23), 1 - seg(tr, 0.46, 0.58), 1, tr);
+            blueBeam(ctx, W, H, ex, ey, 0.55, seg(tr, 0.26, 0.31), 1 - seg(tr, 0.5, 0.62), 2, tr);
+            ctx.restore();
+            var wf = (1 - seg(tr, 0.18, 0.26)) * seg(tr, 0.17, 0.18) + (1 - seg(tr, 0.26, 0.34)) * seg(tr, 0.25, 0.26) * 0.7;
+            if (wf > 0) { ctx.save(); ctx.globalAlpha = wf * 0.7; ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, W, H); ctx.restore(); }
+          }
+          /* yellow wipe with a rainbow ribbon on its edge */
+          var wk = eOut(seg(tr, 0.48, 0.82));
+          if (wk > 0) {
+            var edge = function (y) { return lerp(-W * 0.35, W * 1.45, wk) - (y - H / 2) * 0.55; };
+            ctx.save(); ctx.beginPath(); ctx.moveTo(-W, -10); ctx.lineTo(edge(-10), -10); ctx.lineTo(edge(H + 10), H + 10); ctx.lineTo(-W, H + 10); ctx.closePath(); ctx.fillStyle = Y; ctx.fill();
+            var RB = ["#ff3b5c", "#ff9a1e", "#ffe600", "#53e04f", "#33c3ff", "#4b6bff", "#b45cff"];
+            RB.forEach(function (c, i) { var o = (i + 1) * H * 0.016; ctx.beginPath(); ctx.moveTo(edge(-10) + o - H * 0.016, -10); ctx.lineTo(edge(-10) + o, -10); ctx.lineTo(edge(H + 10) + o, H + 10); ctx.lineTo(edge(H + 10) + o - H * 0.016, H + 10); ctx.closePath(); ctx.fillStyle = c; ctx.fill(); });
+            ctx.fillStyle = "#e3a800"; for (var dy = 0; dy < H; dy += H * 0.03) { ctx.beginPath(); ctx.arc(edge(dy) - H * 0.04, dy, H * 0.006, 0, Math.PI * 2); ctx.fill(); }
+            ctx.restore();
+          }
+          return;
+        }
+        /* finish card, then the TV switches off onto the results */
+        var off = seg(tr, 3.0, 3.42);
+        if (off <= 0) { card(); var fl = 1 - seg(tr, 0.82, 0.88); if (fl > 0) { ctx.save(); ctx.globalAlpha = fl * 0.8; ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H); ctx.restore(); } return; }
+        ctx.fillStyle = "#0d0f16"; ctx.fillRect(0, 0, W, H);
+        ctx.save(); ctx.fillStyle = "rgba(255,255,255,0.55)"; ctx.font = Math.round(H * 0.05) + "px sans-serif"; ctx.textAlign = "center"; ctx.fillText("（结算页）", W / 2, H * 0.55); ctx.restore();
+        var sy = lerp(1, 0.006, eIn(seg(off, 0, 0.45))), sx = lerp(1, 0.004, eIn(seg(off, 0.45, 0.8))), fade = 1 - seg(off, 0.8, 1);
+        if (sx > 0.005 || fade > 0) {
+          ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(sx, sy); ctx.translate(-W / 2, -H / 2); ctx.globalAlpha = fade; card(); ctx.restore();
+          ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = fade * seg(off, 0.25, 0.45); var gw = W * sx; var lg2 = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(8, gw * 0.55)); lg2.addColorStop(0, "rgba(255,255,255,1)"); lg2.addColorStop(1, "rgba(255,255,255,0)"); ctx.fillStyle = lg2; ctx.fillRect(W / 2 - gw * 0.6 - 10, H / 2 - H * 0.03, gw * 1.2 + 20, H * 0.06); ctx.restore();
+        }
+      } },
+    { id: "tvstate", name: "电视框状态：连环拳（这回合下 2 张攻击额外打出）", dur: 2.7, start: 1.15,
+      desc: "电视框当成一个会持续的状态，出现、持续、消失都有原因：打出「连环拳」→ 电视开机（一条亮线张开），整个画面框进 P4R 那种彩色电视框（黄色圆角框、里面红绿两条细线、扫描线），左上角 ON AIR，右上角黄标显示还剩几次 → 每打出一张攻击牌、它被额外打出一次时，电视框像换台一样信号错位一下，次数减一 → 次数用完（或者回合结束）电视「关机」，收成一条亮线消失。同样可以给「狂怒」（本回合每打一张攻击得格挡）用。",
+      draw: function (ctx, W, H, tr) {
+        battleFloor(ctx, W, H);
+        var foes = [[W * 0.72, H * 0.62], [W * 0.86, H * 0.56]];
+        foes.forEach(function (e, i) { enemy(ctx, e[0], e[1], H * 0.09, Math.sin(tr * 3 + i)); });
+        figure(ctx, W * 0.2, H * 0.92, H * 0.42, Y);
+        var HITS = [1.0, 1.15, 1.75, 1.9];
+        HITS.forEach(function (h, i) { var hk = tr - h; if (hk > 0) { var e = foes[i < 2 ? 0 : 1]; p4rRing(ctx, e[0], e[1] - H * 0.02, H, seg(hk, 0, 0.4), 10 + i, 0.8, false); damageBadge(ctx, e[0] - W * 0.04 + (i % 2) * W * 0.05, e[1] - H * 0.18 - (i % 2) * H * 0.04, 6, seg(hk, 0, 0.16), 1 - seg(hk, 0.5, 0.8)); } });
+        var on = seg(tr, 0.15, 0.45) * (1 - seg(tr, 2.1, 2.4));
+        tvFrameScreen(ctx, W, H, on, tr);
+        [1.15, 1.9].forEach(function (g, i) { var gk = tr - g; if (gk > 0 && gk < 0.12) glitchStrips(ctx, W / 2, H / 2, W, H, gk / 0.12, 70 + i); });
+        if (on > 0.6) {
+          var left = tr < 1.15 ? 2 : tr < 1.9 ? 1 : 0, pop = Math.max(0, 1 - Math.min(Math.abs(tr - 1.15), Math.abs(tr - 1.9)) / 0.12);
+          ctx.save(); ctx.globalAlpha = seg(on, 0.6, 1);
+          ctx.fillStyle = "#ff3b5c"; ctx.beginPath(); ctx.arc(W * 0.075, H * 0.1, H * 0.012, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = "#ffffff"; ctx.font = "700 " + Math.round(H * 0.032) + "px sans-serif"; ctx.textBaseline = "middle"; ctx.fillText("ON AIR", W * 0.09, H * 0.1);
+          var bs = 1 + 0.25 * pop; ctx.translate(W * 0.9, H * 0.11); ctx.scale(bs, bs);
+          roundRect(ctx, -W * 0.045, -H * 0.035, W * 0.09, H * 0.07, H * 0.02); ctx.fillStyle = YH; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = "#111"; ctx.stroke();
+          ctx.fillStyle = "#111"; ctx.font = Math.round(H * 0.045) + "px 'Archivo Black', sans-serif"; ctx.textAlign = "center"; ctx.fillText("×" + left, 0, H * 0.004);
+          ctx.restore();
+        }
+        ctx.save(); ctx.fillStyle = "rgba(255,255,255,0.7)"; ctx.font = Math.round(H * 0.03) + "px sans-serif";
+        ctx.fillText(tr < 0.5 ? "打出 连环拳" : tr < 1.3 ? "攻击牌 → 额外打出一次" : tr < 2.05 ? "再一张 → 额外打出一次" : "次数用完：关机", W * 0.06, H * 0.96); ctx.restore();
+      } },
     { id: "stoke", name: "添柴 完整版（建议：烧 7 张以上）", dur: 2.8, start: 1.3,
       desc: "打出后，背景划出「SHUFFLE TIME」（P4 洗牌小游戏的名字，只当背景）。手牌从左到右依次抬起，翻成黄色塔罗牌背面；悠伸手一握，整手牌同时捏碎（顿帧 + 震屏 + 闪白）。战场去色，碎片打着旋被吸到场地中间，拼成一圈转动的卡牌转盘（像 Shuffle Time 洗牌）：每张先出白色轮廓，最后几片落进去时填满黄色、闪一下。转盘越转越快，转到最前面的那张就被甩出来，在空中翻开变成新牌，落进手牌，落位时亮一圈白环、一道黄边和小星星，一张接一张。约 0.5 秒捏碎，约 1.3 秒转盘拼好、开始发牌，约 2.3 秒发完。",
       draw: function (ctx, W, H, tr) { stokeScene(ctx, W, H, tr, true); } },
