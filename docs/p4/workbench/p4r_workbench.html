@@ -158,6 +158,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       <tr><td style="padding:4px 6px">几万真言</td><td style="padding:4px 6px">力量 ≥ 8：约 2.1 秒落第一下，约 3.5 秒结束（之前约 4.4 秒）</td><td style="padding:4px 6px">约 0.45 秒捏碎，约 1 秒落第一下（之前约 2 秒），约 1.6 秒打完</td></tr>
     </table>
     恶魔之焰：光团不再慢慢起步，一开始就在动，扫过手牌越来越快，一口气拐上去到电视里的手，只在最后落到手上时稍微收一下；牌收叠好马上捏碎。快速版扫牌同速，扫完光团直接冲出画面。<br>几万真言：快速版杖快速转一圈就停，停住马上劈。完整版捏碎提前，杖转得稍快，停住后不再空等，四下间隔 0.24 秒，结尾圆环紧跟最后一下。<br>
+    <b>总攻击第三版（草图第 1 个）：</b>舞台那段改成纯 2D 的「午夜电视台」：镜头从中间那台电视的屏幕里往后拉，露出三台彩色电视；左边伊邪那岐出招、右边标题画面、中间悠从雪花里显出来，然后从电视里伸手冲出来（越过电视框），碎片、彩虹圆环、名字、字幕、电视框收拢。悠和伊邪那岐现在是占位，要新生成两张图。<br>
     <b>第二版（草图第 1、2 个）：</b>①总攻击按你的意见重做：人物不扑，不用斜条直接扫，不硬切；转场全换成 P4R 的电视语言（去色黑剪影定格 → 缩进电视隧道、冲进发光黄屏 → 换台），运镜用分层视差（推到悠脚下 → 仰拍全身 → 停一下 → 身后两块大屏亮起）；画面加了眼睛特写和伊邪那岐的大屏、地上的大名字、滚动字幕条、彩虹圆环、星星、花瓣、光斑。约 3.35 秒。②电视框改得不规整：边往外鼓、四角厚边上薄、角里有网点、红绿线不同心、压着标签和一台小电视（显示剩余次数）；出现和消失都是几层歪框转着收拢 / 散开。<br>
     <b>眼神特写换了做法：</b>不再让 AI 画中间帧（Codex 两张就跑位了）。只用一张睁眼图（Codex 这次的第一张），闭眼、睁开、镜片反光都叠在上面画：眼皮是一条会动的线，反光透过镜片遮罩叠上去。眼睛不可能变大小，也是连续动画，没有逐帧感；瞳孔一直清楚，不会发白。看草图第 7 个「召唤（眼神特写 → 翻页 → 手里捏碎）」，0.17 秒是闭眼、0.24 秒是半睁。
   </div>
@@ -1547,73 +1548,125 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         });
       }
     }
+    /* (3)(4) third draft, 2D: we are inside the middle TV's screen; the camera pulls back and reveals a wall of three colour TVs
+       in the dark (P4's Midnight Channel). The side TVs switch on (Izanagi's move / a SERIES FINALE title screen); in the middle
+       one Yu's figure clears out of the static, then steps out of the TV: his upper body breaks past the frame, the screen
+       shatters into scanline pieces, rings, stars, petals, his name, the ticker, the TV frame closes in. */
     function stage(c, t) {
       var lt = t - 0.95;
-      var push = eIn(seg(lt, 0.03, 0.22)), tilt = eInOut(seg(lt, 0.22, 0.6)), drift = seg(lt, 0.75, 1.95), lit = seg(lt, 0.75, 0.83);
-      var Z = lerp(lerp(1.3, 1.85, push), 1.0, tilt) * (1 + 0.035 * drift), shift = lerp(-H * 0.36, 0, tilt);
-      var fx = W * 0.5, fy = H * 0.88;
-      function layer(par, fn) { c.save(); c.translate(0, shift * par); var zz = Math.pow(Z, par); c.translate(fx, fy); c.scale(zz, zz); c.translate(-fx, -fy); fn(); c.restore(); }
-      c.fillStyle = "#06060a"; c.fillRect(0, 0, W, H);
-      layer(0.45, function () {
-        [[-1, W * 0.22], [1, W * 0.78]].forEach(function (sd, si) {
-          var sx = sd[1], sy = H * 0.3, sw = W * 0.38, sh = H * 0.46, l = sd[0] < 0;
-          var q = [[sx - sw / 2, sy - sh / 2 * (l ? 1 : 0.9)], [sx + sw / 2, sy - sh / 2 * (l ? 0.9 : 1)], [sx + sw / 2, sy + sh / 2 * (l ? 0.9 : 1)], [sx - sw / 2, sy + sh / 2 * (l ? 1 : 0.9)]];
-          quad(c, q); c.fillStyle = "#15151c"; c.fill(); c.lineWidth = 3; c.strokeStyle = "#2c2c36"; c.stroke();
-          if (lit > 0) {
-            c.save(); quad(c, q); c.clip(); c.globalAlpha = lit;
-            if (si === 0) { c.fillStyle = Y; c.fillRect(sx - sw, sy - sh, sw * 2, sh * 2); if (ready("emaster")) c.drawImage(IMG.emaster, sx - sw * 0.62, sy - sh * 0.55, sw * 1.3, sw * 1.3 / 1.5); }
-            else {
-              var gg = c.createLinearGradient(sx, sy - sh / 2, sx, sy + sh / 2); gg.addColorStop(0, "#ffd43b"); gg.addColorStop(1, ORANGE); c.fillStyle = gg; c.fillRect(sx - sw, sy - sh, sw * 2, sh * 2);
-              c.fillStyle = "rgba(255,255,255,0.25)"; for (var hx = 0; hx < 14; hx++) for (var hy2 = 0; hy2 < 9; hy2++) { c.beginPath(); c.arc(sx - sw / 2 + hx * sw / 13, sy - sh / 2 + hy2 * sh / 8, H * 0.004 * (1 + (hx + hy2) % 3), 0, Math.PI * 2); c.fill(); }
-              if (ready("izv2")) c.drawImage(IMG.izv2, sx - sh * 0.36, sy - sh * 0.55, sh * 0.72, sh * 1.08);
-            }
-            c.fillStyle = "rgba(0,0,0,0.12)"; for (var yy = sy - sh; yy < sy + sh; yy += 4) c.fillRect(sx - sw, yy, sw * 2, 1.5);
-            var flick = 1 - seg(lt, 0.75, 0.9); if (flick > 0) { c.fillStyle = "rgba(255,255,255," + flick + ")"; c.fillRect(sx - sw, sy - sh, sw * 2, sh * 2); }
-            c.restore();
-            c.save(); c.globalAlpha = lit; c.lineJoin = "round"; quad(c, q); c.lineWidth = H * 0.014; c.strokeStyle = Y; c.stroke();
-            c.lineWidth = 2; c.strokeStyle = "#ff3b5c"; quad(c, shrinkPoly(q, 0.965)); c.stroke(); c.strokeStyle = LIME; quad(c, shrinkPoly(q, 0.94)); c.stroke(); c.restore();
-            var rk = seg(lt, 0.76, 1.2);
-            if (rk > 0 && rk < 1) [["#ff3fae", 0], [YH, 0.07], [LIME, 0.14]].forEach(function (rc) { var kk = seg(rk, rc[1], 0.85 + rc[1]); if (kk > 0 && kk < 1) ring(c, sx, sy, lerp(sh * 0.3, sh * 1.3, eOut(kk)), lerp(5, 1.5, kk), rc[0], 1 - kk); });
-          }
+      var pull = eOut(seg(lt, 0.02, 0.42)), drift = seg(lt, 0.7, 1.95);
+      var Z = lerp(3.4, 1.0, pull) * (1 + 0.03 * drift), rotC = lerp(0.06, 0, pull);
+      var TV = [
+        { x: W * 0.17, y: H * 0.4, w: W * 0.27, h: H * 0.33, r: -0.06, on: 0.42 },
+        { x: W * 0.5, y: H * 0.43, w: W * 0.4, h: H * 0.48, r: 0.015, on: 0 },
+        { x: W * 0.83, y: H * 0.4, w: W * 0.27, h: H * 0.33, r: 0.06, on: 0.5 }];
+      var M = TV[1];
+      function cam(par, fn) { c.save(); var zz = Math.pow(Z, par); c.translate(W / 2, H / 2); c.rotate(rotC * par); c.scale(zz, zz); c.translate(-M.x, -M.y); fn(); c.restore(); }
+      /* stage behind: dark, two spotlight cones, a glossy floor that reflects the TVs */
+      c.fillStyle = "#07070c"; c.fillRect(0, 0, W, H);
+      cam(0.6, function () {
+        c.save(); c.translate(M.x - W / 2, M.y - H / 2);
+        var fl = c.createLinearGradient(0, H * 0.68, 0, H); fl.addColorStop(0, "#15151d"); fl.addColorStop(1, "#050508"); c.fillStyle = fl; c.fillRect(-W, H * 0.68, W * 3, H * 0.6);
+        [[W * 0.3, -0.25], [W * 0.7, 0.25]].forEach(function (sp, i) {
+          c.save(); c.translate(sp[0], -H * 0.2); c.rotate(sp[1] + Math.sin(lt * 1.6 + i) * 0.06); c.globalCompositeOperation = "lighter";
+          var bg = c.createLinearGradient(0, 0, 0, H * 1.3); bg.addColorStop(0, "rgba(255,255,240,0.3)"); bg.addColorStop(1, "rgba(255,255,240,0)");
+          c.fillStyle = bg; c.beginPath(); c.moveTo(-H * 0.02, 0); c.lineTo(H * 0.02, 0); c.lineTo(H * 0.24, H * 1.3); c.lineTo(-H * 0.24, H * 1.3); c.closePath(); c.fill(); c.restore();
         });
-        [[W * 0.28, -0.22], [W * 0.72, 0.22]].forEach(function (sp, i) {
-          var ang = sp[1] * (1 - 0.6 * lit) + Math.sin(lt * 2 + i) * 0.08 * (1 - lit);
-          c.save(); c.translate(sp[0], -H * 0.15); c.rotate(ang); c.globalCompositeOperation = "lighter";
-          var bg = c.createLinearGradient(0, 0, 0, H * 1.2); bg.addColorStop(0, "rgba(255,255,240,0.35)"); bg.addColorStop(1, "rgba(255,255,240,0)");
-          c.fillStyle = bg; c.beginPath(); c.moveTo(-H * 0.02, 0); c.lineTo(H * 0.02, 0); c.lineTo(H * 0.2, H * 1.2); c.lineTo(-H * 0.2, H * 1.2); c.closePath(); c.fill(); c.restore();
-        });
-      });
-      layer(1.0, function () {
-        var hy = H * 0.6;
-        function Pf(u, v) { var vv = Math.pow(v, 1.4); return [W / 2 + (u - 0.5) * W * (0.7 + 2.4 * vv), hy + (H * 1.05 - hy) * vv]; }
-        for (var i = 0; i < 8; i++) for (var j = 0; j < 12; j++) { var a = Pf(j / 12, i / 8), b2 = Pf((j + 1) / 12, i / 8), cc = Pf((j + 1) / 12, (i + 1) / 8), d = Pf(j / 12, (i + 1) / 8); c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b2[0], b2[1]); c.lineTo(cc[0], cc[1]); c.lineTo(d[0], d[1]); c.closePath(); c.fillStyle = (i + j) % 2 ? "#1d1d22" : "#4e4d4a"; c.fill(); }
-        var k1 = Pf(0.38, 0), k2 = Pf(0.62, 0), k3 = Pf(0.66, 1), k4 = Pf(0.34, 1); c.beginPath(); c.moveTo(k1[0], k1[1]); c.lineTo(k2[0], k2[1]); c.lineTo(k3[0], k3[1]); c.lineTo(k4[0], k4[1]); c.closePath(); c.fillStyle = "#6e141b"; c.fill();
-        var pool = c.createRadialGradient(fx, fy, 0, fx, fy, H * 0.35); pool.addColorStop(0, "rgba(255,250,220,0.35)"); pool.addColorStop(1, "rgba(255,250,220,0)"); c.fillStyle = pool; c.beginPath(); c.ellipse(fx, fy, H * 0.45, H * 0.12, 0, 0, Math.PI * 2); c.fill();
-        if (lit > 0) { c.save(); c.globalAlpha = lit * 0.3; c.globalCompositeOperation = "lighter"; c.fillStyle = "#ffd43b"; c.fillRect(0, hy, W, H - hy); c.restore(); }
-        var nk = eOut(seg(lt, 0.78, 1.05));
-        if (nk > 0) { c.save(); c.translate(W * 0.5 + (1 - nk) * W * 0.3, H * 0.74); c.transform(1, 0, -0.9, 0.45, 0, 0); c.font = Math.round(H * 0.22) + "px 'Archivo Black', sans-serif"; c.textAlign = "center"; c.textBaseline = "middle"; c.globalAlpha = nk; c.lineWidth = 3; c.strokeStyle = YH; c.strokeText("YU NARUKAMI", 0, 0); c.fillStyle = "rgba(252,248,0,0.18)"; c.fillText("YU NARUKAMI", 0, 0); c.restore(); }
-        figure(c, fx, fy, H * 0.74, Y);
-      });
-      layer(1.25, function () {
-        if (lit <= 0) return;
-        var fa = lit * (1 - 0.75 * seg(lt, 1.0, 1.6));
-        c.save(); c.globalCompositeOperation = "lighter";
-        [[W * 0.36, H * 0.32, H * 0.09], [W * 0.46, H * 0.42, H * 0.04], [W * 0.58, H * 0.5, H * 0.06]].forEach(function (f) { var fg = c.createRadialGradient(f[0], f[1], 0, f[0], f[1], f[2]); fg.addColorStop(0, "rgba(255,250,200," + (0.5 * fa) + ")"); fg.addColorStop(1, "rgba(255,250,200,0)"); c.fillStyle = fg; c.beginPath(); c.arc(f[0], f[1], f[2], 0, Math.PI * 2); c.fill(); });
         c.restore();
       });
+      function screenContent(i, tv, k) {
+        var w = tv.w * 0.82, h = tv.h * 0.74;
+        if (k < 1) { /* static */
+          var rn = rng(Math.floor(t * 50) + i * 17); c.fillStyle = "#6c6c70"; c.fillRect(-w, -h, w * 2, h * 2);
+          for (var n = 0; n < 160; n++) { c.fillStyle = rn() < 0.5 ? "#e6e6e6" : "#1e1e1e"; c.fillRect((rn() - 0.5) * w, (rn() - 0.5) * h, 2 + rn() * 6, 1 + rn() * 2); }
+        }
+        if (k <= 0) return;
+        c.save(); c.globalAlpha = k;
+        if (i === 0) { /* Izanagi's move (placeholder until the new art) */
+          var g = c.createLinearGradient(0, -h / 2, 0, h / 2); g.addColorStop(0, "#1b3fae"); g.addColorStop(1, "#0b1440"); c.fillStyle = g; c.fillRect(-w, -h, w * 2, h * 2);
+          blueBeam(c, w, h, 0, 0, -0.5, 1, 0.9, 4, t);
+          c.fillStyle = "#050a1e"; c.beginPath(); c.ellipse(0, -h * 0.22, h * 0.07, h * 0.08, 0, 0, Math.PI * 2); c.fill(); c.fillRect(-h * 0.08, -h * 0.14, h * 0.16, h * 0.42);
+          c.strokeStyle = "#cfe8ff"; c.lineWidth = 3; c.beginPath(); c.moveTo(-w * 0.32, h * 0.25); c.lineTo(w * 0.3, -h * 0.32); c.stroke();
+          c.fillStyle = "rgba(255,255,255,0.8)"; c.font = Math.round(H * 0.022) + "px sans-serif"; c.textAlign = "center"; c.fillText("伊邪那岐 出招姿势（新生图）", 0, h * 0.42);
+        } else if (i === 2) { /* SERIES FINALE title screen, drawn in code */
+          c.fillStyle = Y; c.fillRect(-w, -h, w * 2, h * 2);
+          c.fillStyle = "#e3c900"; for (var hx = -8; hx <= 8; hx++) for (var hy = -5; hy <= 5; hy++) { c.beginPath(); c.arc(hx * w / 14, hy * h / 9, H * 0.0035 * (1 + ((hx + hy + 20) % 3)), 0, Math.PI * 2); c.fill(); }
+          c.save(); c.rotate(-0.12); c.font = Math.round(h * 0.2) + "px 'Archivo Black', sans-serif"; c.textAlign = "center"; c.textBaseline = "middle";
+          c.lineWidth = 4; c.strokeStyle = "#111"; c.strokeText("SERIES", -w * 0.04, -h * 0.13); c.fillStyle = "#fff"; c.fillText("SERIES", -w * 0.04, -h * 0.13);
+          c.fillStyle = "#ff3b5c"; c.fillRect(-w * 0.42, h * 0.02, w * 0.84, h * 0.2); c.fillStyle = "#fff"; c.fillText("FINALE", w * 0.03, h * 0.12); c.restore();
+          flower(c, -w * 0.36, -h * 0.3, h * 0.08, t, "#fff"); flower(c, w * 0.38, h * 0.3, h * 0.07, -t, "#fff"); star4(c, w * 0.35, -h * 0.32, h * 0.06, 0.15, 1); star5(c, -w * 0.38, h * 0.32, h * 0.05, t, "#33c3ff");
+        } else { /* Yu clears out of the static (Midnight Channel), placeholder until his finish art */
+          var g2 = c.createRadialGradient(0, 0, 0, 0, 0, w * 0.7); g2.addColorStop(0, "#fff7b0"); g2.addColorStop(1, "#e6b800"); c.fillStyle = g2; c.fillRect(-w, -h, w * 2, h * 2);
+        }
+        c.fillStyle = "rgba(0,0,0,0.13)"; for (var y = -h; y < h; y += 4) c.fillRect(-w, y, w * 2, 1.5);
+        c.restore();
+      }
+      function tvSet(i, tv) {
+        var k = i === 1 ? seg(lt, 0.5, 0.62) : seg(lt, tv.on, tv.on + 0.1);
+        c.save(); c.translate(tv.x, tv.y); c.rotate(tv.r);
+        /* casing: dark rounded box, knobs, little legs, antennas on the big one */
+        roundRect(c, -tv.w / 2, -tv.h / 2, tv.w, tv.h, tv.h * 0.12); c.fillStyle = "#1c1c24"; c.fill(); c.lineWidth = 3; c.strokeStyle = "#3a3a46"; c.stroke();
+        c.fillStyle = "#2c2c36"; c.fillRect(-tv.w * 0.32, tv.h / 2 - 2, tv.w * 0.06, tv.h * 0.1); c.fillRect(tv.w * 0.26, tv.h / 2 - 2, tv.w * 0.06, tv.h * 0.1);
+        if (i === 1) { c.strokeStyle = "#3a3a46"; c.lineWidth = 4; c.lineCap = "round"; c.beginPath(); c.moveTo(-tv.w * 0.06, -tv.h / 2); c.lineTo(-tv.w * 0.2, -tv.h * 0.86); c.moveTo(tv.w * 0.06, -tv.h / 2); c.lineTo(tv.w * 0.22, -tv.h * 0.84); c.stroke(); }
+        c.fillStyle = "#ff3b5c"; c.beginPath(); c.arc(tv.w * 0.44, -tv.h * 0.1, tv.h * 0.035, 0, Math.PI * 2); c.fill(); c.fillStyle = LIME; c.beginPath(); c.arc(tv.w * 0.44, tv.h * 0.06, tv.h * 0.035, 0, Math.PI * 2); c.fill();
+        /* screen: CRT shape, content, P4R yellow / red / green border */
+        crtShape(c, -tv.w * 0.04, 0, tv.w * 0.82, tv.h * 0.74, tv.h * 0.12, tv.h * 0.03, 0); c.save(); c.clip(); screenContent(i, tv, k); c.restore();
+        c.lineJoin = "round"; crtShape(c, -tv.w * 0.04, 0, tv.w * 0.82, tv.h * 0.74, tv.h * 0.12, tv.h * 0.03, 0); c.lineWidth = tv.h * 0.035; c.strokeStyle = Y; c.stroke();
+        crtShape(c, -tv.w * 0.04, 0, tv.w * 0.82 - tv.h * 0.05, tv.h * 0.74 - tv.h * 0.05, tv.h * 0.1, tv.h * 0.025, 0.006); c.lineWidth = 2; c.strokeStyle = "#ff3b5c"; c.stroke();
+        crtShape(c, -tv.w * 0.04 + 1, 1, tv.w * 0.82 - tv.h * 0.08, tv.h * 0.74 - tv.h * 0.08, tv.h * 0.09, tv.h * 0.02, -0.006); c.strokeStyle = LIME; c.stroke();
+        c.restore();
+        /* glossy floor reflection */
+        c.save(); c.globalAlpha = 0.12 + 0.12 * k; c.translate(tv.x, H * 0.7 + (H * 0.7 - tv.y) * 0.25); c.scale(1, -0.25); c.rotate(-tv.r); roundRect(c, -tv.w / 2, -tv.h / 2, tv.w, tv.h, tv.h * 0.12); c.fillStyle = i === 2 ? Y : i === 0 ? "#2a5bff" : "#ffe680"; c.fill(); c.restore();
+      }
+      cam(1.0, function () { TV.forEach(function (tv, i) { tvSet(i, tv); }); });
+      /* Yu in the middle TV, then stepping out of it: below the screen's lower edge he stays inside, above it he breaks past the frame */
+      var clear = seg(lt, 0.5, 0.64), pop = eOut(seg(lt, 0.66, 0.86));
+      cam(1.0, function () {
+        if (clear <= 0) return;
+        var bx = M.x - M.w * 0.04, sb = M.y + M.h * 0.37, scl = lerp(1, 1.32, pop), lift = pop * M.h * 0.1;
+        function bust() {
+          c.save(); c.translate(bx, sb + lift * 0.2); c.scale(scl, scl);
+          var hh2 = M.h * 0.95; c.globalAlpha = clear;
+          c.beginPath(); c.moveTo(-hh2 * 0.4, 0); c.quadraticCurveTo(-hh2 * 0.38, -hh2 * 0.42, -hh2 * 0.12, -hh2 * 0.5); c.lineTo(hh2 * 0.12, -hh2 * 0.5); c.quadraticCurveTo(hh2 * 0.38, -hh2 * 0.42, hh2 * 0.4, 0); c.closePath(); c.fillStyle = "#16161c"; c.fill();
+          c.beginPath(); c.arc(0, -hh2 * 0.66, hh2 * 0.15, 0, Math.PI * 2); c.fill();
+          c.lineWidth = hh2 * 0.02; c.strokeStyle = Y; c.beginPath(); c.arc(0, -hh2 * 0.66, hh2 * 0.15, Math.PI * 0.6, Math.PI * 1.4); c.stroke(); c.beginPath(); c.moveTo(-hh2 * 0.4, 0); c.quadraticCurveTo(-hh2 * 0.38, -hh2 * 0.42, -hh2 * 0.12, -hh2 * 0.5); c.stroke();
+          c.fillStyle = "rgba(255,255,255,0.85)"; c.font = Math.round(H * 0.024) + "px sans-serif"; c.textAlign = "center"; c.fillText("悠的收尾立绘（新生图）", 0, -hh2 * 0.2);
+          c.restore();
+        }
+        c.save(); crtShape(c, bx, M.y, M.w * 0.82, M.h * 0.74, M.h * 0.12, M.h * 0.03, M.r); c.clip(); bust(); c.restore();
+        if (pop > 0) { c.save(); c.beginPath(); c.rect(-W, -H * 2, W * 3, sb - lift + H * 2); c.clip(); bust(); c.restore(); }
+        var sh = seg(lt, 0.66, 1.1);
+        if (sh > 0 && sh < 1) {
+          var rr3 = rng(55);
+          for (var p = 0; p < 26; p++) {
+            var a = rr3() * Math.PI * 2, sp = lerp(0.6, 1.4, rr3()), d = eOut(sh) * M.h * 0.9 * sp, px = bx + Math.cos(a) * (M.w * 0.3 + d), py = M.y + Math.sin(a) * (M.h * 0.25 + d * 0.7);
+            c.save(); c.translate(px, py); c.rotate(a + sh * 3); c.globalAlpha = 1 - sh; c.fillStyle = p % 3 ? "#d9d9d9" : YH; c.fillRect(-M.w * 0.03, -2, M.w * 0.06 * (0.5 + rr3()), 3 + rr3() * 4); c.restore();
+          }
+          var fk = 1 - seg(lt, 0.66, 0.74); if (fk > 0) { c.save(); c.globalAlpha = fk * 0.8; c.fillStyle = "#fff"; c.fillRect(-W, -H, W * 3, H * 3); c.restore(); }
+          [["#ff3fae", 0], [YH, 0.06], [LIME, 0.12]].forEach(function (rc) { var kk = seg(sh, rc[1], 0.75 + rc[1]); if (kk > 0 && kk < 1) ring(c, bx, M.y, lerp(M.h * 0.3, M.h * 1.5, eOut(kk)), lerp(6, 1.5, kk), rc[0], 1 - kk); });
+        }
+      });
+      /* screen-space details: stars, petals, name, ticker, the TV frame */
+      var lit = seg(lt, 0.66, 0.74);
       if (lit > 0) {
         var rs = rng(77);
-        for (var s = 0; s < 12; s++) { var px = rs() * W, py = rs() * H * 0.75, sk = seg(lt, 0.78 + s * 0.03, 0.95 + s * 0.03), tw = 0.6 + 0.4 * Math.sin(t * 11 + s); if (sk > 0) { if (s % 4 === 3) star5(c, px, py, H * 0.022 * sk, t + s, ["#ff3fae", "#53e04f", "#33c3ff"][s % 3]); else star4(c, px, py, H * (s % 3 ? 0.016 : 0.028) * sk * tw, 0.15, 1, s % 2 ? "#ffffff" : YH); } }
-        for (var p = 0; p < 9; p++) { var pk = lt - 0.8 - p * 0.07; if (pk <= 0) continue; flower(c, W * (0.1 + 0.1 * p) + Math.sin(pk * 3 + p) * W * 0.03, -H * 0.05 + pk * H * 0.45 + p * H * 0.03, H * 0.025, pk * 2 + p, p % 2 ? "#ffffff" : "#fffbd0"); }
-        var tk = eOut(seg(lt, 0.8, 1.0));
+        for (var s = 0; s < 12; s++) { var px2 = rs() * W, py2 = rs() * H * 0.8, sk = seg(lt, 0.68 + s * 0.03, 0.85 + s * 0.03), tw = 0.6 + 0.4 * Math.sin(t * 11 + s); if (sk > 0) { if (s % 4 === 3) star5(c, px2, py2, H * 0.022 * sk, t + s, ["#ff3fae", "#53e04f", "#33c3ff"][s % 3]); else star4(c, px2, py2, H * (s % 3 ? 0.016 : 0.028) * sk * tw, 0.15, 1, s % 2 ? "#ffffff" : YH); } }
+        var pr = rng(19);
+        for (var p2 = 0; p2 < 10; p2++) { var pk = lt - 0.7 - p2 * 0.05; if (pk <= 0) continue; var ox = pr() * W, oy = pr() * H * 0.3; flower(c, ox + Math.sin(pk * 3 + p2) * W * 0.03, oy + pk * H * 0.4, H * (0.018 + pr() * 0.014), pk * 2 + p2, p2 % 2 ? "#ffffff" : "#fffbd0"); }
+        var nk = eOut(seg(lt, 0.72, 0.95));
+        c.save(); c.translate(W * 0.5 + (1 - nk) * W * 0.4, H * 0.76); c.rotate(-0.06); c.globalAlpha = nk; c.font = Math.round(H * 0.11) + "px 'Archivo Black', sans-serif"; c.textAlign = "center"; c.textBaseline = "middle";
+        c.lineWidth = 6; c.strokeStyle = "#111"; c.strokeText("YU NARUKAMI", 0, 0); c.fillStyle = YH; c.fillText("YU NARUKAMI", 0, 0);
+        c.save(); c.beginPath(); c.rect(-W, H * 0.005, W * 2, H); c.clip(); c.fillStyle = "#ff3b5c"; c.fillText("YU NARUKAMI", 0, 0); c.restore(); c.restore();
+        var tk = eOut(seg(lt, 0.72, 0.9));
         c.save(); c.translate(0, (1 - tk) * H * 0.12);
-        c.fillStyle = "#111"; c.fillRect(0, H * 0.84, W, H * 0.065); c.fillStyle = YH; c.fillRect(0, H * 0.84, W, H * 0.007); c.fillRect(0, H * 0.899, W, H * 0.006);
-        c.font = Math.round(H * 0.032) + "px 'Archivo Black', sans-serif"; c.textBaseline = "middle"; c.textAlign = "left"; c.fillStyle = YH;
+        c.fillStyle = "#111"; c.fillRect(0, H * 0.845, W, H * 0.06); c.fillStyle = YH; c.fillRect(0, H * 0.845, W, H * 0.007); c.fillRect(0, H * 0.899, W, H * 0.006);
+        c.font = Math.round(H * 0.03) + "px 'Archivo Black', sans-serif"; c.textBaseline = "middle"; c.textAlign = "left"; c.fillStyle = YH;
         var msg = "★ SERIES FINALE ★ STAR OF THE SHOW ★ YU NARUKAMI ", mw = c.measureText(msg).width, off = -((t * W * 0.12) % mw);
-        for (var xx = off; xx < W; xx += mw) c.fillText(msg, xx, H * 0.872);
+        for (var xx = off; xx < W; xx += mw) c.fillText(msg, xx, H * 0.874);
         c.restore();
-        tvFrameP4R(c, W, H, seg(lt, 0.8, 1.25), t, { tag: "SERIES FINALE", count: "" });
+        tvFrameP4R(c, W, H, seg(lt, 0.74, 1.15), t, { tag: "SERIES FINALE", count: "" });
       }
+      /* channel change in: yellow, broken strips, then the static inside the middle TV */
       var gi = 1 - seg(lt, 0, 0.12); if (gi > 0) { c.save(); c.globalAlpha = gi; c.fillStyle = YH; c.fillRect(0, 0, W, H); c.restore(); if (gi < 0.95) glitchStrips(c, W / 2, H / 2, W, H, 1 - gi, 91); }
     }
     if (tr < 0.42) { freeze(ctx, tr); return; }
@@ -1630,8 +1683,8 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   }
 
   var DEMOS = [
-    { id: "aoa", name: "总攻击 第二版（Series Finale，约 3.35 秒）", dur: 3.45, start: 2.3,
-      desc: "按你的意见重做：人物不扑，不用一块斜条直接扫，不硬切；转场全用 P4R 的电视语言，运镜用分层视差做。①最后一击定格：画面去色，悠和敌人变黑剪影，敌人身后弹出一个大黄圆盘（一圈网点、细白环），一道带网点的黄绿光带从右上角冲到敌人身上，镜头慢慢推近、歪一点。②电视隧道：定格画面缩进一台电视，四周一圈圈灰电视叠成隧道；中间屏幕闪雪花，变成发光的黄屏，射出黄、橙、黄绿光束，镜头加速冲进黄屏。③像换台一样信号错位，切到黑舞台、两束聚光灯：镜头由慢到快推到悠脚下，再仰起来拍全身，停一下。④身后两块大屏幕一起亮：左边悠的眼睛特写，右边伊邪那岐；彩虹圆环从屏幕扩出，地上斜躺着大名字 YU NARUKAMI，星星、花瓣、镜头光斑，底下滚动字幕条（★ SERIES FINALE ★ STAR OF THE SHOW ★），P4R 电视框转着收拢套住整个画面。⑤电视关机：压成一条亮线、缩成一个点，露出结算页。全长约 3.35 秒（P3 约 3.65、P5 约 3.3）。悠现在是占位剪影，游戏里换成他的模型或立绘。",
+    { id: "aoa", name: "总攻击 第三版（Series Finale，约 3.35 秒）", dur: 3.45, start: 2.3,
+      desc: "第三版：舞台那段改成纯 2D 的「午夜电视台」，不再让局内人物站在像 3D 的舞台上。①最后一击定格（去色、黑剪影、大黄圆盘、带网点的光带，镜头慢慢推近）→ ②电视隧道：缩进电视、冲进发光的黄屏 → ③换台：镜头其实在中间那台电视的屏幕里，往后拉，露出一面放着三台彩色电视的电视墙（暗场、聚光灯、地面倒影）→ ④三台电视从雪花里依次亮：左边伊邪那岐出招、右边 SERIES FINALE 标题画面、中间悠从雪花里显出来 → 悠从中间那台电视里冲出来（上半身越过电视框），屏幕碎成扫描线碎片飞出，闪白、彩虹圆环、星星、花瓣、他的名字、滚动字幕条，P4R 电视框转着收拢 → ⑤电视关机露出结算页。中间的悠和左边的伊邪那岐现在是占位，要新生成两张图（不用现在那两张）：悠伸手探向镜头的收尾立绘、伊邪那岐挥薙刀带蓝雷的出招图。",
       draw: function (ctx, W, H, tr) { aoaScene(ctx, W, H, tr); } },
     { id: "tvstate", name: "电视框状态 第二版：连环拳（这回合下 2 张攻击额外打出）", dur: 2.7, start: 1.3,
       desc: "电视框照 P4R 改得不那么规整：黄色是屏幕外面那一圈，四条边往外微微鼓（像老电视），边上薄、四个角厚，角里有网点；里面的红线、绿线不完全同心；左上压着一个状态名标签，右上角一台小电视，屏幕上显示还剩几次。出现：几层歪着的黄、红、绿框从大到小转着收拢到位（P4R 进战斗那种）。每次额外打出：信号错位一下，小电视里的数字跳一下。用完（或回合结束）：几层框反着转开、散掉。",
