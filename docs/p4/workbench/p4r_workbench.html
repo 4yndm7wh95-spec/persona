@@ -2365,10 +2365,11 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
           /* as in P4R: thin light rings, big translucent yellow pieces bursting toward the camera, then the smaller shards */
           ring(ctx, P[0], P[1], lerp(CHc * 0.5, H * 0.6, eOut(seg(st, 0, 0.45))), 2, "#ffffff", 0.9 * (1 - seg(st, 0.25, 0.45)));
           ring(ctx, P[0], P[1], lerp(CHc * 0.4, H * 0.45, eOut(seg(st, 0.06, 0.5))), 1.2, "#ffffff", 0.6 * (1 - seg(st, 0.3, 0.5)));
-          makeShards(77, 8, { vmin: H * 1.2, vmax: H * 2.2, smin: 1, smax: 1 }).forEach(function (s, bi) {
-            var k = eOut(seg(st, 0, 0.2)), d = k * H * lerp(0.3, 0.6, (bi % 3) / 2), a = Math.atan2(s.vy, s.vx);
-            var big = Object.assign({}, s, { size: H * lerp(0.06, lerp(0.15, 0.26, (bi % 4) / 3), k), hot: false });
-            ctx.save(); ctx.globalAlpha = 0.5 * (1 - seg(st, 0.07, 0.2)); drawShard(ctx, P[0] + Math.cos(a) * d, P[1] + Math.sin(a) * d, big, st, "#fff27a", 1); ctx.restore();
+          /* a few bigger pieces (about a third of the card wide, not bigger than it), translucent and gone in 0.2 s */
+          makeShards(77, 6, { vmin: H * 1.2, vmax: H * 2.2, smin: 1, smax: 1 }).forEach(function (s, bi) {
+            var k = eOut(seg(st, 0, 0.2)), d = k * H * lerp(0.22, 0.42, (bi % 3) / 2), a = Math.atan2(s.vy, s.vx);
+            var big = Object.assign({}, s, { size: CWc * lerp(0.12, lerp(0.22, 0.34, (bi % 3) / 2), k), hot: false });
+            ctx.save(); ctx.globalAlpha = 0.6 * (1 - seg(st, 0.08, 0.22)); drawShard(ctx, P[0] + Math.cos(a) * d, P[1] + Math.sin(a) * d, big, st, "#fff27a", 1); ctx.restore();
           });
           makeShards(21, 34, { vmin: H * 0.9, vmax: H * 2.4, smin: H * 0.012, smax: H * 0.045 }).forEach(function (s) {
             var p = shardPos(s, st, 2.6, H * 0.35); drawShard(ctx, P[0] + p[0], P[1] + p[1], s, st, Y, 1 - seg(st, 0.6, 1.0));
