@@ -127,6 +127,8 @@ textarea::placeholder { color: #6f6e67; }
 @media (max-width: 640px) { .u { grid-template-columns: 1fr; } .u .chips { justify-content: flex-start; } }
 details.round1 { margin-top: 44px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
 details.round1 > summary { cursor: pointer; padding: 14px 16px; font-weight: 700; }
+details.card > summary { cursor: pointer; font-weight: 700; }
+details.card[open] > summary { margin-bottom: 12px; }
 details.round1 > .inner { padding: 0 16px 16px; }
 details.round1 section { margin-top: 28px; }
 
@@ -158,13 +160,48 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
 <main class="wrap">
   <div class="notice">
     <b>现在只处理一件事：总攻击（Series Finale）。</b>别的牌的草图和以前几轮的问答都收起来了（代码都还在，要用再拿出来）。
-    先看下面「P4R 背景 UI：我的理解」，方向对了我再改结算画面；草图里的总攻击是当前版本（时间轴已合成一条）。悠的立绘在等 Codex（任务 2h，照主菜单扶眼镜的姿势），现在是占位。
+    这一轮改的是水波和结算卡：先看下面的说明，再看草图里的「水波」（两种撞色对比）和「总攻击」（结算卡已经换上新水波）。悠的立绘在等 Codex（任务 2h），天空的云图在等 Codex（任务 2i），现在都是占位。
   </div>
 
   <section id="ui-understanding">
-    <h2><span class="pill">01</span>P4R 背景 UI：我的理解（先对一下方向，再动手） <span class="status" id="st-ui"></span></h2>
-    <p class="lead">你定过的原则（FX_PLAN 第一节）：特效用 UI 和平面设计来做，<b>规整、有序、不乱，细节细腻，画面均匀</b>；要有<b>撞色</b>（字或形状越过色块分界线，就换成对面那块的配色）；<b>文字本身是特效，周围要有衬托它的细节</b>。下面每张图是我对照原版的理解，红圈编号对应下面的说明。</p>
+    <h2><span class="pill">01</span>这一轮：水波和结算卡 <span class="status" id="st-ui"></span></h2>
+    <div class="ufig card">
+      <h3>为什么之前看上去那么乱</h3>
+      <img src="ref/u8_ripple_old_new.jpg" alt="旧版水波和新版水波对比">
+      <ol>
+        <li><b>没有主次</b>：角落那滴扩得和主水滴差不多大、一样粗，还压到画面中间，两个在抢。</li>
+        <li><b>到处都在抵消</b>：所有色带只要叠在一起就挖空，整张都是碎块，看不出哪个是环。</li>
+        <li><b>环跟着半径一起变宽</b>：扩散时整组放大，像镜头拉近，不像水；扩到后面一条带子比人还宽，粗细节奏就没了。</li>
+        <li><b>扩到一定大小就停了</b>，不像真的水。</li>
+        <li><b>浅黄和黄太接近</b>，一碎就糊成一片。</li>
+      </ol>
+      <div class="take">新版：只滴两滴（主的落在人物上，次的落在右上角，晚 0.62 秒）；环的宽度固定，只在往外走的时候稍微散开一点；一直在扩，刚落下推得最猛，之后越来越柔和但不会停；只有两组环相撞的地方才撞色。</div>
+    </div>
 
+    <div class="ufig card">
+      <h3>结算卡现在的样子（总攻击视频约 5.6 秒处）</h3>
+      <img src="ref/u9_card_now.jpg" alt="当前结算卡，标注了 6 处">
+      <ol>
+        <li>主水滴落在人物上：电视一亮就落下，一直往外扩。</li>
+        <li>次水滴在右上角：白光退掉时落下，小一点，只有三道细环。</li>
+        <li>两组环相撞的地方撞色（结算卡先用 A：重叠处浅黄和橙对调）。</li>
+        <li>字只留名字，立在天空条上。天空条左窄右宽（远小近大），字从左到右变大是跟着这个透视走的。</li>
+        <li>两颗小星星跟着两组水波外圈的交点走，交点随扩散沿着接缝往外移。</li>
+        <li>把画面当成电视：人物左上像被光照到一样有点过曝，加了扫描线和暗角。</li>
+      </ol>
+      <div class="take">去掉了：背景的 Finale 大字、天空条边上滚动的小字、SERIES FINALE 标签、THE STAR OF THE SHOW 红条、灰色的花和细圆环。天空里的云现在是程序生成的占位，写实的云图已经写成 Codex 任务 2i。</div>
+    </div>
+
+    <div class="card plan">
+      <h3 style="margin:0 0 6px">要你定的</h3>
+      <ul>
+        <li><b>撞色用 A 还是 B</b>：草图第二个标签「水波」左右对比。A 是重叠处浅黄和橙对调，B 是重叠处挖回底色（像原版灰黄互换）。</li>
+        <li><b>扩散速度</b>：现在刚落下约每秒 1.1 个屏高，1 秒后降到每秒 0.4，2 秒后每秒 0.2，一直不停。要更慢、更柔就告诉我。</li>
+      </ul>
+      <textarea id="uiNote" rows="3" placeholder="选 A / B、速度、还有哪里不对，写在这里"></textarea>
+    </div>
+
+    <details class="card"><summary>上一轮的图解：P4R 背景 UI 我的理解（收起）</summary>
     <div class="ufig card">
       <h3>① 握刀插画的背景：几样大形状围着人物，四周都有东西</h3>
       <img src="ref/u1_cutin.jpg" alt="P4R 握刀插画，背景标注了 8 处">
@@ -245,19 +282,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       </ol>
     </div>
 
-    <div class="card plan">
-      <h3 style="margin:0 0 6px">接下来照这些改（你点头我就动手）</h3>
-      <ul>
-        <li><b>名字做成 ⑥A 那种多层色带</b>：天空条当底层，名字所在的主带上下加粗带、小圆点带和几根细线，大字压在带里、上半截冒出来，带影子和厚度。</li>
-        <li><b>撞色用到字上</b>（⑥B）：名字跨过天空条和黄底的分界线时，两部分换成对面的配色；背景大字跨过灰色圆环时也换色。</li>
-        <li><b>圆环围着人物铺满画面</b>（①），环宽有粗有细，交叉处黄灰互换；人物身后也有，不只角落。</li>
-        <li><b>「彩虹」改成 ①-7 那样</b>：一组同心色带，宽黄带为主，夹细橙线、细绿线和圆点带，不再是红橙黄绿等宽的大拱门。</li>
-        <li><b>点缀少而散</b>：两三朵小花、几个细圆环、一两颗星；小字一律放进标签。</li>
-        <li>每样东西依次切入（已经有）。</li>
-        <li>撞色的动态我只能看截图（这边连不上 B 站 / YouTube）。如果你能把原版那段传到下面「上传视频 / 截图」，我再逐帧拆一次。</li>
-      </ul>
-      <textarea id="uiNote" rows="3" placeholder="哪条理解错了、或者还漏了什么，写在这里"></textarea>
-    </div>
+    </details>
   </section>
 
   <section id="decisions" hidden>
@@ -1716,6 +1741,81 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   function camEase(u, c) { u = Math.max(0, Math.min(1, u)); c = c || 0; return (1 - c / 3) * (1 - Math.pow(1 - u * u, 1.5)) + c / 3 * u * u * u; }   /* end speed c */
   function sm5(k) { k = Math.max(0, Math.min(1, k)); return k * k * k * (k * (6 * k - 15) + 10); }
 
+  /* ===== the P4R ripple (user 2026-11-28): two drops of water, one main and one secondary, and the colours where their rings meet =====
+     - Imagine a drop really landing on still water: the rings push out hardest just after it lands, then keep spreading more and more
+       gently - they never stop. So the front radius is R(t) = vmin*t + v0*tau*(1 - e^(-t/tau)): speed v0 + vmin at the landing,
+       easing smoothly toward vmin, never zero, no jerks.
+     - Ring widths do not scale with the radius (that read as a zoom, not water): each band keeps its width, and the packet only loosens
+       a little as it travels (g = 1 + DISP * R), the way real ripples spread apart.
+     - A band is born at the centre as a thin ring, never as a disc, and the middle is calm water once the packet has passed.
+     - Only two drops: the main one on the figure, bigger, its bands in the order you gave (inside out: thick yellow, thin orange, medium
+       yellow, a wide gap, thick yellow, a small gap, thin yellow); the secondary one, smaller and simpler (three thin bands), lands in
+       the upper right a little later; the clash happens only where their rings cross.
+     - Where they cross (the clash): mode "swap" turns the colours over inside the overlap (pale yellow becomes orange, orange becomes pale
+       yellow); mode "xor" cuts the overlap back to the ground (like P4R's grey and yellow trading places).
+     - A slight chromatic aberration on the whole ripple layer: pink just outside one side of every edge, green outside the other. */
+  var RIPC = { ground: "#f6e40c", Y: "#fff6a6", O: "#f39a1e" };
+  function packet(seq) { var d = 0, out = []; seq.forEach(function (q) { if (q[1]) out.push([d, d + q[0], q[1]]); d += q[0]; }); return out; }
+  var DROPS = {   /* positions as fractions of the card, sizes and speeds in card heights */
+    main: { x: 0.29, y: 0.5, t0: 0, v0: 1.0, tau: 0.8, vmin: 0.12, disp: 0.35,
+      bands: packet([[0.016, "Y"], [0.02, null], [0.07, "Y"], [0.11, null], [0.042, "Y"], [0.018, "O"], [0.075, "Y"]]) },   /* from the front inward */
+    sub: { x: 0.86, y: 0.17, t0: 0.62, v0: 0.7, tau: 0.7, vmin: 0.08, disp: 0.3,
+      bands: packet([[0.016, "Y"], [0.03, null], [0.045, "Y"], [0.06, null], [0.026, "Y"]]) }
+  };
+  function dropFront(dr, t) { var a = t - dr.t0; return a <= 0 ? 0 : dr.vmin * a + dr.v0 * dr.tau * (1 - Math.exp(-a / dr.tau)); }
+  /* one drop's bands (of one colour key, or all) added to the current path; w, h = the card */
+  function dropPath(c, dr, t, w, h, key) {
+    var R = dropFront(dr, t) * h, g = 1 + dr.disp * R / h, x = dr.x * w, y = dr.y * h;
+    dr.bands.forEach(function (b) {
+      if (key && b[2] !== key) return;
+      var r1 = R - b[0] * h * g; if (r1 <= 0.5) return;
+      var r0 = Math.max(R - b[1] * h * g, 0.55 * r1);
+      c.moveTo(x + r1, y); c.arc(x, y, r1, 0, Math.PI * 2); c.moveTo(x + r0, y); c.arc(x, y, r0, 0, Math.PI * 2);
+    });
+  }
+  var ripOff = {};
+  function offCanvas(k, w, h) { var o = ripOff[k]; if (!o || o.width !== w || o.height !== h) { o = document.createElement("canvas"); o.width = w; o.height = h; ripOff[k] = o; } return o; }
+  /* the two drops into an offscreen layer (no ground), then onto c with the aberration fringes; c's transform is the card's origin */
+  function p4rRipples(c, w, h, t, mode) {
+    w = Math.round(w); h = Math.round(h);
+    var L = offCanvas("lay", w, h), x = L.getContext("2d"), M = DROPS.main, S = DROPS.sub;
+    x.clearRect(0, 0, w, h);
+    function fillP(fn, col, op) { x.save(); if (op) x.globalCompositeOperation = op; x.beginPath(); fn(x); x.fillStyle = col; x.fill("evenodd"); x.restore(); }
+    function clashP(keyM, col, op) { x.save(); x.beginPath(); dropPath(x, M, t, w, h, keyM); x.clip("evenodd"); fillP(function (q) { dropPath(q, S, t, w, h); }, col, op); x.restore(); }
+    fillP(function (q) { dropPath(q, S, t, w, h); }, RIPC.Y);
+    fillP(function (q) { dropPath(q, M, t, w, h, "Y"); }, RIPC.Y);
+    fillP(function (q) { dropPath(q, M, t, w, h, "O"); }, RIPC.O);
+    if (mode === "xor") { clashP("Y", "#000", "destination-out"); clashP("O", "#000", "destination-out"); }
+    else { clashP("Y", RIPC.O); clashP("O", RIPC.Y); }
+    var T = offCanvas("tint", w, h), tx = T.getContext("2d"), d = Math.max(1.5, h * 0.0045);
+    [["rgba(255,92,150,0.9)", -d, -d * 0.3], ["rgba(120,235,70,0.9)", d, d * 0.3]].forEach(function (f) {
+      tx.globalCompositeOperation = "source-over"; tx.clearRect(0, 0, w, h); tx.drawImage(L, 0, 0);
+      tx.globalCompositeOperation = "source-in"; tx.fillStyle = f[0]; tx.fillRect(0, 0, w, h);
+      c.drawImage(T, f[1], f[2]);
+    });
+    c.drawImage(L, 0, 0);
+  }
+  /* the study: the same two drops twice, one card per way of colouring the crossing, with a stand-in figure under the main drop */
+  function rippleStudyCard(c, x0, y0, w, h, t, mode, label) {
+    c.save(); c.beginPath(); c.rect(x0, y0, w, h); c.clip(); c.translate(x0, y0);
+    c.fillStyle = RIPC.ground; c.fillRect(0, 0, w, h);
+    p4rRipples(c, w, h, t, mode);
+    var fx = w * DROPS.main.x, fy = h * DROPS.main.y;
+    c.fillStyle = "#e4e4dc"; c.beginPath(); c.ellipse(fx, fy - h * 0.2, h * 0.115, h * 0.135, 0, 0, Math.PI * 2); c.fill(); c.beginPath(); c.moveTo(fx - h * 0.3, h * 1.02); c.quadraticCurveTo(fx - h * 0.28, fy - h * 0.06, fx, fy - h * 0.06); c.quadraticCurveTo(fx + h * 0.28, fy - h * 0.06, fx + h * 0.3, h * 1.02); c.fill();
+    c.fillStyle = "#1c1c22"; c.beginPath(); c.ellipse(fx, fy - h * 0.2, h * 0.1, h * 0.12, 0, 0, Math.PI * 2); c.fill(); c.beginPath(); c.moveTo(fx - h * 0.28, h * 1.02); c.quadraticCurveTo(fx - h * 0.26, fy - h * 0.04, fx, fy - h * 0.04); c.quadraticCurveTo(fx + h * 0.26, fy - h * 0.04, fx + h * 0.28, h * 1.02); c.fill();
+    c.restore();
+    c.save(); c.fillStyle = "rgba(20,20,24,0.82)"; c.fillRect(x0, y0, w, h * 0.1); c.fillStyle = "#ffffff"; c.font = "600 " + Math.round(h * 0.055) + "px 'Noto Sans SC', sans-serif"; c.textBaseline = "middle"; c.fillText(label, x0 + w * 0.025, y0 + h * 0.052); c.restore();
+  }
+  function rippleDemo(ctx, W, H, t) {
+    ctx.fillStyle = "#141418"; ctx.fillRect(0, 0, W, H);
+    var g = W * 0.012, w = (W - g * 3) / 2, h = w * 9 / 16, y0 = (H - h) / 2 - H * 0.06;
+    rippleStudyCard(ctx, g, y0, w, h, t, "swap", "撞色 A：重叠处颜色对调（浅黄 ↔ 橙）");
+    rippleStudyCard(ctx, g * 2 + w, y0, w, h, t, "xor", "撞色 B：重叠处挖回底色（像原版灰黄互换）");
+    var R1 = dropFront(DROPS.main, t), R2 = dropFront(DROPS.sub, t);
+    ctx.fillStyle = "rgba(255,255,255,0.75)"; ctx.font = Math.round(H * 0.03) + "px 'Noto Sans SC', sans-serif"; ctx.textBaseline = "top";
+    ctx.fillText("主水滴：落在人物上（0 秒）　次水滴：右上角，晚 0.62 秒落下　两组水波一直在往外扩，刚落下时最快，之后越来越柔和，但不会停", g, y0 + h + H * 0.03);
+    ctx.fillText("主水滴外圈半径 " + R1.toFixed(2) + " 屏高　次水滴 " + R2.toFixed(2) + " 屏高", g, y0 + h + H * 0.075);
+  }
   function aoaScene(ctx, W, H, tr) {
     var ex = W * 0.7, ey = H * 0.58, TX = W * 0.392, TY = H * 0.524, SW = W * 0.11, SH = H * 0.11, OV = 1.07;
     /* ribbon: in from the right RE0..TA, creeps into the TV TA..P1A (its static cuts to black at TVON), pulled in with the camera
@@ -1723,7 +1823,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
        screen stays dark for a beat, a glint FL0..FL1, the flash at FL1; the TV switches off OFF0..OFF1 */
     /* (user 2026-11-28) one timeline, not two: the ribbon cuts in from the lower right as soon as the enemy starts to go (RE0), swoops in
        and glides the last stretch while the squares build the TV, and is ready to dive in just as the TV has come on (TA) */
-    var RE0 = 0.32, TA = 2.0, P1A = TA + 0.14, P1B = P1A + 0.62, TVON = TA + 0.03, CI0 = P1B - 0.04, TIMP = CI0 + 0.1, FL0 = P1B + 0.62, FL1 = FL0 + 0.14, OFF0 = FL1 + 1.35, OFF1 = OFF0 + 0.42;
+    var RE0 = 0.32, TA = 2.0, P1A = TA + 0.14, P1B = P1A + 0.62, TVON = TA + 0.03, CI0 = P1B - 0.04, TIMP = CI0 + 0.1, FL0 = P1B + 0.62, FL1 = FL0 + 0.14, OFF0 = FL1 + 2.1, OFF1 = OFF0 + 0.42;
     /* (user 2026-11-28) the enemy is stylised away and rebuilt as the TV, at a natural pace (not sped up, not dragged) and alongside the
        ribbon coming in (hit-stopped seconds): two white flashes → it turns into a flat black silhouette, its edges flickering red / cyan
        → the silhouette cracks into small squares → they stream over, the side facing the TV first, and land as the TV's cells, black
@@ -1796,67 +1896,46 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       c.fillStyle = "rgba(255,255,255,0.85)"; c.font = Math.round(H * 0.03) + "px sans-serif"; c.textAlign = "center"; c.textBaseline = "alphabetic"; c.fillText("悠的收尾立绘（新生图：扛刀、推眼镜）", 0, -hh2 * 0.15);
       c.restore();
     }
-    /* (user 2026-11-28) the finish card in P4R's design language (menus, the release-date card, the katana cut-in), not loose pieces:
-       - one main axis: a diagonal strip of blue sky with clouds; the name stands on it in big extruded letters (like the date card)
-       - a huge serif italic word behind everything, cropped and close to the yellow (like STATS / Skill in the menus)
-       - the clash only in one corner: a ripple with bands of different widths and two discs in one even-odd path (yellow and olive
-         grey swap where they cross), green / pink fringes on every edge
-       - text never on its own: a dark tag with a star for SERIES FINALE, a red strip for THE STAR OF THE SHOW
-       - flat flowers knocked out of register (white, a yellow outline, small black ones), grey flowers and sparkles by the clash
-       - every piece cuts in on its own beat after the flash */
+    /* (user 2026-11-28) the finish card, tenth draft - what was wrong before: too many words standing about like subtitles, letters
+       growing for no reason, a sky strip of even thickness with cartoon clouds, rings everywhere at the same weight. Now:
+       - the background is the two drops (p4rRipples): the main ripple round him, the secondary one in the upper right, the clash where
+         they meet, both still spreading the whole time
+       - one piece of text only, his name, and it belongs to a UI piece: it stands on the sky wedge and is drawn in the wedge's
+         perspective (the wedge is thin at its far end on the left and thick at its near end on the right, as on P4R's date card, so the
+         letters grow toward the right because they are nearer, not for effect)
+       - the wedge holds a real-looking sky (gen/sky_clouds.webp: a placeholder until Codex paints one, task 2i), mapped in strips so the
+         clouds are bigger at the near end
+       - a few flat flowers knocked out of register, and two sparkles that ride the points where the two ripples' fronts cross */
     var CYL = "#f6e40c", CYP = "#f8f58c", CGR = "#66665a";
     function grow(ft, a, d) { return eOut(seg(ft, a, a + (d || 0.3))); }
     function pop(ft, a, d) { var k = seg(ft, a, a + (d || 0.25)); return k > 0 ? eBack(k) : 0; }
-    var SKA = -0.3, SKX = 0.62, SKY = 0.6, SKT = 0.24;   /* the sky strip: angle, centre (W, H), thickness (H) */
-    /* (user 2026-11-28: the rings were all in one corner) ripples spread over the whole card, each a few bands of different widths,
-       landing one after another like drops and overlapping here and there (where they cross, the colours swap) */
-    var RIPS = [[0.2, 0.15, [0.05, 0.09, 0.15, 0.19, 0.27], 0.04], [0.62, 0.07, [0.04, 0.07, 0.12, 0.16, 0.24, 0.28], 0.1],
-      [0.9, 0.3, [0.06, 0.1, 0.18, 0.22, 0.31, 0.35], 0.16], [0.47, 0.97, [0.05, 0.08, 0.14, 0.19, 0.25], 0.22], [0.92, 0.96, [0.04, 0.07, 0.11, 0.15], 0.28]];
-    function clashPath(c, ft) {
-      function disc(x, y, r) { if (r > 0.5) { c.moveTo(x + r, y); c.arc(x, y, r, 0, Math.PI * 2); } }
-      var gz = 1 + 0.03 * ft;
-      c.beginPath();
-      RIPS.forEach(function (R) { R[2].forEach(function (r, i) { disc(W * R[0], H * R[1], H * r * gz * grow(ft, R[3] + i * 0.04, 0.32)); }); });
-      disc(W * 0.76, H * 0.62, H * 0.15 * pop(ft, 0.3, 0.26));
+    var WEDGE = { x0: 0.43, x1: 1.02, top0: 0.79, bot0: 0.915, top1: 0.32, bot1: 0.86 };   /* far (left) end and near (right) end: x of W, top and bottom of H */
+    function wedgeAt(u) { return { x: W * lerp(WEDGE.x0, WEDGE.x1, u), t: H * lerp(WEDGE.top0, WEDGE.top1, u), b: H * lerp(WEDGE.bot0, WEDGE.bot1, u) }; }
+    if (!IMG.sky) loadImg("sky", "gen/sky_clouds.webp");
+    function skyWedge(c, ft, fe) {
+      var kw = grow(fe, 0.02, 0.32); if (kw <= 0) return;   /* it reaches out from the far end to the near end */
+      var A = wedgeAt(0), B = wedgeAt(kw);
+      c.save(); c.beginPath(); c.moveTo(A.x, A.t); c.lineTo(B.x, B.t); c.lineTo(B.x, B.b); c.lineTo(A.x, A.b); c.closePath(); c.clip();
+      if (ready("sky")) {   /* mapped in vertical strips: each strip shows the picture's full height, so the clouds grow toward the near end */
+        var img = IMG.sky, N = 48, drift = ft * 0.012;
+        for (var i = 0; i < N; i++) {
+          var u0 = i / N, u1 = (i + 1) / N; if (u0 > kw) break;
+          var P = wedgeAt(u0), Q = wedgeAt(u1), v0 = (0.08 + u0 * 0.62 + drift) * img.width, v1 = (0.08 + u1 * 0.62 + drift) * img.width;
+          c.drawImage(img, v0, 0, Math.max(1, v1 - v0), img.height, P.x - 0.5, Math.min(P.t, Q.t), Q.x - P.x + 1, Math.max(P.b, Q.b) - Math.min(P.t, Q.t));
+        }
+      } else { var g = c.createLinearGradient(0, H * 0.45, 0, H * 0.93); g.addColorStop(0, "#1a6fd0"); g.addColorStop(1, "#9fd2f6"); c.fillStyle = g; c.fillRect(0, 0, W, H); }
+      c.restore();
+      /* a fine white edge along the top, as the wedge catches the light */
+      c.save(); c.beginPath(); c.moveTo(A.x, A.t); c.lineTo(B.x, B.t); c.lineWidth = Math.max(1.5, H * 0.004); c.strokeStyle = "rgba(255,255,255,0.85)"; c.stroke(); c.restore();
     }
-    function cloud(c, x, y, s2) {
-      c.fillStyle = "rgba(170,210,245,0.7)"; [[0, 0.18, 1], [0.9, 0.22, 0.8], [-0.85, 0.24, 0.75]].forEach(function (b) { c.beginPath(); c.arc(x + b[0] * s2, y + b[1] * s2, s2 * b[2], 0, Math.PI * 2); c.fill(); });
-      c.fillStyle = "#ffffff"; [[0, 0, 1], [0.9, 0.12, 0.78], [-0.85, 0.15, 0.72], [0.4, -0.45, 0.7], [-0.35, -0.38, 0.62]].forEach(function (b) { c.beginPath(); c.arc(x + b[0] * s2, y + b[1] * s2, s2 * b[2], 0, Math.PI * 2); c.fill(); });
-    }
-    function finishBG(c, ft) {
+    function finishBG(c, ft, fe) {
       c.fillStyle = CYL; c.fillRect(0, 0, W, H);
-      var sp = H * 0.09, rr = sp * 0.42, ox = (ft * sp * 0.2) % sp;   /* faint pale discs, popping in as a wave from the upper right */
-      c.fillStyle = "rgba(250,246,150,0.55)"; c.beginPath();
-      for (var y = -sp; y < H + sp; y += sp) for (var x = -sp; x < W + sp; x += sp) { var px = x + ox + (Math.round(y / sp) % 2) * sp * 0.5, dl = Math.hypot(px - W, y) / (W * 1.4) * 0.3, kd = eOut(seg(ft, dl, dl + 0.16)) * rr; if (kd > 0.5) { c.moveTo(px + kd, y); c.arc(px, y, kd, 0, Math.PI * 2); } }
+      var sp = H * 0.09, rr = sp * 0.42, ox = (ft * sp * 0.2) % sp;   /* faint pale discs in the ground */
+      c.fillStyle = "rgba(250,246,150,0.34)"; c.beginPath();
+      for (var y = -sp; y < H + sp; y += sp) for (var x = -sp; x < W + sp; x += sp) { var px = x + ox + (Math.round(y / sp) % 2) * sp * 0.5; c.moveTo(px + rr, y); c.arc(px, y, rr, 0, Math.PI * 2); }
       c.fill();
-      /* the huge serif word behind it all */
-      var kw = grow(ft, 0, 0.34);
-      /* the clash */
-      clashPath(c, ft); c.fillStyle = CGR; c.fill("evenodd");
-      /* the big serif word lies over the clash and changes colour with it: dark yellow on the yellow, pale on the grey */
-      if (kw > 0) {
-        var fw2 = function () { c.save(); c.translate(W * 0.6 + (1 - kw) * W * 0.3, H * 0.27); c.rotate(-0.16); c.font = "italic 900 " + Math.round(H * 0.4) + "px 'Playfair Display', serif"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText("Finale", 0, 0); c.restore(); };
-        c.save(); c.globalAlpha = 0.5 * kw; c.fillStyle = "#e2ad00"; fw2(); c.restore();
-        c.save(); clashPath(c, ft); c.clip("evenodd"); c.globalAlpha = 0.5 * kw; c.fillStyle = "#f6ee8a"; fw2(); c.restore();
-      }
-      var fw = Math.max(1.5, H * 0.003);
-      c.save(); c.translate(H * 0.0035, H * 0.0025); clashPath(c, ft); c.lineWidth = fw; c.strokeStyle = "rgba(150,230,60,0.8)"; c.stroke(); c.restore();
-      c.save(); c.translate(-H * 0.0035, -H * 0.0025); clashPath(c, ft); c.lineWidth = fw; c.strokeStyle = "rgba(255,210,236,0.6)"; c.stroke(); c.restore();
-      /* the sky strip, wiping in along itself from the lower left */
-      var ks = grow(ft, 0.04, 0.3), th = H * SKT;
-      if (ks > 0) {
-        c.save(); c.translate(W * SKX, H * SKY); c.rotate(SKA);
-        c.beginPath(); c.rect(-W * 1.1, -th / 2, W * 2.2 * ks, th); c.clip();
-        var g = c.createLinearGradient(0, -th / 2, 0, th / 2); g.addColorStop(0, "#1673c9"); g.addColorStop(0.55, "#3d9fe8"); g.addColorStop(1, "#b9e3ff"); c.fillStyle = g; c.fillRect(-W * 1.1, -th / 2, W * 2.2, th);
-        var cr = rng(14);
-        for (var k = 0; k < 9; k++) { var cx = -W * 0.9 + k * W * 0.24 + ((ft * W * 0.04) % (W * 0.24)) + cr() * W * 0.05, cy = th * (cr() * 0.5 - 0.05), cs = H * (0.03 + cr() * 0.025); cloud(c, cx, cy, cs); }
-        c.fillStyle = "rgba(10,40,80,0.35)"; c.fillRect(-W * 1.1, -th / 2, W * 2.2, H * 0.004); c.fillRect(-W * 1.1, th / 2 - H * 0.004, W * 2.2, H * 0.004);
-        /* a line of small repeated text running along the strip's lower edge (like the name repeated across P4R's stage floor) */
-        c.font = Math.round(H * 0.026) + "px Anton, sans-serif"; c.textBaseline = "middle"; c.textAlign = "left"; c.fillStyle = "rgba(255,255,255,0.85)";
-        var rt = "SERIES FINALE  \u2726  STAR OF THE SHOW  \u2726  ", rw2 = c.measureText(rt).width, ro = -((ft * W * 0.08) % rw2) - W * 1.1;
-        for (var xx = ro; xx < W * 1.1; xx += rw2) c.fillText(rt, xx, th / 2 - H * 0.022);
-        c.restore();
-      }
+      p4rRipples(c, W, H, ft, "swap");   /* the main drop lands as the TV comes on (ft 0), the secondary one as the white-out clears */
+      skyWedge(c, ft, fe);
     }
     /* P4R flat flower with its colour plates knocked out of register (red / green copies peeking out round the main one) */
     function flowerShape(c, x, y, r, rot) { c.beginPath(); for (var i = 0; i < 6; i++) { var a = rot + i * Math.PI / 3, px = x + Math.sin(a) * r * 0.55, py = y - Math.cos(a) * r * 0.55; c.moveTo(px + r * 0.29, py); c.ellipse(px, py, r * 0.29, r * 0.5, a, 0, Math.PI * 2); } }
@@ -1887,71 +1966,118 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       yuSilC = { img: img, cv: cv, R: R }; return yuSilC;
     }
     if (!aoaFontAsked && document.fonts && document.fonts.load) { aoaFontAsked = true; document.fonts.load("40px Anton"); document.fonts.load("italic 900 40px 'Playfair Display'"); }
-    /* the name standing on the sky strip in big extruded letters (yellow face, deep blue sides, like the date on P4R's card);
-       each letter pops up out of the strip in turn; a dark tag with a star above it says SERIES FINALE */
-    function stripName(c, ft) {
-      var txt = "NARUKAMI", fs = H * 0.18, n = txt.length;
-      c.save(); c.translate(W * 0.735, H * 0.565); c.rotate(SKA);
-      c.font = Math.round(fs) + "px Anton, 'Archivo Black', sans-serif"; c.textBaseline = "alphabetic"; c.textAlign = "left";
-      var sc = [], ws = [], tot = 0;
-      for (var i = 0; i < n; i++) { sc.push(lerp(0.74, 1.26, i / (n - 1))); ws.push(c.measureText(txt[i]).width * sc[i]); tot += ws[i] + fs * 0.03 * sc[i]; }
-      var x = -tot / 2, base = fs * 0.36;
-      for (i = 0; i < n; i++) {
-        var lk = seg(ft, 0.14 + i * 0.035, 0.36 + i * 0.035), ch = txt[i], xi = x, s1 = sc[i]; x += ws[i] + fs * 0.03 * s1;
-        if (lk <= 0) continue;
-        var gl = 1 - seg(ft, 0.14 + i * 0.035, 0.42 + i * 0.035), dep = H * 0.03 * s1;
-        c.save(); c.translate(xi, base); c.scale(s1, s1 * eBack(lk));
-        for (var d = 10; d >= 1; d--) { c.fillStyle = d > 8 ? "#0f2f4f" : "#1d5a8c"; c.fillText(ch, -d * dep / 10 * 0.55 / s1, d * dep / 10 / s1); }   /* sides toward the lower left */
-        if (gl > 0) { c.save(); c.globalCompositeOperation = "lighter"; c.globalAlpha = 0.8 * gl; c.fillStyle = "#ff3fae"; c.fillText(ch, -fs * 0.05 * gl, 0); c.fillStyle = "#22d8ff"; c.fillText(ch, fs * 0.05 * gl, 0); c.restore(); }
-        c.fillStyle = "#f8e808"; c.fillText(ch, 0, 0);
-        c.save(); c.beginPath(); c.rect(-fs, -fs * 0.98, fs * 2, fs * 0.2); c.clip(); c.fillStyle = "#fffbd2"; c.fillText(ch, 0, 0); c.restore();
-        c.restore();
+    /* his name standing on the wedge's lower edge, every letter as tall as the wedge is thick there (so they grow toward the near end),
+       extruded toward the lower left in deep blue (like the date on P4R's card), popping up one after another from the far end */
+    function wedgeName(c, fe) {
+      var txt = "NARUKAMI", n = txt.length, A = wedgeAt(0), B = wedgeAt(1), len = Math.hypot(B.x - A.x, B.b - A.b), ang = Math.atan2(B.b - A.b, B.x - A.x);
+      c.save(); c.font = "100px Anton, 'Archivo Black', sans-serif"; var adv = [];
+      for (var i = 0; i < n; i++) adv.push(c.measureText(txt[i]).width / 100);
+      /* fit: letter height = f x local thickness (well under the wedge's height, so the sky shows above them); walk along the edge
+         from u = 0.15 and shrink f until the last letter ends by u = 0.96 */
+      var f = 0.6, lay;
+      for (var it = 0; it < 30; it++) {
+        var u = 0.15; lay = [];
+        for (i = 0; i < n; i++) { var P = wedgeAt(u), hh = f * (P.b - P.t), wd = adv[i] * hh * 1.32; lay.push([u, hh]); u += (wd + hh * 0.06) / len; }
+        if (u <= 0.96) break; f *= 0.97;
       }
-      var tg = grow(ft, 0.26, 0.24);
-      if (tg > 0) {
-        c.save(); c.translate(-tot / 2 + (1 - tg) * -W * 0.1, base - fs * 1.02); c.globalAlpha = Math.min(1, tg * 2);
-        var tw = fs * 1.9, th2 = fs * 0.26; c.beginPath(); c.moveTo(0, -th2 / 2); c.lineTo(tw, -th2 / 2); c.lineTo(tw - th2 * 0.35, th2 / 2); c.lineTo(-th2 * 0.35, th2 / 2); c.closePath(); c.fillStyle = "#1c1c20"; c.fill();
-        c.fillStyle = "#ff3b5c"; c.fillRect(-th2 * 0.35, th2 / 2, tw, Math.max(2, th2 * 0.12));
-        star4(c, th2 * 0.5, 0, th2 * 0.32, 0.2, 1, "#f8e808");
-        c.font = Math.round(th2 * 0.66) + "px Anton, sans-serif"; c.textBaseline = "middle"; c.fillStyle = "#ffffff"; c.fillText("SERIES FINALE", th2 * 0.95, th2 * 0.03);
+      for (i = 0; i < n; i++) {
+        var lk = seg(fe, 0.1 + i * 0.04, 0.32 + i * 0.04); if (lk <= 0) continue;
+        var L = wedgeAt(lay[i][0]), fs = lay[i][1], gl = 1 - seg(fe, 0.1 + i * 0.04, 0.4 + i * 0.04), dep = fs * 0.12;
+        c.save(); c.translate(L.x, L.b - H * 0.006); c.rotate(ang); c.scale(fs / 100 * 1.32, fs / 100 * 1.32 * eBack(lk));   /* Anton's cap height is about 0.76 em */
+        c.textBaseline = "alphabetic"; c.textAlign = "left";
+        for (var d = 8; d >= 1; d--) { c.fillStyle = d > 6 ? "#0f2f4f" : "#1d5a8c"; c.fillText(txt[i], -d * dep / 8 * 0.6 * 100 / fs / 1.32, d * dep / 8 * 100 / fs / 1.32); }
+        if (gl > 0) { c.save(); c.globalCompositeOperation = "lighter"; c.globalAlpha = 0.7 * gl; c.fillStyle = "#ff3fae"; c.fillText(txt[i], -5 * gl, 0); c.fillStyle = "#22d8ff"; c.fillText(txt[i], 5 * gl, 0); c.restore(); }
+        c.fillStyle = "#f8e808"; c.fillText(txt[i], 0, 0);
+        c.save(); c.beginPath(); c.rect(-20, -80, 200, 13); c.clip(); c.fillStyle = "#fffbd2"; c.fillText(txt[i], 0, 0); c.restore();
         c.restore();
       }
       c.restore();
     }
-    /* (4) the finish card (what the TV shows after the flash); ft = time since the flash */
-    function finish(c, t, ft) {
-      finishBG(c, ft);
-      /* grey flowers, thin white rings and sparkles by the clash */
-      var gf = pop(ft, 0.3, 0.26); if (gf > 0) misFlower(c, W * 0.7, H * 0.12, H * 0.06 * gf, (1 - gf) * 2.4 + ft * 0.4, "grey", 0);
-      [[0.84, 0.06, 0.024, 0.34], [0.66, 0.31, 0.017, 0.42]].forEach(function (rg) { var pk = pop(ft, rg[3], 0.22); if (pk > 0) { c.beginPath(); c.arc(W * rg[0], H * rg[1], H * rg[2] * pk, 0, Math.PI * 2); c.lineWidth = Math.max(1.5, H * 0.006); c.strokeStyle = "#fbf8e6"; c.stroke(); } });
-      /* (user 2026-11-28) as big as in the P3 / P5 mods: a close-up that fills the card's height; it slides in from the left */
-      var yk = ft > 0 ? 1 + 0.025 * (1 - eOut(seg(ft, 0, 0.5))) : 1.025, ys = ft > 0 ? (1 - eOut(seg(ft, 0, 0.32))) * -W * 0.08 : -W * 0.08, yimg = null, yx, yy, yw, yh;
-      if (ready("yuGls")) {   /* the hand-on-the-glasses picture (Codex task 2h, 1536x1024, him on the left half, the jacket flying right): fills the height */
-        yimg = IMG.yuGls; yh = H * 1.12 * yk; yw = yh * 1.5; yx = -W * 0.04 + ys; yy = -H * 0.04 - (yk - 1) * H * 0.5;
-      } else if (ready("yuKat")) {
-        var kq = W / 1206 * yk; yimg = IMG.yuKat; yw = 1536 * kq; yh = 1024 * kq; yx = W / 2 - (330 + 603) * kq + ys; yy = -40 * kq - (yk - 1) * H * 0.5;
-      } else if (ready("yuFin")) { yimg = IMG.yuFin; yh = H * 1.75 * yk; yw = yh * 1024 / 1536; yx = W * 0.3 - yw / 2 + ys; yy = -H * 0.05 - (yk - 1) * H * 0.4; }
-      if (yimg) {
-        var ol = yuOutline(yimg), ks = yw / yimg.width, fl0 = ft > 0 ? 1 - seg(ft, 0.05, 0.3) : 1;
-        c.drawImage(ol.cv, yx - ol.R * ks + H * 0.006, yy - ol.R * ks + H * 0.005, ol.cv.width * ks, ol.cv.height * ks);
-        if (fl0 > 0) { c.save(); c.globalCompositeOperation = "lighter"; c.globalAlpha = fl0; c.drawImage(ol.cv, yx - ol.R * ks + H * 0.006, yy - ol.R * ks + H * 0.005, ol.cv.width * ks, ol.cv.height * ks); c.restore(); }
-        c.drawImage(yimg, yx, yy, yw, yh);
-      } else yuBust(c, W * 0.3, H * 1.05, H * 1.08 * yk);
-      if (ft <= 0) return;
-      stripName(c, ft);
-      /* flat flowers knocked out of register: they pop and spin in, their colour plates closing up as they land */
-      [[0.585, 0.86, 0.06, 0.36, "white"], [0.9, 0.82, 0.1, 0.42, "outline"], [0.955, 0.94, 0.035, 0.5, "black"], [0.52, 0.12, 0.04, 0.46, "white"], [0.47, 0.93, 0.03, 0.54, "black"]].forEach(function (f, i) {
-        var pk = pop(ft, f[3], 0.28); if (pk > 0) misFlower(c, W * f[0], H * f[1], H * f[2] * pk, (1 - pk) * 3 + ft * 0.3 + i, f[4], 1 - seg(ft, f[3], f[3] + 0.3));
-      });
-      [[0.87, 0.36, 0.028, 0.4], [0.62, 0.42, 0.02, 0.5], [0.97, 0.66, 0.024, 0.56]].forEach(function (sp, i) { var pk = seg(ft, sp[3], sp[3] + 0.14); if (pk > 0) star4(c, W * sp[0], H * sp[1], H * sp[2] * pk * (0.75 + 0.25 * Math.sin(t * 9 + i * 1.7)), 0.15, 1, "#ffffff"); });
-      /* the red strip (P4R's THE STAR OF THE SHOW), along the sky strip's angle in the lower-right corner, sliding in */
-      var rk = grow(ft, 0.3, 0.26);
-      if (rk > 0) {
-        c.save(); c.translate(W * 0.79 + (1 - rk) * W * 0.4, H * 0.865); c.rotate(SKA * 0.55);
-        var rw = W * 0.42, rh = H * 0.058; c.fillStyle = "#e8322a"; c.fillRect(-rw / 2, -rh / 2, rw, rh); c.fillStyle = "#f8e808"; c.fillRect(-rw / 2, -rh / 2, rw, H * 0.005);
-        c.font = Math.round(rh * 0.6) + "px Anton, sans-serif"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillStyle = "#fff6d8"; c.fillText("THE STAR OF THE SHOW", 0, rh * 0.05);
+    var yuShC = null;
+    function yuShadow(img) {   /* his picture as a flat dark shadow (made once per picture) */
+      if (yuShC && yuShC.img === img) return yuShC.cv;
+      var cv = document.createElement("canvas"); cv.width = img.width; cv.height = img.height; var x = cv.getContext("2d");
+      x.drawImage(img, 0, 0); x.globalCompositeOperation = "source-in"; x.fillStyle = "#2b2714"; x.fillRect(0, 0, cv.width, cv.height);
+      yuShC = { img: img, cv: cv }; return cv;
+    }
+    /* (user 2026-11-28, after P4R's victory screens: think of the picture as a real TV) the TV comes on: a dark, contrasty picture with
+       the corners almost black → next beat the middle burns out (a horizontal flare across it) → he turns into his own shadow → the
+       whole picture whites out → it comes back to normal. Scanlines throughout (strong while it comes on, faint after), a soft vignette */
+    var RV = { dark: 0.1, burn: 0.17, shadow: 0.27, white: 0.39, back: 0.64 };
+    function revealFX(c, ft) {
+      if (ft < RV.dark) {
+        c.save(); c.fillStyle = "rgba(0,0,0,0.5)"; c.fillRect(0, 0, W, H);
+        var vg = c.createRadialGradient(W / 2, H / 2, H * 0.18, W / 2, H / 2, Math.hypot(W, H) * 0.55); vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,0.93)"); c.fillStyle = vg; c.fillRect(0, 0, W, H);
         c.restore();
+      } else if (ft < RV.shadow) {
+        var kb = ft < RV.burn ? 1 : 1 - 0.65 * seg(ft, RV.burn, RV.shadow), fy = H * 0.5, fh = H * 0.05;
+        c.save(); c.globalCompositeOperation = "lighter";
+        var bg = c.createRadialGradient(W * 0.45, fy, 0, W * 0.45, fy, H * 0.8); bg.addColorStop(0, "rgba(255,252,220," + 0.95 * kb + ")"); bg.addColorStop(0.45, "rgba(255,238,140," + 0.45 * kb + ")"); bg.addColorStop(1, "rgba(255,238,140,0)");
+        c.fillStyle = bg; c.fillRect(0, 0, W, H);
+        var lg = c.createLinearGradient(0, fy - fh, 0, fy + fh); lg.addColorStop(0, "rgba(255,90,170,0)"); lg.addColorStop(0.36, "rgba(255,120,200," + 0.35 * kb + ")"); lg.addColorStop(0.5, "rgba(255,255,255," + 0.95 * kb + ")"); lg.addColorStop(0.64, "rgba(120,255,150," + 0.35 * kb + ")"); lg.addColorStop(1, "rgba(120,255,150,0)");
+        c.fillStyle = lg; c.fillRect(0, fy - fh, W, fh * 2);
+        c.restore();
+      } else if (ft < RV.back) {
+        c.save(); c.globalAlpha = ft < RV.white ? 1 : 1 - eOut(seg(ft, RV.white, RV.back)); c.fillStyle = "#ffffff"; c.fillRect(0, 0, W, H); c.restore();
       }
+      var sl = ft < RV.shadow ? 0.3 : ft < RV.white ? 0.05 : lerp(0.05, 0.07, seg(ft, RV.white, 1.0)), stp = Math.max(2, H / 240), vgk = ft >= RV.shadow && ft < RV.white ? 0 : seg(ft, RV.white, RV.back);
+      c.save(); c.globalAlpha = sl; c.fillStyle = "#000000"; for (var y = 0; y < H; y += stp * 1.5) c.fillRect(0, y, W, stp * 0.5); c.restore();
+      c.save(); var vg2 = c.createRadialGradient(W / 2, H / 2, H * 0.45, W / 2, H / 2, Math.hypot(W, H) * 0.6); vg2.addColorStop(0, "rgba(0,0,0,0)"); vg2.addColorStop(1, "rgba(0,0,0," + (ft < RV.shadow ? 0.28 : 0.28 * vgk) + ")"); c.fillStyle = vg2; c.fillRect(0, 0, W, H); c.restore();
+    }
+    /* his picture with the top left blown out, as if a light hit the screen there (P4R's card burns his hair to white) - made once */
+    var yuLitC = null;
+    function yuLit(img) {
+      if (yuLitC && yuLitC.img === img) return yuLitC.cv;
+      var cv = document.createElement("canvas"); cv.width = img.width; cv.height = img.height; var x = cv.getContext("2d");
+      x.drawImage(img, 0, 0); x.globalCompositeOperation = "source-atop";
+      var g = x.createRadialGradient(img.width * 0.28, img.height * 0.08, 0, img.width * 0.28, img.height * 0.08, Math.max(img.width, img.height) * 0.42);
+      g.addColorStop(0, "rgba(255,253,236,0.78)"); g.addColorStop(0.45, "rgba(255,250,220,0.3)"); g.addColorStop(1, "rgba(255,250,220,0)"); x.fillStyle = g; x.fillRect(0, 0, img.width, img.height);
+      yuLitC = { img: img, cv: cv }; return cv;
+    }
+    /* (4) the finish card (what the TV shows); ft = time since it came on (FL1); the UI cuts in from under the white-out (fe) */
+    function finish(c, t, ft) {
+      var fe = ft - 0.33;
+      finishBG(c, ft, fe);
+      /* (user 2026-11-28) as big as in the P3 / P5 mods: a close-up that fills the card's height; there from the moment the TV comes on,
+         brightened like a picture on a TV, and for one beat only his shadow */
+      var yk = 1 + 0.025 * (1 - eOut(seg(ft, 0, 0.6))), yimg = null, yx, yy, yw, yh;
+      if (ready("yuGls")) {   /* the hand-on-the-glasses picture (Codex task 2h, 1536x1024, him on the left half, the jacket flying right): fills the height */
+        yimg = IMG.yuGls; yh = H * 1.12 * yk; yw = yh * 1.5; yx = -W * 0.04; yy = -H * 0.04 - (yk - 1) * H * 0.5;
+      } else if (ready("yuKat")) {
+        var kq = W / 1206 * yk; yimg = IMG.yuKat; yw = 1536 * kq; yh = 1024 * kq; yx = W / 2 - (330 + 603) * kq; yy = -40 * kq - (yk - 1) * H * 0.5;
+      } else if (ready("yuFin")) { yimg = IMG.yuFin; yh = H * 1.75 * yk; yw = yh * 1024 / 1536; yx = W * 0.3 - yw / 2; yy = -H * 0.05 - (yk - 1) * H * 0.4; }
+      if (yimg) {
+        var ol = yuOutline(yimg), ks = yw / yimg.width;
+        c.drawImage(ol.cv, yx - ol.R * ks + H * 0.006, yy - ol.R * ks + H * 0.005, ol.cv.width * ks, ol.cv.height * ks);
+        if (ft >= RV.burn && ft < RV.shadow) c.drawImage(yuShadow(yimg), yx, yy, yw, yh);
+        else {
+          var lit = yuLit(yimg); c.drawImage(lit, yx, yy, yw, yh);
+          c.save(); c.globalCompositeOperation = "lighter"; c.globalAlpha = ft < RV.burn ? 0.4 : 0.12; c.drawImage(lit, yx, yy, yw, yh); c.restore();   /* exposed like a picture on a TV */
+        }
+      } else yuBust(c, W * 0.3, H * 1.05, H * 1.08 * yk);
+      if (fe > 0) finishUI(c, t, ft, fe);
+      revealFX(c, ft);
+    }
+    /* where the two ripples' fronts cross (the outer edge of each outermost band): two points, or none */
+    function frontCross(ft) {
+      var M = DROPS.main, S = DROPS.sub, R1 = dropFront(M, ft) * H, R2 = dropFront(S, ft) * H;
+      var x1 = M.x * W, y1 = M.y * H, x2 = S.x * W, y2 = S.y * H, dx = x2 - x1, dy = y2 - y1, d = Math.hypot(dx, dy);
+      if (R2 <= 0 || d >= R1 + R2 || d <= Math.abs(R1 - R2)) return [];
+      var a = (R1 * R1 - R2 * R2 + d * d) / (2 * d), hh = Math.sqrt(Math.max(0, R1 * R1 - a * a)), px = x1 + a * dx / d, py = y1 + a * dy / d;
+      return [[px - hh * dy / d, py + hh * dx / d], [px + hh * dy / d, py - hh * dx / d]];
+    }
+    function finishUI(c, t, ft, fe) {
+      wedgeName(c, fe);
+      /* flat flowers knocked out of register, popping and spinning in, their colour plates closing up as they land: a white one and a
+         small black one on his jacket (in front of him, as on P4R's card) - only two, the ripples carry the background */
+      [[0.17, 0.85, 0.058, 0.36, "white"], [0.25, 0.955, 0.026, 0.44, "black"]].forEach(function (f, i) {
+        var pk = pop(fe, f[3], 0.28); if (pk > 0) misFlower(c, W * f[0], H * f[1], H * f[2] * pk, (1 - pk) * 3 + fe * 0.3 + i, f[4], 1 - seg(fe, f[3], f[3] + 0.3));
+      });
+      /* sparkles riding the two points where the fronts cross, travelling outward along the seam as both ripples spread */
+      frontCross(ft).forEach(function (q, i) {
+        if (q[0] < -H * 0.05 || q[0] > W * 1.05 || q[1] < -H * 0.05 || q[1] > H * 1.05) return;
+        star4(c, q[0], q[1], H * 0.03 * (0.8 + 0.2 * Math.sin(t * 10 + i * 2)), 0.15, 1, "#ffffff");
+      });
     }
     /* (3) inside the TV (eighth draft, user 2026-11-28: no studio, the camera stays with the TV the enemy turned into) */
     /* (user 2026-11-28: the black looked plastic and not black enough) the glass of a switched-off CRT: near black, a touch lighter
@@ -2326,9 +2452,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     if (tr < OFF0) {
       var ti = tr - TIMP, shk = ti > 0 && ti < 0.16 ? Math.exp(-ti / 0.045) : 0;   /* a jolt as the yellow frame lands */
       ctx.save(); if (shk > 0) ctx.translate(Math.sin(ti * 110) * H * 0.008 * shk, Math.cos(ti * 83) * H * 0.006 * shk); framed(ctx, tr); ctx.restore();
-      /* the flash: the whole frame goes white for an instant and the picture is there */
-      var fk = seg(tr, FL1, FL1 + 0.24); if (fk > 0 && fk < 1) { ctx.save(); ctx.globalAlpha = 1 - eOut(fk); ctx.fillStyle = "#fffdf2"; ctx.fillRect(0, 0, W, H); ctx.restore(); }
-      return;
+            return;
     }
     var off = seg(tr, OFF0, OFF1);
     ctx.fillStyle = "#0d0f16"; ctx.fillRect(0, 0, W, H);
@@ -2341,9 +2465,12 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   }
 
   var DEMOS = [
-    { id: "aoa", name: "总攻击 第八版（敌人变剪影 → 小方块 → 拼成电视；推镜转到彩框角度；结算画面照 P4R 重排、逐个切入；约 5.4 秒）", dur: 5.38, start: 1.2,
-      desc: "①打中：受击、白闪两下 → ②渐变成黑色剪影，边缘闪红青错色，冒黑紫烟 → ③剪影裂成小方块，抖一下 → ④方块从朝电视那一侧开始一块块划弧飞过去，落地时由黑变成电视的颜色，拼出一台方块电视 → ⑤一道光扫过，方块电视变成真电视，三层彩框（黄 / 红 / 黄绿）收拢锁上，测试彩条、雪花 → ⑥彩带从右下进来，镜头开始慢推，同时慢慢转向彩框的角度；箭头钻进屏幕中心，雪花变黑屏 → ⑦镜头先慢后快冲进黑屏，落地时电视正好转到彩框的角度，原版的歪框从屏幕深处推出来（黄先、红跟上、黄绿最后）→ ⑧黑屏停一会（显像管玻璃，柔和反光）→ 中间亮点拉成亮线 → 闪白，结算画面亮出，背景元素和名字依次切入 → 关机进结算页。约 5.4 秒。",
+    { id: "aoa", name: "总攻击 第九版（电视亮起五拍；结算卡：两滴水的水波相撞撞色、名字立在透视天空条上；约 6.1 秒）", dur: 6.13, start: 1.2,
+      desc: "①打中：受击、白闪两下 → ②渐变成黑色剪影，边缘闪红青错色，冒黑紫烟 → ③剪影裂成小方块，抖一下 → ④方块从朝电视那一侧开始一块块划弧飞过去，落地时由黑变成电视的颜色，拼出一台方块电视 → ⑤一道光扫过，方块电视变成真电视，三层彩框（黄 / 红 / 黄绿）收拢锁上，测试彩条、雪花 → ⑥彩带从右下进来，镜头开始慢推，同时慢慢转向彩框的角度；箭头钻进屏幕中心，雪花变黑屏 → ⑦镜头先慢后快冲进黑屏，落地时电视正好转到彩框的角度，原版的歪框从屏幕深处推出来（黄先、红跟上、黄绿最后）→ ⑧黑屏停一会（显像管玻璃，柔和反光）→ 中间亮点拉成亮线 → ⑨电视亮起：先是又暗又高对比、四角很黑的画面 → 中心过曝、一道横向光 → 人物变成一个影子 → 整个画面白光过曝 → 恢复正常 → ⑩结算卡：电视一亮主水滴就落在人物上一直往外扩，白光退掉时右上角落下次水滴，两组环相撞处撞色，小星星跟着交点走；天空条从左往右伸出来，名字一个个弹起来 → 关机进结算页。约 6.1 秒。",
       draw: function (ctx, W, H, tr) { aoaScene(ctx, W, H, tr); } },
+    { id: "ripple", name: "水波（两滴水：一主一次，相撞处撞色；两种撞色对比）", dur: 4.6, start: 2.4,
+      desc: "照你说的重新做：只滴两滴水。主水滴落在人物立绘上（最大），0.62 秒后右上角落一滴小一点的（次要，只有三道细环）。水波一直在往外扩：刚落下那一下推得最猛，之后越来越柔和，但不会停下来（外圈半径 = 匀速的一点 + 指数衰减的一大段，速度曲线是平滑的，没有急停）。环的宽度不再跟着半径一起放大（之前像镜头拉近，不像水），只在往外走的时候稍微散开一点。主水滴从里往外：粗黄、细橙、中黄紧挨着，一段宽的透明，一圈粗黄，一小段透明，一圈细黄；中间是平静的水面，不画实心圆。两组环相撞的地方才撞色，左右两种处理给你比：A 重叠处颜色对调（浅黄变橙、橙变浅黄）；B 重叠处挖回底色（原版灰黄互换那种）。整层水波有一点色差：每条边外面一侧粉、一侧绿。你选 A 还是 B，我就用到结算画面上（现在结算画面先用 A）。",
+      draw: function (ctx, W, H, t) { rippleDemo(ctx, W, H, t); } },
     { id: "tvstate", hidden: true, name: "电视框状态 第二版：连环拳（这回合下 2 张攻击额外打出）", dur: 2.7, start: 1.3,
       desc: "电视框照 P4R 改得不那么规整：黄色是屏幕外面那一圈，四条边往外微微鼓（像老电视），边上薄、四个角厚，角里有网点；里面的红线、绿线不完全同心；左上压着一个状态名标签，右上角一台小电视，屏幕上显示还剩几次。出现：几层歪着的黄、红、绿框从大到小转着收拢到位（P4R 进战斗那种）。每次额外打出：信号错位一下，小电视里的数字跳一下。用完（或回合结束）：几层框反着转开、散掉。",
       draw: function (ctx, W, H, tr) {
