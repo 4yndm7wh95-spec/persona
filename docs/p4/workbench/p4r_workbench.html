@@ -138,6 +138,13 @@ details.round1 section { margin-top: 28px; }
 .up .meta { font-size: 12px; color: var(--dim); margin-top: 6px; word-break: break-all; }
 .muted { color: var(--dim); }
 footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
+.ufig { margin: 0 0 22px; }
+.ufig img { display: block; width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); background: #000; }
+.ufig h3 { margin: 0 0 8px; font-size: 16px; }
+.ufig ol, .ufig ul { margin: 10px 0 0; padding-left: 22px; }
+.ufig li { margin: 3px 0; }
+.ufig .take { margin-top: 8px; padding: 8px 12px; border-left: 3px solid #ff2878; background: rgba(255,40,120,0.07); border-radius: 0 6px 6px 0; }
+.plan li { margin: 6px 0; }
 </style>
 
 <header class="hero">
@@ -150,20 +157,110 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
 
 <main class="wrap">
   <div class="notice">
-    <b>这一轮：去掉拖的地方。</b>快速版尽量一打出去就见效果（伤害牌尽快出伤害），完整版只去掉没必要的停顿；都不加速、不删表演。添柴你说正合适，没动。草图顺序：添柴完整版、添柴快速版、恶魔之焰完整版、恶魔之焰快速版、几万真言完整版、几万真言快速版。
-    <table style="width:100%;margin:10px 0 4px;border-collapse:collapse;font-size:14px">
-      <tr style="text-align:left;color:var(--dim)"><th style="padding:4px 6px">牌</th><th style="padding:4px 6px">完整版（条件）</th><th style="padding:4px 6px">快速版（其余情况）</th></tr>
-      <tr><td style="padding:4px 6px">添柴（没动）</td><td style="padding:4px 6px">建议烧 ≥ 7 张：约 0.5 秒捏碎，约 2.3 秒新牌发完</td><td style="padding:4px 6px">约 0.4 秒捏碎，约 1.2 秒新牌全部到手</td></tr>
-      <tr><td style="padding:4px 6px">恶魔之焰</td><td style="padding:4px 6px">烧 ≥ 7 张：约 1 秒捏碎（之前 1.5 秒），约 1.4 秒出第一下</td><td style="padding:4px 6px">约 0.6 秒出第一下（之前 0.8 秒），5 张约 1 秒打完</td></tr>
-      <tr><td style="padding:4px 6px">几万真言</td><td style="padding:4px 6px">力量 ≥ 8：约 2.1 秒落第一下，约 3.5 秒结束（之前约 4.4 秒）</td><td style="padding:4px 6px">约 0.45 秒捏碎，约 1 秒落第一下（之前约 2 秒），约 1.6 秒打完</td></tr>
-    </table>
-    恶魔之焰：光团不再慢慢起步，一开始就在动，扫过手牌越来越快，一口气拐上去到电视里的手，只在最后落到手上时稍微收一下；牌收叠好马上捏碎。快速版扫牌同速，扫完光团直接冲出画面。<br>几万真言：快速版杖快速转一圈就停，停住马上劈。完整版捏碎提前，杖转得稍快，停住后不再空等，四下间隔 0.24 秒，结尾圆环紧跟最后一下。<br>
-    <b>总攻击第八版（草图第 1 个）：</b>这一轮：①时间轴合成一条：一打中、敌人开始出特效，彩带就从右下切进来，先快后慢地滑到电视边上；敌人变剪影 → 碎成小方块 → 拼成电视、彩框锁上的同时彩带刚好到位，测试彩条一闪箭头就钻进去。敌人这段回到正常速度（约 1.9 秒，不再像加了倍速），总长还是约 5.4 秒。②结算画面照 P4R 的设计语言重做（参考主菜单、发售日卡、握刀插画）：一道斜的蓝天白云条做主轴，名字做成黄色字面、深蓝侧面的立体大字立在天空条上，一个个从条上弹起；上面一个带星星和红色下划线的深色斜标签写 SERIES FINALE；背后一个很大的衬线斜体 Finale 当底纹；撞色只放在右上角（同心环 + 压过来的灰色大圆，交叉处黄灰互换）；花是红绿错位的扁平花（白、黄描边、黑），右下一条 THE STAR OF THE SHOW 红条；每样东西依次切入。去掉了大彩虹拱和单独飘着的名字。③悠的立绘：用菜单 / 发售日卡那张扶眼镜的姿势做参考，让 Codex 重新画（任务 2h），现在先用扛刀那张占位。<br>
-    <b>电视框状态第二版（草图第 2 个）：</b>边往外鼓、四角厚边上薄、角里有网点、红绿线不同心、压着标签和一台小电视（显示剩余次数）；出现和消失都是几层歪框转着收拢 / 散开。<br>
-    <b>眼神特写换了做法：</b>不再让 AI 画中间帧（Codex 两张就跑位了）。只用一张睁眼图（Codex 这次的第一张），闭眼、睁开、镜片反光都叠在上面画：眼皮是一条会动的线，反光透过镜片遮罩叠上去。眼睛不可能变大小，也是连续动画，没有逐帧感；瞳孔一直清楚，不会发白。看草图第 7 个「召唤（眼神特写 → 翻页 → 手里捏碎）」，0.17 秒是闭眼、0.24 秒是半睁。
+    <b>现在只处理一件事：总攻击（Series Finale）。</b>别的牌的草图和以前几轮的问答都收起来了（代码都还在，要用再拿出来）。
+    先看下面「P4R 背景 UI：我的理解」，方向对了我再改结算画面；草图里的总攻击是当前版本（时间轴已合成一条）。悠的立绘在等 Codex（任务 2h，照主菜单扶眼镜的姿势），现在是占位。
   </div>
 
-  <section id="decisions">
+  <section id="ui-understanding">
+    <h2><span class="pill">01</span>P4R 背景 UI：我的理解（先对一下方向，再动手） <span class="status" id="st-ui"></span></h2>
+    <p class="lead">你定过的原则（FX_PLAN 第一节）：特效用 UI 和平面设计来做，<b>规整、有序、不乱，细节细腻，画面均匀</b>；要有<b>撞色</b>（字或形状越过色块分界线，就换成对面那块的配色）；<b>文字本身是特效，周围要有衬托它的细节</b>。下面每张图是我对照原版的理解，红圈编号对应下面的说明。</p>
+
+    <div class="ufig card">
+      <h3>① 握刀插画的背景：几样大形状围着人物，四周都有东西</h3>
+      <img src="ref/u1_cutin.jpg" alt="P4R 握刀插画，背景标注了 8 处">
+      <ol>
+        <li>同心环，环宽有粗有细，不是等宽的水波。</li>
+        <li>形状叠在一起的地方黄灰互换——背景里的撞色就是这个。</li>
+        <li>黄色区域铺满浅黄大圆点，圆点之间露出深黄的四角星。</li>
+        <li>灰色小花（浅色描边、后面错开一朵黄的）。</li>
+        <li>白色细圆环。</li>
+        <li>白色五角星，后面错开一个灰色的。</li>
+        <li>「彩虹」其实是一组同心色带：以宽的黄带为主，夹着细的橙线、绿线，有的带里铺着小圆点。</li>
+        <li>人物外面一圈浅灰描边，把人从背景里「剪」出来。</li>
+      </ol>
+      <div class="take">要点：形状不多但都很大，围着人物分布，上下左右都有，疏密均匀；点缀（花、圆环、星）少而散。第 7 条和你刚夸的技能名横幅是同一套语言：一组平行的色带，上粗下细，带小圆点。</div>
+    </div>
+
+    <div class="ufig card">
+      <h3>② 发售日卡（结算卡就是这个样子）：一条斜轴贯穿</h3>
+      <img src="ref/u2_endcard.jpg" alt="P4R 发售日卡，标注了 4 处">
+      <ol>
+        <li>一条斜的蓝天白云照片条，是整张卡的主轴。</li>
+        <li>日期是有厚度的立体字，从左到右越来越大（透视），下半截压在天空条里，上半截冒出条外。</li>
+        <li>扁平的花，红、绿两版错开（像套色没对准）。</li>
+        <li>人物压在天空条前面，天空条从他身后穿过。</li>
+      </ol>
+    </div>
+
+    <div class="ufig card">
+      <h3>③ 主菜单：东西很多，但都对齐在几条斜线上（乱中有序）</h3>
+      <img src="ref/u3_menu.jpg" alt="P4R 主菜单，标注了 5 处">
+      <ol>
+        <li>选中的字放大、带红青错色重影。</li>
+        <li>菜单字顺着人物外套的斜线一路排下来，大小、颜色、透明度一路变化；字体是衬线斜体。</li>
+        <li>天空照片条。</li>
+        <li>扁平大花（黄、白、黑）。</li>
+        <li>说明文字放在深色标签里，前面一颗星。</li>
+      </ol>
+    </div>
+
+    <div class="ufig card">
+      <h3>④ 事件大字：字从来不是平贴在画面上</h3>
+      <img src="ref/u4_events.jpg" alt="ADVANTAGE、1MORE、CRITICAL、地板上的 YOSUKE">
+      <ul>
+        <li><b>A</b> ADVANTAGE：透视立体字，像场景里的一个物件，压在人物后面。</li>
+        <li><b>B</b> 1MORE：黑字黄描边，跟一根很粗的黄色斜条、几颗星组合在一起。</li>
+        <li><b>C</b> CRITICAL!：红青错色 + 厚度 + 透视。</li>
+        <li><b>D</b> YOSUKE：名字印在舞台地板上，按透视反复排开，越远越淡。</li>
+      </ul>
+      <div class="take">要点：字要么是场景里的立体物件，要么压在色条、面板上；小字一律放在标签里。</div>
+    </div>
+
+    <div class="ufig card">
+      <h3>⑤ 升级 / 结算面板：字印在面板上</h3>
+      <img src="ref/u5_panels.jpg" alt="LEVEL UP 和 RESULT 面板">
+      <ul>
+        <li>LEVEL UP!、RESULT 印在弯曲的大面板上，被面板缝切开，跨过黄板和黑板时颜色不同（也是撞色）。</li>
+        <li>EXP、MONEY、LV 用很淡的衬线体当底纹；Fool、等级这类信息放在小标签里。</li>
+      </ul>
+    </div>
+
+    <div class="ufig card">
+      <h3>⑥ 我们之前做对的两样</h3>
+      <img src="ref/u6_ours_ok.jpg" alt="技能名横幅和撞色草图">
+      <ul>
+        <li><b>A</b> 技能名横幅（你刚说很有 P4R 感）：好几层平行色带，上面粗橙带配一排小黄点，中间宽黄带压着大字和影子，下面绿带加几根细黄线。</li>
+        <li><b>B</b> 撞色草图（你之前认可的）：字越过色块分界线，就换成对面那块的配色。</li>
+      </ul>
+    </div>
+
+    <div class="ufig card">
+      <h3>⑦ 现在的结算画面</h3>
+      <img src="ref/u7_current.jpg" alt="当前的结算画面，标注了 4 处">
+      <ol>
+        <li>圆环已经铺到整个画面，环宽不一（你刚说的分布不均已经改了，还没发视频）。</li>
+        <li>名字立在天空条上，但只有一层，缺少 ⑥A 那种上粗下细的色带层次，也没有撞色。</li>
+        <li>条边加了一行反复滚动的小字（学 ④D）。</li>
+        <li>立绘是占位，等 Codex。</li>
+      </ol>
+    </div>
+
+    <div class="card plan">
+      <h3 style="margin:0 0 6px">接下来照这些改（你点头我就动手）</h3>
+      <ul>
+        <li><b>名字做成 ⑥A 那种多层色带</b>：天空条当底层，名字所在的主带上下加粗带、小圆点带和几根细线，大字压在带里、上半截冒出来，带影子和厚度。</li>
+        <li><b>撞色用到字上</b>（⑥B）：名字跨过天空条和黄底的分界线时，两部分换成对面的配色；背景大字跨过灰色圆环时也换色。</li>
+        <li><b>圆环围着人物铺满画面</b>（①），环宽有粗有细，交叉处黄灰互换；人物身后也有，不只角落。</li>
+        <li><b>「彩虹」改成 ①-7 那样</b>：一组同心色带，宽黄带为主，夹细橙线、细绿线和圆点带，不再是红橙黄绿等宽的大拱门。</li>
+        <li><b>点缀少而散</b>：两三朵小花、几个细圆环、一两颗星；小字一律放进标签。</li>
+        <li>每样东西依次切入（已经有）。</li>
+        <li>撞色的动态我只能看截图（这边连不上 B 站 / YouTube）。如果你能把原版那段传到下面「上传视频 / 截图」，我再逐帧拆一次。</li>
+      </ul>
+      <textarea id="uiNote" rows="3" placeholder="哪条理解错了、或者还漏了什么，写在这里"></textarea>
+    </div>
+  </section>
+
+  <section id="decisions" hidden>
     <h2><span class="pill">01</span>我记下的决定 <span class="status" id="st-decisions"></span></h2>
     <p class="lead">有记错或者漏掉的，写在最下面的框里。</p>
     <div class="card">
@@ -187,13 +284,13 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     </div>
   </section>
 
-  <section id="refcheck">
+  <section id="refcheck" hidden>
     <h2><span class="pill">02</span>参考图确认 <span class="status" id="st-refcheck"></span></h2>
     <p class="lead">生图前先确认参考没错。下面是我们手里现有的设定图（P4G 图鉴解包，只当参考，不当素材）。正式参考会让 Codex 上网找高清官方图，找到以后也放到这里给你确认。</p>
     <div class="vlist" id="reflist"></div>
   </section>
 
-  <details class="round1">
+  <details class="round1" hidden>
     <summary>第二轮：视频拆解（10 条都确认了）和两个问题（已回答）</summary>
     <div class="inner">
   <section id="video">
@@ -208,15 +305,15 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     </div>
   </details>
 
-  <section id="gencheck">
+  <section id="gencheck" hidden>
     <h2><span class="pill">新</span>生图结果（Codex 第一批） <span class="status" id="st-gencheck"></span></h2>
     <p class="lead">眼神特写用第一批 6 帧（逐帧重画那组不用了）；两把武器照原作改好了（v2），第一批的旧武器留作对比。人物我对照原作没看出走样。每项点一个，要改的写一句。</p>
     <div class="vlist" id="genlist"></div>
   </section>
 
   <section id="demos">
-    <h2><span class="pill">03</span>草图 <span class="status" id="st-demos"></span></h2>
-    <p class="lead">前两个是新做的添柴，后面是之前的。人物、手、人格面具、眼睛特写都是占位图形，之后换成生图的素材。可以慢放、拖时间条停在任意一帧。</p>
+    <h2><span class="pill">02</span>总攻击草图（当前版本） <span class="status" id="st-demos"></span></h2>
+    <p class="lead">可以慢放、拖时间条停在任意一帧。悠的立绘是占位。</p>
     <div class="tabs" id="demoTabs" role="tablist"></div>
     <div class="stage"><canvas id="stage"></canvas></div>
     <div class="controls">
@@ -233,13 +330,13 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     </div>
   </section>
 
-  <section id="questions3">
+  <section id="questions3" hidden>
     <h2><span class="pill">04</span>第三轮的问题（已回答） <span class="status" id="st-answers3"></span></h2>
     <div class="stack" id="q3list"></div>
   </section>
 
   <section id="uploads">
-    <h2><span class="pill">05</span>上传视频 / 截图 <span class="status" id="st-uploads"></span></h2>
+    <h2><span class="pill">03</span>上传视频 / 截图 <span class="status" id="st-uploads"></span></h2>
     <p class="lead">视频（mp4 / webm）或截图都可以，单个文件不超过 20MB。传上来的截图可以圈画。</p>
     <label class="drop" id="drop" for="file">
       <strong>点这里选文件，或者把文件拖进来</strong>
@@ -254,7 +351,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     </div>
   </section>
 
-  <details class="round1">
+  <details class="round1" hidden>
     <summary>第一轮：4 个问题、我的理解、9 张截图（已回答，点开可以改）</summary>
     <div class="inner">
       <section>
@@ -1711,13 +1808,16 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     function grow(ft, a, d) { return eOut(seg(ft, a, a + (d || 0.3))); }
     function pop(ft, a, d) { var k = seg(ft, a, a + (d || 0.25)); return k > 0 ? eBack(k) : 0; }
     var SKA = -0.3, SKX = 0.62, SKY = 0.6, SKT = 0.24;   /* the sky strip: angle, centre (W, H), thickness (H) */
+    /* (user 2026-11-28: the rings were all in one corner) ripples spread over the whole card, each a few bands of different widths,
+       landing one after another like drops and overlapping here and there (where they cross, the colours swap) */
+    var RIPS = [[0.2, 0.15, [0.05, 0.09, 0.15, 0.19, 0.27], 0.04], [0.62, 0.07, [0.04, 0.07, 0.12, 0.16, 0.24, 0.28], 0.1],
+      [0.9, 0.3, [0.06, 0.1, 0.18, 0.22, 0.31, 0.35], 0.16], [0.47, 0.97, [0.05, 0.08, 0.14, 0.19, 0.25], 0.22], [0.92, 0.96, [0.04, 0.07, 0.11, 0.15], 0.28]];
     function clashPath(c, ft) {
       function disc(x, y, r) { if (r > 0.5) { c.moveTo(x + r, y); c.arc(x, y, r, 0, Math.PI * 2); } }
       var gz = 1 + 0.03 * ft;
       c.beginPath();
-      [0.05, 0.09, 0.16, 0.2, 0.29, 0.33].forEach(function (r, i) { disc(W * 0.92, H * 0.2, H * r * gz * grow(ft, 0.08 + i * 0.045, 0.34)); });   /* ring by ring, like a drop */
-      disc(W * 0.74, -H * 0.06, H * 0.27 * grow(ft, 0.02, 0.32) * gz);   /* crosses the ripple: the colours swap there */
-      disc(W * 0.99, H * 0.5, H * 0.12 * pop(ft, 0.22, 0.26));
+      RIPS.forEach(function (R) { R[2].forEach(function (r, i) { disc(W * R[0], H * R[1], H * r * gz * grow(ft, R[3] + i * 0.04, 0.32)); }); });
+      disc(W * 0.76, H * 0.62, H * 0.15 * pop(ft, 0.3, 0.26));
     }
     function cloud(c, x, y, s2) {
       c.fillStyle = "rgba(170,210,245,0.7)"; [[0, 0.18, 1], [0.9, 0.22, 0.8], [-0.85, 0.24, 0.75]].forEach(function (b) { c.beginPath(); c.arc(x + b[0] * s2, y + b[1] * s2, s2 * b[2], 0, Math.PI * 2); c.fill(); });
@@ -1731,9 +1831,14 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       c.fill();
       /* the huge serif word behind it all */
       var kw = grow(ft, 0, 0.34);
-      if (kw > 0) { c.save(); c.translate(W * 0.6 + (1 - kw) * W * 0.3, H * 0.27); c.rotate(-0.16); c.globalAlpha = 0.55 * kw; c.font = "italic 900 " + Math.round(H * 0.4) + "px 'Playfair Display', serif"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillStyle = "#eab800"; c.fillText("Finale", 0, 0); c.restore(); }
-      /* the clash in the upper-right corner */
+      /* the clash */
       clashPath(c, ft); c.fillStyle = CGR; c.fill("evenodd");
+      /* the big serif word lies over the clash and changes colour with it: dark yellow on the yellow, pale on the grey */
+      if (kw > 0) {
+        var fw2 = function () { c.save(); c.translate(W * 0.6 + (1 - kw) * W * 0.3, H * 0.27); c.rotate(-0.16); c.font = "italic 900 " + Math.round(H * 0.4) + "px 'Playfair Display', serif"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText("Finale", 0, 0); c.restore(); };
+        c.save(); c.globalAlpha = 0.5 * kw; c.fillStyle = "#e2ad00"; fw2(); c.restore();
+        c.save(); clashPath(c, ft); c.clip("evenodd"); c.globalAlpha = 0.5 * kw; c.fillStyle = "#f6ee8a"; fw2(); c.restore();
+      }
       var fw = Math.max(1.5, H * 0.003);
       c.save(); c.translate(H * 0.0035, H * 0.0025); clashPath(c, ft); c.lineWidth = fw; c.strokeStyle = "rgba(150,230,60,0.8)"; c.stroke(); c.restore();
       c.save(); c.translate(-H * 0.0035, -H * 0.0025); clashPath(c, ft); c.lineWidth = fw; c.strokeStyle = "rgba(255,210,236,0.6)"; c.stroke(); c.restore();
@@ -1746,6 +1851,10 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         var cr = rng(14);
         for (var k = 0; k < 9; k++) { var cx = -W * 0.9 + k * W * 0.24 + ((ft * W * 0.04) % (W * 0.24)) + cr() * W * 0.05, cy = th * (cr() * 0.5 - 0.05), cs = H * (0.03 + cr() * 0.025); cloud(c, cx, cy, cs); }
         c.fillStyle = "rgba(10,40,80,0.35)"; c.fillRect(-W * 1.1, -th / 2, W * 2.2, H * 0.004); c.fillRect(-W * 1.1, th / 2 - H * 0.004, W * 2.2, H * 0.004);
+        /* a line of small repeated text running along the strip's lower edge (like the name repeated across P4R's stage floor) */
+        c.font = Math.round(H * 0.026) + "px Anton, sans-serif"; c.textBaseline = "middle"; c.textAlign = "left"; c.fillStyle = "rgba(255,255,255,0.85)";
+        var rt = "SERIES FINALE  \u2726  STAR OF THE SHOW  \u2726  ", rw2 = c.measureText(rt).width, ro = -((ft * W * 0.08) % rw2) - W * 1.1;
+        for (var xx = ro; xx < W * 1.1; xx += rw2) c.fillText(rt, xx, th / 2 - H * 0.022);
         c.restore();
       }
     }
@@ -1781,19 +1890,21 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     /* the name standing on the sky strip in big extruded letters (yellow face, deep blue sides, like the date on P4R's card);
        each letter pops up out of the strip in turn; a dark tag with a star above it says SERIES FINALE */
     function stripName(c, ft) {
-      var txt = "NARUKAMI", fs = H * 0.2, trk = fs * 0.02, dep = H * 0.028, nst = 9;
+      var txt = "NARUKAMI", fs = H * 0.18, n = txt.length;
       c.save(); c.translate(W * 0.735, H * 0.565); c.rotate(SKA);
-      c.font = Math.round(fs) + "px Anton, 'Archivo Black', sans-serif"; c.textBaseline = "alphabetic"; c.textAlign = "left"; c.lineJoin = "round";
-      var ws = [], tot = 0; for (var i = 0; i < txt.length; i++) { ws.push(c.measureText(txt[i]).width); tot += ws[i] + (i ? trk : 0); }
+      c.font = Math.round(fs) + "px Anton, 'Archivo Black', sans-serif"; c.textBaseline = "alphabetic"; c.textAlign = "left";
+      var sc = [], ws = [], tot = 0;
+      for (var i = 0; i < n; i++) { sc.push(lerp(0.74, 1.26, i / (n - 1))); ws.push(c.measureText(txt[i]).width * sc[i]); tot += ws[i] + fs * 0.03 * sc[i]; }
       var x = -tot / 2, base = fs * 0.36;
-      for (i = 0; i < txt.length; i++) {
-        var lk = seg(ft, 0.14 + i * 0.035, 0.36 + i * 0.035), ch = txt[i], xi = x; x += ws[i] + trk;
+      for (i = 0; i < n; i++) {
+        var lk = seg(ft, 0.14 + i * 0.035, 0.36 + i * 0.035), ch = txt[i], xi = x, s1 = sc[i]; x += ws[i] + fs * 0.03 * s1;
         if (lk <= 0) continue;
-        c.save(); c.translate(xi, base); c.scale(1, eBack(lk)); c.translate(0, -base * 0);
-        for (var d = nst; d >= 1; d--) { c.fillStyle = d === nst ? "#0f2f4f" : "#1d5a8c"; c.fillText(ch, d * dep / nst * 0.7, d * dep / nst); }
-        c.lineWidth = fs * 0.035; c.strokeStyle = "#10263a"; c.strokeText(ch, 0, 0);
+        var gl = 1 - seg(ft, 0.14 + i * 0.035, 0.42 + i * 0.035), dep = H * 0.03 * s1;
+        c.save(); c.translate(xi, base); c.scale(s1, s1 * eBack(lk));
+        for (var d = 10; d >= 1; d--) { c.fillStyle = d > 8 ? "#0f2f4f" : "#1d5a8c"; c.fillText(ch, -d * dep / 10 * 0.55 / s1, d * dep / 10 / s1); }   /* sides toward the lower left */
+        if (gl > 0) { c.save(); c.globalCompositeOperation = "lighter"; c.globalAlpha = 0.8 * gl; c.fillStyle = "#ff3fae"; c.fillText(ch, -fs * 0.05 * gl, 0); c.fillStyle = "#22d8ff"; c.fillText(ch, fs * 0.05 * gl, 0); c.restore(); }
         c.fillStyle = "#f8e808"; c.fillText(ch, 0, 0);
-        c.save(); c.beginPath(); c.rect(-fs, -fs * 0.98, fs * 2, fs * 0.2); c.clip(); c.fillStyle = "#fffbd2"; c.fillText(ch, 0, 0); c.restore();   /* a pale band across the tops */
+        c.save(); c.beginPath(); c.rect(-fs, -fs * 0.98, fs * 2, fs * 0.2); c.clip(); c.fillStyle = "#fffbd2"; c.fillText(ch, 0, 0); c.restore();
         c.restore();
       }
       var tg = grow(ft, 0.26, 0.24);
@@ -2233,7 +2344,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     { id: "aoa", name: "总攻击 第八版（敌人变剪影 → 小方块 → 拼成电视；推镜转到彩框角度；结算画面照 P4R 重排、逐个切入；约 5.4 秒）", dur: 5.38, start: 1.2,
       desc: "①打中：受击、白闪两下 → ②渐变成黑色剪影，边缘闪红青错色，冒黑紫烟 → ③剪影裂成小方块，抖一下 → ④方块从朝电视那一侧开始一块块划弧飞过去，落地时由黑变成电视的颜色，拼出一台方块电视 → ⑤一道光扫过，方块电视变成真电视，三层彩框（黄 / 红 / 黄绿）收拢锁上，测试彩条、雪花 → ⑥彩带从右下进来，镜头开始慢推，同时慢慢转向彩框的角度；箭头钻进屏幕中心，雪花变黑屏 → ⑦镜头先慢后快冲进黑屏，落地时电视正好转到彩框的角度，原版的歪框从屏幕深处推出来（黄先、红跟上、黄绿最后）→ ⑧黑屏停一会（显像管玻璃，柔和反光）→ 中间亮点拉成亮线 → 闪白，结算画面亮出，背景元素和名字依次切入 → 关机进结算页。约 5.4 秒。",
       draw: function (ctx, W, H, tr) { aoaScene(ctx, W, H, tr); } },
-    { id: "tvstate", name: "电视框状态 第二版：连环拳（这回合下 2 张攻击额外打出）", dur: 2.7, start: 1.3,
+    { id: "tvstate", hidden: true, name: "电视框状态 第二版：连环拳（这回合下 2 张攻击额外打出）", dur: 2.7, start: 1.3,
       desc: "电视框照 P4R 改得不那么规整：黄色是屏幕外面那一圈，四条边往外微微鼓（像老电视），边上薄、四个角厚，角里有网点；里面的红线、绿线不完全同心；左上压着一个状态名标签，右上角一台小电视，屏幕上显示还剩几次。出现：几层歪着的黄、红、绿框从大到小转着收拢到位（P4R 进战斗那种）。每次额外打出：信号错位一下，小电视里的数字跳一下。用完（或回合结束）：几层框反着转开、散掉。",
       draw: function (ctx, W, H, tr) {
         battleFloor(ctx, W, H);
@@ -2248,13 +2359,13 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         ctx.save(); ctx.fillStyle = "rgba(255,255,255,0.75)"; ctx.font = Math.round(H * 0.03) + "px sans-serif";
         ctx.fillText(tr < 0.6 ? "打出 连环拳" : tr < 1.3 ? "攻击牌 → 额外打出一次" : tr < 2.05 ? "再一张 → 额外打出一次" : "次数用完：电视框散掉", W * 0.09, H * 0.86); ctx.restore();
       } },
-    { id: "stoke", name: "添柴 完整版（建议：烧 7 张以上）", dur: 2.8, start: 1.3,
+    { id: "stoke", hidden: true, name: "添柴 完整版（建议：烧 7 张以上）", dur: 2.8, start: 1.3,
       desc: "打出后，背景划出「SHUFFLE TIME」（P4 洗牌小游戏的名字，只当背景）。手牌从左到右依次抬起，翻成黄色塔罗牌背面；悠伸手一握，整手牌同时捏碎（顿帧 + 震屏 + 闪白）。战场去色，碎片打着旋被吸到场地中间，拼成一圈转动的卡牌转盘（像 Shuffle Time 洗牌）：每张先出白色轮廓，最后几片落进去时填满黄色、闪一下。转盘越转越快，转到最前面的那张就被甩出来，在空中翻开变成新牌，落进手牌，落位时亮一圈白环、一道黄边和小星星，一张接一张。约 0.5 秒捏碎，约 1.3 秒转盘拼好、开始发牌，约 2.3 秒发完。",
       draw: function (ctx, W, H, tr) { stokeScene(ctx, W, H, tr, true); } },
-    { id: "stokeq", name: "添柴 快速版（烧 7 张以下）", dur: 1.6, start: 0.7,
+    { id: "stokeq", hidden: true, name: "添柴 快速版（烧 7 张以下）", dur: 1.6, start: 0.7,
       desc: "不加速，只剪段落：剪掉 SHUFFLE TIME 背景字、去色和中间的转盘。翻牌、一握捏碎和完整版同样速度；碎片不飞走，在每张牌原来的位置转一圈拼回去（用时和完整版飞上转盘一样），拼好马上翻开成新牌、落回原位，亮一圈白环和黄边。约 0.4 秒捏碎，约 1.2 秒新牌全部到手。",
       draw: function (ctx, W, H, tr) { stokeScene(ctx, W, H, tr, false); } },
-    { id: "fiend5", name: "恶魔之焰 完整版（烧 7 张以上）", dur: 2.6, start: 0.4,
+    { id: "fiend5", hidden: true, name: "恶魔之焰 完整版（烧 7 张以上）", dur: 2.6, start: 0.4,
       desc: "这一版去掉了拖的地方：光团一开始就在动，不再慢慢起步，扫过手牌越来越快，一口气拐上去到电视里伸出来的手，只在最后落到手上时稍微收一下；牌收叠好马上捏碎。扫牌和转向电视是同一条连续的曲线：光团沿手牌弧线扫过去，扫到右边不减速，顺着惯性往右上拐，走半圆弯回那只手。牌在路上跟着光团头部走，到手边收拢成一叠（每张稍微错开一点，看得出有几张），不展开，依次翻成黄色，整叠一起被捏碎；每张牌化成一道黄色小彗星飞向敌人，命中只用光环表达（白环、黄环、旋钮刻度环、网点环、小星星，最后一下加粉绿细环），加电视信号错位，一张牌一下。约 1 秒捏碎（之前 1.5 秒），捏碎后约 0.3 秒出第一下。",
       draw: function (ctx, W, H, tr) {
         var BEAT = 1.02, t = hs(tr, BEAT, 0.08);
@@ -2400,7 +2511,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         }
         ctx.restore();
       } },
-    { id: "fiendq", name: "恶魔之焰 快速版（烧 7 张以下）", dur: 1.7, start: 0.35,
+    { id: "fiendq", hidden: true, name: "恶魔之焰 快速版（烧 7 张以下）", dur: 1.7, start: 0.35,
       desc: "烧不到 7 张时播这个：不加速，只剪段落。彗星光团用和完整版一样的速度从左往右扫过手牌（约 0.4 秒），扫完直接冲出画面，剪掉飞去电视、伸手、收叠这几段；扫到哪张，哪张原地翻黄、立刻捏碎。几张牌几乎是同时碎的，所以每张碎完先留一颗小火星，再按完整版的间隔（0.09 秒）一张一张化成黄色小彗星飞向敌人，一张牌一下。命中只用光环表达：中心白点弹出变成粗白环，稍后一圈柠檬黄环（内侧一条细橙线），一圈像电视旋钮的刻度环边扩边转，一圈黄色网点环，白环上亮几颗小星星；最后一下多两圈粉、绿细环（BATON 那种彩虹环）收尾。命中瞬间敌人那块画面像电视信号一样横向错位一下。约 0.6 秒出第一下，5 张约 1 秒打完。",
       draw: function (ctx, W, H, tr) {
         battleFloor(ctx, W, H);
@@ -2674,7 +2785,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         }
         ctx.restore();
       } },
-    { id: "myriad3", name: "几万真言 完整版（力量 8 以上）", dur: 3.7, start: 0.5,
+    { id: "myriad3", hidden: true, name: "几万真言 完整版（力量 8 以上）", dur: 3.7, start: 0.5,
       desc: "这一版去掉了拖的地方（表演不删）：捏碎提前到约 0.8 秒，杖转得稍快（约 1 秒转两圈半），停住后马上劈，四下间隔 0.24 秒，结尾圆环紧跟最后一下；约 2.1 秒落第一下，约 3.5 秒结束（之前约 4.4 秒）。节奏：出牌 → 背景划出技能名（只是背景，压在人物后面）；同时悠掏出那张白金色的牌，在手里转。→ 捏碎的一瞬间三件事同时发生：技能名背景退出去，伊邪那岐大神在悠身后出现，他一出现就转杖；杖在悠和敌人之间、中间偏右，不在他脸上。→ 杖由慢到快转、再慢下来停住 → 金光从敌人头顶竖直劈下，连劈四下 → 黄色圆环收尾。金光草图比上一版细了一些（分层的光柱、抖动的边、带分叉的闪电、落点光晕、上升的光点），游戏里会用着色器做。",
       draw: function (ctx, W, H, tr) {
         var GOLD = "#f2c54b", PALE = "#fff3c4";
@@ -2796,7 +2907,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
           ring(ctx, W * 0.5, H * 0.5, lerp(H * 0.1, Math.hypot(W, H) * 0.45, eOut(seg(yk, 0.1, 1))), 3, "#ffffff", 1 - seg(yk, 0.5, 1));
         }
       } },
-    { id: "myriadq", name: "几万真言 快速版（力量 8 以下）", dur: 2.4, start: 0.4,
+    { id: "myriadq", hidden: true, name: "几万真言 快速版（力量 8 以下）", dur: 2.4, start: 0.4,
       desc: "按你的意见改得干脆：不召唤大神、不出技能名。悠掏出牌就捏碎（掏牌和捏碎的动作和完整版一样，只是牌在手里转得短），杖直接在悠和敌人之间出现，快速转一圈就停，停住马上竖直劈下四下金光，每一下的动画速度不变，间隔 0.16 秒。约 0.45 秒捏碎，约 1 秒落第一下，约 1.6 秒打完（上一版第一下要等约 2 秒）。",
       draw: function (ctx, W, H, tr) {
         var GOLD = "#f2c54b", PALE = "#fff3c4";
@@ -3186,7 +3297,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         var sk2 = seg(t, 0, 0.5);
         if (sk2 > 0 && sk2 < 1) stripes(ctx, W, H, sk2, ["#ffffff", PALE, GOLD, "#ffffff", "#e8cf72"], GOLD);
       } },
-    { id: "crush3", name: "召唤（眼神特写 → 翻页 → 手里捏碎）", dur: 2.5, start: 0.25,
+    { id: "crush3", hidden: true, name: "召唤（眼神特写 → 翻页 → 手里捏碎）", dur: 2.5, start: 0.25,
       desc: "整段召唤：眼神特写照原版排版（菱形大小、位置、角度和眼睛的摆法都是从官方截图量的）→ 菱形以右尖角为轴翻页，落到电视里伸出来的手上变成黄卡 → 卡在掌心转两下 → 一握捏碎 → 伊邪那岐在蓝焰里出现，约 1.25 秒捏碎。眼睛这次只用一张睁眼图（Codex 第三版的第一张），闭眼、睁开、反光都是叠在上面画的：眼皮是一条会动的线，线下面露出图里的眼睛，线上面是眼皮皮肤，沿线画粗睫毛（闭着时外眼角有几根睫毛和眼皮褶）；镜片上的青色反光透过镜片遮罩叠上去，眼睛睁开前就退掉，一道竖光带从右往左扫过。所以眼睛永远是同一张图里的同一只，不会变大小，而且是连续动画、没有逐帧感。瞳孔一直是清楚的亮蓝，睁开时高光处闪一颗小星星。拖时间条停在 0.17 秒看闭眼，0.24 秒看半睁。",
       draw: function (ctx, W, H, t) { var d = DEMOS.filter(function (x) { return x.id === "crush2"; })[0]; d.draw.call({ big: true }, ctx, W, H, t); } },
     { id: "crush2", hidden: true, name: "召唤 小版（手和卡小一号）", dur: 2.5, start: 0.4,
@@ -3280,7 +3391,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         }
         ctx.restore();
       } },
-    { id: "skillname", name: "技能名特效（英文大字）", dur: 3.0, start: 1.2,
+    { id: "skillname", hidden: true, name: "技能名特效（英文大字）", dur: 3.0, start: 1.2,
       desc: "技能名当背景特效：从悠身后、左下往右上划过。底下是几层斜色带（柠檬黄、黄绿、橙，橙带上缘一排网点，下面几条细线），色带里有流动的速度线；字压过不同色带时撞色（黄带上是橙字，橙带和暗处是黄字）。周围点缀四角星和短横条。人物在最前面。",
       draw: function (ctx, W, H, t) {
         battleFloor(ctx, W, H);
@@ -3331,7 +3442,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         figure(ctx, W * 0.22, H * 0.94, H * 0.5, Y);
         enemy(ctx, W * 0.82, H * 0.64, H * 0.12, Math.sin(t * 3));
       } },
-    { id: "collide", name: "撞色", dur: 2.8, start: 1.2,
+    { id: "collide", hidden: true, name: "撞色", dur: 2.8, start: 1.2,
       desc: "我理解的撞色：黄块里是橙字 A，橙块里是黄字 B；两块撞到一起以后，字跟着色块的分界线变色：A 越过分界线进到橙块里的那一部分变成黄色，B 进到黄块里的部分变成橙色。分界线本身也在被推来推去。不对的话告诉我原版是怎样换的。",
       draw: function (ctx, W, H, t) {
         stageBg(ctx, W, H, "#141418");
@@ -3349,7 +3460,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         ctx.save(); para(bL, bR); ctx.fillStyle = ORANGE; ctx.fill(); ctx.clip(); letter("A", ax, Y); letter("B", bx, Y); ctx.restore();
         ctx.save(); ctx.lineWidth = 3; ctx.strokeStyle = "#111"; para(aL, aR); ctx.stroke(); para(bL, bR); ctx.stroke(); ctx.restore();
       } },
-    { id: "burst", name: "拍手那种光效", dur: 2.2, start: 0.55,
+    { id: "burst", hidden: true, name: "拍手那种光效", dur: 2.2, start: 0.55,
       desc: "照 BATON 那段：接触点先闪一下，射出彩虹色细光束；接着粉、黄、绿几圈圆环和内侧细白环扩散出去；周围的星星按位置一个个亮起：白色小四角星、金色大四角星、彩色五角星、小花、圆点，分布均匀。想用在烧牌的手牌联动、无惧疼痛这些地方。",
       draw: function (ctx, W, H, t) {
         stageBg(ctx, W, H, "#2a1206");
@@ -3390,7 +3501,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
           else { ctx.save(); ctx.globalAlpha = 1 - kf; ctx.fillStyle = "#5fe0ff"; ctx.beginPath(); ctx.arc(x, y, H * 0.008 * sc, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
         }
       } },
-    { id: "ui2", name: "UI 式特效 v2", dur: 2.8, start: 1.35,
+    { id: "ui2", hidden: true, name: "UI 式特效 v2", dur: 2.8, start: 1.35,
       desc: "按你的意见加了细节，也改正了电视框：开头几层倾斜的圆角框（黄、红、绿）从中间一层层放大到画面边缘，最后留成整个画面的黄色边框，这是战斗开始那段动画，不是锁定框；1 MORE 的黄带上缘一排网点，带子里有流动的亮线，红带下面几条细线；大字后面压一层深色错位影子，进场后轻微抖动；星星有大有小，配白色小闪光。",
       draw: function (ctx, W, H, t) {
         battleFloor(ctx, W, H);
@@ -3439,7 +3550,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
           ctx.restore();
         }
       } },
-    { id: "single", name: "单张消耗（轻量，已过）", dur: 1.2, start: 0.35,
+    { id: "single", hidden: true, name: "单张消耗（轻量，已过）", dur: 1.2, start: 0.35,
       desc: "你说像，先保持：手里那张牌原地翻成黄卡 → 星芒一闪 → 碎成小片往下落，约 0.4 秒。",
       draw: function (ctx, W, H, t) {
         battleFloor(ctx, W, H);
@@ -3450,7 +3561,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         var g = seg(t, 0.3, 0.46); if (g > 0 && g < 1) star4(ctx, x + cw * 0.2, y - ch * 0.25, H * 0.08, 0.12, Math.sin(g * Math.PI));
         if (t >= 0.42) { var st = t - 0.42; makeShards(5, 16, { dir: Math.PI / 2, spread: 2.6, vmin: H * 0.2, vmax: H * 0.7, smin: H * 0.01, smax: H * 0.028 }).forEach(function (s) { var p = shardPos(s, st, 2.0, H * 1.4); drawShard(ctx, x + p[0], y + p[1], s, st, Y, 1 - seg(st, 0.35, 0.7)); }); }
       } },
-    { id: "fiend", name: "恶魔之焰（手牌联动，旧版）", dur: 3.4, start: 1.0,
+    { id: "fiend", hidden: true, name: "恶魔之焰（手牌联动，旧版）", dur: 3.4, start: 1.0,
       desc: "第一轮的手牌联动草图，捏碎方式还是旧的。确认新版捏碎以后，这里会换成：手牌飞到电视里伸出来的那只手上，一握全碎，碎片变成刀光，一张牌一刀。",
       draw: function (ctx, W, H, tr) {
         var BEAT = 1.25, t = hs(tr, BEAT, 0.08);
@@ -3681,6 +3792,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     drop.addEventListener("drop", function (e) { if (e.dataTransfer && e.dataTransfer.files) handleFiles(e.dataTransfer.files); });
     $("links").addEventListener("input", function () { saveDoc("links/main", { text: $("links").value }, "st-links"); });
     $("decisionsNote").addEventListener("input", function () { saveDoc("decisions/main", { note: $("decisionsNote").value }, "st-decisions"); });
+    $("uiNote").addEventListener("input", function () { saveDoc("uinote/main", { text: $("uiNote").value }, "st-ui"); });
   }
 
   /* ---------- boot ---------- */
@@ -3724,6 +3836,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
           .forEach(function (d) { if (!uploads[d.id]) uploads[d.id] = Object.assign({}, d.data()); renderUpload(d.id, d.data() || {}); });
       });
       sub("links", function (s) { s.docs.forEach(function (d) { if (d.id === "main" && once("links") && document.activeElement !== $("links")) $("links").value = (d.data() || {}).text || ""; }); });
+      sub("uinote", function (s) { s.docs.forEach(function (d) { if (d.id === "main" && once("uinote") && document.activeElement !== $("uiNote")) $("uiNote").value = (d.data() || {}).text || ""; }); });
       sub("decisions", function (s) { s.docs.forEach(function (d) { if (d.id === "main" && once("decisions") && document.activeElement !== $("decisionsNote")) $("decisionsNote").value = (d.data() || {}).note || ""; }); });
     });
     window.claude.use("assets").then(function (a) { ASSETS = a; if (!a) $("upHint").textContent = "这个视图不能上传文件（只有能编辑这一页的人可以）。可以把链接和时间点写在下面。"; });
