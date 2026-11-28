@@ -158,7 +158,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       <tr><td style="padding:4px 6px">几万真言</td><td style="padding:4px 6px">力量 ≥ 8：约 2.1 秒落第一下，约 3.5 秒结束（之前约 4.4 秒）</td><td style="padding:4px 6px">约 0.45 秒捏碎，约 1 秒落第一下（之前约 2 秒），约 1.6 秒打完</td></tr>
     </table>
     恶魔之焰：光团不再慢慢起步，一开始就在动，扫过手牌越来越快，一口气拐上去到电视里的手，只在最后落到手上时稍微收一下；牌收叠好马上捏碎。快速版扫牌同速，扫完光团直接冲出画面。<br>几万真言：快速版杖快速转一圈就停，停住马上劈。完整版捏碎提前，杖转得稍快，停住后不再空等，四下间隔 0.24 秒，结尾圆环紧跟最后一下。<br>
-    <b>新做两个草图（第 1、2 个）：</b>①总攻击「Series Finale」，结构和时长照前两个 mod（精英 / Boss 战最后一击后、结算前，约 3.5 秒）：蓝色单色雷光十字 → 黄色转场带彩虹飘带 → 黄底收尾立绘卡（套在彩色电视框里）→ 电视关机露出结算页。②电视框当状态用：连环拳打出后整个画面框进彩色电视框，额外打出时像换台一样错位、次数减一，用完就关机。<br>
+    <b>第二版（草图第 1、2 个）：</b>①总攻击按你的意见重做：人物不扑，不用斜条直接扫，不硬切；转场全换成 P4R 的电视语言（去色黑剪影定格 → 缩进电视隧道、冲进发光黄屏 → 换台），运镜用分层视差（推到悠脚下 → 仰拍全身 → 停一下 → 身后两块大屏亮起）；画面加了眼睛特写和伊邪那岐的大屏、地上的大名字、滚动字幕条、彩虹圆环、星星、花瓣、光斑。约 3.35 秒。②电视框改得不规整：边往外鼓、四角厚边上薄、角里有网点、红绿线不同心、压着标签和一台小电视（显示剩余次数）；出现和消失都是几层歪框转着收拢 / 散开。<br>
     <b>眼神特写换了做法：</b>不再让 AI 画中间帧（Codex 两张就跑位了）。只用一张睁眼图（Codex 这次的第一张），闭眼、睁开、镜片反光都叠在上面画：眼皮是一条会动的线，反光透过镜片遮罩叠上去。眼睛不可能变大小，也是连续动画，没有逐帧感；瞳孔一直清楚，不会发白。看草图第 7 个「召唤（眼神特写 → 翻页 → 手里捏碎）」，0.17 秒是闭眼、0.24 秒是半睁。
   </div>
 
@@ -1392,93 +1392,261 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     ctx.restore();
   }
 
+  /* CRT-shaped path (P4R TV screen): rounded corners and slightly bulging edges, optional tilt; not a plain rounded rectangle */
+  function crtShape(ctx, cx, cy, w, h, r, bulge, rot, newPath) {
+    var hw = w / 2, hh = h / 2, c = Math.cos(rot || 0), s = Math.sin(rot || 0);
+    function P(x, y) { return [cx + x * c - y * s, cy + x * s + y * c]; }
+    var seq = [[-hw + r, -hh], [0, -hh - bulge, hw - r, -hh], [hw, -hh, hw, -hh + r], [hw + bulge, 0, hw, hh - r], [hw, hh, hw - r, hh],
+      [0, hh + bulge, -hw + r, hh], [-hw, hh, -hw, hh - r], [-hw - bulge, 0, -hw, -hh + r], [-hw, -hh, -hw + r, -hh]];
+    if (newPath !== false) ctx.beginPath();
+    var p0 = P(seq[0][0], seq[0][1]); ctx.moveTo(p0[0], p0[1]);
+    for (var i = 1; i < seq.length; i++) { var q = P(seq[i][0], seq[i][1]), e = P(seq[i][2], seq[i][3]); ctx.quadraticCurveTo(q[0], q[1], e[0], e[1]); }
+    ctx.closePath();
+  }
+  /* small P4R-style TV icon (yellow set, dark screen, two antennas); text shows on its screen */
+  function tvIcon(ctx, x, y, s, text) {
+    ctx.save(); ctx.translate(x, y); ctx.lineCap = "round";
+    ctx.strokeStyle = "#111"; ctx.lineWidth = s * 0.07; ctx.beginPath(); ctx.moveTo(-s * 0.12, -s * 0.36); ctx.lineTo(-s * 0.3, -s * 0.62); ctx.moveTo(s * 0.12, -s * 0.36); ctx.lineTo(s * 0.32, -s * 0.6); ctx.stroke();
+    roundRect(ctx, -s * 0.55, -s * 0.38, s * 1.1, s * 0.78, s * 0.16); ctx.fillStyle = YH; ctx.fill(); ctx.lineWidth = s * 0.06; ctx.stroke();
+    crtShape(ctx, -s * 0.06, 0, s * 0.78, s * 0.52, s * 0.1, s * 0.03, 0); ctx.fillStyle = "#1b1b22"; ctx.fill();
+    ctx.fillStyle = "#ff3b5c"; ctx.beginPath(); ctx.arc(s * 0.42, -s * 0.12, s * 0.05, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = LIME; ctx.beginPath(); ctx.arc(s * 0.42, s * 0.06, s * 0.05, 0, Math.PI * 2); ctx.fill();
+    if (text) { ctx.fillStyle = YH; ctx.font = Math.round(s * 0.36) + "px 'Archivo Black', sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(text, -s * 0.06, s * 0.02); }
+    ctx.restore();
+  }
+  /* P4R battle TV frame over the whole screen. The yellow is everything outside a CRT-shaped screen, so it is thin along the
+     bulging edges and thick in the corners; red and green lines inside are not quite concentric; halftone dots sit in the thick
+     corners; a name tab and a small TV icon break the border. k 0..1: on the way in, tilted yellow / red / green frames zoom and
+     turn into place (P4R battle start); running k backwards plays it out. */
+  function tvFrameP4R(ctx, W, H, k, tr, o) {
+    if (k <= 0) return;
+    o = o || {};
+    var rot = -0.008, cx = W / 2, cy = H / 2 + H * 0.004, w = W * 0.958, h = H * 0.905, r = H * 0.15, bulge = H * 0.02;
+    if (k < 1) {
+      [[1.6, 0.17, Y, H * 0.016], [1.38, -0.13, "#ff3b5c", 3], [1.22, 0.09, LIME, 3], [1.85, -0.22, Y, H * 0.01]].forEach(function (f, i) {
+        var kk = eOut(seg(k, i * 0.07, 0.62 + i * 0.07)), s = lerp(f[0], 1, kk), a = Math.min(1, kk * 4) * (1 - seg(k, 0.8, 1));
+        if (a <= 0) return;
+        ctx.save(); ctx.globalAlpha = a; ctx.lineJoin = "round"; crtShape(ctx, cx, cy, w * s, h * s, r * s, bulge * s, rot + f[1] * (1 - kk)); ctx.lineWidth = f[3]; ctx.strokeStyle = f[2]; ctx.stroke(); ctx.restore();
+      });
+    }
+    var a2 = seg(k, 0.55, 1); if (a2 <= 0) return;
+    ctx.save(); ctx.globalAlpha = a2;
+    ctx.beginPath(); ctx.rect(-4, -4, W + 8, H + 8); crtShape(ctx, cx, cy, w, h, r, bulge, rot, false); ctx.fillStyle = Y; ctx.fill("evenodd");
+    /* halftone in the thick corners (dots only where the yellow is, i.e. outside the rounded corner of the screen) */
+    var lx = cx - w / 2 - H * 0.012, rx = cx + w / 2 + H * 0.012, ty = cy - h / 2 - H * 0.012, by = cy + h / 2 + H * 0.012, rc = r * 1.02;
+    function outside(x, y) {
+      if (x < lx || x > rx || y < ty || y > by) return true;
+      var ax = x < lx + rc ? lx + rc : (x > rx - rc ? rx - rc : null), ay = y < ty + rc ? ty + rc : (y > by - rc ? by - rc : null);
+      return ax !== null && ay !== null && Math.hypot(x - ax, y - ay) > rc;
+    }
+    ctx.fillStyle = "#c9c300"; var st = H * 0.022;
+    [[0, 0], [1, 0], [0, 1], [1, 1]].forEach(function (cn) {
+      for (var gx = 0; gx < 7; gx++) for (var gy = 0; gy < 7; gy++) {
+        var x = cn[0] ? W - st * (gx + 0.6) : st * (gx + 0.6), y = cn[1] ? H - st * (gy + 0.6) : st * (gy + 0.6), rr2 = H * 0.0055 * (1 - (gx + gy) / 16);
+        if (rr2 > 0.6 && outside(x, y)) { ctx.beginPath(); ctx.arc(x, y, rr2, 0, Math.PI * 2); ctx.fill(); }
+      }
+    });
+    ctx.lineJoin = "round";
+    crtShape(ctx, cx, cy, w, h, r, bulge, rot); ctx.lineWidth = 3; ctx.strokeStyle = "#141414"; ctx.stroke();
+    crtShape(ctx, cx, cy, w - H * 0.03, h - H * 0.03, r * 0.9, bulge * 0.9, rot + 0.004); ctx.lineWidth = 2.5; ctx.strokeStyle = "#ff3b5c"; ctx.stroke();
+    crtShape(ctx, cx + 2, cy + 1, w - H * 0.054, h - H * 0.054, r * 0.8, bulge * 0.75, rot - 0.004); ctx.lineWidth = 2.5; ctx.strokeStyle = LIME; ctx.stroke();
+    /* highlight along the outer yellow */
+    ctx.globalAlpha = a2 * 0.5; ctx.strokeStyle = "#fffbd0"; ctx.lineWidth = 2; crtShape(ctx, cx, cy, w + H * 0.012, h + H * 0.012, r * 1.04, bulge, rot); ctx.stroke(); ctx.globalAlpha = a2;
+    if (o.tag) {
+      var tx = W * 0.07, ty = H * 0.035, tw = W * 0.24, th = H * 0.06;
+      ctx.save(); ctx.translate(tx, ty); ctx.rotate(-0.04); roundRect(ctx, 0, 0, tw, th, th / 2); ctx.fillStyle = "rgba(28,28,32,0.92)"; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = "#ff3b5c"; ctx.stroke();
+      ctx.fillStyle = "#fff"; ctx.font = "600 " + Math.round(H * 0.032) + "px sans-serif"; ctx.textBaseline = "middle"; ctx.fillText(o.tag, th * 0.55, th * 0.52); ctx.restore();
+    }
+    if (o.icon !== false) tvIcon(ctx, W * 0.925, H * 0.1, H * (0.1 + 0.03 * (o.pop || 0)), o.count);
+    ctx.restore();
+  }
+
+  /* All-Out Attack, second draft: everything joined with P4R's TV language and a layered camera (parallax), no hard cuts:
+     (1) frozen last hit in grey with black silhouettes, a big yellow disc and a dotted ribbon, camera easing in;
+     (2) the frame shrinks into a TV inside a tunnel of TVs, the screen goes to static, then glowing yellow with coloured beams,
+         and the camera speeds into it; (3) channel change to a dark stage: push to Yu's feet, tilt up to the whole figure, hold;
+     (4) both big screens behind him light up, name on the floor, ticker, stars, petals, the TV frame closes in;
+     (5) the TV switches off onto the results. */
+  var aoaSnap = null;
+  function aoaScene(ctx, W, H, tr) {
+    var ex = W * 0.7, ey = H * 0.58;
+    if (!IMG.izv2) loadImg("izv2", "gen/izanagi_full_v2.webp");
+    if (!IMG.emaster) { loadImg("emaster", "gen/eye_master.jpg"); loadImg("elens", "gen/eye_lens_mask.png"); }
+    function ribbon(c, t) {
+      var g = eOut(seg(t, 0.06, 0.17)); if (g <= 0) return;
+      var A0 = [W * 1.15, -H * 0.2], C = [W * 0.98, ey - H * 0.3], B = [ex + H * 0.03, ey - H * 0.03], N = 30, up = [], dn = [];
+      for (var i = 0; i <= N; i++) {
+        var u = i / N * g, p = quadP(A0, C, B, u), p2 = quadP(A0, C, B, Math.min(1, u + 0.01)), dx = p2[0] - p[0], dy = p2[1] - p[1], L = Math.hypot(dx, dy) || 1;
+        var nx = -dy / L, ny = dx / L, w = H * 0.14 * (1 - u) + H * 0.012;
+        up.push([p[0] + nx * w, p[1] + ny * w]); dn.push([p[0] - nx * w * 0.55, p[1] - ny * w * 0.55]);
+      }
+      function band(k, col) {
+        c.beginPath();
+        for (var i2 = 0; i2 <= N; i2++) { var mx = (up[i2][0] + dn[i2][0]) / 2, my = (up[i2][1] + dn[i2][1]) / 2; var x = mx + (up[i2][0] - mx) * k, y = my + (up[i2][1] - my) * k; if (i2) c.lineTo(x, y); else c.moveTo(x, y); }
+        for (var j = N; j >= 0; j--) { var mx2 = (up[j][0] + dn[j][0]) / 2, my2 = (up[j][1] + dn[j][1]) / 2; c.lineTo(mx2 + (dn[j][0] - mx2) * k, my2 + (dn[j][1] - my2) * k); }
+        c.closePath(); c.fillStyle = col; c.fill();
+      }
+      band(1.3, LIME); band(1.0, Y); band(0.3, "#fffbd0");
+      c.fillStyle = ORANGE; for (var d = 2; d < N - 2; d += 2) { var q = up[d]; c.beginPath(); c.arc(q[0], q[1], H * 0.006, 0, Math.PI * 2); c.fill(); }
+      c.strokeStyle = "#141414"; c.lineWidth = 2; c.beginPath(); dn.forEach(function (q2, i3) { if (i3) c.lineTo(q2[0], q2[1] + H * 0.012); else c.moveTo(q2[0], q2[1] + H * 0.012); }); c.stroke();
+    }
+    function freeze(c, t) {
+      var k = eOut(seg(t, 0, 0.42)), z = lerp(1, 1.16, k), rot = lerp(0, -0.05, k), gray = t > 0.05;
+      c.save(); c.translate(ex, ey); c.rotate(rot); c.scale(z, z); c.translate(-ex, -ey);
+      battleFloor(c, W, H, gray);
+      if (!gray) { enemy(c, ex, ey, H * 0.11, 0); figure(c, W * 0.2, H * 0.92, H * 0.42, Y); }
+      else {
+        var dk = eBack(seg(t, 0.05, 0.19)), dc = [ex + H * 0.06, ey - H * 0.07];
+        if (dk > 0) {
+          c.beginPath(); c.arc(dc[0], dc[1], H * 0.4 * dk, 0, Math.PI * 2); c.fillStyle = Y; c.fill();
+          c.fillStyle = "#cfc800"; for (var i = 0; i < 32; i++) { var a = i / 32 * Math.PI * 2; c.beginPath(); c.arc(dc[0] + Math.cos(a) * H * 0.455 * dk, dc[1] + Math.sin(a) * H * 0.455 * dk, H * 0.0065, 0, Math.PI * 2); c.fill(); }
+          ring(c, dc[0], dc[1], H * 0.52 * dk, 2, "#ffffff", 0.85); ring(c, dc[0], dc[1], H * 0.36 * dk, 1.5, "#fffbd0", 0.7);
+        }
+        ribbon(c, t);
+        c.fillStyle = "#050505"; c.beginPath(); c.ellipse(ex, ey, H * 0.125, H * 0.1, 0, 0, Math.PI * 2); c.fill();
+        for (var sp = 0; sp < 5; sp++) { var aa = -2.6 + sp * 0.5; c.beginPath(); c.moveTo(ex + Math.cos(aa) * H * 0.1, ey + Math.sin(aa) * H * 0.08); c.lineTo(ex + Math.cos(aa + 0.1) * H * 0.19, ey + Math.sin(aa + 0.1) * H * 0.17); c.lineTo(ex + Math.cos(aa + 0.22) * H * 0.1, ey + Math.sin(aa + 0.22) * H * 0.08); c.fill(); }
+        figure(c, W * 0.2, H * 0.92, H * 0.42, null);
+        var rs = rng(31);
+        for (var s = 0; s < 8; s++) { var sx = ex + (rs() - 0.3) * W * 0.5, sy = ey + (rs() - 0.65) * H * 0.75, sk = seg(t, 0.09 + s * 0.02, 0.2 + s * 0.02); if (sk > 0) star4(c, sx, sy, H * (s % 3 ? 0.02 : 0.034) * Math.sin(Math.min(1, sk) * Math.PI / 2), 0.15, 1, s % 2 ? "#ffffff" : YH); }
+        c.save(); c.globalAlpha = 0.5; c.strokeStyle = "#ffffff"; c.lineWidth = 1.5; var rl = rng(9);
+        for (var l = 0; l < 7; l++) { var ly = H * (0.15 + rl() * 0.7), lx = W * (0.35 + rl() * 0.5), ll = W * (0.05 + rl() * 0.12); c.beginPath(); c.moveTo(lx, ly); c.lineTo(lx + ll, ly - ll * 0.55); c.stroke(); }
+        c.restore();
+      }
+      c.restore();
+      var fl = 1 - seg(t, 0, 0.07); if (fl > 0) { c.save(); c.globalAlpha = fl * 0.85; c.fillStyle = "#fff"; c.fillRect(0, 0, W, H); c.restore(); }
+    }
+    function tunnel(t) {
+      var u = seg(t, 0.42, 0.95), cx = W / 2, cy = H / 2;
+      if (!aoaSnap) aoaSnap = document.createElement("canvas");
+      if (aoaSnap.width !== Math.round(W) || aoaSnap.height !== Math.round(H)) { aoaSnap.width = Math.round(W); aoaSnap.height = Math.round(H); }
+      var sc2 = aoaSnap.getContext("2d"); sc2.setTransform(1, 0, 0, 1, 0, 0); sc2.clearRect(0, 0, W, H); freeze(sc2, 0.42);
+      ctx.fillStyle = "#18181c"; ctx.fillRect(0, 0, W, H);
+      var shrink = eInOut(seg(u, 0, 0.3)), fly = Math.pow(seg(u, 0.5, 1), 2.2), base = lerp(1, 0.34, shrink), grow = Math.exp(fly * 3.3);
+      for (var i = 8; i >= 1; i--) {
+        var s = base * (1 + i * 0.3) * grow; if (s > 5) continue;
+        var a = seg(u, 0.04 + i * 0.015, 0.2 + i * 0.015); if (a <= 0) continue;
+        ctx.save(); ctx.globalAlpha = a; crtShape(ctx, cx, cy, W * s, H * s, H * 0.13 * s, H * 0.016 * s, (i % 2 ? 0.025 : -0.02) * (1 - fly));
+        ctx.fillStyle = i % 2 ? "#3c3c43" : "#2b2b31"; ctx.fill(); ctx.lineWidth = Math.max(1, 2.5 * s); ctx.strokeStyle = "#62626b"; ctx.stroke(); ctx.restore();
+      }
+      var ss = base * grow;
+      crtShape(ctx, cx, cy, W * ss, H * ss, H * 0.13 * ss, H * 0.016 * ss, 0);
+      ctx.save(); ctx.clip();
+      if (u < 0.33) ctx.drawImage(aoaSnap, cx - W * ss / 2, cy - H * ss / 2, W * ss, H * ss);
+      else if (u < 0.42) { var rn = rng(Math.floor(t * 60)); ctx.fillStyle = "#777"; ctx.fillRect(0, 0, W, H); for (var n = 0; n < 240; n++) { ctx.fillStyle = rn() < 0.5 ? "#e8e8e8" : "#222"; ctx.fillRect(cx + (rn() - 0.5) * W * ss, cy + (rn() - 0.5) * H * ss, 2 + rn() * 5, 1 + rn() * 2); } }
+      else {
+        var yg = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H) * ss * 0.6); yg.addColorStop(0, "#fffbd0"); yg.addColorStop(0.5, YH); yg.addColorStop(1, Y);
+        ctx.fillStyle = yg; ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = "rgba(160,150,0,0.18)"; for (var y = 0; y < H; y += 4) ctx.fillRect(0, y, W, 1);
+      }
+      ctx.restore();
+      crtShape(ctx, cx, cy, W * ss, H * ss, H * 0.13 * ss, H * 0.016 * ss, 0); ctx.lineJoin = "round"; ctx.lineWidth = Math.max(2, 7 * ss); ctx.strokeStyle = "#111"; ctx.stroke();
+      if (u >= 0.42 && ss < 1.6) {
+        var bk = eOut(seg(u, 0.42, 0.56)), ox = cx + W * ss * 0.32, oy = cy - H * ss * 0.3;
+        [[YH, 0.06], [ORANGE, 0.04], [LIME, 0.035], ["#ffffff", 0.012], [Y, 0.03]].forEach(function (b, j) {
+          var ang = -0.55 + (j - 2) * 0.08, len = Math.hypot(W, H) * bk, wdt = H * b[1] * Math.max(0.6, ss * 2);
+          ctx.save(); ctx.translate(ox, oy); ctx.rotate(ang); ctx.beginPath(); ctx.moveTo(0, -wdt * 0.15); ctx.lineTo(len, -wdt); ctx.lineTo(len, wdt); ctx.lineTo(0, wdt * 0.15); ctx.closePath(); ctx.fillStyle = b[0]; ctx.globalAlpha = 0.95; ctx.fill(); ctx.restore();
+        });
+      }
+    }
+    function stage(c, t) {
+      var lt = t - 0.95;
+      var push = eIn(seg(lt, 0.03, 0.22)), tilt = eInOut(seg(lt, 0.22, 0.6)), drift = seg(lt, 0.75, 1.95), lit = seg(lt, 0.75, 0.83);
+      var Z = lerp(lerp(1.3, 1.85, push), 1.0, tilt) * (1 + 0.035 * drift), shift = lerp(-H * 0.36, 0, tilt);
+      var fx = W * 0.5, fy = H * 0.88;
+      function layer(par, fn) { c.save(); c.translate(0, shift * par); var zz = Math.pow(Z, par); c.translate(fx, fy); c.scale(zz, zz); c.translate(-fx, -fy); fn(); c.restore(); }
+      c.fillStyle = "#06060a"; c.fillRect(0, 0, W, H);
+      layer(0.45, function () {
+        [[-1, W * 0.22], [1, W * 0.78]].forEach(function (sd, si) {
+          var sx = sd[1], sy = H * 0.3, sw = W * 0.38, sh = H * 0.46, l = sd[0] < 0;
+          var q = [[sx - sw / 2, sy - sh / 2 * (l ? 1 : 0.9)], [sx + sw / 2, sy - sh / 2 * (l ? 0.9 : 1)], [sx + sw / 2, sy + sh / 2 * (l ? 0.9 : 1)], [sx - sw / 2, sy + sh / 2 * (l ? 1 : 0.9)]];
+          quad(c, q); c.fillStyle = "#15151c"; c.fill(); c.lineWidth = 3; c.strokeStyle = "#2c2c36"; c.stroke();
+          if (lit > 0) {
+            c.save(); quad(c, q); c.clip(); c.globalAlpha = lit;
+            if (si === 0) { c.fillStyle = Y; c.fillRect(sx - sw, sy - sh, sw * 2, sh * 2); if (ready("emaster")) c.drawImage(IMG.emaster, sx - sw * 0.62, sy - sh * 0.55, sw * 1.3, sw * 1.3 / 1.5); }
+            else {
+              var gg = c.createLinearGradient(sx, sy - sh / 2, sx, sy + sh / 2); gg.addColorStop(0, "#ffd43b"); gg.addColorStop(1, ORANGE); c.fillStyle = gg; c.fillRect(sx - sw, sy - sh, sw * 2, sh * 2);
+              c.fillStyle = "rgba(255,255,255,0.25)"; for (var hx = 0; hx < 14; hx++) for (var hy2 = 0; hy2 < 9; hy2++) { c.beginPath(); c.arc(sx - sw / 2 + hx * sw / 13, sy - sh / 2 + hy2 * sh / 8, H * 0.004 * (1 + (hx + hy2) % 3), 0, Math.PI * 2); c.fill(); }
+              if (ready("izv2")) c.drawImage(IMG.izv2, sx - sh * 0.36, sy - sh * 0.55, sh * 0.72, sh * 1.08);
+            }
+            c.fillStyle = "rgba(0,0,0,0.12)"; for (var yy = sy - sh; yy < sy + sh; yy += 4) c.fillRect(sx - sw, yy, sw * 2, 1.5);
+            var flick = 1 - seg(lt, 0.75, 0.9); if (flick > 0) { c.fillStyle = "rgba(255,255,255," + flick + ")"; c.fillRect(sx - sw, sy - sh, sw * 2, sh * 2); }
+            c.restore();
+            c.save(); c.globalAlpha = lit; c.lineJoin = "round"; quad(c, q); c.lineWidth = H * 0.014; c.strokeStyle = Y; c.stroke();
+            c.lineWidth = 2; c.strokeStyle = "#ff3b5c"; quad(c, shrinkPoly(q, 0.965)); c.stroke(); c.strokeStyle = LIME; quad(c, shrinkPoly(q, 0.94)); c.stroke(); c.restore();
+            var rk = seg(lt, 0.76, 1.2);
+            if (rk > 0 && rk < 1) [["#ff3fae", 0], [YH, 0.07], [LIME, 0.14]].forEach(function (rc) { var kk = seg(rk, rc[1], 0.85 + rc[1]); if (kk > 0 && kk < 1) ring(c, sx, sy, lerp(sh * 0.3, sh * 1.3, eOut(kk)), lerp(5, 1.5, kk), rc[0], 1 - kk); });
+          }
+        });
+        [[W * 0.28, -0.22], [W * 0.72, 0.22]].forEach(function (sp, i) {
+          var ang = sp[1] * (1 - 0.6 * lit) + Math.sin(lt * 2 + i) * 0.08 * (1 - lit);
+          c.save(); c.translate(sp[0], -H * 0.15); c.rotate(ang); c.globalCompositeOperation = "lighter";
+          var bg = c.createLinearGradient(0, 0, 0, H * 1.2); bg.addColorStop(0, "rgba(255,255,240,0.35)"); bg.addColorStop(1, "rgba(255,255,240,0)");
+          c.fillStyle = bg; c.beginPath(); c.moveTo(-H * 0.02, 0); c.lineTo(H * 0.02, 0); c.lineTo(H * 0.2, H * 1.2); c.lineTo(-H * 0.2, H * 1.2); c.closePath(); c.fill(); c.restore();
+        });
+      });
+      layer(1.0, function () {
+        var hy = H * 0.6;
+        function Pf(u, v) { var vv = Math.pow(v, 1.4); return [W / 2 + (u - 0.5) * W * (0.7 + 2.4 * vv), hy + (H * 1.05 - hy) * vv]; }
+        for (var i = 0; i < 8; i++) for (var j = 0; j < 12; j++) { var a = Pf(j / 12, i / 8), b2 = Pf((j + 1) / 12, i / 8), cc = Pf((j + 1) / 12, (i + 1) / 8), d = Pf(j / 12, (i + 1) / 8); c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b2[0], b2[1]); c.lineTo(cc[0], cc[1]); c.lineTo(d[0], d[1]); c.closePath(); c.fillStyle = (i + j) % 2 ? "#1d1d22" : "#4e4d4a"; c.fill(); }
+        var k1 = Pf(0.38, 0), k2 = Pf(0.62, 0), k3 = Pf(0.66, 1), k4 = Pf(0.34, 1); c.beginPath(); c.moveTo(k1[0], k1[1]); c.lineTo(k2[0], k2[1]); c.lineTo(k3[0], k3[1]); c.lineTo(k4[0], k4[1]); c.closePath(); c.fillStyle = "#6e141b"; c.fill();
+        var pool = c.createRadialGradient(fx, fy, 0, fx, fy, H * 0.35); pool.addColorStop(0, "rgba(255,250,220,0.35)"); pool.addColorStop(1, "rgba(255,250,220,0)"); c.fillStyle = pool; c.beginPath(); c.ellipse(fx, fy, H * 0.45, H * 0.12, 0, 0, Math.PI * 2); c.fill();
+        if (lit > 0) { c.save(); c.globalAlpha = lit * 0.3; c.globalCompositeOperation = "lighter"; c.fillStyle = "#ffd43b"; c.fillRect(0, hy, W, H - hy); c.restore(); }
+        var nk = eOut(seg(lt, 0.78, 1.05));
+        if (nk > 0) { c.save(); c.translate(W * 0.5 + (1 - nk) * W * 0.3, H * 0.74); c.transform(1, 0, -0.9, 0.45, 0, 0); c.font = Math.round(H * 0.22) + "px 'Archivo Black', sans-serif"; c.textAlign = "center"; c.textBaseline = "middle"; c.globalAlpha = nk; c.lineWidth = 3; c.strokeStyle = YH; c.strokeText("YU NARUKAMI", 0, 0); c.fillStyle = "rgba(252,248,0,0.18)"; c.fillText("YU NARUKAMI", 0, 0); c.restore(); }
+        figure(c, fx, fy, H * 0.74, Y);
+      });
+      layer(1.25, function () {
+        if (lit <= 0) return;
+        var fa = lit * (1 - 0.75 * seg(lt, 1.0, 1.6));
+        c.save(); c.globalCompositeOperation = "lighter";
+        [[W * 0.36, H * 0.32, H * 0.09], [W * 0.46, H * 0.42, H * 0.04], [W * 0.58, H * 0.5, H * 0.06]].forEach(function (f) { var fg = c.createRadialGradient(f[0], f[1], 0, f[0], f[1], f[2]); fg.addColorStop(0, "rgba(255,250,200," + (0.5 * fa) + ")"); fg.addColorStop(1, "rgba(255,250,200,0)"); c.fillStyle = fg; c.beginPath(); c.arc(f[0], f[1], f[2], 0, Math.PI * 2); c.fill(); });
+        c.restore();
+      });
+      if (lit > 0) {
+        var rs = rng(77);
+        for (var s = 0; s < 12; s++) { var px = rs() * W, py = rs() * H * 0.75, sk = seg(lt, 0.78 + s * 0.03, 0.95 + s * 0.03), tw = 0.6 + 0.4 * Math.sin(t * 11 + s); if (sk > 0) { if (s % 4 === 3) star5(c, px, py, H * 0.022 * sk, t + s, ["#ff3fae", "#53e04f", "#33c3ff"][s % 3]); else star4(c, px, py, H * (s % 3 ? 0.016 : 0.028) * sk * tw, 0.15, 1, s % 2 ? "#ffffff" : YH); } }
+        for (var p = 0; p < 9; p++) { var pk = lt - 0.8 - p * 0.07; if (pk <= 0) continue; flower(c, W * (0.1 + 0.1 * p) + Math.sin(pk * 3 + p) * W * 0.03, -H * 0.05 + pk * H * 0.45 + p * H * 0.03, H * 0.025, pk * 2 + p, p % 2 ? "#ffffff" : "#fffbd0"); }
+        var tk = eOut(seg(lt, 0.8, 1.0));
+        c.save(); c.translate(0, (1 - tk) * H * 0.12);
+        c.fillStyle = "#111"; c.fillRect(0, H * 0.84, W, H * 0.065); c.fillStyle = YH; c.fillRect(0, H * 0.84, W, H * 0.007); c.fillRect(0, H * 0.899, W, H * 0.006);
+        c.font = Math.round(H * 0.032) + "px 'Archivo Black', sans-serif"; c.textBaseline = "middle"; c.textAlign = "left"; c.fillStyle = YH;
+        var msg = "★ SERIES FINALE ★ STAR OF THE SHOW ★ YU NARUKAMI ", mw = c.measureText(msg).width, off = -((t * W * 0.12) % mw);
+        for (var xx = off; xx < W; xx += mw) c.fillText(msg, xx, H * 0.872);
+        c.restore();
+        tvFrameP4R(c, W, H, seg(lt, 0.8, 1.25), t, { tag: "SERIES FINALE", count: "" });
+      }
+      var gi = 1 - seg(lt, 0, 0.12); if (gi > 0) { c.save(); c.globalAlpha = gi; c.fillStyle = YH; c.fillRect(0, 0, W, H); c.restore(); if (gi < 0.95) glitchStrips(c, W / 2, H / 2, W, H, 1 - gi, 91); }
+    }
+    if (tr < 0.42) { freeze(ctx, tr); return; }
+    if (tr < 0.95) { tunnel(tr); return; }
+    var off = seg(tr, 2.9, 3.32);
+    if (off <= 0) { stage(ctx, tr); return; }
+    ctx.fillStyle = "#0d0f16"; ctx.fillRect(0, 0, W, H);
+    ctx.save(); ctx.fillStyle = "rgba(255,255,255,0.55)"; ctx.font = Math.round(H * 0.05) + "px sans-serif"; ctx.textAlign = "center"; ctx.fillText("（结算页）", W / 2, H * 0.55); ctx.restore();
+    var sy = lerp(1, 0.006, eIn(seg(off, 0, 0.45))), sx = lerp(1, 0.004, eIn(seg(off, 0.45, 0.8))), fade = 1 - seg(off, 0.8, 1);
+    if (fade > 0) {
+      ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(sx, sy); ctx.translate(-W / 2, -H / 2); ctx.globalAlpha = fade; stage(ctx, 2.9); ctx.restore();
+      ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = fade * seg(off, 0.25, 0.45); var gw = W * sx; var lg2 = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(8, gw * 0.55)); lg2.addColorStop(0, "rgba(255,255,255,1)"); lg2.addColorStop(1, "rgba(255,255,255,0)"); ctx.fillStyle = lg2; ctx.fillRect(W / 2 - gw * 0.6 - 10, H / 2 - H * 0.03, gw * 1.2 + 20, H * 0.06); ctx.restore();
+    }
+  }
+
   var DEMOS = [
-    { id: "aoa", name: "总攻击（Series Finale，约 3.5 秒）", dur: 3.6, start: 1.4,
-      desc: "照前两个 mod 的结构和时长（P3 约 3.65 秒、P5 约 3.3 秒；精英 / Boss 战最后一击后、结算前播），换成 P4R 的东西：最后一击定格 0.12 秒 → 整个画面变蓝色单色，悠的剪影扑上去，一道、再一道巨大的蓝色雷光交叉劈过敌人（P4R「大结局」的招牌镜头），震屏闪白 → 黄色转场带着彩虹飘带和网点斜着扫过 → 0.82 秒硬切收尾立绘：黄底、背景大字 SERIES FINALE、白黄小花一朵朵弹出来转，整张卡套在彩色电视框里（扫描线）→ 停到 3 秒 → 电视「关机」：画面压成一条亮线、缩成一个点、熄掉，露出结算页。立绘现在是占位剪影，定了以后让 Codex 画悠的收尾立绘（照 P4R 那张扶眼镜的）。",
-      draw: function (ctx, W, H, tr) {
-        var ex = W * 0.72, ey = H * 0.58;
-        function card() {
-          ctx.fillStyle = Y; ctx.fillRect(0, 0, W, H);
-          var rg = ctx.createRadialGradient(W * 0.36, H * 0.45, H * 0.1, W * 0.36, H * 0.45, H * 0.95); rg.addColorStop(0, "rgba(255,255,230,0.75)"); rg.addColorStop(1, "rgba(255,255,230,0)");
-          ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H);
-          ctx.save(); ctx.translate(W * 0.62, H * 0.5); ctx.rotate(-0.12); ctx.font = Math.round(H * 0.2) + "px 'Archivo Black', sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-          var drift = (tr - 0.82) * W * 0.02;
-          ctx.lineWidth = 2; ctx.strokeStyle = "rgba(120,110,0,0.55)"; ctx.strokeText("SERIES", drift, -H * 0.12); ctx.fillStyle = "rgba(150,140,0,0.28)"; ctx.fillText("FINALE", -drift, H * 0.1);
-          ctx.restore();
-          var FL = [[0.62, 0.2, 0.07, "#ffffff"], [0.86, 0.32, 0.05, "#fffbd0"], [0.74, 0.78, 0.06, "#ffffff"], [0.93, 0.7, 0.04, "#ffffff"], [0.52, 0.88, 0.045, "#fffbd0"], [0.08, 0.18, 0.05, "#ffffff"], [0.2, 0.82, 0.04, "#fffbd0"]];
-          FL.forEach(function (f, i) { var pk = seg(tr, 0.86 + i * 0.05, 1.06 + i * 0.05); if (pk <= 0) return; flower(ctx, W * f[0], H * f[1], H * f[2] * eBack(pk), tr * 0.8 + i, f[3]); ctx.beginPath(); ctx.arc(W * f[0], H * f[1], H * f[2] * 0.22 * eBack(pk), 0, Math.PI * 2); ctx.fillStyle = "#f2c54b"; ctx.fill(); });
-          var ek = eOut(seg(tr, 0.82, 1.08)), sc = lerp(1.14, 1, ek);
-          ctx.save(); ctx.translate(W * 0.3, H * 1.0); ctx.scale(sc, sc); figure(ctx, 0, 0, H * 0.98, "#ffffff"); ctx.restore();
-          ctx.save(); ctx.fillStyle = "rgba(0,0,0,0.55)"; ctx.font = Math.round(H * 0.028) + "px sans-serif"; ctx.textAlign = "center"; ctx.fillText("（悠的收尾立绘，生图后换上）", W * 0.3, H * 0.95); ctx.restore();
-          for (var s = 0; s < 5; s++) { var tw = 0.6 + 0.4 * Math.sin(tr * 9 + s * 2); star4(ctx, W * (0.5 + 0.09 * s), H * (0.12 + 0.17 * ((s * 3) % 5)), H * 0.022 * tw * seg(tr, 0.9 + s * 0.04, 1.0 + s * 0.04), 0.15, 1, s % 2 ? "#ffffff" : "#fff6b0"); }
-          tvFrameScreen(ctx, W, H, 1, tr);
-        }
-        if (tr < 0.82) {
-          /* the frozen last hit, then the blue monochrome slash */
-          var blue = seg(tr, 0.12, 0.16);
-          battleFloor(ctx, W, H, blue > 0);
-          if (blue > 0) { ctx.fillStyle = "#06102a"; ctx.beginPath(); ctx.ellipse(ex, ey, H * 0.11, H * 0.09, 0, 0, Math.PI * 2); ctx.fill(); }
-          else { enemy(ctx, ex, ey, H * 0.11, 0); p4rRing(ctx, ex, ey, H, 0.35, 5, 1, true); damageBadge(ctx, ex - W * 0.06, ey - H * 0.24, 31, 1, 1); figure(ctx, W * 0.2, H * 0.92, H * 0.42, Y); }
-          if (blue > 0) {
-            ctx.save(); ctx.globalCompositeOperation = "multiply"; ctx.globalAlpha = blue; ctx.fillStyle = "rgb(70,120,255)"; ctx.fillRect(0, 0, W, H); ctx.restore();
-            ctx.save(); ctx.globalCompositeOperation = "screen"; ctx.globalAlpha = blue * 0.5; ctx.fillStyle = "rgb(10,30,110)"; ctx.fillRect(0, 0, W, H); ctx.restore();
-            var lx = lerp(W * 0.18, W * 0.6, eOut(seg(tr, 0.14, 0.26)));
-            ctx.save(); ctx.globalAlpha = 0.9; figure(ctx, lx, H * 0.9, H * 0.44, "#bfe3ff"); ctx.restore();
-            var shake = tr > 0.2 && tr < 0.4 ? (1 - (tr - 0.2) / 0.2) * H * 0.012 : 0;
-            ctx.save(); if (shake) ctx.translate(Math.sin(tr * 90) * shake, Math.cos(tr * 70) * shake);
-            blueBeam(ctx, W, H, ex, ey, -0.42, seg(tr, 0.18, 0.23), 1 - seg(tr, 0.46, 0.58), 1, tr);
-            blueBeam(ctx, W, H, ex, ey, 0.55, seg(tr, 0.26, 0.31), 1 - seg(tr, 0.5, 0.62), 2, tr);
-            ctx.restore();
-            var wf = (1 - seg(tr, 0.18, 0.26)) * seg(tr, 0.17, 0.18) + (1 - seg(tr, 0.26, 0.34)) * seg(tr, 0.25, 0.26) * 0.7;
-            if (wf > 0) { ctx.save(); ctx.globalAlpha = wf * 0.7; ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, W, H); ctx.restore(); }
-          }
-          /* yellow wipe with a rainbow ribbon on its edge */
-          var wk = eOut(seg(tr, 0.48, 0.82));
-          if (wk > 0) {
-            var edge = function (y) { return lerp(-W * 0.35, W * 1.45, wk) - (y - H / 2) * 0.55; };
-            ctx.save(); ctx.beginPath(); ctx.moveTo(-W, -10); ctx.lineTo(edge(-10), -10); ctx.lineTo(edge(H + 10), H + 10); ctx.lineTo(-W, H + 10); ctx.closePath(); ctx.fillStyle = Y; ctx.fill();
-            var RB = ["#ff3b5c", "#ff9a1e", "#ffe600", "#53e04f", "#33c3ff", "#4b6bff", "#b45cff"];
-            RB.forEach(function (c, i) { var o = (i + 1) * H * 0.016; ctx.beginPath(); ctx.moveTo(edge(-10) + o - H * 0.016, -10); ctx.lineTo(edge(-10) + o, -10); ctx.lineTo(edge(H + 10) + o, H + 10); ctx.lineTo(edge(H + 10) + o - H * 0.016, H + 10); ctx.closePath(); ctx.fillStyle = c; ctx.fill(); });
-            ctx.fillStyle = "#e3a800"; for (var dy = 0; dy < H; dy += H * 0.03) { ctx.beginPath(); ctx.arc(edge(dy) - H * 0.04, dy, H * 0.006, 0, Math.PI * 2); ctx.fill(); }
-            ctx.restore();
-          }
-          return;
-        }
-        /* finish card, then the TV switches off onto the results */
-        var off = seg(tr, 3.0, 3.42);
-        if (off <= 0) { card(); var fl = 1 - seg(tr, 0.82, 0.88); if (fl > 0) { ctx.save(); ctx.globalAlpha = fl * 0.8; ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H); ctx.restore(); } return; }
-        ctx.fillStyle = "#0d0f16"; ctx.fillRect(0, 0, W, H);
-        ctx.save(); ctx.fillStyle = "rgba(255,255,255,0.55)"; ctx.font = Math.round(H * 0.05) + "px sans-serif"; ctx.textAlign = "center"; ctx.fillText("（结算页）", W / 2, H * 0.55); ctx.restore();
-        var sy = lerp(1, 0.006, eIn(seg(off, 0, 0.45))), sx = lerp(1, 0.004, eIn(seg(off, 0.45, 0.8))), fade = 1 - seg(off, 0.8, 1);
-        if (sx > 0.005 || fade > 0) {
-          ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(sx, sy); ctx.translate(-W / 2, -H / 2); ctx.globalAlpha = fade; card(); ctx.restore();
-          ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = fade * seg(off, 0.25, 0.45); var gw = W * sx; var lg2 = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(8, gw * 0.55)); lg2.addColorStop(0, "rgba(255,255,255,1)"); lg2.addColorStop(1, "rgba(255,255,255,0)"); ctx.fillStyle = lg2; ctx.fillRect(W / 2 - gw * 0.6 - 10, H / 2 - H * 0.03, gw * 1.2 + 20, H * 0.06); ctx.restore();
-        }
-      } },
-    { id: "tvstate", name: "电视框状态：连环拳（这回合下 2 张攻击额外打出）", dur: 2.7, start: 1.15,
-      desc: "电视框当成一个会持续的状态，出现、持续、消失都有原因：打出「连环拳」→ 电视开机（一条亮线张开），整个画面框进 P4R 那种彩色电视框（黄色圆角框、里面红绿两条细线、扫描线），左上角 ON AIR，右上角黄标显示还剩几次 → 每打出一张攻击牌、它被额外打出一次时，电视框像换台一样信号错位一下，次数减一 → 次数用完（或者回合结束）电视「关机」，收成一条亮线消失。同样可以给「狂怒」（本回合每打一张攻击得格挡）用。",
+    { id: "aoa", name: "总攻击 第二版（Series Finale，约 3.35 秒）", dur: 3.45, start: 2.3,
+      desc: "按你的意见重做：人物不扑，不用一块斜条直接扫，不硬切；转场全用 P4R 的电视语言，运镜用分层视差做。①最后一击定格：画面去色，悠和敌人变黑剪影，敌人身后弹出一个大黄圆盘（一圈网点、细白环），一道带网点的黄绿光带从右上角冲到敌人身上，镜头慢慢推近、歪一点。②电视隧道：定格画面缩进一台电视，四周一圈圈灰电视叠成隧道；中间屏幕闪雪花，变成发光的黄屏，射出黄、橙、黄绿光束，镜头加速冲进黄屏。③像换台一样信号错位，切到黑舞台、两束聚光灯：镜头由慢到快推到悠脚下，再仰起来拍全身，停一下。④身后两块大屏幕一起亮：左边悠的眼睛特写，右边伊邪那岐；彩虹圆环从屏幕扩出，地上斜躺着大名字 YU NARUKAMI，星星、花瓣、镜头光斑，底下滚动字幕条（★ SERIES FINALE ★ STAR OF THE SHOW ★），P4R 电视框转着收拢套住整个画面。⑤电视关机：压成一条亮线、缩成一个点，露出结算页。全长约 3.35 秒（P3 约 3.65、P5 约 3.3）。悠现在是占位剪影，游戏里换成他的模型或立绘。",
+      draw: function (ctx, W, H, tr) { aoaScene(ctx, W, H, tr); } },
+    { id: "tvstate", name: "电视框状态 第二版：连环拳（这回合下 2 张攻击额外打出）", dur: 2.7, start: 1.3,
+      desc: "电视框照 P4R 改得不那么规整：黄色是屏幕外面那一圈，四条边往外微微鼓（像老电视），边上薄、四个角厚，角里有网点；里面的红线、绿线不完全同心；左上压着一个状态名标签，右上角一台小电视，屏幕上显示还剩几次。出现：几层歪着的黄、红、绿框从大到小转着收拢到位（P4R 进战斗那种）。每次额外打出：信号错位一下，小电视里的数字跳一下。用完（或回合结束）：几层框反着转开、散掉。",
       draw: function (ctx, W, H, tr) {
         battleFloor(ctx, W, H);
         var foes = [[W * 0.72, H * 0.62], [W * 0.86, H * 0.56]];
         foes.forEach(function (e, i) { enemy(ctx, e[0], e[1], H * 0.09, Math.sin(tr * 3 + i)); });
         figure(ctx, W * 0.2, H * 0.92, H * 0.42, Y);
-        var HITS = [1.0, 1.15, 1.75, 1.9];
-        HITS.forEach(function (h, i) { var hk = tr - h; if (hk > 0) { var e = foes[i < 2 ? 0 : 1]; p4rRing(ctx, e[0], e[1] - H * 0.02, H, seg(hk, 0, 0.4), 10 + i, 0.8, false); damageBadge(ctx, e[0] - W * 0.04 + (i % 2) * W * 0.05, e[1] - H * 0.18 - (i % 2) * H * 0.04, 6, seg(hk, 0, 0.16), 1 - seg(hk, 0.5, 0.8)); } });
-        var on = seg(tr, 0.15, 0.45) * (1 - seg(tr, 2.1, 2.4));
-        tvFrameScreen(ctx, W, H, on, tr);
+        [1.0, 1.15, 1.75, 1.9].forEach(function (h, i) { var hk = tr - h; if (hk > 0) { var e = foes[i < 2 ? 0 : 1]; p4rRing(ctx, e[0], e[1] - H * 0.02, H, seg(hk, 0, 0.4), 10 + i, 0.8, false); damageBadge(ctx, e[0] - W * 0.04 + (i % 2) * W * 0.05, e[1] - H * 0.18 - (i % 2) * H * 0.04, 6, seg(hk, 0, 0.16), 1 - seg(hk, 0.5, 0.8)); } });
+        var k = Math.min(seg(tr, 0.15, 0.62), 1 - seg(tr, 2.1, 2.5));
+        var left = tr < 1.15 ? 2 : tr < 1.9 ? 1 : 0, pop = Math.max(0, 1 - Math.min(Math.abs(tr - 1.15), Math.abs(tr - 1.9)) / 0.12);
+        tvFrameP4R(ctx, W, H, k, tr, { tag: "连环拳", count: "×" + left, pop: pop });
         [1.15, 1.9].forEach(function (g, i) { var gk = tr - g; if (gk > 0 && gk < 0.12) glitchStrips(ctx, W / 2, H / 2, W, H, gk / 0.12, 70 + i); });
-        if (on > 0.6) {
-          var left = tr < 1.15 ? 2 : tr < 1.9 ? 1 : 0, pop = Math.max(0, 1 - Math.min(Math.abs(tr - 1.15), Math.abs(tr - 1.9)) / 0.12);
-          ctx.save(); ctx.globalAlpha = seg(on, 0.6, 1);
-          ctx.fillStyle = "#ff3b5c"; ctx.beginPath(); ctx.arc(W * 0.075, H * 0.1, H * 0.012, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = "#ffffff"; ctx.font = "700 " + Math.round(H * 0.032) + "px sans-serif"; ctx.textBaseline = "middle"; ctx.fillText("ON AIR", W * 0.09, H * 0.1);
-          var bs = 1 + 0.25 * pop; ctx.translate(W * 0.9, H * 0.11); ctx.scale(bs, bs);
-          roundRect(ctx, -W * 0.045, -H * 0.035, W * 0.09, H * 0.07, H * 0.02); ctx.fillStyle = YH; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = "#111"; ctx.stroke();
-          ctx.fillStyle = "#111"; ctx.font = Math.round(H * 0.045) + "px 'Archivo Black', sans-serif"; ctx.textAlign = "center"; ctx.fillText("×" + left, 0, H * 0.004);
-          ctx.restore();
-        }
-        ctx.save(); ctx.fillStyle = "rgba(255,255,255,0.7)"; ctx.font = Math.round(H * 0.03) + "px sans-serif";
-        ctx.fillText(tr < 0.5 ? "打出 连环拳" : tr < 1.3 ? "攻击牌 → 额外打出一次" : tr < 2.05 ? "再一张 → 额外打出一次" : "次数用完：关机", W * 0.06, H * 0.96); ctx.restore();
+        ctx.save(); ctx.fillStyle = "rgba(255,255,255,0.75)"; ctx.font = Math.round(H * 0.03) + "px sans-serif";
+        ctx.fillText(tr < 0.6 ? "打出 连环拳" : tr < 1.3 ? "攻击牌 → 额外打出一次" : tr < 2.05 ? "再一张 → 额外打出一次" : "次数用完：电视框散掉", W * 0.09, H * 0.86); ctx.restore();
       } },
     { id: "stoke", name: "添柴 完整版（建议：烧 7 张以上）", dur: 2.8, start: 1.3,
       desc: "打出后，背景划出「SHUFFLE TIME」（P4 洗牌小游戏的名字，只当背景）。手牌从左到右依次抬起，翻成黄色塔罗牌背面；悠伸手一握，整手牌同时捏碎（顿帧 + 震屏 + 闪白）。战场去色，碎片打着旋被吸到场地中间，拼成一圈转动的卡牌转盘（像 Shuffle Time 洗牌）：每张先出白色轮廓，最后几片落进去时填满黄色、闪一下。转盘越转越快，转到最前面的那张就被甩出来，在空中翻开变成新牌，落进手牌，落位时亮一圈白环、一道黄边和小星星，一张接一张。约 0.5 秒捏碎，约 1.3 秒转盘拼好、开始发牌，约 2.3 秒发完。",
