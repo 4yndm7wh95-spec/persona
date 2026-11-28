@@ -1483,16 +1483,16 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
      - Stripes: B0 + share x D along B0's outward normal; the shares blend smoothly (C2) from the near proportions (left: wide yellow
        and dark grey) to the far ones (top: orange wider, the grey only a dark line), then into the yellow shaft; the barbed
        arrowhead (half triangle) sits on the end.
-     - Both ends are tapered while it moves: a blade in front, a thin brush tail behind (no round caps, no flat cuts); the taper
-       length follows the speed and is 0 at rest. Movement runs along a "visual" arc length (a third of the way across the ribbon),
-       so the outer stripes are not flung round the curl. */
+     - Moving, it stays a set of loose stripes: each stripe ends in its own slanted point (no round caps, no flat cut across the
+       whole ribbon, no bunching into one point), the points stepping back stripe by stripe; the barbed arrowhead is the ribbon's
+       own head and leads it in, bigger while it is near. */
   var RIB7 = (function () {
     var B0 = [499.724, 2.90064, 1442.57, 0.000192204, 0.00202459, 0.0211792, 1224.91, 57.7392, 0.00260097, 30.0051], X0 = 1340;
     var WD = [6.70727, 3.66693e-05, 0.00211809, 0.0360441, 1223.2, 25.5935, 0.012479, 18.0058];
     /* cumulative shares of D: orange | lime | inner yellow | grey (with dark outlines) | outer yellow | outer orange | outermost yellow */
     var NEAR = [0.11, 0.23, 0.50, 0.74, 0.83, 0.91, 1.0], FAR = [0.27, 0.42, 0.60, 0.67, 0.78, 0.90, 1.0], END = [0, 0, 0.62, 0.62, 0.8, 0.8, 1.0];
     var C = { Y: "#f8f40e", O: "#feb30c", L: "#aef01a", G: "#333037", K: "#151417" };
-    var COLS = [C.O, C.L, C.Y, C.G, C.Y, C.O, C.Y], EXT = 420, SN = 1365, BARB = [343, 338], ZERO = null;
+    var COLS = [C.O, C.L, C.Y, C.G, C.Y, C.O, C.Y], EXT = 520, EXT2 = 320, SN = 1365, BARB = [343, 338];
     function uni(a0, a1, kp, sp, wr, kt, wf, s) {
       if (s <= sp) { var q = Math.max(0, Math.min(1, s / sp)); return a0 + (a1 - a0) * q * q + (kp - a1) * Math.exp(-0.5 * Math.pow((s - sp) / wr, 2)); }
       return kt + (kp - kt) * Math.exp(-0.5 * Math.pow((s - sp) / wf, 2));
@@ -1501,16 +1501,17 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     function fidx(R, s) { return Math.max(0, Math.min(R.N - 1, s / R.ds + R.EXT)); }
     function lerpA(A, R, s) { var u = fidx(R, s), i = Math.min(R.N - 2, Math.floor(u)), f = u - i; return A[i] + (A[i + 1] - A[i]) * f; }
     function pt(R, s, o) { var u = fidx(R, s), i = Math.min(R.N - 2, Math.floor(u)), f = u - i, x = R.X[i] + (R.X[i + 1] - R.X[i]) * f, y = R.Y[i] + (R.Y[i + 1] - R.Y[i]) * f, nx = R.NX[i] + (R.NX[i + 1] - R.NX[i]) * f, ny = R.NY[i] + (R.NY[i + 1] - R.NY[i]) * f; return [x + nx * o, y + ny * o, nx, ny]; }
-    function sAtV(R, v) {
-      var V = R.VL, lo = 0, hi = R.N - 1; if (v <= 0) return R.S[0]; if (v >= V[hi]) return R.S[hi];
-      while (hi - lo > 1) { var m = (lo + hi) >> 1; if (V[m] <= v) lo = m; else hi = m; }
-      return R.S[lo] + (R.S[hi] - R.S[lo]) * (v - V[lo]) / ((V[hi] - V[lo]) || 1);
+    /* s where a monotone per-sample array A reaches value v */
+    function sAt(A, R, v) {
+      var lo = 0, hi = R.N - 1; if (v <= A[0]) return R.S[0]; if (v >= A[hi]) return R.S[hi];
+      while (hi - lo > 1) { var m = (lo + hi) >> 1; if (A[m] <= v) lo = m; else hi = m; }
+      return R.S[lo] + (R.S[hi] - R.S[lo]) * (v - A[lo]) / ((A[hi] - A[lo]) || 1);
     }
-    function vAtS(R, s) { var u = fidx(R, s), i = Math.min(R.N - 2, Math.floor(u)); return R.VL[i] + (R.VL[i + 1] - R.VL[i]) * (u - i); }
     function build() {
-      var L = B0[2], nF = Math.round(L), ds = L / nF, i, kf = function (s) { return uni(B0[3], B0[4], B0[5], B0[6], B0[7], B0[8], B0[9], s); };
+      var L = B0[2], nL = Math.round(L), ds = L / nL, i, k, kf = function (s) { return uni(B0[3], B0[4], B0[5], B0[6], B0[7], B0[8], B0[9], s); };
+      /* forward from s = 0 (just off the right edge) to the tip and on into the TV; backwards for the run-up */
       var th = B0[1], x = X0, y = B0[0], fx = [x], fy = [y], fth = [th];
-      for (i = 1; i <= nF; i++) { var s0 = (i - 1) * ds, th1 = th + (kf(s0) + kf(s0 + ds)) / 2 * ds; x += (Math.cos(th) + Math.cos(th1)) / 2 * ds; y += (Math.sin(th) + Math.sin(th1)) / 2 * ds; th = th1; fx.push(x); fy.push(y); fth.push(th); }
+      for (i = 1; i <= nL + EXT2; i++) { var s0 = (i - 1) * ds, th1 = th + (kf(s0) + kf(s0 + ds)) / 2 * ds; x += (Math.cos(th) + Math.cos(th1)) / 2 * ds; y += (Math.sin(th) + Math.sin(th1)) / 2 * ds; th = th1; fx.push(x); fy.push(y); fth.push(th); }
       th = B0[1]; x = X0; y = B0[0]; var bx = [], by = [], bth = [];
       for (i = 1; i <= EXT; i++) { var th0 = th - kf(-i * ds) * ds; x -= (Math.cos(th) + Math.cos(th0)) / 2 * ds; y -= (Math.sin(th) + Math.sin(th0)) / 2 * ds; th = th0; bx.push(x); by.push(y); bth.push(th); }
       var S = [], X = [], Y = [], TH = [];
@@ -1523,38 +1524,74 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       for (i = 0; i < N; i++) {
         NX.push(Math.sin(TH[i])); NY.push(-Math.cos(TH[i])); D.push(Math.exp(LD[i]));
         var b1 = sstep(1150, 1290, S[i]), b2 = sstep(1270, 1360, S[i]);
-        for (var k = 0; k < 7; k++) { var f = NEAR[k] * (1 - b1) + FAR[k] * b1; E[k].push((f * (1 - b2) + END[k] * b2) * D[i]); }
+        for (k = 0; k < 7; k++) { var f = NEAR[k] * (1 - b1) + FAR[k] * b1; E[k].push((f * (1 - b2) + END[k] * b2) * D[i]); }
       }
-      var VL = [0];
-      for (i = 1; i < N; i++) VL.push(VL[i - 1] + Math.hypot(X[i] + NX[i] * D[i] * 0.3 - X[i - 1] - NX[i - 1] * D[i - 1] * 0.3, Y[i] + NY[i] * D[i] * 0.3 - Y[i - 1] - NY[i - 1] * D[i - 1] * 0.3));
-      var R = { S: S, X: X, Y: Y, NX: NX, NY: NY, D: D, E: E, VL: VL, N: N, ds: ds, EXT: EXT, L: L, SN: SN };
-      var iN = Math.round(fidx(R, SN)), AH = [[X[iN] + NX[iN] * E[6][iN], Y[iN] + NY[iN] * E[6][iN]], BARB.slice()];
-      for (i = N - 1; i >= iN; i--) AH.push([X[i], Y[i]]);
-      R.AH = AH; R.notch = AH[0]; R.VEND = vAtS(R, SN); R.V100 = vAtS(R, 100); R.VLL = vAtS(R, L);
+      /* lengths: each stripe's own centre line (its ends are measured along it), and the line just off the inner edge (the head runs on it) */
+      var LC = [], VA = [0];
+      for (k = 0; k < 7; k++) {
+        var A = k ? E[k - 1] : null, Lk = [0];
+        for (i = 1; i < N; i++) { var c0 = ((A ? A[i - 1] : 0) + E[k][i - 1]) / 2, c1 = ((A ? A[i] : 0) + E[k][i]) / 2; Lk.push(Lk[i - 1] + Math.hypot(X[i] + NX[i] * c1 - X[i - 1] - NX[i - 1] * c0, Y[i] + NY[i] * c1 - Y[i - 1] - NY[i - 1] * c0)); }
+        LC.push(Lk);
+      }
+      for (i = 1; i < N; i++) VA.push(VA[i - 1] + Math.hypot(X[i] + NX[i] * D[i] * 0.12 - X[i - 1] - NX[i - 1] * D[i - 1] * 0.12, Y[i] + NY[i] * D[i] * 0.12 - Y[i - 1] - NY[i - 1] * D[i - 1] * 0.12));
+      var R = { S: S, X: X, Y: Y, NX: NX, NY: NY, D: D, E: E, LC: LC, VA: VA, N: N, ds: ds, EXT: EXT, L: L, SN: SN };
+      /* the arrowhead in the ribbon's own frame (distance back from the tip along B0, offset out from B0), so it can ride on the head */
+      var iN = Math.round(fidx(R, SN)), best = 1e9, sb = SN;
+      for (var q = Math.round(fidx(R, 1250)); q <= Math.round(fidx(R, L)); q++) { var dd = Math.hypot(X[q] - BARB[0], Y[q] - BARB[1]); if (dd < best) { best = dd; sb = S[q]; } }
+      var ib = Math.round(fidx(R, sb));
+      R.AR = { dN: L - SN, oN: E[6][iN], dB: L - sb, oB: (BARB[0] - X[ib]) * NX[ib] + (BARB[1] - Y[ib]) * NY[ib] };
       return R;
     }
-    function taperW(o, s) {
-      var w = 1;
-      if (o.LH > 0.5 && s > o.sH - o.LH) w = Math.min(w, 1 - Math.pow(1 - Math.max(0, (o.sH - s) / o.LH), 2.2));
-      if (o.LT > 0.5 && s < o.sT + o.LT) w = Math.min(w, Math.pow(Math.max(0, (s - o.sT) / o.LT), 1.5));
-      return w;
+    function lAt(R, k, s) { return lerpA(R.LC[k], R, s); }
+    function sAtL(R, k, l) { return sAt(R.LC[k], R, l); }
+    /* where every stripe starts and ends. st.front: the head's station on B0; st.back: the tail's (null: still off screen behind).
+       Each stripe ends in a straight slanted point (its inner edge runs on, its outer edge stops cH x its width earlier); each next
+       stripe out starts half a point further back, so the ends stay loose and fan out like a set of blades, never bunched together. */
+    function stations(R, st) {
+      var out = [], cH = st.cH || 2.2, cT = st.cT || 2.2, fr = st.front, bk = st.back, k;
+      for (k = 0; k < 7; k++) {
+        var A = k ? R.E[k - 1] : null, wf = lerpA(R.E[k], R, fr) - (A ? lerpA(A, R, fr) : 0), Lh = Math.max(10, Math.min(200, cH * wf));
+        var ib = fr, ob = sAtL(R, k, lAt(R, k, fr) - Lh), ia = R.S[0], oa = R.S[0], Lt = 0;
+        if (bk !== null && bk !== undefined) {
+          var wb = lerpA(R.E[k], R, bk) - (A ? lerpA(A, R, bk) : 0); Lt = Math.max(10, Math.min(200, cT * wb));
+          oa = bk; ia = sAtL(R, k, lAt(R, k, bk) + Lt);
+        }
+        out.push({ ia: ia, ib: ib, oa: oa, ob: ob });
+        fr = sAtL(R, k, lAt(R, k, fr) - 0.5 * Lh);
+        if (bk !== null && bk !== undefined) bk = sAtL(R, k, lAt(R, k, bk) - 0.5 * Lt);
+      }
+      return out;
     }
-    /* the path of stripe k (0 orange .. 6 outermost yellow) between the tapered ends; false when nothing is left */
-    function bandPath(ctx, R, o, k, inset) {
-      if (!ZERO) { ZERO = []; for (var z = 0; z < R.N; z++) ZERO.push(0); }
-      var s0 = Math.max(R.S[0], o.sT), s1 = Math.min(o.end, o.sH); if (s1 - s0 < 1) return false;
-      var A = k ? R.E[k - 1] : ZERO, B = R.E[k], i0 = Math.ceil(fidx(R, s0)), i1 = Math.floor(fidx(R, s1)), i, w, a, b, d;
-      ctx.beginPath();
-      for (i = i0; i <= i1; i++) { w = taperW(o, R.S[i]); a = A[i] * w; b = B[i] * w; d = a + Math.min(inset, (b - a) / 2); if (i === i0) ctx.moveTo(R.X[i] + R.NX[i] * d, R.Y[i] + R.NY[i] * d); else ctx.lineTo(R.X[i] + R.NX[i] * d, R.Y[i] + R.NY[i] * d); }
-      for (i = i1; i >= i0; i--) { w = taperW(o, R.S[i]); a = A[i] * w; b = B[i] * w; d = b - Math.min(inset, (b - a) / 2); ctx.lineTo(R.X[i] + R.NX[i] * d, R.Y[i] + R.NY[i] * d); }
+    function stripPath(ctx, R, k, P, inset) {
+      var ia = P.ia, ib = P.ib, oa = P.oa, ob = P.ob;
+      if (inset) { ia = sAtL(R, k, lAt(R, k, ia) + 3); ib = sAtL(R, k, lAt(R, k, ib) - 3); oa = sAtL(R, k, lAt(R, k, oa) + 3); ob = sAtL(R, k, lAt(R, k, ob) - 3); }
+      if (ib - ia < 0.5 && ob - oa < 0.5) return false;
+      if (ib < ia) ib = ia; if (ob < oa) ob = oa;
+      var A = k ? R.E[k - 1] : null, B = R.E[k], i0 = Math.ceil(fidx(R, ia)), i1 = Math.floor(fidx(R, ib)), j0 = Math.ceil(fidx(R, oa)), j1 = Math.floor(fidx(R, ob)), i;
+      function ai(i) { var a = (A ? A[i] : 0), b = B[i]; return a + Math.min(inset || 0, (b - a) / 2); }
+      function bi(i) { var a = (A ? A[i] : 0), b = B[i]; return b - Math.min(inset || 0, (b - a) / 2); }
+      var p = pt(R, ia, (A ? lerpA(A, R, ia) : 0) + (inset || 0)); ctx.beginPath(); ctx.moveTo(p[0], p[1]);
+      for (i = i0; i <= i1; i++) ctx.lineTo(R.X[i] + R.NX[i] * ai(i), R.Y[i] + R.NY[i] * ai(i));
+      p = pt(R, ib, (A ? lerpA(A, R, ib) : 0) + (inset || 0)); ctx.lineTo(p[0], p[1]);
+      p = pt(R, ob, lerpA(B, R, ob) - (inset || 0)); ctx.lineTo(p[0], p[1]);
+      for (i = j1; i >= j0; i--) ctx.lineTo(R.X[i] + R.NX[i] * bi(i), R.Y[i] + R.NY[i] * bi(i));
+      p = pt(R, oa, lerpA(B, R, oa) - (inset || 0)); ctx.lineTo(p[0], p[1]);
       ctx.closePath(); return true;
     }
-    function drawBands(ctx, R, o) {
+    function drawRibbon(ctx, R, P) {
       for (var k = 6; k >= 0; k--) {
-        if (k === 3) { if (bandPath(ctx, R, o, 3, 0)) { ctx.fillStyle = C.K; ctx.fill(); } if (bandPath(ctx, R, o, 3, 2.4)) { ctx.fillStyle = C.G; ctx.fill(); } }
-        else if (bandPath(ctx, R, o, k, 0)) { ctx.fillStyle = COLS[k]; ctx.fill(); }
+        if (k === 3) { if (stripPath(ctx, R, 3, P[3], 0)) { ctx.fillStyle = C.K; ctx.fill(); } if (stripPath(ctx, R, 3, P[3], 2.4)) { ctx.fillStyle = C.G; ctx.fill(); } }
+        else if (stripPath(ctx, R, k, P[k], 0)) { ctx.fillStyle = COLS[k]; ctx.fill(); }
       }
     }
+    /* the barbed arrowhead with its tip at sTip, scaled by sc (perspective: bigger while it is near, its own size at the end) */
+    function arrowPath(ctx, R, sTip, sc) {
+      var a = R.AR, nt = pt(R, sTip - sc * a.dN, sc * a.oN), bb = pt(R, sTip - sc * a.dB, sc * a.oB), tp = pt(R, sTip, 0), n = 16;
+      ctx.beginPath(); ctx.moveTo(nt[0], nt[1]); ctx.lineTo(bb[0], bb[1]); ctx.lineTo(tp[0], tp[1]);
+      for (var i = 1; i <= n; i++) { var p = pt(R, sTip - sc * a.dN * i / n, 0); ctx.lineTo(p[0], p[1]); }
+      ctx.closePath();
+    }
+    function arrowScale(s) { return 1 + 1.8 * (1 - sstep(1000, 1400, s)); }
     /* a thin line along B0: centre offset cf(s, D), width wf(s, D); round ends, or a pointed head when tip > 0 (px of taper) */
     function line(ctx, R, s0, s1, cf, wf, col, tip) {
       if (s1 - s0 < 1) return;
@@ -1574,17 +1611,21 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       for (var i = 0; i < 4; i++) { var a = i * Math.PI / 2, b = a + Math.PI / 2, m = a + Math.PI / 4; if (!i) ctx.moveTo(Math.cos(a) * r, Math.sin(a) * r); ctx.quadraticCurveTo(Math.cos(m) * r * 0.16, Math.sin(m) * r * 0.16, Math.cos(b) * r, Math.sin(b) * r); }
       ctx.closePath(); ctx.fillStyle = col; ctx.fill(); ctx.restore();
     }
-    return { build: build, bandPath: bandPath, drawBands: drawBands, line: line, star: star, pt: pt, sAtV: sAtV, vAtS: vAtS, lerpA: lerpA, sstep: sstep, C: C };
+    return { build: build, stations: stations, stripPath: stripPath, drawRibbon: drawRibbon, arrowPath: arrowPath, arrowScale: arrowScale, line: line, star: star, pt: pt,
+      sAtVA: function (R, v) { return sAt(R.VA, R, v); }, vaAt: function (R, s) { return lerpA(R.VA, R, s); }, lerpA: lerpA, sstep: sstep, C: C };
   })();
   var aoaRib7 = null;
+  /* cubic Hermite position 0..1 with start speed a and end speed c (relative to the average): one smooth speed hump in between */
+  function herm(u, a, c) { u = Math.max(0, Math.min(1, u)); var u2 = u * u, u3 = u2 * u; return (u3 - 2 * u2 + u) * a + (-2 * u3 + 3 * u2) + (u3 - u2) * c; }
   function sm5(k) { k = Math.max(0, Math.min(1, k)); return k * k * k * (k * (6 * k - 15) + 10); }
-  function dsm5(k) { k = Math.max(0, Math.min(1, k)); return 16 * k * k * (1 - k) * (1 - k); }   /* its speed, 1 at the middle */
 
   function aoaScene(ctx, W, H, tr) {
     var ex = W * 0.7, ey = H * 0.58, TX = W * 0.382, TY = H * 0.524, SW = W * 0.11, SH = H * 0.11, OV = 1.07;
     var M = { x: W * 0.5, y: H * 0.43, w: W * 0.425, h: H * 0.472 }, T2X = M.x - M.w * 0.04, T2Y = M.y, SW2 = W * 0.34, SH2 = H * 0.34;
-    /* ribbon in RE0..LAND, a beat, pulled into the TV with the camera P1A..P1B; the rest is the sixth draft moved later by DT */
-    var RE0 = 0.36, RED = 0.86, LAND = RE0 + RED, P1A = LAND + 0.42, P1B = P1A + 0.9, DT = P1B - 1.44, P2A = 1.66 + DT, P2B = 1.96 + DT, ON0 = 1.74 + DT, ON1 = 1.84 + DT;
+    /* ribbon: in from the right RE0..TA, creeps into the TV TA..P1A (it switches on at TVON), pulled in with the camera P1A..P1B;
+       studio, a beat, push to the middle TV P2A..P2B (it stays dark, its frame in view), a beat, a glint FL0..FL1, the flash at FL1;
+       the TV switches off OFF0..OFF1 */
+    var RE0 = 0.40, TA = 0.88, P1A = 1.08, P1B = 1.70, TVON = TA + 0.06, P2A = P1B + 0.30, P2B = P2A + 0.32, FL0 = P2B + 0.22, FL1 = FL0 + 0.12, OFF0 = FL1 + 1.35, OFF1 = OFF0 + 0.42;
     if (!aoaRib7) aoaRib7 = RIB7.build();
     function eQuint(k) { return k < 0.5 ? 16 * Math.pow(k, 5) : 1 - Math.pow(-2 * k + 2, 5) / 2; }
     function clamp01(k) { return Math.max(0, Math.min(1, k)); }
@@ -1658,7 +1699,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       if (t < P1B) return { z: 1, x: W / 2, y: H / 2 };
       var z0 = OV * 1.03, p2 = eQuint(seg(t, P2A, P2B));
       if (p2 <= 0) return { z: OV * lerp(1, 1.03, eInOut(seg(t, P1B, P2A))), x: W / 2, y: H / 2 };
-      var zf = OV * W / SW2, z = z0 * Math.exp(p2 * Math.log(zf / z0)), m = z0 * (1 - p2) / z;
+      var zf = W / (SW2 + SH2 * 0.34) * (1 + 0.03 * eInOut(seg(t, FL1, OFF0))), z = z0 * Math.exp(p2 * Math.log(zf / z0)), m = z0 * (1 - p2) / z;
       return { z: z, x: T2X - (T2X - W / 2) * m, y: T2Y - (T2Y - H / 2) * m };
     }
     function sideTV(c, i, tv, t) {
@@ -1691,7 +1732,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       c.save(); c.globalAlpha = 0.22; c.translate(tv.x, H * 0.7 + (H * 0.7 - tv.y) * 0.25); c.scale(1, -0.25); c.rotate(-tv.r); roundRect(c, -tv.w / 2, -tv.h / 2, tv.w, tv.h, tv.h * 0.12); c.fillStyle = i === 2 ? Y : "#2a5bff"; c.fill(); c.restore();
     }
     function middleTV(c, t, p2) {
-      var kon = seg(t, ON0, ON1), r0 = SH2 * 0.12, bu = SH2 * 0.03;
+      var kon = t >= FL1 ? 1 : 0, kg = seg(t, FL0, FL1), r0 = SH2 * 0.12, bu = SH2 * 0.03;
       c.save();
       c.strokeStyle = "#3a3a46"; c.lineWidth = 4; c.lineCap = "round"; c.beginPath(); c.moveTo(M.x - M.w * 0.06, M.y - M.h / 2); c.lineTo(M.x - M.w * 0.2, M.y - M.h * 0.86); c.moveTo(M.x + M.w * 0.06, M.y - M.h / 2); c.lineTo(M.x + M.w * 0.22, M.y - M.h * 0.84); c.stroke();
       roundRect(c, M.x - M.w / 2, M.y - M.h / 2, M.w, M.h, M.h * 0.12); c.fillStyle = "#1c1c24"; c.fill(); c.lineWidth = 3; c.strokeStyle = "#3a3a46"; c.stroke();
@@ -1705,14 +1746,18 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         var gl = c.createLinearGradient(T2X - SW2 / 2, T2Y - SH2 / 2, T2X + SW2 / 2, T2Y + SH2 / 2); gl.addColorStop(0, "rgba(255,255,255,0)"); gl.addColorStop(0.32, "rgba(255,255,255,0)"); gl.addColorStop(0.4, "rgba(255,255,255,0.1)"); gl.addColorStop(0.5, "rgba(255,255,255,0.02)"); gl.addColorStop(0.56, "rgba(255,255,255,0.07)"); gl.addColorStop(0.64, "rgba(255,255,255,0)");
         c.fillStyle = gl; c.fillRect(T2X - SW2, T2Y - SH2, SW2 * 2, SH2 * 2);
         c.fillStyle = "rgba(255,255,240,0.05)"; c.beginPath(); c.ellipse(T2X - SW2 * 0.2, T2Y - SH2 * 0.25, SW2 * 0.22, SH2 * 0.12, -0.3, 0, Math.PI * 2); c.fill();
-      } else {
-        c.save(); c.translate(T2X - SW2 / 2, T2Y - SH2 / 2); c.scale(SW2 / W, SH2 / H); finish(c, t, -1); c.restore();
-        if (kon < 1) {
-          var band = SH2 * eOut(kon);
-          c.fillStyle = "#0b0b11"; c.fillRect(T2X - SW2, T2Y - SH2 * 1.5, SW2 * 2, SH2 * 1.5 - band / 2); c.fillRect(T2X - SW2, T2Y + band / 2, SW2 * 2, SH2 * 1.5);
-          c.save(); c.globalCompositeOperation = "lighter"; c.fillStyle = "#ffffff"; c.globalAlpha = 1 - kon; c.fillRect(T2X - SW2, T2Y - band / 2 - 2, SW2 * 2, 4); c.fillRect(T2X - SW2, T2Y + band / 2 - 2, SW2 * 2, 4);
-          c.globalAlpha = (1 - kon) * 0.7; c.fillRect(T2X - SW2, T2Y - band / 2, SW2 * 2, band); c.restore();
+        /* just before the flash: a point of light in the middle of the dark screen opens into a thin bright line (a set warming up) */
+        if (kg > 0) {
+          var gk = eIn(kg);
+          c.save(); c.globalCompositeOperation = "lighter";
+          var gr = c.createRadialGradient(T2X, T2Y, 0, T2X, T2Y, SH2 * (0.12 + 0.55 * gk)); gr.addColorStop(0, "rgba(255,255,235," + (0.85 * Math.min(1, kg * 2)) + ")"); gr.addColorStop(1, "rgba(255,255,235,0)");
+          c.fillStyle = gr; c.fillRect(T2X - SW2, T2Y - SH2, SW2 * 2, SH2 * 2);
+          var lw2 = SW2 * (0.03 + 0.85 * gk); c.fillStyle = "rgba(255,255,255," + Math.min(1, kg * 2.5) + ")"; c.fillRect(T2X - lw2 / 2, T2Y - SH2 * 0.008, lw2, SH2 * 0.016);
+          c.restore();
+          star4(c, T2X, T2Y, SH2 * (0.05 + 0.1 * gk), 0.12, Math.min(1, kg * 3), "#ffffff");
         }
+      } else {
+        c.save(); c.translate(T2X - SW2 / 2, T2Y - SH2 / 2); c.scale(SW2 / W, SH2 / H); finish(c, t, t - FL1); c.restore();
         if (p2 < 1) { c.fillStyle = "rgba(0,0,0," + (0.1 * (1 - p2)) + ")"; for (var y = T2Y - SH2; y < T2Y + SH2; y += 4) c.fillRect(T2X - SW2, y, SW2 * 2, 1.5); }
       }
       c.restore();
@@ -1722,7 +1767,6 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       crtShape(c, T2X, T2Y, SW2 + SH2 * 0.11, SH2 + SH2 * 0.11, SH2 * 0.15, bu, 0.006); c.lineWidth = 2; c.strokeStyle = "#ff3b5c"; c.stroke();
       crtShape(c, T2X, T2Y, SW2 + SH2 * 0.15, SH2 + SH2 * 0.15, SH2 * 0.16, bu, -0.006); c.strokeStyle = LIME; c.stroke();
       c.restore();
-      if (kon > 0 && kon < 1) { c.save(); c.globalCompositeOperation = "lighter"; c.globalAlpha = 1 - kon; var lg = c.createRadialGradient(T2X, T2Y, 0, T2X, T2Y, SW2 * 0.9); lg.addColorStop(0, "rgba(255,255,230,0.9)"); lg.addColorStop(1, "rgba(255,255,230,0)"); c.fillStyle = lg; c.fillRect(T2X - SW2, T2Y - SH2 * 1.5, SW2 * 2, SH2 * 3); c.restore(); }
       c.save(); c.globalAlpha = 0.12 + 0.2 * kon; c.translate(M.x, H * 0.7 + (H * 0.7 - M.y) * 0.25); c.scale(1, -0.25); roundRect(c, -M.w / 2, -M.h / 2, M.w, M.h, M.h * 0.12); c.fillStyle = kon > 0 ? "#ffe680" : "#30303a"; c.fill(); c.restore();
       c.restore();
     }
@@ -1777,7 +1821,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     function smallTV(c, t, th) {
       var k = seg(th, 0.2, 0.34); if (k <= 0) return;
       var sc = eBack(k), bw = SW / 0.78, bh = SH / 0.7, bx = TX + bw * 0.045, by = TY + bh * 0.02, r0 = SH * 0.14, bu = SH * 0.035;
-      var en = seg(t, LAND, LAND + 0.16);
+      var en = seg(t, TVON, TVON + 0.16);
       c.save(); c.translate(TX, TY); c.scale(sc, sc); c.rotate((1 - k) * 0.25); c.translate(-TX, -TY);
       var gk = Math.max(seg(th, 0.26, 0.5) * 0.6, en > 0 ? 1 - en * 0.4 : 0);
       if (gk > 0) { var gg = c.createRadialGradient(TX, TY, 0, TX, TY, bw * 1.3); gg.addColorStop(0, "rgba(255,240,120," + (0.55 * gk) + ")"); gg.addColorStop(1, "rgba(255,240,120,0)"); c.fillStyle = gg; c.fillRect(TX - bw * 1.4, TY - bw * 1.4, bw * 2.8, bw * 2.8); }
@@ -1786,12 +1830,12 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       c.fillStyle = "#2c2c36"; c.fillRect(bx - bw * 0.3, by + bh / 2 - 1, bw * 0.08, bh * 0.08); c.fillRect(bx + bw * 0.22, by + bh / 2 - 1, bw * 0.08, bh * 0.08);
       c.fillStyle = "#ff3b5c"; c.beginPath(); c.arc(bx + bw * 0.41, by - bh * 0.12, bh * 0.045, 0, Math.PI * 2); c.fill(); c.fillStyle = LIME; c.beginPath(); c.arc(bx + bw * 0.41, by + bh * 0.08, bh * 0.045, 0, Math.PI * 2); c.fill();
       c.save(); crtShape(c, TX, TY, SW, SH, r0, bu, 0); c.clip();
-      if (t < LAND) {
+      if (t < TVON) {
         staticNoise(c, TX - SW / 2, TY - SH / 2, SW, SH, Math.floor(t * 50), 90);
         var sw2 = seg(th, 0.26, 0.52); if (sw2 > 0) { c.save(); c.globalCompositeOperation = "lighter"; c.globalAlpha = Math.sin(Math.PI * sw2) * 0.8; var sg2 = c.createRadialGradient(TX, TY, 0, TX, TY, SW * 0.6); sg2.addColorStop(0, "#fffbd0"); sg2.addColorStop(1, "rgba(255,251,208,0)"); c.fillStyle = sg2; c.fillRect(TX - SW, TY - SH, SW * 2, SH * 2); c.restore(); }
       } else {
         c.save(); c.translate(TX - SW / 2, TY - SH / 2); c.scale(SW / W, SH / H); studio(c, t); c.restore();
-        var p1 = sm5(seg(t, P1A, P1B));
+        var p1 = herm(seg(t, P1A, P1B), 0.35, 0);
         if (p1 < 1) { c.fillStyle = "rgba(0,0,0," + (0.14 * (1 - p1)) + ")"; for (var y = TY - SH; y < TY + SH; y += SH * 0.04) c.fillRect(TX - SW, y, SW * 2, SH * 0.015); }
         if (en < 1) { c.save(); c.globalCompositeOperation = "lighter"; c.globalAlpha = 1 - eOut(en); c.fillStyle = "#fff6b0"; c.fillRect(TX - SW, TY - SH, SW * 2, SH * 2); c.restore(); }
       }
@@ -1809,77 +1853,78 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
        the barbed arrowhead opens as it lands with its tip in the TV's screen (the TV switches on); a beat; then the tail, a thin brush
        tip, is pulled into the TV while the camera dollies in on the same progress curve, so both arrive together. The ribbon is
        clipped by the TV's body, so it goes into the set. Drawn in px of a 1280x720 frame. */
-    var LET = null;
+    /* (2) the ribbon (seventh draft): the arrowhead leads the ribbon in from the right (a little slow at first, then fast, slowing
+       as it reaches the TV) and creeps on into the screen (a soft beat, it never stops dead); then the tail is pulled in after it
+       and the camera dollies in on the same curve. Every stripe ends in its own slanted point and the points step back stripe by
+       stripe, so both ends stay loose. The ribbon is clipped by the TV's body, so it goes into the set. Drawn in px of 1280x720. */
+    function headVA(RB, t) {   /* where the arrow's tip is (along the line just off B0) */
+      var vS = RIB7.vaAt(RB, -10), vA = RIB7.vaAt(RB, RB.L - 40), vB = RIB7.vaAt(RB, RB.L + 28), vE = RIB7.vaAt(RB, RB.L + 300);
+      var avgA = (vA - vS) / (TA - RE0), avgB = (vB - vA) / (P1A - TA), avgC = (vE - vB) / (P1B - P1A), endA = 0.08, endB = 0.9;
+      if (t < TA) return vS + (vA - vS) * herm((t - RE0) / (TA - RE0), 0.6, endA);
+      if (t < P1A) return vA + (vB - vA) * herm((t - TA) / (P1A - TA), endA * avgA / avgB, endB);
+      return vB + (vE - vB) * herm((t - P1A) / (P1B - P1A), endB * avgB / avgC, 1);
+    }
+    function tailS(RB, t) {   /* the tail's station once it is pulled in (same curve as the camera) */
+      if (t < P1A) return null;
+      return RIB7.sAtVA(RB, RIB7.vaAt(RB, -40) + (RIB7.vaAt(RB, RB.L + 60) - RIB7.vaAt(RB, -40)) * herm(seg(t, P1A, P1B), 0.35, 0));
+    }
     function ribbonLayer(c, t) {
       if (t < RE0) return;
       var RB = aoaRib7, C7 = RIB7.C, kk = H / 720;
-      var landed = t >= LAND, exiting = t >= P1A, ke = (t - RE0) / RED, ux = seg(t, P1A, P1B);
-      var o = landed ? { sT: RB.S[0], sH: RB.SN, LT: 0, LH: 0, end: RB.SN } : { sT: RB.S[0], sH: RIB7.sAtV(RB, RB.VEND * sm5(ke)), LT: 0, LH: 60 + 330 * Math.pow(dsm5(ke), 0.9), end: RB.SN };
-      if (exiting) o = { sT: RIB7.sAtV(RB, lerp(RB.V100, RB.VLL + 30, sm5(ux))), sH: RB.L + 40, LT: 160 + 420 * Math.pow(dsm5(ux), 0.9), LH: 0, end: RB.L + 40 };
-      var vH = RIB7.vAtS(RB, Math.min(o.sH, RB.SN)), vT = RIB7.vAtS(RB, o.sT), flowV = exiting ? vT - RB.V100 : 0, drift = landed ? (t - LAND) * 60 : 0;
-      function past(s) { return vH - RIB7.vAtS(RB, s); }                 /* how far the head has gone past s (visual px) */
-      function flowS(s) { return RIB7.sAtV(RB, RIB7.vAtS(RB, s) + flowV); }  /* where something riding on the ribbon has been carried to */
+      var vh = headVA(RB, t), sTip = RIB7.sAtVA(RB, vh), sc = RIB7.arrowScale(sTip), front = sTip - sc * RB.AR.dN, back = tailS(RB, t);
+      var vT = back === null ? -1e9 : RIB7.vaAt(RB, back), flowV = back === null ? 0 : vT - RIB7.vaAt(RB, -40), drift = t > TA ? (t - TA) * 60 : 0;
+      function past(s) { return vh - RIB7.vaAt(RB, s); }                       /* how far the head has gone past s */
+      function flowS(s) { return RIB7.sAtVA(RB, RIB7.vaAt(RB, s) + flowV); }   /* where something riding on the ribbon has been carried to */
+      var P = RIB7.stations(RB, { front: front, back: back });
       c.save(); c.scale(kk, kk);
       /* the TV's body hides what has gone into it */
       var bw = SW / 0.78 / kk, bh = SH / 0.7 / kk, bx = TX / kk + bw * 0.045, by = TY / kk + bh * 0.02;
       roundRect(c, bx - bw / 2, by - bh / 2, bw, bh, bh * 0.14); c.rect(-200, -200, 1680, 1120); c.clip("evenodd");
       /* the giant FINALE, laid like the original CHANCE: tilted across the bottom arm, translucent over the scene, a different colour on
          every stripe; each letter lands as the head passes it and leaves as the tail passes it */
-      if (!LET) {
-        var lx0 = 452, ly0 = 646, lx1 = 1282, ly1 = 522, la = Math.atan2(ly1 - ly0, lx1 - lx0), llen = Math.hypot(lx1 - lx0, ly1 - ly0), fs = 232, cxs = 0.8, txt = "FINALE";
-        c.font = fs + "px 'Archivo Black', sans-serif"; var adv = [], tot = 0;
-        for (var g = 0; g < txt.length; g++) { var wg = c.measureText(txt[g]).width * cxs; adv.push(wg); tot += wg; }
-        var trk = Math.max(8, Math.min(70, (llen - tot) / (txt.length - 1))), acc = 0, P = [];
-        for (var g2 = 0; g2 < txt.length; g2++) {
-          var d0 = acc + adv[g2] / 2, x = lx0 + Math.cos(la) * d0, y = ly0 + Math.sin(la) * d0, sb = RB.S[0];
-          for (var q = RB.EXT; q < RB.N; q += 4) if (RB.X[q] <= x) { sb = RB.S[q]; break; }
-          P.push({ ch: txt[g2], x: x, y: y, s: sb }); acc += adv[g2] + trk;
-        }
-        LET = { P: P, la: la, fs: fs, cxs: cxs };
+      var lx0 = 452, ly0 = 646, lx1 = 1282, ly1 = 522, la = Math.atan2(ly1 - ly0, lx1 - lx0), llen = Math.hypot(lx1 - lx0, ly1 - ly0), fs = 232, cxs = 0.8, txt = "FINALE";
+      c.font = fs + "px 'Archivo Black', sans-serif"; var adv = [], tot = 0, g;
+      for (g = 0; g < txt.length; g++) { var wg = c.measureText(txt[g]).width * cxs; adv.push(wg); tot += wg; }
+      var trk = Math.max(8, Math.min(70, (llen - tot) / (txt.length - 1))), acc = 0, G = [];
+      for (g = 0; g < txt.length; g++) {
+        var d0 = acc + adv[g] / 2, x = lx0 + Math.cos(la) * d0, y = ly0 + Math.sin(la) * d0, sb = RB.S[0]; acc += adv[g] + trk;
+        for (var q = RB.EXT; q < RB.N; q += 4) if (RB.X[q] <= x) { sb = RB.S[q]; break; }
+        var pk = seg(past(sb), 0, 130), gone = back === null ? 0 : seg(vT - RIB7.vaAt(RB, sb), -60, 40);
+        if (pk > 0 && gone < 1) G.push({ ch: txt[g], x: x, y: y + (1 - eOut(pk)) * 40, k: lerp(1.3, 1, eOut(pk)) * (1 - 0.3 * gone), al: Math.min(1, pk * 2.5) * (1 - gone) });
       }
-      var G = [];
-      LET.P.forEach(function (L1) {
-        var pk = seg(past(L1.s), 0, 150), gone = exiting ? seg(vT - RIB7.vAtS(RB, L1.s), -60, 40) : 0;
-        if (pk > 0 && gone < 1) G.push({ ch: L1.ch, x: L1.x, y: L1.y + (1 - eOut(pk)) * 40, k: lerp(1.3, 1, eOut(pk)) * (1 - 0.3 * gone), al: Math.min(1, pk * 2.5) * (1 - gone) });
-      });
       function letters(col) {
         if (!G.length) return;
-        c.save(); c.fillStyle = col; c.font = LET.fs + "px 'Archivo Black', sans-serif"; c.textAlign = "center"; c.textBaseline = "middle"; var ga = c.globalAlpha;
-        G.forEach(function (gl) { c.save(); c.globalAlpha = ga * gl.al; c.translate(gl.x, gl.y); c.rotate(LET.la); c.scale(gl.k * LET.cxs, gl.k); c.fillText(gl.ch, 0, LET.fs * 0.06); c.restore(); });
+        c.save(); c.fillStyle = col; c.font = fs + "px 'Archivo Black', sans-serif"; c.textAlign = "center"; c.textBaseline = "middle"; var ga = c.globalAlpha;
+        G.forEach(function (gl) { c.save(); c.globalAlpha = ga * gl.al; c.translate(gl.x, gl.y); c.rotate(la); c.scale(gl.k * cxs, gl.k); c.fillText(gl.ch, 0, fs * 0.06); c.restore(); });
         c.restore();
       }
       letters("rgba(248,244,14,0.42)");
-      RIB7.drawBands(c, RB, o);
-      [C7.Y, "#ffa01c", "#ff9a12", C7.Y, "#ff9a12", C7.Y, "#ff9a12"].forEach(function (col, k) { c.save(); if (RIB7.bandPath(c, RB, o, k, 0)) { c.clip(); letters(col); } c.restore(); });
-      /* T1, the thin line hanging above the bottom arm: zips in a little ahead of the head (pointed while it moves), retracts with the tail */
+      RIB7.drawRibbon(c, RB, P);
+      [C7.Y, "#ffa01c", "#ff9a12", C7.Y, "#ff9a12", C7.Y, "#ff9a12"].forEach(function (col, k) { c.save(); if (RIB7.stripPath(c, RB, k, P[k], 0)) { c.clip(); letters(col); } c.restore(); });
+      /* T1, the thin line hanging above the bottom arm: follows right behind the arrow (pointed while it moves), retracts with the tail */
       var t1o = function (s, D) { return -D * (0.039 - 0.027 * RIB7.sstep(650, 1060, s)); }, t1w = function (s, D) { return Math.max(4.2, D * 0.0083); };
-      var t1h = landed ? 1052 : Math.min(1052, RIB7.sAtV(RB, vH + 110)), t1t = exiting ? Math.max(RB.S[0], o.sT + 30) : RB.S[0], tip = landed ? 0 : 40;
+      var moving = sTip - 20 < 1052, t1h = Math.min(1052, sTip - 20), t1t = back === null ? RB.S[0] : Math.max(RB.S[0], back + 30), tip = moving ? 40 : 0;
       if (t1h > t1t + 3) { if (t1t < 948) RIB7.line(c, RB, t1t, Math.min(t1h, 948), t1o, t1w, C7.Y, t1h < 948 ? tip : 0); if (t1h > 972) RIB7.line(c, RB, Math.max(972, t1t), t1h, t1o, t1w, C7.Y, tip); }
-      /* T2: two dashes inside the orange; they drift along the ribbon during the beat and are carried into the TV */
-      var oo = function (s) { return 0.27 * RIB7.lerpA(RB.E[0], RB, s); }, ow = function (s) { return Math.max(2.2, 0.16 * RIB7.lerpA(RB.E[0], RB, s)); }, hO = Math.min(o.sH, RB.L);
+      /* T2: two dashes inside the orange; they drift along the ribbon once it has arrived and are carried into the TV */
+      var oo = function (s) { return 0.27 * RIB7.lerpA(RB.E[0], RB, s); }, ow = function (s) { return Math.max(2.2, 0.16 * RIB7.lerpA(RB.E[0], RB, s)); };
       [[870, 962], [986, 1196]].forEach(function (d) {
-        var d0 = RIB7.sAtV(RB, RIB7.vAtS(RB, d[0]) + flowV + drift), d1 = RIB7.sAtV(RB, RIB7.vAtS(RB, d[1]) + flowV + drift), a = Math.max(d0, o.sT + 20), e = Math.min(d1, hO - 30, RB.L);
+        var d0 = RIB7.sAtVA(RB, RIB7.vaAt(RB, d[0]) + flowV + drift), d1 = RIB7.sAtVA(RB, RIB7.vaAt(RB, d[1]) + flowV + drift), a = Math.max(d0, (back === null ? RB.S[0] : back) + 20), e = Math.min(d1, front - 30, RB.L);
         if (e > a + 2) RIB7.line(c, RB, a, e, oo, ow, C7.Y);
       });
-      /* the barbed arrowhead: opens as the ribbon lands, slides into the TV first when it is pulled in */
-      var ak = seg(t, LAND - 0.05, LAND + 0.13), slide = exiting ? sm5(seg(t, P1A, P1A + 0.16)) * 120 : 0;
-      if (ak > 0 && slide < 119) {
-        var sa = eBack(ak), nx = RB.notch[0], ny = RB.notch[1];
-        c.save(); c.translate(Math.cos(0.3) * slide, Math.sin(0.3) * slide); c.translate(nx, ny); c.scale(sa, sa); c.translate(-nx, -ny);
-        c.beginPath(); RB.AH.forEach(function (p, i) { if (i) c.lineTo(p[0], p[1]); else c.moveTo(p[0], p[1]); }); c.closePath(); c.fillStyle = C7.Y; c.fill(); c.restore();
-      }
+      /* the barbed arrowhead: the ribbon's own head, bigger while it is near */
+      RIB7.arrowPath(c, RB, sTip, sc); c.fillStyle = C7.Y; c.fill();
       /* stars riding on the ribbon: pop once the head has passed, carried in and gone when the tail reaches them */
       [[961, -0.012, 13, 0.25, C7.O], [1110, 0.405, 17, 0.1, C7.O], [640, 0.12, 18, 0.3, C7.O], [1232, 0.165, 7, 0.2, "#fffbe0"], [300, 0.16, 12, 0.5, C7.O]].forEach(function (st) {
-        var s = flowS(st[0]), k2 = landed ? 1 : seg(past(st[0]), 40, 160), gone = exiting ? Math.max(seg(o.sT, s - 60, s + 10), seg(s, RB.L - 60, RB.L)) : 0;
+        var s = flowS(st[0]), k2 = seg(past(st[0]), 60, 170), gone = back === null ? 0 : Math.max(seg(back, s - 60, s + 10), seg(s, RB.L - 60, RB.L));
         if (k2 <= 0 || gone >= 1) return;
         var p = RIB7.pt(RB, s, st[1] * RIB7.lerpA(RB.D, RB, s)); RIB7.star(c, p[0], p[1], st[2] * eBack(k2) * (1 - gone), st[3] + (1 - k2) * 0.8 + t * 0.4, st[4]);
       });
       /* the orange dash in the inner yellow */
-      var dk = seg(past(1088), 0, 120), dgo = exiting ? seg(o.sT, 900, 1040) : 0;
+      var dk = seg(past(1088), 40, 160), dgo = back === null ? 0 : seg(back, 900, 1040);
       if (dk > 0 && dgo < 1) RIB7.line(c, RB, 1040 + 48 * dgo, 1040 + 48 * sm5(dk), function (s, D) { return 0.385 * D; }, function () { return 15; }, C7.O);
       c.restore();
       /* the dark 总攻击！ tag and the white outlined SERIES on the left part of the ribbon (as in the sixth draft) */
-      var tk = seg(t, LAND - 0.3, LAND - 0.2), tf = 1 - seg(t, P1A + 0.06, P1A + 0.16);
+      var tk = seg(t, TA - 0.2, TA - 0.1), tf = 1 - seg(t, P1A + 0.06, P1A + 0.16);
       if (tk > 0 && tf > 0) {
         var tw = W * 0.22, th = H * 0.075, tsc = eBack(tk);
         c.save(); c.globalAlpha *= tf; c.translate(W * 0.09 - (1 - eOut(tk)) * W * 0.08, H * 0.64); c.rotate(-0.07); c.scale(tsc, tsc);
@@ -1887,7 +1932,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         star4(c, -tw / 2 + th * 1.0, 0, th * 0.3, 0.2, 1, Y);
         c.fillStyle = "#ffffff"; c.font = "700 " + Math.round(th * 0.52) + "px sans-serif"; c.textAlign = "left"; c.textBaseline = "middle"; c.fillText("总攻击！", -tw / 2 + th * 1.45, 1);
         c.restore();
-        var k3 = seg(t, LAND - 0.26, LAND - 0.16);
+        var k3 = seg(t, TA - 0.16, TA - 0.06);
         if (k3 > 0) {
           var fs2 = H * 0.085, s2 = eBack(k3);
           c.save(); c.globalAlpha *= tf; c.translate(W * 0.205 - (1 - eOut(k3)) * W * 0.06, H * 0.755); c.rotate(-0.06); c.scale(s2, s2);
@@ -1911,7 +1956,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       var rs = rng(31);
       for (var s = 0; s < 8; s++) { var sx = ex + (rs() - 0.5) * W * 0.3, sy = ey + (rs() - 0.6) * H * 0.5, sk = seg(th, 0.18 + s * 0.02, 0.3 + s * 0.02), so = 1 - seg(th, 0.4 + s * 0.02, 0.5 + s * 0.02); if (sk > 0 && so > 0) star4(c, sx, sy, H * (s % 3 ? 0.02 : 0.034) * Math.sin(Math.min(1, sk) * Math.PI / 2) * so, 0.15, 1, s % 2 ? "#ffffff" : YH); }
       smallTV(c, t, th);
-      var rk = Math.min(seg(t, RE0 + 0.25, RE0 + 0.4), 1 - seg(t, P1A + 0.15, P1A + 0.3));
+      var rk = Math.min(seg(t, RE0, RE0 + 0.12), 1 - seg(t, P1A + 0.15, P1A + 0.3));
       if (rk > 0) {
         var rr = rng(23); c.save(); c.lineCap = "round"; c.strokeStyle = "#ffffff";
         for (var l = 0; l < 24; l++) {
@@ -1924,37 +1969,33 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     }
     /* timeline */
     if (tr < P1B) {
-      var p1 = sm5(seg(tr, P1A, P1B)), Zf = OV * W / SW, Z = Math.exp(p1 * Math.log(Zf)), m1 = (1 - p1) / Z;
+      var p1 = herm(seg(tr, P1A, P1B), 0.35, 0), Zf = OV * W / SW, Z = Math.exp(p1 * Math.log(Zf)), m1 = (1 - p1) / Z;
       ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(Z, Z); ctx.translate(-(TX - (TX - W / 2) * m1), -(TY - (TY - H / 2) * m1)); battle(ctx, tr); ctx.restore();
       speedLines(ctx, W / 2 + (TX - W / 2) * (1 - p1), H / 2 + (TY - H / 2) * (1 - p1), Math.sin(Math.PI * p1) * 0.85, 61, 28, tr);
       var fl0 = 1 - seg(tr, 0.05, 0.12); if (tr > 0.05 && fl0 > 0) { ctx.save(); ctx.globalAlpha = fl0 * 0.35; ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H); ctx.restore(); }
       return;
     }
-    if (tr < P2B) {
+    if (tr < OFF0) {
       studio(ctx, tr);
       var p2 = eQuint(seg(tr, P2A, P2B)), z0 = OV * 1.03;
       if (p2 > 0 && p2 < 1) speedLines(ctx, W / 2 + (T2X - W / 2) * z0 * (1 - p2), H / 2 + (T2Y - H / 2) * z0 * (1 - p2), Math.sin(Math.PI * p2), 62, 32, tr);
+      /* the flash: the whole frame goes white for an instant and the picture is there */
+      var fk = seg(tr, FL1, FL1 + 0.24); if (fk > 0 && fk < 1) { ctx.save(); ctx.globalAlpha = 1 - eOut(fk); ctx.fillStyle = "#fffdf2"; ctx.fillRect(0, 0, W, H); ctx.restore(); }
       return;
     }
-    function finishDirect(c, t) {
-      var sF = lerp(OV, 1, eOut(seg(t, P2B, P2B + 0.3)));
-      c.save(); c.translate(W / 2, H / 2); c.scale(sF, sF); c.translate(-W / 2, -H / 2); finish(c, t, t - P2B); c.restore();
-      tvFrameP4R(c, W, H, seg(t, P2B + 0.08, P2B + 0.5), t, { tag: "SERIES FINALE", count: "" });
-    }
-    var off = seg(tr, 3.05 + DT, 3.47 + DT);
-    if (off <= 0) { finishDirect(ctx, tr); return; }
+    var off = seg(tr, OFF0, OFF1);
     ctx.fillStyle = "#0d0f16"; ctx.fillRect(0, 0, W, H);
     ctx.save(); ctx.fillStyle = "rgba(255,255,255,0.55)"; ctx.font = Math.round(H * 0.05) + "px sans-serif"; ctx.textAlign = "center"; ctx.fillText("（结算页）", W / 2, H * 0.55); ctx.restore();
     var sy = lerp(1, 0.006, eIn(seg(off, 0, 0.45))), sx = lerp(1, 0.004, eIn(seg(off, 0.45, 0.8))), fade = 1 - seg(off, 0.8, 1);
     if (fade > 0) {
-      ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(sx, sy); ctx.translate(-W / 2, -H / 2); ctx.globalAlpha = fade; finishDirect(ctx, 3.05 + DT); ctx.restore();
+      ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(sx, sy); ctx.translate(-W / 2, -H / 2); ctx.globalAlpha = fade; studio(ctx, OFF0); ctx.restore();
       ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = fade * seg(off, 0.25, 0.45); var gw = W * sx; var lg2 = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(8, gw * 0.55)); lg2.addColorStop(0, "rgba(255,255,255,1)"); lg2.addColorStop(1, "rgba(255,255,255,0)"); ctx.fillStyle = lg2; ctx.fillRect(W / 2 - gw * 0.6 - 10, H / 2 - H * 0.03, gw * 1.2 + 20, H * 0.06); ctx.restore();
     }
   }
 
   var DEMOS = [
-    { id: "aoa", name: "总攻击 第七版（只改了彩带：重新设计的形状、刀尖头入场、被电视吸进去时镜头跟着推，约 4.6 秒）", dur: 4.65, start: 1.45,
-      desc: "这一版只改彩带，其他（敌人死亡、小电视、演播室、中间电视、结算、关机）都是第六版原样，只是整体往后顺延了 1.1 秒。①最后一击打死敌人，碎成雪花被小电视吸进去（同第六版）→ ②彩带从右下进场：头部是刀尖（各条色带朝内沿收成尖，越快拉得越长），沿底边往左、绕卷曲往上，外侧色带不会被甩过去；巨字 FINALE 照原版 CHANCE 的位置斜压在底边上，头部经过哪个字母那个字母就砸下来（压在画面上半透明，压在每条色带上换撞色），细黄线先一步飞进来 → 落位：箭头扎进电视屏幕左边、倒钩弹开，电视随之开播（闪一下）→ 停一拍（细黄线在橙带里慢慢流动）→ ③彩带被电视吸进去：箭头先滑进去，尾巴收成细尖从右往电视收，星星、细线跟着往里流；镜头和尾巴用同一条速度曲线直线推向电视，尾巴进电视的同时屏幕正好推满画面 → 演播室 → 猛推中间电视 → 结算 → 关机（同第六版）。彩带形状不是描的：内沿是曲率平滑变化的螺旋线（拟合你描的红线），总宽单调收窄，色带按比例平滑过渡，箭头带半个三角形的倒钩。",
+    { id: "aoa", name: "总攻击 第七版（彩带箭头领头、色带松散斜尖；钻进电视后被吸进去、镜头同步推；中间电视黑屏→中间亮起→一闪亮出，约 4.5 秒）", dur: 4.52, start: 0.95,
+      desc: "①最后一击打死敌人，碎成雪花被小电视吸进去（同第六版）→ ②彩带：箭头就是彩带的头，从右下领着整条彩带进来（起步稍慢、中段快，近处大远处小），后面每条色带各自是斜尖、一条比一条往后错开，松散的，不收成一束；巨字 FINALE 照原版 CHANCE 的位置，头部经过哪个字母那个字母就砸下来；快到电视时放慢，慢慢钻进电视（小停顿但不停死），电视随之开播 → ③马上从尾巴开始被吸进电视，尾巴也是一排斜尖，星星、细线跟着往里流；镜头和尾巴同一条速度曲线推进，尾巴进电视时屏幕正好推满 → 演播室三台电视，停一下 → 有节奏地猛推中间那台：推到能看见它的黄框、红框、绿框为止，屏幕是黑的 → 停一下，屏幕中间出现一个亮点拉成一条亮线 → 整个画面一闪，结算画面在电视框里亮出来（之后慢慢推近）→ 关机进结算页。约 4.5 秒。悠和伊邪那岐的图还是占位。",
       draw: function (ctx, W, H, tr) { aoaScene(ctx, W, H, tr); } },
     { id: "tvstate", name: "电视框状态 第二版：连环拳（这回合下 2 张攻击额外打出）", dur: 2.7, start: 1.3,
       desc: "电视框照 P4R 改得不那么规整：黄色是屏幕外面那一圈，四条边往外微微鼓（像老电视），边上薄、四个角厚，角里有网点；里面的红线、绿线不完全同心；左上压着一个状态名标签，右上角一台小电视，屏幕上显示还剩几次。出现：几层歪着的黄、红、绿框从大到小转着收拢到位（P4R 进战斗那种）。每次额外打出：信号错位一下，小电视里的数字跳一下。用完（或回合结束）：几层框反着转开、散掉。",
