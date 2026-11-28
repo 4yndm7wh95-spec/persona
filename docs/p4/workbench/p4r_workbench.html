@@ -1521,6 +1521,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       LD[EXT] = WD[0];
       for (i = EXT + 1; i < N; i++) LD[i] = LD[i - 1] - (gf(S[i - 1]) + gf(S[i])) / 2 * ds;
       for (i = EXT - 1; i >= 0; i--) LD[i] = LD[i + 1] + (gf(S[i + 1]) + gf(S[i])) / 2 * ds;
+      var iSN = EXT + Math.round(SN / ds); for (i = iSN + 1; i < N; i++) LD[i] = LD[iSN];   /* past the notch it stays as wide as there */
       for (i = 0; i < N; i++) {
         NX.push(Math.sin(TH[i])); NY.push(-Math.cos(TH[i])); D.push(Math.exp(LD[i]));
         var b1 = sstep(1150, 1290, S[i]), b2 = sstep(1295, 1340, S[i]), b3 = sstep(1335, 1365, S[i]);
@@ -1540,6 +1541,8 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       for (var q = Math.round(fidx(R, 1250)); q <= Math.round(fidx(R, L)); q++) { var dd = Math.hypot(X[q] - BARB[0], Y[q] - BARB[1]); if (dd < best) { best = dd; sb = S[q]; } }
       var ib = Math.round(fidx(R, sb));
       R.AR = { dN: L - SN, oN: E[6][iN], dB: L - sb, oB: (BARB[0] - X[ib]) * NX[ib] + (BARB[1] - Y[ib]) * NY[ib] };
+      /* the portal: the middle of the TV's screen sits on the ribbon's own path, 64 px past the end of B0 */
+      R.SC = L + 64; var ic = EXT + Math.round(R.SC / ds); R.PC = [X[ic], Y[ic]];
       return R;
     }
     function offAt(R, j, s) { return j ? lerpA(R.E[j - 1], R, s) : 0; }
@@ -1587,21 +1590,6 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       for (var i = 1; i <= n; i++) { var p = pt(R, sN + sig * dT * (1 - i / n), 0); ctx.lineTo(p[0], p[1]); }
       ctx.closePath();
     }
-    /* the same ribbon, but past sE (where B0 meets the TV screen) it runs straight into the screen and recedes towards its centre
-       (cx, cy): perspective g = 1 / (1 + d / ell) shrinks it and draws it to the centre, so it visibly dives into the set */
-    function inside(R, sE, cx, cy, ell) {
-      var R2 = {}, key; for (key in R) R2[key] = R[key];
-      var iE = Math.round(fidx(R, sE)), ex = R.X[iE], ey = R.Y[iE], ux = cx - ex, uy = cy - ey, ul = Math.hypot(ux, uy) || 1, nx = uy / ul, ny = -ux / ul;
-      if (nx * R.NX[iE] + ny * R.NY[iE] < 0) { nx = -nx; ny = -ny; }
-      var X2 = R.X.slice(), Y2 = R.Y.slice(), NX2 = R.NX.slice(), NY2 = R.NY.slice(), G = [], i;
-      for (i = 0; i < R.N; i++) {
-        var d = R.S[i] - sE, g = d > 0 ? 1 / (1 + d / ell) : 1;
-        G.push(g);   /* pt() scales every offset by it */
-        if (d > 0) { X2[i] = cx - ux * g; Y2[i] = cy - uy * g; NX2[i] = nx; NY2[i] = ny; }
-      }
-      R2.X = X2; R2.Y = Y2; R2.NX = NX2; R2.NY = NY2; R2.G = G;
-      return R2;
-    }
     /* a thin line along B0: centre offset cf(s, D), width wf(s, D); round ends, or a pointed head when tip > 0 (px of taper) */
     function line(ctx, R, s0, s1, cf, wf, col, tip) {
       if (s1 - s0 < 1) return;
@@ -1621,12 +1609,14 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       for (var i = 0; i < 4; i++) { var a = i * Math.PI / 2, b = a + Math.PI / 2, m = a + Math.PI / 4; if (!i) ctx.moveTo(Math.cos(a) * r, Math.sin(a) * r); ctx.quadraticCurveTo(Math.cos(m) * r * 0.16, Math.sin(m) * r * 0.16, Math.cos(b) * r, Math.sin(b) * r); }
       ctx.closePath(); ctx.fillStyle = col; ctx.fill(); ctx.restore();
     }
-    return { build: build, ends: ends, stripPath: stripPath, drawRibbon: drawRibbon, arrowPath: arrowPath, inside: inside, line: line, star: star, pt: pt, fidx: fidx,
+    return { build: build, ends: ends, stripPath: stripPath, drawRibbon: drawRibbon, arrowPath: arrowPath, line: line, star: star, pt: pt, fidx: fidx,
       sAtVA: function (R, v) { return sAt(R.VA, R, v); }, vaAt: function (R, s) { return lerpA(R.VA, R, s); }, lerpA: lerpA, sstep: sstep, C: C };
   })();
   var aoaRib7 = null;
   /* cubic Hermite position 0..1 with start speed a and end speed c (relative to the average): one smooth speed hump in between */
   function herm(u, a, c) { u = Math.max(0, Math.min(1, u)); var u2 = u * u, u3 = u2 * u; return (u3 - 2 * u2 + u) * a + (-2 * u3 + 3 * u2) + (u3 - u2) * c; }
+  /* the camera into the TV: starts gently (the ribbon being pulled in stays in view), dives at the end, lands softly */
+  function camEase(u) { u = Math.max(0, Math.min(1, u)); return 1 - Math.pow(1 - u * u, 1.5); }
   function sm5(k) { k = Math.max(0, Math.min(1, k)); return k * k * k * (k * (6 * k - 15) + 10); }
 
   function aoaScene(ctx, W, H, tr) {
@@ -1635,8 +1625,9 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     /* ribbon: in from the right RE0..TA, creeps into the TV TA..P1A (it switches on at TVON), pulled in with the camera P1A..P1B;
        studio, a beat, push to the middle TV P2A..P2B (it stays dark, its frame in view), a beat, a glint FL0..FL1, the flash at FL1;
        the TV switches off OFF0..OFF1 */
-    var RE0 = 0.40, TA = 0.88, P1A = 0.98, P1B = 1.58, TVON = TA + 0.03, P2A = P1B + 0.28, P2B = P2A + 0.32, FL0 = P2B + 0.22, FL1 = FL0 + 0.12, OFF0 = FL1 + 1.35, OFF1 = OFF0 + 0.42;
+    var RE0 = 0.40, TA = 0.88, P1A = 1.02, P1B = 1.64, TVON = TA + 0.03, P2A = P1B + 0.28, P2B = P2A + 0.32, FL0 = P2B + 0.22, FL1 = FL0 + 0.12, OFF0 = FL1 + 1.35, OFF1 = OFF0 + 0.42;
     if (!aoaRib7) aoaRib7 = RIB7.build();
+    TX = W * aoaRib7.PC[0] / 1280; TY = H * aoaRib7.PC[1] / 720;   /* the TV screen's middle is on the ribbon's path */
     function eQuint(k) { return k < 0.5 ? 16 * Math.pow(k, 5) : 1 - Math.pow(-2 * k + 2, 5) / 2; }
     function clamp01(k) { return Math.max(0, Math.min(1, k)); }
     function staticNoise(c, x, y, w, h, seed, n) {
@@ -1865,7 +1856,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         var sw2 = seg(th, 0.48, 0.66); if (sw2 > 0) { c.save(); c.globalCompositeOperation = "lighter"; c.globalAlpha = Math.sin(Math.PI * sw2) * 0.8; var sg2 = c.createRadialGradient(TX, TY, 0, TX, TY, SW * 0.6); sg2.addColorStop(0, "#fffbd0"); sg2.addColorStop(1, "rgba(255,251,208,0)"); c.fillStyle = sg2; c.fillRect(TX - SW, TY - SH, SW * 2, SH * 2); c.restore(); }
       } else {
         c.save(); c.translate(TX - SW / 2, TY - SH / 2); c.scale(SW / W, SH / H); studio(c, t); c.restore();
-        var p1 = herm(seg(t, P1A, P1B), 0.55, 0);
+        var p1 = camEase(seg(t, P1A, P1B));
         if (p1 < 1) { c.fillStyle = "rgba(0,0,0," + (0.14 * (1 - p1)) + ")"; for (var y = TY - SH; y < TY + SH; y += SH * 0.04) c.fillRect(TX - SW, y, SW * 2, SH * 0.015); }
         if (en < 1) { c.save(); c.globalCompositeOperation = "lighter"; c.globalAlpha = 1 - eOut(en); c.fillStyle = "#fff6b0"; c.fillRect(TX - SW, TY - SH, SW * 2, SH * 2); c.restore(); }
       }
@@ -1885,11 +1876,11 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     }
     /* (2) the ribbon (seventh draft): one continuous band comes in from the right (a little slow at first, then fast, slowing as it
        nears the TV); its front is a single smooth curve, the inner side leading. Near the end the front grows into the barbed arrow
-       (exactly the original arrow once it lands). It flies over the set and dives into the screen: past the screen's edge it runs
-       straight for the middle of the screen and recedes in perspective. A short beat, then it is pulled in from the tail while the
-       camera dollies into the screen's middle on the same curve. Drawn in px of a 1280x720 frame. */
+       (exactly the original arrow once it lands). It flies on over the set and the screen, at full size, into a glowing portal in the
+       middle of the screen (the screen's middle sits on its own path) and is sucked into it: the arrow first, then the rest, from the
+       tail, while the camera follows it in. Drawn in px of a 1280x720 frame. */
     function headS(RB, t) {   /* where the stripes' front is on B0 */
-      var va = RIB7.vaAt, vS = va(RB, -60), vA = va(RB, RB.SN - 8), vB = va(RB, RB.SN + 45), vE = va(RB, RB.SN + 600);
+      var va = RIB7.vaAt, vS = va(RB, -60), vA = va(RB, RB.SN - 8), vB = va(RB, RB.SC - RB.AR.dN), vE = va(RB, RB.SC + 500);
       var avgA = (vA - vS) / (TA - RE0), avgB = (vB - vA) / (P1A - TA), avgC = (vE - vB) / (P1B - P1A), v;
       if (t < TA) v = vS + (vA - vS) * herm((t - RE0) / (TA - RE0), 0.6, 0.1);
       else if (t < P1A) v = vA + (vB - vA) * herm((t - TA) / (P1A - TA), 0.1 * avgA / avgB, 0.9);
@@ -1898,26 +1889,19 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     }
     function tailS(RB, t) {   /* the tail, once it is pulled in (same curve as the camera) */
       if (t < P1A) return null;
-      var va = RIB7.vaAt; return RIB7.sAtVA(RB, va(RB, -60) + (va(RB, RB.SN + 560) - va(RB, -60)) * herm(seg(t, P1A, P1B), 0.55, 0));
+      var va = RIB7.vaAt; return RIB7.sAtVA(RB, va(RB, -60) + (va(RB, RB.SC + 20) - va(RB, -60)) * herm(seg(t, P1A, P1B), 0.55, 0));
     }
-    var aoaRibIn = null;
     function ribbonLayer(c, t) {
       if (t < RE0) return;
       var RB = aoaRib7, C7 = RIB7.C, kk = H / 720;
-      var scx = TX / kk, scy = TY / kk, sw = SW / kk, sh = SH / kk, r0 = sh * 0.14, bu = sh * 0.035;
-      if (!aoaRibIn || aoaRibIn.cx !== scx || aoaRibIn.cy !== scy) {
-        var sE = RB.SN; for (var q0 = Math.round(RIB7.fidx(RB, 1300)); q0 < RB.N; q0++) if (RB.X[q0] >= scx - sw / 2 - bu / 2) { sE = RB.S[q0]; break; }
-        aoaRibIn = RIB7.inside(RB, sE, scx, scy, 110); aoaRibIn.cx = scx; aoaRibIn.cy = scy; aoaRibIn.sE = sE;
-      }
-      var RI = aoaRibIn, sE2 = RI.sE;
+      var sE2 = RB.SC, pcx = RB.PC[0], pcy = RB.PC[1];
       var sH = headS(RB, t), sT = tailS(RB, t), sigL = seg(sH, RB.SN - 160, RB.SN - 8), sig = sigL > 0 ? eBack(sigL) : 0;
       var en = RIB7.ends(RB, { sH: sH + 4 * Math.min(1, sig), sT: sT, lamH: 0.55 * (1 - sigL), muH: 0.0015 * (1 - sigL), lamT: 0.55, muT: 0.0015 });
       var va = RIB7.vaAt, vH = va(RB, sH), vT = sT === null ? -1e9 : va(RB, sT), flowV = sT === null ? 0 : vT - va(RB, -60), drift = t > TA ? (t - TA) * 60 : 0;
       function past(s) { return vH - va(RB, s); }                       /* how far the front has gone past s */
       function flowS(s) { return RIB7.sAtVA(RB, va(RB, s) + flowV); }   /* where something riding on the ribbon has been carried to */
       c.save(); c.scale(kk, kk);
-      /* ---- outside the screen: the ribbon flies over the set (nothing of it is drawn where the screen is) ---- */
-      c.save(); c.beginPath(); c.rect(-200, -200, 1680, 1120); crtShape(c, scx, scy, sw, sh, r0, bu, 0, false); c.clip("evenodd");
+      c.save();
       /* the giant FINALE, laid like the original CHANCE: tilted across the bottom arm, translucent over the scene, a different colour on
          every stripe; each letter lands as the front passes it and leaves as the tail passes it */
       var lx0 = 452, ly0 = 646, lx1 = 1282, ly1 = 522, la = Math.atan2(ly1 - ly0, lx1 - lx0), llen = Math.hypot(lx1 - lx0, ly1 - ly0), fs = 232, cxs = 0.8, txt = "FINALE";
@@ -1947,14 +1931,15 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       /* T2: two dashes inside the orange; they drift along the ribbon once it has arrived and are carried into the TV */
       var oo = function (s) { return 0.27 * RIB7.lerpA(RB.E[0], RB, s); }, ow = function (s) { return Math.max(2.2, 0.16 * RIB7.lerpA(RB.E[0], RB, s)); };
       [[870, 962], [986, 1196]].forEach(function (d) {
-        var d0 = RIB7.sAtVA(RB, va(RB, d[0]) + flowV + drift), d1 = RIB7.sAtVA(RB, va(RB, d[1]) + flowV + drift), a = Math.max(d0, (sT === null ? RB.S[0] : sT) + 20), e = Math.min(d1, sH - 40, sE2 - 10);
+        var d0 = RIB7.sAtVA(RB, va(RB, d[0]) + flowV + drift), d1 = RIB7.sAtVA(RB, va(RB, d[1]) + flowV + drift), a = Math.max(d0, (sT === null ? RB.S[0] : sT) + 20), e = Math.min(d1, sH - 40, 1220);
         if (e > a + 2) RIB7.line(c, RB, a, e, oo, ow, C7.Y);
       });
-      /* the arrowhead growing out of the front as it nears the end (outside part) */
-      if (sig > 0 && sH < sE2 + 10) { RIB7.arrowPath(c, RB, sH, sig); c.fillStyle = C7.Y; c.fill(); }
+      /* the arrowhead growing out of the front as it nears the end; when its point reaches the portal it is sucked in (shrinks into it) */
+      var tipS = sH + sig * (RB.AR.dN + 10), ka = 1 - eIn(seg(tipS - sE2, 0, 70));
+      if (sig > 0 && ka > 0) { c.save(); c.translate(pcx, pcy); c.scale(ka, ka); c.translate(-pcx, -pcy); RIB7.arrowPath(c, RB, sH, sig); c.fillStyle = C7.Y; c.fill(); c.restore(); }
       /* stars riding on the ribbon: pop once the front has passed, carried in and gone when the tail reaches them */
       [[961, -0.012, 13, 0.25, C7.O], [1110, 0.405, 17, 0.1, C7.O], [640, 0.12, 18, 0.3, C7.O], [1232, 0.165, 7, 0.2, "#fffbe0"], [300, 0.16, 12, 0.5, C7.O]].forEach(function (st) {
-        var s = flowS(st[0]), k2 = seg(past(st[0]), 60, 170), gone2 = sT === null ? 0 : Math.max(seg(sT, s - 60, s + 10), seg(s, sE2 - 60, sE2));
+        var s = flowS(st[0]), k2 = seg(past(st[0]), 60, 170), gone2 = sT === null ? 0 : Math.max(seg(sT, s - 60, s + 10), seg(s, 1180, 1250));
         if (k2 <= 0 || gone2 >= 1) return;
         var p = RIB7.pt(RB, s, st[1] * RIB7.lerpA(RB.D, RB, s)); RIB7.star(c, p[0], p[1], st[2] * eBack(k2) * (1 - gone2), st[3] + (1 - k2) * 0.8 + t * 0.4, st[4]);
       });
@@ -1962,12 +1947,14 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       var dk = seg(past(1088), 40, 160), dgo = sT === null ? 0 : seg(sT, 900, 1040);
       if (dk > 0 && dgo < 1) RIB7.line(c, RB, 1040 + 48 * dgo, 1040 + 48 * sm5(dk), function (s, D) { return 0.385 * D; }, function () { return 15; }, C7.O);
       c.restore();
-      /* ---- inside the screen: what has gone in runs for the middle of the screen and recedes ---- */
-      if (sH > sE2 - 5) {
-        c.save(); crtShape(c, scx, scy, sw, sh, r0, bu, 0); c.clip();
-        RIB7.drawRibbon(c, RI, en);
-        if (sig > 0) { RIB7.arrowPath(c, RI, sH, sig); c.fillStyle = C7.Y; c.fill(); }
-        c.restore();
+      /* the portal in the middle of the screen: a white point with a yellow glow and a thin ring, open while the ribbon goes in */
+      var pg = Math.min(seg(tipS, sE2 - 40, sE2 + 5), 1 - seg(t, P1B - 0.12, P1B)), pr = 1 + 0.12 * Math.sin(t * 40);
+      if (pg > 0) {
+        c.save(); c.globalCompositeOperation = "lighter";
+        var gg2 = c.createRadialGradient(pcx, pcy, 0, pcx, pcy, 30 * pg * pr); gg2.addColorStop(0, "rgba(255,255,240,1)"); gg2.addColorStop(0.35, "rgba(255,246,120,0.85)"); gg2.addColorStop(1, "rgba(255,230,40,0)");
+        c.fillStyle = gg2; c.beginPath(); c.arc(pcx, pcy, 30 * pg * pr, 0, Math.PI * 2); c.fill(); c.restore();
+        c.save(); c.beginPath(); c.arc(pcx, pcy, 8 * pg, 0, Math.PI * 2); c.fillStyle = "#ffffff"; c.fill();
+        c.lineWidth = 1.6; c.strokeStyle = "rgba(255,255,255," + (0.9 * pg) + ")"; c.beginPath(); c.arc(pcx, pcy, (17 + 3 * Math.sin(t * 25)) * pg, 0, Math.PI * 2); c.stroke(); c.restore();
       }
       c.restore();
       /* the dark 总攻击！ tag and the white outlined SERIES on the left part of the ribbon (as in the sixth draft) */
@@ -2016,7 +2003,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     }
     /* timeline */
     if (tr < P1B) {
-      var p1 = herm(seg(tr, P1A, P1B), 0.55, 0), Zf = OV * W / SW, Z = Math.exp(p1 * Math.log(Zf)), m1 = (1 - p1) / Z;
+      var p1 = camEase(seg(tr, P1A, P1B)), Zf = OV * W / SW, Z = Math.exp(p1 * Math.log(Zf)), m1 = (1 - p1) / Z;
       ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(Z, Z); ctx.translate(-(TX - (TX - W / 2) * m1), -(TY - (TY - H / 2) * m1)); battle(ctx, tr); ctx.restore();
       speedLines(ctx, W / 2 + (TX - W / 2) * (1 - p1), H / 2 + (TY - H / 2) * (1 - p1), Math.sin(Math.PI * p1) * 0.85, 61, 28, tr);
       var fl0 = 1 - seg(tr, 0.05, 0.12); if (tr > 0.05 && fl0 > 0) { ctx.save(); ctx.globalAlpha = fl0 * 0.35; ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H); ctx.restore(); }
@@ -2041,7 +2028,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   }
 
   var DEMOS = [
-    { id: "aoa", name: "总攻击 第七版（电视由敌人信号拼成；彩带一整条进场、前端长出箭头、钻向屏幕中心；被吸进去、镜头同步推；中间电视只见彩框、黑屏→亮点→闪亮，约 4.4 秒）", dur: 4.38, start: 0.95,
+    { id: "aoa", name: "总攻击 第七版（电视由敌人信号拼成；彩带一整条进场、前端长出箭头、扎进屏幕中心的入口；被吸进去、镜头跟着冲进去；中间电视只见彩框、黑屏→亮点→闪亮，约 4.4 秒）", dur: 4.44, start: 0.95,
       desc: "①最后一击打死敌人，碎成雪花被小电视吸进去（同第六版）→ ②彩带：箭头就是彩带的头，从右下领着整条彩带进来（起步稍慢、中段快，近处大远处小），后面每条色带各自是斜尖、一条比一条往后错开，松散的，不收成一束；巨字 FINALE 照原版 CHANCE 的位置，头部经过哪个字母那个字母就砸下来；快到电视时放慢，慢慢钻进电视（小停顿但不停死），电视随之开播 → ③马上从尾巴开始被吸进电视，尾巴也是一排斜尖，星星、细线跟着往里流；镜头和尾巴同一条速度曲线推进，尾巴进电视时屏幕正好推满 → 演播室三台电视，停一下 → 有节奏地猛推中间那台：推到能看见它的黄框、红框、绿框为止，屏幕是黑的 → 停一下，屏幕中间出现一个亮点拉成一条亮线 → 整个画面一闪，结算画面在电视框里亮出来（之后慢慢推近）→ 关机进结算页。约 4.5 秒。悠和伊邪那岐的图还是占位。",
       draw: function (ctx, W, H, tr) { aoaScene(ctx, W, H, tr); } },
     { id: "tvstate", name: "电视框状态 第二版：连环拳（这回合下 2 张攻击额外打出）", dur: 2.7, start: 1.3,
