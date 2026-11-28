@@ -18,13 +18,13 @@
 **参考**：
 - 姿势照 `research/p4r/keyart/S05_0120_yu_official_illustration_hand_reaching_yellow_card_frame_story_title.jpg`：一只手张开伸向镜头（掌心朝镜头、手离镜头最近、有一点透视放大），像要从屏幕里伸出来；身体微微前倾，眼神直视镜头。
 - 人物设计照 `research/p4r/keyart/S04_0004_yu_official_full_body_art_fist_raised_yellow_blue_bg_title_card.jpg`（全身）、`research/p4r/allout/S03_0008_finish_card_yu_illustration_glasses_yellow_bg_date_02_18_2027.jpg`（眼镜、外套）：银灰色头发、细框眼镜、黑色立领校服外套敞开、白衬衫。
-**画面**：腰部以上，伸出来的那只手在画面前面；不要画背景和卡框。
+**画面**：腰部以上，伸出来的那只手在画面前面；不要画背景和卡框。姿势参考官方插画，也可以有自己的发挥（用户同意），但人物设计不能走样。
 
 ## B. 伊邪那岐出招图 → `art/p4/finale/izanagi_strike.png`（1536×1024）
 **参考**：
 - 设计照 `art/p4/persona/izanagi/izanagi_full_v2.png`（用户确认过的身体和第二版薙刀：刀身宽直、刀背锯齿、镂空槽、大长方形护手）。
 - 动作照 `research/p4r/izanagi/S07_0144_izanagi_blue_naginata_slash.jpg`：双手握薙刀斜着劈下，大衣下摆和身后的白色长飘带被动作带起来。
-**画面**：全身，3/4 侧身，动作幅度大；薙刀刀刃上带一层蓝白色的电光（只贴着刀刃，不要满屏闪电，背景透明）。
+**画面**：全身，3/4 侧身，动作幅度大（动作可以有自己的发挥，设计不能走样）；薙刀刀刃上带一层蓝白色的电光（只贴着刀刃，不要满屏闪电，背景透明）。
 
 提交信息：`art(p4): finale art (Yu reaching out, Izanagi strike)`，推送。
 
