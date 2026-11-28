@@ -1,6 +1,6 @@
 # Codex 生图任务：总攻击用的两张图（悠的收尾立绘、伊邪那岐出招图）
 
-> 用途：总攻击（Series Finale）的电视墙。中间那台电视里悠从屏幕里伸手冲出来，左边那台电视放伊邪那岐出招。用户：身后彩电的创意可以，但不能直接用现有的眼睛特写和伊邪那岐站姿图，要专门画。
+> 用途：总攻击（Series Finale）。镜头推进中间那台电视后是结算画面，悠在画面左半边做主体（占大半个画面）；左边那台电视放伊邪那岐出招。不能直接用现有的眼睛特写和伊邪那岐站姿图，要专门画。
 > **最重要：人物不能画走样（OOC）。** 脸、发型、眼镜、校服、武器都照参考图画，不要自己发挥设计。
 
 你在用户的 Windows 电脑上工作，用 imagegen 生图（参考图 / 图像编辑模式）。不改 mod 代码，不编译，不启动游戏。生完直接提交推送，不用自查，不用写报告。
@@ -15,10 +15,17 @@
 - **真透明底**：PNG RGBA，轮廓外 alpha = 0，不要背景、地面阴影、光晕、文字、边框。人物四周留白至少 60px（伸出来的手可以离边近一点，但不要被裁掉）。
 
 ## A. 悠的收尾立绘 → `art/p4/finale/yu_finale.png`（1024×1536）
+**姿势（用户要求：设计一个帅的姿势，不要伸手）——扛刀、推眼镜**：
+- 3/4 身（头顶到大腿中部），身体 3/4 侧向画面右边，重心在后脚，肩膀放松。
+- 右手（画面左侧）握太刀，刀背轻轻搭在右肩上，刀身从肩后斜着伸向画面左上方；刀柄在胸前。**刀身和刀尖完整留在画面里，不要被裁掉。**
+- 左手（画面右侧）抬到脸前，食指和中指并拢轻推眼镜的鼻梁，手背朝外，手肘自然往外打开。手指要画对（五根、关节自然）。
+- 头微微低下，眼睛从镜片上方直视镜头，嘴角很淡地一挑：冷静、自信，不要夸张的笑。
+- 外套敞开，衣摆、立领和刘海被风往后吹起，像刚从电视里冲出来。
+- 剪影要清楚好读：刀、推眼镜的手、外套下摆形成一个往右上打开的构图。
 **参考**：
-- 姿势照 `research/p4r/keyart/S05_0120_yu_official_illustration_hand_reaching_yellow_card_frame_story_title.jpg`：一只手张开伸向镜头（掌心朝镜头、手离镜头最近、有一点透视放大），像要从屏幕里伸出来；身体微微前倾，眼神直视镜头。
-- 人物设计照 `research/p4r/keyart/S04_0004_yu_official_full_body_art_fist_raised_yellow_blue_bg_title_card.jpg`（全身）、`research/p4r/allout/S03_0008_finish_card_yu_illustration_glasses_yellow_bg_date_02_18_2027.jpg`（眼镜、外套）：银灰色头发、细框眼镜、黑色立领校服外套敞开、白衬衫。
-**画面**：腰部以上，伸出来的那只手在画面前面；不要画背景和卡框。姿势参考官方插画，也可以有自己的发挥（用户同意），但人物设计不能走样。
+- 人物设计照 `research/p4r/keyart/S04_0004_yu_official_full_body_art_fist_raised_yellow_blue_bg_title_card.jpg`（全身）、`research/p4r/allout/S03_0008_finish_card_yu_illustration_glasses_yellow_bg_date_02_18_2027.jpg`（眼镜、外套、推眼镜的手）：银灰色头发、细框眼镜、黑色立领校服外套敞开、白衬衫。
+- 太刀照 `research/p4r/allout/S01_4918_series_finale_prompt_cancel_go_yu_katana_yellow_stage.jpg`、`research/p4r/yu_battle/S02_0214_yu_idle_katana_yellow_outline_rear_3q.jpg`：黑色刀柄、银色刀身。
+**画面**：不要画背景和卡框。姿势按上面写的来，细节可以有自己的发挥，但不要照抄官方插画的整张姿势，人物设计不能走样。
 
 ## B. 伊邪那岐出招图 → `art/p4/finale/izanagi_strike.png`（1536×1024）
 **参考**：
