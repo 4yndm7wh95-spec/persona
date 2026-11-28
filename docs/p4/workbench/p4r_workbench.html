@@ -158,7 +158,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       <tr><td style="padding:4px 6px">几万真言</td><td style="padding:4px 6px">力量 ≥ 8：约 2.1 秒落第一下，约 3.5 秒结束（之前约 4.4 秒）</td><td style="padding:4px 6px">约 0.45 秒捏碎，约 1 秒落第一下（之前约 2 秒），约 1.6 秒打完</td></tr>
     </table>
     恶魔之焰：光团不再慢慢起步，一开始就在动，扫过手牌越来越快，一口气拐上去到电视里的手，只在最后落到手上时稍微收一下；牌收叠好马上捏碎。快速版扫牌同速，扫完光团直接冲出画面。<br>几万真言：快速版杖快速转一圈就停，停住马上劈。完整版捏碎提前，杖转得稍快，停住后不再空等，四下间隔 0.24 秒，结尾圆环紧跟最后一下。<br>
-    <b>总攻击第七版（草图第 1 个）：</b>彩带是另一个会话重新设计的平滑版（一整条进场、前端长出原版倒钩箭头、钻进屏幕中心的入口、被吸进去，镜头跟着冲进去；电视由敌人的雪花拼成；演播室缓推→猛推中间电视，四周只剩彩框，黑屏→亮点→闪亮）。这一轮又改了三处：①敌人死亡特效更丰富、停留约 1.3 秒（错位切片乱跳、红蓝错色、雪花、故障条、黑紫烟、彩色圆环，最后收成一点）；②彩带一进场镜头就开始慢慢推，收回时正式推进，先慢后快、速度连续；③中间电视黑屏多停一会（0.5 秒）。④敌人变电视那段放慢、一步一步交代：打中 → 信号断、雪花灌满 → 碎成马赛克 → 方块一块块飞进电视按列拼满屏幕 → 彩框锁上、开机测试彩条 → 雪花，停一拍彩带才进来（约 0.85 → 1.85 秒）。电视机、演播室、悠和伊邪那岐还是占位，等 Codex 生图。<br>
+    <b>总攻击第七版（草图第 1 个）：</b>彩带是另一个会话重新设计的平滑版（一整条进场、前端长出原版倒钩箭头、钻进屏幕中心的入口、被吸进去，镜头跟着冲进去；电视由敌人的雪花拼成；演播室缓推→猛推中间电视，四周只剩彩框，黑屏→亮点→闪亮）。这几轮改了这些：①敌人死亡特效更丰富、停留约 1.3 秒（错位切片乱跳、红蓝错色、雪花、故障条、黑紫烟、彩色圆环，最后收成一点）；②彩带一进场镜头就开始慢慢推，收回时正式推进，先慢后快、速度连续；③中间电视黑屏多停一会（0.5 秒）。④敌人变电视那段放慢、一步一步交代：打中 → 信号断、雪花灌满 → 碎成马赛克 → 方块一块块飞进电视按列拼满屏幕 → 彩框锁上、开机测试彩条 → 雪花，停一拍彩带才进来（约 0.85 → 1.85 秒）。⑤电视机、演播室、悠、伊邪那岐都换成 Codex 生的图：敌人变成黑色电视；演播室中间是红色电视，左边象牙白电视里放伊邪那岐，右边黑色电视里是 SERIES FINALE。⑥冲向中间电视改成猛冲：0.18 秒、一下子就到全速，急刹、回弹一下，画面抖一下，彩框闪一下。悠的新姿势（双手插兜、抬头看镜头）还在让 Codex 改，现在先用扛刀那张。<br>
     <b>电视框状态第二版（草图第 2 个）：</b>边往外鼓、四角厚边上薄、角里有网点、红绿线不同心、压着标签和一台小电视（显示剩余次数）；出现和消失都是几层歪框转着收拢 / 散开。<br>
     <b>眼神特写换了做法：</b>不再让 AI 画中间帧（Codex 两张就跑位了）。只用一张睁眼图（Codex 这次的第一张），闭眼、睁开、镜片反光都叠在上面画：眼皮是一条会动的线，反光透过镜片遮罩叠上去。眼睛不可能变大小，也是连续动画，没有逐帧感；瞳孔一直清楚，不会发白。看草图第 7 个「召唤（眼神特写 → 翻页 → 手里捏碎）」，0.17 秒是闭眼、0.24 秒是半睁。
   </div>
@@ -1625,7 +1625,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     /* ribbon: in from the right RE0..TA, creeps into the TV TA..P1A (it switches on at TVON), pulled in with the camera P1A..P1B;
        studio, a beat, push to the middle TV P2A..P2B (it stays dark, its frame in view), a beat, a glint FL0..FL1, the flash at FL1;
        the TV switches off OFF0..OFF1 */
-    var SH1 = 1.05, RE0 = 0.80 + SH1, TA = 1.30 + SH1, P1A = 1.44 + SH1, P1B = 2.06 + SH1, TVON = TA + 0.03, P2A = P1B + 0.34, P2B = P2A + 0.26, FL0 = P2B + 0.5, FL1 = FL0 + 0.14, OFF0 = FL1 + 1.35, OFF1 = OFF0 + 0.42;
+    var SH1 = 1.05, RE0 = 0.80 + SH1, TA = 1.30 + SH1, P1A = 1.44 + SH1, P1B = 2.06 + SH1, TVON = TA + 0.03, P2A = P1B + 0.34, P2B = P2A + 0.18, FL0 = P2B + 0.5, FL1 = FL0 + 0.14, OFF0 = FL1 + 1.35, OFF1 = OFF0 + 0.42;
     /* the camera: into the small TV (P1A..P1B) it arrives still moving, creeps on through the studio at that speed (+10 %), then rushes
        the middle TV (P2A..P2B) - one continuous move, never a dead stop */
     var DRIFT = Math.log(1.10) / (P2A - P1B), CV = DRIFT * (P1B - P1A) / Math.log(OV * W / SW);
@@ -1646,6 +1646,12 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       return CRP + (1 - CRP) * (camEase(u, cE) + a * u * (1 - u) * (1 - u));
     }
     if (!aoaRib7) aoaRib7 = RIB7.build();
+    /* the generated art (Codex, 2026-11-28): three TVs, the studio, Izanagi's strike, Yu (to be replaced by the hands-in-pockets v2) */
+    if (!IMG.tvMain) { loadImg("tvMain", "gen/tv_main.webp"); loadImg("tvRed", "gen/tv_side_red.webp"); loadImg("tvWhite", "gen/tv_side_white.webp"); loadImg("studioBg", "gen/studio_bg.jpg"); loadImg("yuFin", "gen/yu_finale.webp"); loadImg("izaStrike", "gen/izanagi_strike.webp"); }
+    /* screen hole of each TV picture (px of the 1536x1024 picture, measured as the biggest enclosed transparent region) */
+    var TVART = { tvMain: { hx: 679.5, hy: 566.5, hw: 764, hh: 526 }, tvRed: { hx: 664.5, hy: 551.5, hw: 950, hh: 524 }, tvWhite: { hx: 671.5, hy: 571.5, hw: 712, hh: 500 } };
+    function artHole(key, cx, cy, sw) { var A = TVART[key], k = sw / A.hw; return { x: cx - A.hw * k / 2, y: cy - A.hh * k / 2, w: A.hw * k, h: A.hh * k }; }
+    function drawTVArt(c, key, cx, cy, sw) { if (!ready(key)) return false; var A = TVART[key], k = sw / A.hw; c.drawImage(IMG[key], cx - A.hx * k, cy - A.hy * k, 1536 * k, 1024 * k); return true; }
     TX = W * aoaRib7.PC[0] / 1280; TY = H * aoaRib7.PC[1] / 720;   /* the TV screen's middle is on the ribbon's path */
     function eQuint(k) { return k < 0.5 ? 16 * Math.pow(k, 5) : 1 - Math.pow(-2 * k + 2, 5) / 2; }
     function clamp01(k) { return Math.max(0, Math.min(1, k)); }
@@ -1699,7 +1705,9 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         c.font = Math.round(H * 0.07) + "px 'Archivo Black', sans-serif"; c.lineWidth = 6; c.strokeText("YU", W * 0.17, -H * 0.12); c.fillStyle = YH; c.fillText("YU", W * 0.17, -H * 0.12);
         c.restore();
       }
-      yuBust(c, W * 0.3, H * 1.05, H * 1.08 * (ft > 0 ? 1 + 0.025 * (1 - eOut(seg(ft, 0, 0.5))) : 1.025));
+      var yk = ft > 0 ? 1 + 0.025 * (1 - eOut(seg(ft, 0, 0.5))) : 1.025;
+      if (ready("yuFin")) { var yh = H * 1.22 * yk, yw = yh * 1024 / 1536; c.drawImage(IMG.yuFin, W * 0.27 - yw / 2, H * 0.08 - (yh - H * 1.22) * 0.3, yw, yh); }
+      else yuBust(c, W * 0.3, H * 1.05, H * 1.08 * yk);
       if (ft <= 0) return;
       var FL = [[0.08, 0.2, 0.07], [0.57, 0.12, 0.05], [0.965, 0.47, 0.05], [0.55, 0.88, 0.045], [0.16, 0.78, 0.05], [0.47, 0.33, 0.035], [0.94, 0.22, 0.04], [0.68, 0.36, 0.03]];
       FL.forEach(function (fl, i) { var pk = seg(ft, 0.06 + i * 0.03, 0.22 + i * 0.03); if (pk <= 0) return; var rS = H * fl[2] * eBack(pk); flower(c, W * fl[0], H * fl[1], rS, t * 0.6 + i, i % 2 ? "#ffffff" : "#fffbd0"); c.beginPath(); c.arc(W * fl[0], H * fl[1], rS * 0.22, 0, Math.PI * 2); c.fillStyle = i % 3 ? "#f2c54b" : "#ff9a1e"; c.fill(); c.lineWidth = 1.5; c.strokeStyle = "#141414"; c.stroke(); });
@@ -1714,53 +1722,61 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       c.restore();
     }
     /* (3) the studio: three TVs on a dark stage; the side ones are on, the middle one is off until the camera pushes into it */
-    var TVL = { x: W * 0.17, y: H * 0.4, w: W * 0.27, h: H * 0.33, r: -0.06 }, TVR = { x: W * 0.83, y: H * 0.4, w: W * 0.27, h: H * 0.33, r: 0.06 };
+    var TVL = { x: W * 0.19, y: H * 0.41, w: W * 0.27, h: H * 0.33, r: -0.06 }, TVR = { x: W * 0.81, y: H * 0.41, w: W * 0.27, h: H * 0.33, r: 0.06 };
     var ZS0 = OV * Math.exp(DRIFT * (P2A - P1B)), ZSF = H / (SH2 * 1.2);   /* where the rush starts / the framed middle TV */
-    function pushP(t) { return herm(seg(t, P2A, P2B), DRIFT * (P2B - P2A) / Math.log(ZSF / ZS0), 0); }
+    /* (user 2026-11-28) the rush at the middle TV must feel like a rush: it takes the creep's speed, is at full speed almost at once,
+       holds it, brakes hard in the last few frames and lands with a small bounce (+3 % zoom and back) and a jolt */
+    var PR = { up: 0.3, br: 0.82, vb: 0.6 };
+    function smI(x) { return x * x * x - x * x * x * x / 2; }   /* integral of smoothstep */
+    function rushP(u) {
+      var a = DRIFT * (P2B - P2A) / Math.log(ZSF / ZS0), LA = PR.up, LB = PR.br - PR.up, LC = 1 - PR.br;
+      var vm = (1 - 0.5 * LA * a - 0.5 * LC * PR.vb) / (0.5 * LA + LB + 0.5 * LC), pA = LA * (0.5 * a + 0.5 * vm), pB = pA + LB * vm;
+      if (u <= PR.up) { var x = u / LA; return LA * (a * x + (vm - a) * smI(x)); }
+      if (u <= PR.br) return pA + vm * (u - PR.up);
+      var y = (u - PR.br) / LC; return pB + LC * (vm * y + (PR.vb - vm) * smI(y));
+    }
+    function pushP(t) {
+      if (t <= P2A) return 0;
+      if (t < P2B) return rushP(seg(t, P2A, P2B));
+      var tau = t - P2B, w = 2 * Math.PI / 0.14; return 1 + (PR.vb / (P2B - P2A)) / w * Math.exp(-tau / 0.05) * Math.sin(w * tau);
+    }
+    function rushK(t) {   /* how hard the speed lines stream: with the speed, cut at the landing */
+      if (t <= P2A) return 0; if (t >= P2B) return 1 - seg(t, P2B, P2B + 0.06);
+      var u = seg(t, P2A, P2B); return u < PR.up ? sm5(u / PR.up) : u < PR.br ? 1 : 1 - 0.5 * sm5((u - PR.br) / (1 - PR.br));
+    }
     function studioCam(t) {
       if (t < P1B) return { z: 1, x: W / 2, y: H / 2 };
       if (t < P2A) return { z: OV * Math.exp(DRIFT * (t - P1B)), x: W / 2, y: H / 2 };   /* still creeping forward */
       var zf = ZSF * (1 + 0.006 * eInOut(seg(t, P2B, FL1)) + 0.02 * eInOut(seg(t, FL1, OFF0))), p2 = pushP(t), z = ZS0 * Math.exp(p2 * Math.log(zf / ZS0)), m = ZS0 * (1 - p2) / z;
       return { z: z, x: T2X - (T2X - W / 2) * m, y: T2Y - (T2Y - H / 2) * m };
     }
-    function sideTV(c, i, tv, t) {
+    function sideTV(c, i, tv, t) {   /* left: the ivory set showing Izanagi's strike; right: the black set with the SERIES FINALE card */
+      var key = i === 0 ? "tvWhite" : "tvMain", sx = -tv.w * 0.04, hr = artHole(key, sx, 0, tv.w * 0.72), w = hr.w, h = hr.h;
       c.save(); c.translate(tv.x, tv.y); c.rotate(tv.r);
-      roundRect(c, -tv.w / 2, -tv.h / 2, tv.w, tv.h, tv.h * 0.12); c.fillStyle = "#1c1c24"; c.fill(); c.lineWidth = 3; c.strokeStyle = "#3a3a46"; c.stroke();
-      c.fillStyle = "#2c2c36"; c.fillRect(-tv.w * 0.32, tv.h / 2 - 2, tv.w * 0.06, tv.h * 0.1); c.fillRect(tv.w * 0.26, tv.h / 2 - 2, tv.w * 0.06, tv.h * 0.1);
-      c.fillStyle = "#ff3b5c"; c.beginPath(); c.arc(tv.w * 0.44, -tv.h * 0.1, tv.h * 0.035, 0, Math.PI * 2); c.fill(); c.fillStyle = LIME; c.beginPath(); c.arc(tv.w * 0.44, tv.h * 0.06, tv.h * 0.035, 0, Math.PI * 2); c.fill();
-      var w = tv.w * 0.82, h = tv.h * 0.74, sx = -tv.w * 0.04;
-      crtShape(c, sx, 0, w, h, tv.h * 0.12, tv.h * 0.03, 0); c.save(); c.clip(); c.translate(sx, 0);
+      crtShape(c, sx, 0, w + 2, h + 2, h * 0.16, h * 0.03, 0); c.save(); c.clip(); c.translate(sx, 0);
       if (i === 0) {
         var g = c.createLinearGradient(0, -h / 2, 0, h / 2); g.addColorStop(0, "#1b3fae"); g.addColorStop(1, "#0b1440"); c.fillStyle = g; c.fillRect(-w, -h, w * 2, h * 2);
         blueBeam(c, w, h, 0, 0, -0.5, 1, 0.9, 4, t);
-        c.fillStyle = "#050a1e"; c.beginPath(); c.ellipse(0, -h * 0.22, h * 0.07, h * 0.08, 0, 0, Math.PI * 2); c.fill(); c.fillRect(-h * 0.08, -h * 0.14, h * 0.16, h * 0.42);
-        c.strokeStyle = "#cfe8ff"; c.lineWidth = 3; c.beginPath(); c.moveTo(-w * 0.32, h * 0.25); c.lineTo(w * 0.3, -h * 0.32); c.stroke();
-        c.fillStyle = "rgba(255,255,255,0.8)"; c.font = Math.round(H * 0.022) + "px sans-serif"; c.textAlign = "center"; c.textBaseline = "alphabetic"; c.fillText("伊邪那岐 出招图（新生图）", 0, h * 0.42);
+        if (ready("izaStrike")) { var ih = h * 1.1, iw = ih * 1.5; c.drawImage(IMG.izaStrike, -iw / 2 + Math.sin(t * 2.6) * w * 0.01, -ih / 2, iw, ih); }
       } else {
         c.fillStyle = Y; c.fillRect(-w, -h, w * 2, h * 2);
-        c.fillStyle = "#e3c900"; for (var hx = -8; hx <= 8; hx++) for (var hy = -5; hy <= 5; hy++) { c.beginPath(); c.arc(hx * w / 14, hy * h / 9, H * 0.0035 * (1 + ((hx + hy + 20) % 3)), 0, Math.PI * 2); c.fill(); }
-        c.save(); c.rotate(-0.12); c.font = Math.round(h * 0.2) + "px 'Archivo Black', sans-serif"; c.textAlign = "center"; c.textBaseline = "middle";
-        c.lineWidth = 4; c.strokeStyle = "#111"; c.strokeText("SERIES", -w * 0.04, -h * 0.13); c.fillStyle = "#fff"; c.fillText("SERIES", -w * 0.04, -h * 0.13);
-        c.fillStyle = "#ff3b5c"; c.fillRect(-w * 0.42, h * 0.02, w * 0.84, h * 0.2); c.fillStyle = "#fff"; c.fillText("FINALE", w * 0.03, h * 0.12); c.restore();
+        c.fillStyle = "#e3c900"; for (var hx = -8; hx <= 8; hx++) for (var hy = -6; hy <= 6; hy++) { c.beginPath(); c.arc(hx * w / 14, hy * h / 10, H * 0.0035 * (1 + ((hx + hy + 20) % 3)), 0, Math.PI * 2); c.fill(); }
+        c.save(); c.rotate(-0.12); c.font = Math.round(h * 0.18) + "px 'Archivo Black', sans-serif"; c.textAlign = "center"; c.textBaseline = "middle";
+        c.lineWidth = 4; c.strokeStyle = "#111"; c.strokeText("SERIES", -w * 0.04, -h * 0.12); c.fillStyle = "#fff"; c.fillText("SERIES", -w * 0.04, -h * 0.12);
+        c.fillStyle = "#ff3b5c"; c.fillRect(-w * 0.42, h * 0.02, w * 0.84, h * 0.18); c.fillStyle = "#fff"; c.fillText("FINALE", w * 0.03, h * 0.11); c.restore();
         flower(c, -w * 0.36, -h * 0.3, h * 0.08, t, "#fff"); flower(c, w * 0.38, h * 0.3, h * 0.07, -t, "#fff"); star4(c, w * 0.35, -h * 0.32, h * 0.06, 0.15, 1); star5(c, -w * 0.38, h * 0.32, h * 0.05, t, "#33c3ff");
       }
       c.fillStyle = "rgba(0,0,0,0.13)"; for (var y = -h; y < h; y += 4) c.fillRect(-w, y, w * 2, 1.5);
       c.restore();
-      c.lineJoin = "round"; crtShape(c, sx, 0, w, h, tv.h * 0.12, tv.h * 0.03, 0); c.lineWidth = tv.h * 0.035; c.strokeStyle = Y; c.stroke();
-      crtShape(c, sx, 0, w - tv.h * 0.05, h - tv.h * 0.05, tv.h * 0.1, tv.h * 0.025, 0.006); c.lineWidth = 2; c.strokeStyle = "#ff3b5c"; c.stroke();
-      crtShape(c, sx + 1, 1, w - tv.h * 0.08, h - tv.h * 0.08, tv.h * 0.09, tv.h * 0.02, -0.006); c.strokeStyle = LIME; c.stroke();
+      drawTVArt(c, key, sx, 0, tv.w * 0.72);
+      c.lineJoin = "round"; crtShape(c, sx, 0, w, h, h * 0.16, h * 0.03, 0); c.lineWidth = Math.max(2, h * 0.035); c.strokeStyle = Y; c.stroke();
+      crtShape(c, sx, 0, w - h * 0.06, h - h * 0.06, h * 0.14, h * 0.025, 0.006); c.lineWidth = 2; c.strokeStyle = "#ff3b5c"; c.stroke();
+      crtShape(c, sx + 1, 1, w - h * 0.1, h - h * 0.1, h * 0.12, h * 0.02, -0.006); c.strokeStyle = LIME; c.stroke();
       c.restore();
-      c.save(); c.globalAlpha = 0.22; c.translate(tv.x, H * 0.7 + (H * 0.7 - tv.y) * 0.25); c.scale(1, -0.25); c.rotate(-tv.r); roundRect(c, -tv.w / 2, -tv.h / 2, tv.w, tv.h, tv.h * 0.12); c.fillStyle = i === 2 ? Y : "#2a5bff"; c.fill(); c.restore();
     }
     function middleTV(c, t, p2) {
       var kon = t >= FL1 ? 1 : 0, kg = seg(t, FL0, FL1), r0 = SH2 * 0.12, bu = SH2 * 0.03;
       c.save();
-      c.strokeStyle = "#3a3a46"; c.lineWidth = 4; c.lineCap = "round"; c.beginPath(); c.moveTo(M.x - M.w * 0.06, M.y - M.h / 2); c.lineTo(M.x - M.w * 0.2, M.y - M.h * 0.86); c.moveTo(M.x + M.w * 0.06, M.y - M.h / 2); c.lineTo(M.x + M.w * 0.22, M.y - M.h * 0.84); c.stroke();
-      roundRect(c, M.x - M.w / 2, M.y - M.h / 2, M.w, M.h, M.h * 0.12); c.fillStyle = "#1c1c24"; c.fill(); c.lineWidth = 3; c.strokeStyle = "#3a3a46"; c.stroke();
-      c.fillStyle = "#2c2c36"; c.fillRect(M.x - M.w * 0.32, M.y + M.h / 2 - 2, M.w * 0.06, M.h * 0.08); c.fillRect(M.x + M.w * 0.26, M.y + M.h / 2 - 2, M.w * 0.06, M.h * 0.08);
-      var lv = 1 - seg(t, P2A + 0.08, P2B), led = (kon > 0 ? 1 : 0.55 + 0.45 * Math.sin(t * 9)) * lv;
-      c.fillStyle = "#ff3b5c"; c.globalAlpha = led; c.beginPath(); c.arc(M.x + M.w * 0.44, M.y - M.h * 0.1, M.h * 0.032, 0, Math.PI * 2); c.fill(); c.globalAlpha = lv;
-      c.fillStyle = LIME; c.beginPath(); c.arc(M.x + M.w * 0.44, M.y + M.h * 0.06, M.h * 0.032, 0, Math.PI * 2); c.fill(); c.globalAlpha = 1;
       c.save(); crtShape(c, T2X, T2Y, SW2, SH2, r0, bu, 0); c.clip();
       if (kon <= 0) {
         c.fillStyle = "#0b0b11"; c.fillRect(T2X - SW2, T2Y - SH2, SW2 * 2, SH2 * 2);
@@ -1782,24 +1798,27 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         if (p2 < 1) { c.fillStyle = "rgba(0,0,0," + (0.1 * (1 - p2)) + ")"; for (var y = T2Y - SH2; y < T2Y + SH2; y += 4) c.fillRect(T2X - SW2, y, SW2 * 2, 1.5); }
       }
       c.restore();
+      drawTVArt(c, "tvRed", T2X, T2Y, SW2);
       /* the bezel sits outside the screen, so nothing is left over the picture when the camera fills the frame with it */
       c.save(); c.beginPath(); c.rect(T2X - W, T2Y - H, W * 2, H * 2); crtShape(c, T2X, T2Y, SW2, SH2, r0, bu, 0, false); c.clip("evenodd");
       c.lineJoin = "round"; crtShape(c, T2X, T2Y, SW2, SH2, r0, bu, 0); c.lineWidth = SH2 * 0.08; c.strokeStyle = Y; c.stroke();
       crtShape(c, T2X, T2Y, SW2 + SH2 * 0.11, SH2 + SH2 * 0.11, SH2 * 0.15, bu, 0.006); c.lineWidth = 2; c.strokeStyle = "#ff3b5c"; c.stroke();
       crtShape(c, T2X, T2Y, SW2 + SH2 * 0.15, SH2 + SH2 * 0.15, SH2 * 0.16, bu, -0.006); c.strokeStyle = LIME; c.stroke();
       c.restore();
-      c.save(); c.globalAlpha = 0.12 + 0.2 * kon; c.translate(M.x, H * 0.7 + (H * 0.7 - M.y) * 0.25); c.scale(1, -0.25); roundRect(c, -M.w / 2, -M.h / 2, M.w, M.h, M.h * 0.12); c.fillStyle = kon > 0 ? "#ffe680" : "#30303a"; c.fill(); c.restore();
+      /* the landing of the rush: the frame lines flare for an instant */
+      var fl2 = seg(t, P2B, P2B + 0.18);
+      if (fl2 > 0 && fl2 < 1) { c.save(); c.globalCompositeOperation = "lighter"; c.globalAlpha = 1 - fl2; c.lineJoin = "round"; crtShape(c, T2X, T2Y, SW2 + SH2 * 0.02, SH2 + SH2 * 0.02, r0, bu, 0); c.lineWidth = SH2 * 0.05 * (1 - fl2) + 2; c.strokeStyle = "#fff6b0"; c.stroke(); c.restore(); }
       /* framed on it: round the edges there is nothing but its coloured frame lines (no case, no lights, no other set) */
       var fr = seg(t, P2A + 0.1, P2B);
       if (fr > 0) { c.save(); c.globalAlpha = fr; c.beginPath(); c.rect(T2X - W * 2, T2Y - H * 2, W * 4, H * 4); crtShape(c, T2X, T2Y, SW2 + SH2 * 0.15 + 4, SH2 + SH2 * 0.15 + 4, SH2 * 0.16, bu, -0.006, false); c.fillStyle = "#16161c"; c.fill("evenodd"); c.restore(); }
       c.restore();
     }
     function studio(c, t) {
-      var cm = studioCam(t), p2 = pushP(t);
+      var cm = studioCam(t), p2 = Math.min(1, pushP(t));
       c.save(); c.translate(W / 2, H / 2); c.scale(cm.z, cm.z); c.translate(-cm.x, -cm.y);
-      c.fillStyle = "#07070c"; c.fillRect(0, 0, W, H);
-      var fl = c.createLinearGradient(0, H * 0.68, 0, H); fl.addColorStop(0, "#15151d"); fl.addColorStop(1, "#050508"); c.fillStyle = fl; c.fillRect(0, H * 0.68, W, H * 0.32);
-      [[W * 0.3, -0.25], [W * 0.7, 0.25]].forEach(function (sp, i) {
+      if (ready("studioBg")) { var sk3 = Math.max(W / 1536, H * 1.36 / 1024), iw3 = 1536 * sk3, ih3 = 1024 * sk3; c.drawImage(IMG.studioBg, W / 2 - iw3 / 2, H * 0.5 - ih3 / 2, iw3, ih3); c.fillStyle = "rgba(4,4,10,0.22)"; c.fillRect(-W, -H, W * 3, H * 3); }
+      else { c.fillStyle = "#07070c"; c.fillRect(-W, -H, W * 3, H * 3); }
+      if (!ready("studioBg")) [[W * 0.3, -0.25], [W * 0.7, 0.25]].forEach(function (sp, i) {
         c.save(); c.translate(sp[0], -H * 0.2); c.rotate(sp[1] + Math.sin(t * 1.6 + i) * 0.06); c.globalCompositeOperation = "lighter";
         var bg = c.createLinearGradient(0, 0, 0, H * 1.3); bg.addColorStop(0, "rgba(255,255,240,0.3)"); bg.addColorStop(1, "rgba(255,255,240,0)");
         c.fillStyle = bg; c.beginPath(); c.moveTo(-H * 0.02, 0); c.lineTo(H * 0.02, 0); c.lineTo(H * 0.24, H * 1.3); c.lineTo(-H * 0.24, H * 1.3); c.closePath(); c.fill(); c.restore();
@@ -1827,10 +1846,10 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       return list;
     }
     function blockFlight(c, t) {   /* the blocks in the air: they keep their colour, grow to a screen cell, arc over and land in formation */
-      var cw = SW / 10, ch = SH / 7;
+      var HHs = artHole("tvMain", TX, TY, SW).h, cw = SW / 10, ch = HHs / 7;
       statBlocks().forEach(function (B) {
         var k2 = seg(t, B.t0, B.t0 + B.d); if (k2 <= 0 || k2 >= 1) return;
-        var sx = ex + B.hx, sy = ey + B.hy, tx = TX - SW / 2 + (B.gx + 0.5) * cw, ty = TY - SH / 2 + (B.gy + 0.5) * ch;
+        var sx = ex + B.hx, sy = ey + B.hy, tx = TX - SW / 2 + (B.gx + 0.5) * cw, ty = TY - HHs / 2 + (B.gy + 0.5) * ch;
         var e = eInOut(k2), px = lerp(sx, tx, e), py = lerp(sy, ty, e) - Math.sin(Math.PI * e) * H * B.lift, w = lerp(B.hw, cw, e), h = lerp(B.hh, ch, e);
         var e2 = eInOut(Math.max(0, k2 - 0.1)), qx = lerp(sx, tx, e2), qy = lerp(sy, ty, e2) - Math.sin(Math.PI * e2) * H * B.lift;
         c.save(); c.globalAlpha = 0.35; c.fillStyle = B.col; c.fillRect(qx - w * 0.35, qy - h * 0.35, w * 0.7, h * 0.7); c.restore();
@@ -1895,52 +1914,45 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     }
     function smallTV(c, t, th) {
       if (th < DT.peel0 - 0.02) return;
-      var bw = SW / 0.78, bh = SH / 0.7, bx = TX + bw * 0.045, by = TY + bh * 0.02, r0 = SH * 0.14, bu = SH * 0.035;
+      var hr = artHole("tvMain", TX, TY, SW), HW = hr.w, HH = hr.h, r0 = HH * 0.16, bu = HH * 0.03, bw = HW * 1.4;
       var en = seg(t, TVON, TVON + 0.16), km = seg(th, DT.set[0], DT.set[1]), locked = th >= DT.lock;
       c.save();
       var gk = Math.max(seg(th, DT.peel0, DT.lock) * 0.6, en > 0 ? 1 - en * 0.4 : 0);
       if (gk > 0) { var gg = c.createRadialGradient(TX, TY, 0, TX, TY, bw * 1.3); gg.addColorStop(0, "rgba(255,240,120," + (0.55 * gk) + ")"); gg.addColorStop(1, "rgba(255,240,120,0)"); c.fillStyle = gg; c.fillRect(TX - bw * 1.4, TY - bw * 1.4, bw * 2.8, bw * 2.8); }
-      /* the set comes up behind the frames once they have locked onto the screen */
-      if (km > 0) {
-        c.save(); c.globalAlpha = eOut(km); var ms = lerp(1.12, 1, eOut(km)); c.translate(TX, TY); c.scale(ms, ms); c.translate(-TX, -TY);
-        c.strokeStyle = "#4a4a58"; c.lineWidth = Math.max(1.5, bh * 0.035); c.lineCap = "round"; c.beginPath(); c.moveTo(bx - bw * 0.06, by - bh / 2); c.lineTo(bx - bw * 0.22, by - bh * 0.95); c.moveTo(bx + bw * 0.06, by - bh / 2); c.lineTo(bx + bw * 0.25, by - bh * 0.92); c.stroke();
-        roundRect(c, bx - bw / 2, by - bh / 2, bw, bh, bh * 0.14); c.fillStyle = "#1c1c24"; c.fill(); c.lineWidth = Math.max(1.5, bh * 0.025); c.strokeStyle = "#4a4a58"; c.stroke();
-        c.fillStyle = "#2c2c36"; c.fillRect(bx - bw * 0.3, by + bh / 2 - 1, bw * 0.08, bh * 0.08); c.fillRect(bx + bw * 0.22, by + bh / 2 - 1, bw * 0.08, bh * 0.08);
-        c.fillStyle = "#ff3b5c"; c.beginPath(); c.arc(bx + bw * 0.41, by - bh * 0.12, bh * 0.045, 0, Math.PI * 2); c.fill(); c.fillStyle = LIME; c.beginPath(); c.arc(bx + bw * 0.41, by + bh * 0.08, bh * 0.045, 0, Math.PI * 2); c.fill();
-        c.restore();
-      }
-      c.save(); crtShape(c, TX, TY, SW, SH, r0, bu, 0); c.clip();
+      c.save(); crtShape(c, TX, TY, HW + 2, HH + 2, r0, bu, 0); c.clip();
       if (t < TVON) {
         /* the enemy's blocks that have landed in their cells, then they start to crawl as static */
-        var sk = seg(th, DT.bars[1] - 0.04, DT.bars[1] + 0.06), cw = SW / 10, ch = SH / 7, kb = th >= DT.bars[0] && th < DT.bars[1] + 0.02;
-        if (sk < 1 && !kb) statBlocks().forEach(function (B) { if (th >= B.t0 + B.d) { c.fillStyle = B.col; c.fillRect(TX - SW / 2 + B.gx * cw, TY - SH / 2 + B.gy * ch, cw + 0.5, ch + 0.5); } });
+        var sk = seg(th, DT.bars[1] - 0.04, DT.bars[1] + 0.06), cw = HW / 10, ch = HH / 7, kb = th >= DT.bars[0] && th < DT.bars[1] + 0.02;
+        if (sk < 1 && !kb) statBlocks().forEach(function (B) { if (th >= B.t0 + B.d) { c.fillStyle = B.col; c.fillRect(hr.x + B.gx * cw, hr.y + B.gy * ch, cw + 0.5, ch + 0.5); } });
         if (kb) {   /* the set comes on: a flash of test-card bars before the static */
-          var BARS = ["#f0f0f0", "#f8f40e", "#33d6ff", "#4fe04f", "#ff3fae", "#ff3b3b", "#2a5bff"], bw7 = SW / 7, jx = Math.sin(th * 80) * SW * 0.01;
-          BARS.forEach(function (col, i) { c.fillStyle = col; c.fillRect(TX - SW / 2 + i * bw7 + jx, TY - SH / 2, bw7 + 1, SH * 0.78); });
-          c.fillStyle = "#111"; c.fillRect(TX - SW / 2, TY - SH / 2 + SH * 0.78, SW, SH * 0.22);
+          var BARS = ["#f0f0f0", "#f8f40e", "#33d6ff", "#4fe04f", "#ff3fae", "#ff3b3b", "#2a5bff"], bw7 = HW / 7, jx = Math.sin(th * 80) * HW * 0.01;
+          BARS.forEach(function (col, i) { c.fillStyle = col; c.fillRect(hr.x + i * bw7 + jx, hr.y, bw7 + 1, HH * 0.78); });
+          c.fillStyle = "#111"; c.fillRect(hr.x, hr.y + HH * 0.78, HW, HH * 0.22);
         }
-        if (sk > 0) { c.save(); c.globalAlpha = sk; staticNoise(c, TX - SW / 2, TY - SH / 2, SW, SH, Math.floor(t * 50), 90); c.restore(); }
+        if (sk > 0) { c.save(); c.globalAlpha = sk; staticNoise(c, hr.x, hr.y, HW, HH, Math.floor(t * 50), 90); c.restore(); }
         var sw2 = seg(th, DT.lock, DT.lock + 0.22); if (sw2 > 0) { c.save(); c.globalCompositeOperation = "lighter"; c.globalAlpha = Math.sin(Math.PI * sw2) * 0.8; var sg2 = c.createRadialGradient(TX, TY, 0, TX, TY, SW * 0.6); sg2.addColorStop(0, "#fffbd0"); sg2.addColorStop(1, "rgba(255,251,208,0)"); c.fillStyle = sg2; c.fillRect(TX - SW, TY - SH, SW * 2, SH * 2); c.restore(); }
       } else {
         c.save(); c.translate(TX - SW / 2, TY - SH / 2); c.scale(SW / W, SH / H); studio(c, t); c.restore();
         var p1 = camEase(seg(t, P1A, P1B), CV);
-        if (p1 < 1) { c.fillStyle = "rgba(0,0,0," + (0.14 * (1 - p1)) + ")"; for (var y = TY - SH; y < TY + SH; y += SH * 0.04) c.fillRect(TX - SW, y, SW * 2, SH * 0.015); }
-        if (en < 1) { c.save(); c.globalCompositeOperation = "lighter"; c.globalAlpha = 1 - eOut(en); c.fillStyle = "#fff6b0"; c.fillRect(TX - SW, TY - SH, SW * 2, SH * 2); c.restore(); }
+        if (p1 < 1) { c.fillStyle = "rgba(0,0,0," + (0.14 * (1 - p1)) + ")"; for (var y = TY - HH; y < TY + HH; y += SH * 0.04) c.fillRect(TX - SW, y, SW * 2, SH * 0.015); }
+        if (en < 1) { c.save(); c.globalCompositeOperation = "lighter"; c.globalAlpha = 1 - eOut(en); c.fillStyle = "#fff6b0"; c.fillRect(TX - SW, TY - HH, SW * 2, HH * 2); c.restore(); }
       }
       c.restore();
+      /* the set (the generated black TV) comes up round the screen once the frames have locked on */
+      if (km > 0) { c.save(); c.globalAlpha = eOut(km); var ms = lerp(1.12, 1, eOut(km)); c.translate(TX, TY); c.scale(ms, ms); c.translate(-TX, -TY); drawTVArt(c, "tvMain", TX, TY, SW); c.restore(); }
       /* the three frames: they fly over from the enemy, turning and shrinking, and lock onto the screen, where they stay as its bezel */
-      c.save(); c.beginPath(); c.rect(TX - W, TY - H, W * 2, H * 2); crtShape(c, TX, TY, SW, SH, r0, bu, 0, false); c.clip("evenodd"); c.lineJoin = "round";
-      [[Y, SH * 0.09, 0, 0, 0.38, SH * 0.14], ["#ff3b5c", Math.max(1, SH * 0.02), SH * 0.13, 0.006, -0.32, SH * 0.17], [LIME, Math.max(1, SH * 0.02), SH * 0.18, -0.006, 0.55, SH * 0.18]].forEach(function (f, i) {
+      c.save(); c.beginPath(); c.rect(TX - W, TY - H, W * 2, H * 2); crtShape(c, TX, TY, HW, HH, r0, bu, 0, false); c.clip("evenodd"); c.lineJoin = "round";
+      [[Y, SH * 0.09, 0, 0, 0.38, HH * 0.17], ["#ff3b5c", Math.max(1, SH * 0.02), SH * 0.13, 0.006, -0.32, HH * 0.19], [LIME, Math.max(1, SH * 0.02), SH * 0.18, -0.006, 0.55, HH * 0.2]].forEach(function (f, i) {
         var kf = locked ? 1 : seg(th, DT.fr[0] + i * 0.05, DT.fr[1] - 0.04 + i * 0.02); if (kf <= 0) return;
         var e = eInOut(kf), fx = lerp(ex, TX, e), fy = lerp(ey - H * 0.02, TY, e) - Math.sin(Math.PI * e) * H * 0.09;
-        c.save(); c.globalAlpha = Math.min(1, kf * 4); crtShape(c, fx, fy, lerp(H * 0.42, SW + f[2], e), lerp(H * 0.34, SH + f[2], e), lerp(H * 0.08, f[5], e), bu, lerp(f[4], f[3], e));
+        c.save(); c.globalAlpha = Math.min(1, kf * 4); crtShape(c, fx, fy, lerp(H * 0.42, HW + f[2], e), lerp(H * 0.34, HH + f[2], e), lerp(H * 0.08, f[5], e), bu, lerp(f[4], f[3], e));
         c.lineWidth = lerp(f[1] * 1.6, f[1], e); c.strokeStyle = f[0]; c.stroke(); c.restore();
       });
       c.restore();
       c.restore();
       /* where the blocks are going: a faint dashed outline of the screen while they fly, and a pop when the frames lock on */
       var gdl = Math.min(seg(th, DT.peel0, DT.peel0 + 0.1), 1 - seg(th, DT.lock - 0.06, DT.lock + 0.04));
-      if (gdl > 0) { c.save(); c.globalAlpha = 0.55 * gdl; c.setLineDash([SH * 0.06, SH * 0.05]); c.lineDashOffset = -th * SH * 0.6; crtShape(c, TX, TY, SW + 4, SH + 4, SH * 0.14, SH * 0.035, 0); c.lineWidth = 1.5; c.strokeStyle = "#ffffff"; c.stroke(); c.restore(); }
+      if (gdl > 0) { c.save(); c.globalAlpha = 0.55 * gdl; c.setLineDash([SH * 0.06, SH * 0.05]); c.lineDashOffset = -th * SH * 0.6; crtShape(c, TX, TY, HW + 4, HH + 4, r0, bu, 0); c.lineWidth = 1.5; c.strokeStyle = "#ffffff"; c.stroke(); c.restore(); }
       [0, 0.07].forEach(function (dl, i) { var rk = seg(th, DT.lock + dl, DT.lock + 0.3 + dl); if (rk > 0 && rk < 1) ring(c, TX, TY, lerp(SW * 0.5, SW * 1.3, eOut(rk)), lerp(4, 1, rk), [YH, "#ffffff"][i], 1 - rk); });
       /* the ribbon going in: rings rippling out of the screen */
       [0, 0.06, 0.12].forEach(function (dl, i) { var rk = seg(t, P1A + dl, P1A + 0.26 + dl); if (rk > 0 && rk < 1) ring(c, TX, TY, lerp(SW * 0.4, SW * 1.6, eOut(rk)), lerp(5, 1, rk), [Y, "#ffffff", "#ff3fae"][i], 1 - rk); });
@@ -2081,9 +2093,10 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       return;
     }
     if (tr < OFF0) {
-      studio(ctx, tr);
-      var p2 = pushP(tr);
-      if (p2 > 0 && p2 < 1) speedLines(ctx, W / 2 + (T2X - W / 2) * ZS0 * (1 - p2), H / 2 + (T2Y - H / 2) * ZS0 * (1 - p2), Math.sin(Math.PI * p2), 62, 32, tr);
+      var tau2 = tr - P2B, shk = tau2 > 0 && tau2 < 0.16 ? Math.exp(-tau2 / 0.045) : 0;
+      ctx.save(); if (shk > 0) ctx.translate(Math.sin(tau2 * 110) * H * 0.008 * shk, Math.cos(tau2 * 83) * H * 0.006 * shk); studio(ctx, tr); ctx.restore();
+      var p2 = Math.min(1, pushP(tr)), rk2 = rushK(tr);
+      if (rk2 > 0) speedLines(ctx, W / 2 + (T2X - W / 2) * ZS0 * (1 - p2), H / 2 + (T2Y - H / 2) * ZS0 * (1 - p2), rk2, 62, 40, tr);
       /* the flash: the whole frame goes white for an instant and the picture is there */
       var fk = seg(tr, FL1, FL1 + 0.24); if (fk > 0 && fk < 1) { ctx.save(); ctx.globalAlpha = 1 - eOut(fk); ctx.fillStyle = "#fffdf2"; ctx.fillRect(0, 0, W, H); ctx.restore(); }
       return;
@@ -2099,8 +2112,8 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
   }
 
   var DEMOS = [
-    { id: "aoa", name: "总攻击 第七版（敌人变电视那段放慢、一步一步交代清楚；彩带一进场镜头就慢推；中间电视黑屏多停一会，约 6.2 秒）", dur: 6.21, start: 1.2,
-      desc: "①打中：受击、白闪两下（约 0.33 秒）→ ②信号断了：切片乱跳、红蓝错色晃动、故障条、黑紫烟上飘、彩色圆环往外扩，雪花慢慢灌满它的轮廓，变成一团雪花剪影 → ③碎成一格一格的彩色马赛克 → ④方块从朝向电视的那一侧开始一块块剥落（剥落前抖一下），排着队、划着弧线飞向电视，按列把屏幕填满；飞的时候电视屏幕的位置有一圈虚线提示目的地；敌人的身体随之一格格消失，最后留一个错色的轮廓残影缩成一点 → ⑤三层彩框飞过去锁上（弹一圈），机身出现，屏幕闪一下测试彩条、变成雪花，停一小拍（这一段从约 0.85 秒放慢到约 1.85 秒）→ ⑥彩带从右下领着箭头进来，镜头从这时起慢慢往电视推；钻进屏幕中心的入口 → ⑦彩带被吸进去，正式推进接着慢推的速度起步，先慢后快冲进电视 → 演播室缓推 → 猛推中间电视，四周只剩彩框 → 黑屏停 0.5 秒 → 中间亮点拉成亮线 → 闪白，结算画面亮出 → 关机进结算页。约 6.2 秒。悠、伊邪那岐、电视机都还是占位，等新生图。",
+    { id: "aoa", name: "总攻击 第七版（用上 Codex 生的电视、演播室、伊邪那岐；敌人变电视放慢；冲向中间电视改成猛冲；约 6.1 秒）", dur: 6.13, start: 1.2,
+      desc: "①打中：受击、白闪两下（约 0.33 秒）→ ②信号断了：切片乱跳、红蓝错色晃动、故障条、黑紫烟上飘、彩色圆环往外扩，雪花慢慢灌满它的轮廓，变成一团雪花剪影 → ③碎成一格一格的彩色马赛克 → ④方块从朝向电视的那一侧开始一块块剥落（剥落前抖一下），排着队、划着弧线飞向电视，按列把屏幕填满；飞的时候电视屏幕的位置有一圈虚线提示目的地；敌人的身体随之一格格消失，最后留一个错色的轮廓残影缩成一点 → ⑤三层彩框飞过去锁上（弹一圈），机身出现，屏幕闪一下测试彩条、变成雪花，停一小拍（这一段从约 0.85 秒放慢到约 1.85 秒）→ ⑥彩带从右下领着箭头进来，镜头从这时起慢慢往电视推；钻进屏幕中心的入口 → ⑦彩带被吸进去，正式推进接着慢推的速度起步，先慢后快冲进电视 → 演播室缓推 → 猛冲中间那台红电视（0.18 秒，一下子就到全速，急刹、回弹，画面抖一下，彩框闪一下），四周只剩彩框 → 黑屏停 0.5 秒 → 中间亮点拉成亮线 → 闪白，结算画面亮出 → 关机进结算页。约 6.1 秒。电视、演播室、伊邪那岐、悠都是 Codex 生的图；悠的新姿势（双手插兜、抬头看镜头）还在生，现在先用扛刀那张。",
       draw: function (ctx, W, H, tr) { aoaScene(ctx, W, H, tr); } },
     { id: "tvstate", name: "电视框状态 第二版：连环拳（这回合下 2 张攻击额外打出）", dur: 2.7, start: 1.3,
       desc: "电视框照 P4R 改得不那么规整：黄色是屏幕外面那一圈，四条边往外微微鼓（像老电视），边上薄、四个角厚，角里有网点；里面的红线、绿线不完全同心；左上压着一个状态名标签，右上角一台小电视，屏幕上显示还剩几次。出现：几层歪着的黄、红、绿框从大到小转着收拢到位（P4R 进战斗那种）。每次额外打出：信号错位一下，小电视里的数字跳一下。用完（或回合结束）：几层框反着转开、散掉。",

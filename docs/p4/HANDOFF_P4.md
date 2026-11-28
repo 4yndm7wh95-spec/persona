@@ -53,7 +53,9 @@
 
 ## 4. 工作台（Artifact）怎么用
 - 页面结构：顶部 `.notice`（这一轮改了什么，给用户看）→ 草图标签 `#demoTabs`（`DEMOS` 数组，顺序即标签顺序，`hidden` 的不显示）→ 画布 `.stage` + 进度条 `#scrub` → 生图检查区（`GEN` 列表）。
-  Artifact 已存的附件：`gen/`（眼睛、伊邪那岐、大神的图）、`ref/`、`frames/`、`shots/`；重新发布不用再传，留着就在。
+  Artifact 已存的附件：`gen/`（眼睛、伊邪那岐、大神的图；V33 起还有总攻击用的 `tv_main.webp`、`tv_side_red.webp`、`tv_side_white.webp`、`studio_bg.jpg`、`yu_finale.webp`、`izanagi_strike.webp`）、`ref/`、`frames/`、`shots/`；重新发布不用再传，留着就在。
+  总攻击这 6 张的网页版也在仓库 `docs/p4/workbench/gen/`（原图在 `art/p4/`）。Codex 新图到了：`python3 -I docs/p4/workbench/tools/web_art.py <原图.png> docs/p4/workbench/gen/<名字>.webp [--hole]`
+  （清 alpha、转 webp；电视加 `--hole` 打印屏幕洞的 `TVART` 数字），再发布时 `files` 带上 `{"gen/<名字>.webp": "docs/p4/workbench/gen/<名字>.webp"}`。
 - 每个草图：`{ id, name, dur, start, desc, draw(ctx, W, H, tr) }`，`tr` 是秒。常用工具函数：`seg(t,a,b)`、`lerp`、`eOut/eIn/eInOut`（三次）、`eBack`、`hs(t,b,d)`（顿帧）、`rng(seed)`（确定性随机，**循环里不要在 continue 之前少调用**，否则闪烁）、`ring`、`star4/star5`、`flower`、`roundRect`（会 beginPath）、`crtShape(ctx,cx,cy,w,h,r,bulge,rot,newPath)`、`tvFrameP4R(ctx,W,H,k,tr,{tag,count,pop})`、`tvIcon`、`p4rRing`、`glitchStrips`、`damageBadge`、`battleFloor`、`figure`、`enemy`、`blueBeam`、`eyeCutIn`、`stokeScene` 等。颜色常量 `Y`、`YH`、`LIME`、`ORANGE`。
 - 出视频给用户看（用户主要看 mp4）：`node docs/p4/workbench/tools/render_video.js <目录> 0 <时长> 60 <帧目录>`，再
   `ffmpeg -y -framerate 60 -i <帧目录>/f%04d.png -vf "scale=1280:720:flags=lanczos,format=yuv420p" -c:v libx264 -crf 18 docs/p4/preview/<名字>.mp4`（半速用 `-framerate 30`），
@@ -67,7 +69,8 @@
 - 节奏原则（第七轮）；添柴（用户：就是我想要的感觉，没动）；恶魔之焰、几万真言的完整版 / 快速版（时间表见工作台 notice）。
 - **召唤**（用户：OK 了）：眼神特写（一张底图 `eye_master` + 代码画眼皮 / 睫毛 / 镜片反光；眼睛睁到全开不回闭，瞳孔一直清楚；位置照原版 16:9 量的菱形：右顶点 (0.646W,0.508H)、边 40°、瞳孔锚点 (0.367W,0.427H)）→ 翻页 → 黄卡在掌上 3D 翻转 → 电视里的手捏碎（细光环两道 + 约卡宽 1/3 的半透明黄碎片）→ 伊邪那岐。召唤里不要技能名标签。
 - 电视框状态第二版（连环拳）：不规整的 P4R 电视框，出现 / 消失是几层歪框转着收拢 / 散开，右上小电视显示剩余次数。
-- 立绘姿势（用户 2026-11-28）：扛刀、推眼镜（刀背搭右肩、刀身斜指左上；左手两指推眼镜；3/4 侧向右，头微低从镜片上方直视镜头；外套被风吹起）。生图任务 `docs/codex/codex_p4_art_round2_finale.md`（含伊邪那岐出招图），**还没发给 Codex / 还没生成**——等用户转发。
+- 立绘姿势：第一版扛刀、推眼镜（`art/p4/finale/yu_finale.png`，Codex 已生成，现在工作台里用的就是它）。**用户 2026-11-28 改成：双手插兜，头微微抬起看着镜头，大概的姿势和朝向不变**
+  （不拿刀）。生图任务 `docs/codex/codex_p4_art_round2b_yu_pockets.md`（以第一版为底图做图像编辑 → `art/p4/finale/yu_finale_v2.png`），**等用户转发给 Codex**。
 
 ## 6. 当前进度（实时更新）
 **正在做：总攻击第七版——只改彩带**（用户 2026-11-28：只改彩带，其他都不要改）。第六版已发布 Version 30（旧工作台）。
@@ -164,13 +167,33 @@
   飞的时候屏幕位置有一圈流动的虚线提示目的地 → 三层彩框 1.14–1.5 飞过去、1.54 锁上弹一圈 → 机身 1.48–1.62 出现 → 测试彩条 1.56–1.68 → 雪花；
   敌人最后一块走后留一个红青错色的轮廓残影缩小（1.32–1.64），1.54–1.7 收成一点。彩带 RE0 推迟 1.05 秒（`SH1`），后面整体顺延。总长 6.21 秒。
 
+### 6.3g 用上 Codex 的素材、冲向中间电视改成猛冲（2026-11-28，工作台 V34，视频 `allout_v7h*.mp4` 已发，等反馈）
+- 用户：① 冲向中间电视「偏慢，没有猛冲的感觉」；② Codex 的图到了（提交 `1ed0292c`：`art/p4/finale/yu_finale.png`、`art/p4/finale/izanagi_strike.png`、
+  `art/p4/studio/studio_bg.png`、`art/p4/tv/tv_main.png`、`tv_side_red.png`、`tv_side_white.png`），换掉代码画的；③ 悠改成双手插兜、头微抬看镜头（见第 5 节，任务已写好）。
+- 素材怎么接（`aoaScene`）：
+  - 网页版在 `docs/p4/workbench/gen/`（用 `tools/web_art.py` 做的），已作为 Artifact 附件 `gen/...` 发布。
+  - 电视屏幕洞：原图 1536×1024 上「不碰边的最大透明区域」的外接框（红电视把手的缝也是透明的，不能直接取所有透明像素的框）：
+    `TVART = { tvMain: { hx: 679.5, hy: 566.5, hw: 764, hh: 526 }, tvRed: { hx: 664.5, hy: 551.5, hw: 950, hh: 524 }, tvWhite: { hx: 671.5, hy: 571.5, hw: 712, hh: 500 } }`。
+    `artHole(key, cx, cy, sw)` 给出洞宽 = sw 时洞的位置大小；`drawTVArt(c, key, cx, cy, sw)` 把整张电视画上去（先画屏幕里的内容，再画电视盖住，P4R 黄 / 红 / 绿框照旧用代码画在最上面）。
+  - 敌人变成的小电视 = `tvMain`（黑色）。洞比 16:9 高：马赛克格子、测试彩条、雪花按洞的大小铺；嵌套的演播室画面仍按 SW×SH（16:9）映射，演播室背景上下延伸盖满洞；
+    机身从 1.12 倍缩到 1 倍出现；彩框锁上的形状和虚线提示都按洞的形状。
+  - 演播室：背景 `studio_bg.jpg`（按 `max(W/1536, 1.36H/1024)` 铺满，再压暗 22%）；左 `tvWhite`（象牙白，屏幕里是伊邪那岐出招图 + 蓝光）、右 `tvMain`（SERIES FINALE），
+    洞宽 = 0.72 × 电视宽，`TVL / TVR` 在 (0.19W / 0.81W, 0.41H)——生成的电视比代码画的宽，这样演播室一出现三台都完整在画面里；中间 `tvRed`（红色，洞接近 16:9）。代码画的机身、指示灯都去掉了。
+  - 结算画面的悠换成 `yu_finale.webp`（扛刀那张，等 v2 替换）。
+- 猛冲（`pushP` / `rushP` / `rushK`）：`P2B = P2A + 0.18`（之前 0.26）。起速接上缓推，前 30% 平滑加到全速（`PR.up`），保持到 82%（`PR.br`），最后急刹到 0.6 倍速（`PR.vb`）撞上终点，
+  再衰减回弹一下（周期 0.14 秒、衰减 0.05 秒）；落地画面抖 0.16 秒（`shk = exp(−τ/0.045)`）、中间电视彩框闪一下（`fl2`），速度线 62 条跟着速度走。总长 6.13 秒。
+- Yu v2 到了以后：`web_art.py art/p4/finale/yu_finale_v2.png docs/p4/workbench/gen/yu_finale.webp`（同名覆盖，代码不用改），发布时 `files` 带上它；
+  看一下 `finish()` 里的位置（`W*0.27` 居中、高 1.22H）是否还合适，出视频给用户看。
+
 ### 6.4 以后要做（用户之前提过，这一轮先不动）
 - （高潮「暗 → 中间亮 → 闪亮」第二轮已做了第一版，见 6.3，等用户看。）
 - 结算画面：立绘和背景要有动态设计；加字幕、更多 P4R UI 平面设计细节。
 - 待用户确认 / 待办（第一个会话留下的）：召唤用的 9 张牌名单和分档规则；添柴完整版门槛（建议烧 ≥ 7 张）；武器第二版确认；
-  Codex 生图任务 `codex_p4_art_round2_finale.md`（悠：扛刀推眼镜；伊邪那岐出招）等用户转发；以后：伊邪那岐的招式、搭 mod 骨架、进游戏实现。
+  Codex 生图任务 `codex_p4_art_round2b_yu_pockets.md`（悠双手插兜）等用户转发（第一轮 6 张已生成、已接进动画）；以后：伊邪那岐的招式、搭 mod 骨架、进游戏实现。
 
 ## 7. 更新日志（新的在上面）
+- 2026-11-28（第一个会话）：接上 Codex 的 6 张图（黑 / 红 / 白电视、演播室背景、伊邪那岐出招、悠扛刀立绘），代码画的电视机身去掉；冲向中间电视改成 0.18 秒猛冲（急刹 + 回弹 + 震屏 + 彩框闪）；
+  写了悠双手插兜的改图任务 `docs/codex/codex_p4_art_round2b_yu_pockets.md`；加 `tools/web_art.py`（工作台 V34，`allout_v7h*.mp4`）。
 - 2026-11-28（第一个会话）：敌人变电视那段放慢到约 1.85 秒、拆成先后步骤（打中 → 信号断 → 雪花灌满 → 马赛克 → 方块排队飞进电视按列拼满 → 彩框锁上、开机彩条 → 雪花，停一拍彩带才进来），总长 6.21 秒（`allout_v7g*.mp4`）。
 - 2026-11-28（第一个会话接回）：合并第二个会话的分支；黑屏多停 0.28 秒、彩带进场时镜头就开始慢推（速度连续接上正式推进）、敌人死亡特效更丰富并停留约 1.3 秒；
   生图任务扩成 6 张（立绘、伊邪那岐、3 台电视、演播室）；加出视频脚本（`allout_v7f*.mp4`）。
