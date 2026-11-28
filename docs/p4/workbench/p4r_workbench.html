@@ -158,7 +158,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       <tr><td style="padding:4px 6px">几万真言</td><td style="padding:4px 6px">力量 ≥ 8：约 2.1 秒落第一下，约 3.5 秒结束（之前约 4.4 秒）</td><td style="padding:4px 6px">约 0.45 秒捏碎，约 1 秒落第一下（之前约 2 秒），约 1.6 秒打完</td></tr>
     </table>
     恶魔之焰：光团不再慢慢起步，一开始就在动，扫过手牌越来越快，一口气拐上去到电视里的手，只在最后落到手上时稍微收一下；牌收叠好马上捏碎。快速版扫牌同速，扫完光团直接冲出画面。<br>几万真言：快速版杖快速转一圈就停，停住马上劈。完整版捏碎提前，杖转得稍快，停住后不再空等，四下间隔 0.24 秒，结尾圆环紧跟最后一下。<br>
-    <b>总攻击第七版（草图第 1 个）：</b>彩带是另一个会话重新设计的平滑版（一整条进场、前端长出原版倒钩箭头、钻进屏幕中心的入口、被吸进去，镜头跟着冲进去；电视由敌人的雪花拼成；演播室缓推→猛推中间电视，四周只剩彩框，黑屏→亮点→闪亮）。这几轮改了这些：①敌人死亡特效更丰富、停留约 1.3 秒（错位切片乱跳、红蓝错色、雪花、故障条、黑紫烟、彩色圆环，最后收成一点）；②彩带一进场镜头就开始慢慢推，收回时正式推进，先慢后快、速度连续；③中间电视黑屏多停一会（0.5 秒）。④敌人变电视那段放慢、一步一步交代：打中 → 信号断、雪花灌满 → 碎成马赛克 → 方块一块块飞进电视按列拼满屏幕 → 彩框锁上、开机测试彩条 → 雪花，停一拍彩带才进来（约 0.85 → 1.85 秒）。⑤电视机、演播室、悠、伊邪那岐都换成 Codex 生的图：敌人变成黑色电视；演播室中间是红色电视，左边象牙白电视里放伊邪那岐，右边黑色电视里是 SERIES FINALE。⑥冲向中间电视改成猛冲：0.18 秒、一下子就到全速，急刹、回弹一下，画面抖一下，彩框闪一下。悠定用扛刀推眼镜那张（双手插兜的改图看过了，不合适，不用）。<br>
+    <b>总攻击第八版（草图第 1 个）：</b>按你说的简化：去掉演播室和三台电视，镜头一路冲进敌人变成的那台黑电视（彩带的箭头钻进去时，雪花一下变成黑屏），电视一直保持黑屏。冲进去的那一下，电视自己那圈规整的框飞出画面，换成原版那种不规整的电视框，切入方式照原片 4 秒那段：三层框从屏幕深处往外推出来，黄框一出来就有七成大、最先冲上来，红框稍小、隔一点跟上，黄绿框最后、从几乎透明慢慢显出来。三层都往左倾约 5 度，左右边是曲面，落定后比画面大一点，只在四个角和右边露出来；颜色取自原版截图，没有白线和多余的线。轮廓用公式生成（圆角矩形整体轻微外鼓），从头到尾是顺的，没有小凸起。之后黑屏停一会 → 中间亮点 → 闪白出结算画面（彩框留着）。悠的立绘两张都不合适，新姿势在出候选，现在先用扛刀那张占位。<br>
     <b>电视框状态第二版（草图第 2 个）：</b>边往外鼓、四角厚边上薄、角里有网点、红绿线不同心、压着标签和一台小电视（显示剩余次数）；出现和消失都是几层歪框转着收拢 / 散开。<br>
     <b>眼神特写换了做法：</b>不再让 AI 画中间帧（Codex 两张就跑位了）。只用一张睁眼图（Codex 这次的第一张），闭眼、睁开、镜片反光都叠在上面画：眼皮是一条会动的线，反光透过镜片遮罩叠上去。眼睛不可能变大小，也是连续动画，没有逐帧感；瞳孔一直清楚，不会发白。看草图第 7 个「召唤（眼神特写 → 翻页 → 手里捏碎）」，0.17 秒是闭眼、0.24 秒是半睁。
   </div>
@@ -1621,14 +1621,10 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
 
   function aoaScene(ctx, W, H, tr) {
     var ex = W * 0.7, ey = H * 0.58, TX = W * 0.392, TY = H * 0.524, SW = W * 0.11, SH = H * 0.11, OV = 1.07;
-    var M = { x: W * 0.5, y: H * 0.43, w: W * 0.425, h: H * 0.472 }, T2X = M.x - M.w * 0.04, T2Y = M.y, SW2 = W * 0.34, SH2 = H * 0.34;
-    /* ribbon: in from the right RE0..TA, creeps into the TV TA..P1A (it switches on at TVON), pulled in with the camera P1A..P1B;
-       studio, a beat, push to the middle TV P2A..P2B (it stays dark, its frame in view), a beat, a glint FL0..FL1, the flash at FL1;
-       the TV switches off OFF0..OFF1 */
-    var SH1 = 1.05, RE0 = 0.80 + SH1, TA = 1.30 + SH1, P1A = 1.44 + SH1, P1B = 2.06 + SH1, TVON = TA + 0.03, P2A = P1B + 0.34, P2B = P2A + 0.18, FL0 = P2B + 0.5, FL1 = FL0 + 0.14, OFF0 = FL1 + 1.35, OFF1 = OFF0 + 0.42;
-    /* the camera: into the small TV (P1A..P1B) it arrives still moving, creeps on through the studio at that speed (+10 %), then rushes
-       the middle TV (P2A..P2B) - one continuous move, never a dead stop */
-    var DRIFT = Math.log(1.10) / (P2A - P1B), CV = DRIFT * (P1B - P1A) / Math.log(OV * W / SW);
+    /* ribbon: in from the right RE0..TA, creeps into the TV TA..P1A (its static cuts to black at TVON), pulled in with the camera
+       P1A..P1B; (user 2026-11-28, eighth draft: no studio) the camera lands inside that same TV, the P4R frame cuts in from CI0, the
+       screen stays dark for a beat, a glint FL0..FL1, the flash at FL1; the TV switches off OFF0..OFF1 */
+    var SH1 = 1.05, RE0 = 0.80 + SH1, TA = 1.30 + SH1, P1A = 1.44 + SH1, P1B = 2.06 + SH1, TVON = TA + 0.03, CI0 = P1B - 0.04, TIMP = CI0 + 0.1, FL0 = P1B + 0.62, FL1 = FL0 + 0.14, OFF0 = FL1 + 1.35, OFF1 = OFF0 + 0.42;
     /* (user 2026-11-28) the enemy's death and the TV it turns into, told one step at a time so it can be read (hit-stopped seconds):
        it reels (two white flashes) → its signal breaks → static floods its outline → it falls apart into a mosaic of blocks →
        the blocks peel off from the side facing the TV and fly over, filling the screen column by column → the frames lock on,
@@ -1636,20 +1632,32 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     var DT = { f1: [0.15, 0.24], f2: [0.3, 0.38], gl: [0.38, 0.5], fill: [0.5, 0.8], pix: [0.8, 0.92], peel0: 0.94, peelSpan: 0.32, fly: 0.32,
       fr: [1.14, 1.5], lock: 1.54, set: [1.48, 1.62], bars: [1.56, 1.68], ghost: [1.32, 1.64], pop: [1.54, 1.7] };
     /* (user 2026-11-28) the camera already creeps toward the TV while the ribbon comes in (RE0..P1A: from rest, +8 % zoom, gathering a
-       little speed); when the ribbon is pulled in the real push takes over at that same speed - slow, then fast, then settling into
-       the studio's creep. Progress p is in log-zoom (Z = ZF1^p); the TV's screen position moves toward the middle linearly in p. */
+       little speed); when the ribbon is pulled in the real push takes over at that same speed: slow, then fast, held, and a hard brake
+       only in the last few frames, landing inside the dark screen. Progress p is in log-zoom (Z = ZF1^p); the TV's screen position
+       moves toward the middle linearly in p. */
     var ZF1 = OV * W / SW, CRP = Math.log(1.08) / Math.log(ZF1), CRV = 1.7 * CRP / (P1A - RE0);
+    var PU = { up: 0.6, br: 0.9, vb: 0.5 };   /* the push: speeds up over the first 60 %, full speed to 90 %, brakes to half speed */
+    function smI(x) { return x * x * x - x * x * x * x / 2; }   /* integral of smoothstep */
+    function pushQ(u, a) {
+      var LA = PU.up, LB = PU.br - PU.up, LC = 1 - PU.br, vm = (1 - 0.5 * LA * a - 0.5 * LC * PU.vb) / (0.5 * LA + LB + 0.5 * LC), pA = LA * (0.5 * a + 0.5 * vm), pB = pA + LB * vm;
+      if (u <= PU.up) { var x = u / LA; return LA * (a * x + (vm - a) * smI(x)); }
+      if (u <= PU.br) return pA + vm * (u - PU.up);
+      var y = (u - PU.br) / LC; return pB + LC * (vm * y + (PU.vb - vm) * smI(y));
+    }
     function battleCamP(t) {
       if (t <= RE0) return 0;
       if (t < P1A) return CRP * herm(seg(t, RE0, P1A), 0, 1.7);
-      var u = seg(t, P1A, P1B), a = CRV * (P1B - P1A) / (1 - CRP), cE = CV / (1 - CRP);
-      return CRP + (1 - CRP) * (camEase(u, cE) + a * u * (1 - u) * (1 - u));
+      return CRP + (1 - CRP) * pushQ(seg(t, P1A, P1B), CRV * (P1B - P1A) / (1 - CRP));
+    }
+    function pushK(t) {   /* how hard the speed lines stream: with the speed, cut at the landing */
+      if (t <= P1A) return 0; if (t >= P1B) return 1 - seg(t, P1B, P1B + 0.06);
+      var u = seg(t, P1A, P1B); return u < PU.up ? sm5(u / PU.up) : u < PU.br ? 1 : 1 - 0.5 * sm5((u - PU.br) / (1 - PU.br));
     }
     if (!aoaRib7) aoaRib7 = RIB7.build();
-    /* the generated art (Codex, 2026-11-28): three TVs, the studio, Izanagi's strike, Yu (to be replaced by the hands-in-pockets v2) */
-    if (!IMG.tvMain) { loadImg("tvMain", "gen/tv_main.webp"); loadImg("tvRed", "gen/tv_side_red.webp"); loadImg("tvWhite", "gen/tv_side_white.webp"); loadImg("studioBg", "gen/studio_bg.jpg"); loadImg("yuFin", "gen/yu_finale.webp"); loadImg("izaStrike", "gen/izanagi_strike.webp"); }
-    /* screen hole of each TV picture (px of the 1536x1024 picture, measured as the biggest enclosed transparent region) */
-    var TVART = { tvMain: { hx: 679.5, hy: 566.5, hw: 764, hh: 526 }, tvRed: { hx: 664.5, hy: 551.5, hw: 950, hh: 524 }, tvWhite: { hx: 671.5, hy: 571.5, hw: 712, hh: 500 } };
+    /* the generated art (Codex, 2026-11-28): the black TV the enemy turns into; Yu (a stand-in until a new pose is picked) */
+    if (!IMG.tvMain) { loadImg("tvMain", "gen/tv_main.webp"); loadImg("yuFin", "gen/yu_finale.webp"); }
+    /* screen hole of the TV picture (px of the 1536x1024 picture, measured as the biggest enclosed transparent region) */
+    var TVART = { tvMain: { hx: 679.5, hy: 566.5, hw: 764, hh: 526 } };
     function artHole(key, cx, cy, sw) { var A = TVART[key], k = sw / A.hw; return { x: cx - A.hw * k / 2, y: cy - A.hh * k / 2, w: A.hw * k, h: A.hh * k }; }
     function drawTVArt(c, key, cx, cy, sw) { if (!ready(key)) return false; var A = TVART[key], k = sw / A.hw; c.drawImage(IMG[key], cx - A.hx * k, cy - A.hy * k, 1536 * k, 1024 * k); return true; }
     TX = W * aoaRib7.PC[0] / 1280; TY = H * aoaRib7.PC[1] / 720;   /* the TV screen's middle is on the ribbon's path */
@@ -1684,7 +1692,7 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       c.fillStyle = "rgba(255,255,255,0.85)"; c.font = Math.round(H * 0.03) + "px sans-serif"; c.textAlign = "center"; c.textBaseline = "alphabetic"; c.fillText("悠的收尾立绘（新生图：扛刀、推眼镜）", 0, -hh2 * 0.15);
       c.restore();
     }
-    /* (4) the finish card (what the middle TV shows); ft = time since the camera landed on it, < 0 while it is still inside the TV */
+    /* (4) the finish card (what the TV shows after the flash); ft = time since the flash */
     function finish(c, t, ft) {
       c.fillStyle = Y; c.fillRect(0, 0, W, H);
       c.save(); c.translate(W * 0.33, H * 0.45); c.rotate(t * 0.12);
@@ -1721,110 +1729,87 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
       for (var xx = off2; xx < W; xx += mw) c.fillText(msg, xx, H * 0.886);
       c.restore();
     }
-    /* (3) the studio: three TVs on a dark stage; the side ones are on, the middle one is off until the camera pushes into it */
-    var TVL = { x: W * 0.19, y: H * 0.41, w: W * 0.27, h: H * 0.33, r: -0.06 }, TVR = { x: W * 0.81, y: H * 0.41, w: W * 0.27, h: H * 0.33, r: 0.06 };
-    var ZS0 = OV * Math.exp(DRIFT * (P2A - P1B)), ZSF = H / (SH2 * 1.2);   /* where the rush starts / the framed middle TV */
-    /* (user 2026-11-28) the rush at the middle TV must feel like a rush: it takes the creep's speed, is at full speed almost at once,
-       holds it, brakes hard in the last few frames and lands with a small bounce (+3 % zoom and back) and a jolt */
-    var PR = { up: 0.3, br: 0.82, vb: 0.6 };
-    function smI(x) { return x * x * x - x * x * x * x / 2; }   /* integral of smoothstep */
-    function rushP(u) {
-      var a = DRIFT * (P2B - P2A) / Math.log(ZSF / ZS0), LA = PR.up, LB = PR.br - PR.up, LC = 1 - PR.br;
-      var vm = (1 - 0.5 * LA * a - 0.5 * LC * PR.vb) / (0.5 * LA + LB + 0.5 * LC), pA = LA * (0.5 * a + 0.5 * vm), pB = pA + LB * vm;
-      if (u <= PR.up) { var x = u / LA; return LA * (a * x + (vm - a) * smI(x)); }
-      if (u <= PR.br) return pA + vm * (u - PR.up);
-      var y = (u - PR.br) / LC; return pB + LC * (vm * y + (PR.vb - vm) * smI(y));
+    /* (3) inside the TV (eighth draft, user 2026-11-28: no studio, the camera stays with the TV the enemy turned into) */
+    function sheen(c, cx, cy, w, h) {   /* the dark glass of a CRT: a soft diagonal sheen and a faint highlight */
+      var gl = c.createLinearGradient(cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2); gl.addColorStop(0, "rgba(255,255,255,0)"); gl.addColorStop(0.32, "rgba(255,255,255,0)"); gl.addColorStop(0.4, "rgba(255,255,255,0.08)"); gl.addColorStop(0.5, "rgba(255,255,255,0.02)"); gl.addColorStop(0.56, "rgba(255,255,255,0.055)"); gl.addColorStop(0.64, "rgba(255,255,255,0)");
+      c.fillStyle = gl; c.fillRect(cx - w, cy - h, w * 2, h * 2);
+      c.fillStyle = "rgba(255,255,240,0.045)"; c.beginPath(); c.ellipse(cx - w * 0.2, cy - h * 0.25, w * 0.22, h * 0.12, -0.3, 0, Math.PI * 2); c.fill();
     }
-    function pushP(t) {
-      if (t <= P2A) return 0;
-      if (t < P2B) return rushP(seg(t, P2A, P2B));
-      var tau = t - P2B, w = 2 * Math.PI / 0.14; return 1 + (PR.vb / (P2B - P2A)) / w * Math.exp(-tau / 0.05) * Math.sin(w * tau);
-    }
-    function rushK(t) {   /* how hard the speed lines stream: with the speed, cut at the landing */
-      if (t <= P2A) return 0; if (t >= P2B) return 1 - seg(t, P2B, P2B + 0.06);
-      var u = seg(t, P2A, P2B); return u < PR.up ? sm5(u / PR.up) : u < PR.br ? 1 : 1 - 0.5 * sm5((u - PR.br) / (1 - PR.br));
-    }
-    function studioCam(t) {
-      if (t < P1B) return { z: 1, x: W / 2, y: H / 2 };
-      if (t < P2A) return { z: OV * Math.exp(DRIFT * (t - P1B)), x: W / 2, y: H / 2 };   /* still creeping forward */
-      var zf = ZSF * (1 + 0.006 * eInOut(seg(t, P2B, FL1)) + 0.02 * eInOut(seg(t, FL1, OFF0))), p2 = pushP(t), z = ZS0 * Math.exp(p2 * Math.log(zf / ZS0)), m = ZS0 * (1 - p2) / z;
-      return { z: z, x: T2X - (T2X - W / 2) * m, y: T2Y - (T2Y - H / 2) * m };
-    }
-    function sideTV(c, i, tv, t) {   /* left: the ivory set showing Izanagi's strike; right: the black set with the SERIES FINALE card */
-      var key = i === 0 ? "tvWhite" : "tvMain", sx = -tv.w * 0.04, hr = artHole(key, sx, 0, tv.w * 0.72), w = hr.w, h = hr.h;
-      c.save(); c.translate(tv.x, tv.y); c.rotate(tv.r);
-      crtShape(c, sx, 0, w + 2, h + 2, h * 0.16, h * 0.03, 0); c.save(); c.clip(); c.translate(sx, 0);
-      if (i === 0) {
-        var g = c.createLinearGradient(0, -h / 2, 0, h / 2); g.addColorStop(0, "#1b3fae"); g.addColorStop(1, "#0b1440"); c.fillStyle = g; c.fillRect(-w, -h, w * 2, h * 2);
-        blueBeam(c, w, h, 0, 0, -0.5, 1, 0.9, 4, t);
-        if (ready("izaStrike")) { var ih = h * 1.1, iw = ih * 1.5; c.drawImage(IMG.izaStrike, -iw / 2 + Math.sin(t * 2.6) * w * 0.01, -ih / 2, iw, ih); }
-      } else {
-        c.fillStyle = Y; c.fillRect(-w, -h, w * 2, h * 2);
-        c.fillStyle = "#e3c900"; for (var hx = -8; hx <= 8; hx++) for (var hy = -6; hy <= 6; hy++) { c.beginPath(); c.arc(hx * w / 14, hy * h / 10, H * 0.0035 * (1 + ((hx + hy + 20) % 3)), 0, Math.PI * 2); c.fill(); }
-        c.save(); c.rotate(-0.12); c.font = Math.round(h * 0.18) + "px 'Archivo Black', sans-serif"; c.textAlign = "center"; c.textBaseline = "middle";
-        c.lineWidth = 4; c.strokeStyle = "#111"; c.strokeText("SERIES", -w * 0.04, -h * 0.12); c.fillStyle = "#fff"; c.fillText("SERIES", -w * 0.04, -h * 0.12);
-        c.fillStyle = "#ff3b5c"; c.fillRect(-w * 0.42, h * 0.02, w * 0.84, h * 0.18); c.fillStyle = "#fff"; c.fillText("FINALE", w * 0.03, h * 0.11); c.restore();
-        flower(c, -w * 0.36, -h * 0.3, h * 0.08, t, "#fff"); flower(c, w * 0.38, h * 0.3, h * 0.07, -t, "#fff"); star4(c, w * 0.35, -h * 0.32, h * 0.06, 0.15, 1); star5(c, -w * 0.38, h * 0.32, h * 0.05, t, "#33c3ff");
+    /* (user 2026-11-28) the P4R battle frame, after the original's settled frame: three bands, yellow-green inside, red
+       in the middle, yellow outside (the yellow is everything beyond the red); none of them a neat rounded rectangle - the sides bulge
+       like a curved CRT and the whole frame leans about 5 degrees to the left. It is bigger than the picture, so along much of the top
+       and the left it is out of view and only parts of it show at the corners. The colours are sampled from the original; size, tilt
+       and what is out of view follow it, the outline itself is drawn smooth (see smoothCRT), not traced. */
+    var FY = "#e8d904", FRD = "#f51c28", FGR = "#a2d405";
+    var FRM = { cx: W * 0.49, cy: H * 0.454, w: W * 0.948, h: H * 1.034, r: H * 0.163, bx: W * 0.018, by: H * 0.0125, rot: -0.103, tg: H * 0.016, tr: H * 0.016 };
+    /* (user 2026-11-28: smooth, no little bumps; straight where it should be straight) a CRT outline built, not traced: a rounded
+       rectangle (straight edges, circular corners) bent by one smooth barrel warp - the sides bulge by bx at their middle, the top
+       and bottom by by - then tilted. Smooth all the way round by construction. */
+    function smoothCRT(c, cx, cy, w, h, r, bx, by, rot, newPath) {
+      var hw = w / 2, hh = h / 2, co = Math.cos(rot), si = Math.sin(rot), kx = bx / hw, ky = by / hh, first = true;
+      r = Math.max(0.5, Math.min(r, hw, hh));
+      if (newPath !== false) c.beginPath();
+      function put(x, y) {
+        var xw = x * (1 + kx * (1 - (y / hh) * (y / hh))), yw = y * (1 + ky * (1 - (x / hw) * (x / hw)));
+        var px = cx + xw * co - yw * si, py = cy + xw * si + yw * co;
+        if (first) { c.moveTo(px, py); first = false; } else c.lineTo(px, py);
       }
-      c.fillStyle = "rgba(0,0,0,0.13)"; for (var y = -h; y < h; y += 4) c.fillRect(-w, y, w * 2, 1.5);
-      c.restore();
-      drawTVArt(c, key, sx, 0, tv.w * 0.72);
-      c.lineJoin = "round"; crtShape(c, sx, 0, w, h, h * 0.16, h * 0.03, 0); c.lineWidth = Math.max(2, h * 0.035); c.strokeStyle = Y; c.stroke();
-      crtShape(c, sx, 0, w - h * 0.06, h - h * 0.06, h * 0.14, h * 0.025, 0.006); c.lineWidth = 2; c.strokeStyle = "#ff3b5c"; c.stroke();
-      crtShape(c, sx + 1, 1, w - h * 0.1, h - h * 0.1, h * 0.12, h * 0.02, -0.006); c.strokeStyle = LIME; c.stroke();
-      c.restore();
+      function edge(x0, y0, x1, y1) { for (var i = 0; i < 20; i++) put(x0 + (x1 - x0) * i / 20, y0 + (y1 - y0) * i / 20); }
+      function arc(ax, ay, a0) { for (var i = 0; i < 10; i++) { var a = a0 + Math.PI / 2 * i / 10; put(ax + r * Math.cos(a), ay + r * Math.sin(a)); } }
+      edge(-hw + r, -hh, hw - r, -hh); arc(hw - r, -hh + r, -Math.PI / 2);
+      edge(hw, -hh + r, hw, hh - r); arc(hw - r, hh - r, 0);
+      edge(hw - r, hh, -hw + r, hh); arc(-hw + r, hh - r, Math.PI / 2);
+      edge(-hw, hh - r, -hw, -hh + r); arc(-hw + r, -hh + r, Math.PI);
+      c.closePath();
     }
-    function middleTV(c, t, p2) {
-      var kon = t >= FL1 ? 1 : 0, kg = seg(t, FL0, FL1), r0 = SH2 * 0.12, bu = SH2 * 0.03;
+    function frameShape(c, s, d, newPath) {   /* the picture's edge grown outward by d, the whole frame at scale s about the middle of the view */
+      smoothCRT(c, W / 2 + (FRM.cx - W / 2) * s, H / 2 + (FRM.cy - H / 2) * s, (FRM.w + 2 * d) * s, (FRM.h + 2 * d) * s, (FRM.r + d) * s, FRM.bx * s, FRM.by * s, FRM.rot, newPath);
+    }
+    /* the cut-in, as in the original (from 4.0 s of the user's clip): the three frames come up out of the depth of the screen toward
+       the camera. The yellow one, on top, is already big (70 %) when it appears and rushes up first; the red one, a little smaller,
+       follows a clear step behind; the yellow-green one comes last, almost invisible at first and growing more solid as it comes.
+       Each moves at a constant speed in depth (scale = 1 / depth, so it speeds up on screen) and stops dead in place.
+       u = seconds since it started; the yellow lands at 0.1 s, the red at 0.14 s, the yellow-green at 0.22 s. */
+    var FCUT = [[0, 0.1, 0.7], [0.02, 0.14, 0.65], [0.05, 0.22, 0.55]];   /* yellow, red, yellow-green: appears, lands, scale when it appears */
+    function frameLayer(u, i) {
+      var L = FCUT[i]; if (u <= L[0]) return null;
+      var k = seg(u, L[0], L[1]), z = lerp(1 / L[2], 1, k);
+      return { k: k, s: 1 / z, a: i === 2 ? 0.05 + 0.95 * Math.pow(k, 1.6) : 1 };
+    }
+    function frameCut(c, u) {
+      if (u <= 0) return;
       c.save();
-      c.save(); crtShape(c, T2X, T2Y, SW2, SH2, r0, bu, 0); c.clip();
-      if (kon <= 0) {
-        c.fillStyle = "#0b0b11"; c.fillRect(T2X - SW2, T2Y - SH2, SW2 * 2, SH2 * 2);
-        var gl = c.createLinearGradient(T2X - SW2 / 2, T2Y - SH2 / 2, T2X + SW2 / 2, T2Y + SH2 / 2); gl.addColorStop(0, "rgba(255,255,255,0)"); gl.addColorStop(0.32, "rgba(255,255,255,0)"); gl.addColorStop(0.4, "rgba(255,255,255,0.1)"); gl.addColorStop(0.5, "rgba(255,255,255,0.02)"); gl.addColorStop(0.56, "rgba(255,255,255,0.07)"); gl.addColorStop(0.64, "rgba(255,255,255,0)");
-        c.fillStyle = gl; c.fillRect(T2X - SW2, T2Y - SH2, SW2 * 2, SH2 * 2);
-        c.fillStyle = "rgba(255,255,240,0.05)"; c.beginPath(); c.ellipse(T2X - SW2 * 0.2, T2Y - SH2 * 0.25, SW2 * 0.22, SH2 * 0.12, -0.3, 0, Math.PI * 2); c.fill();
-        /* just before the flash: a point of light in the middle of the dark screen opens into a thin bright line (a set warming up) */
-        if (kg > 0) {
-          var gk = eIn(kg);
-          c.save(); c.globalCompositeOperation = "lighter";
-          var gr = c.createRadialGradient(T2X, T2Y, 0, T2X, T2Y, SH2 * (0.12 + 0.55 * gk)); gr.addColorStop(0, "rgba(255,255,235," + (0.85 * Math.min(1, kg * 2)) + ")"); gr.addColorStop(1, "rgba(255,255,235,0)");
-          c.fillStyle = gr; c.fillRect(T2X - SW2, T2Y - SH2, SW2 * 2, SH2 * 2);
-          var lw2 = SW2 * (0.03 + 0.85 * gk); c.fillStyle = "rgba(255,255,255," + Math.min(1, kg * 2.5) + ")"; c.fillRect(T2X - lw2 / 2, T2Y - SH2 * 0.008, lw2, SH2 * 0.016);
-          c.restore();
-          star4(c, T2X, T2Y, SH2 * (0.05 + 0.1 * gk), 0.12, Math.min(1, kg * 3), "#ffffff");
-        }
-      } else {
-        c.save(); c.translate(T2X - SW2 / 2, T2Y - SH2 / 2); c.scale(SW2 / W, SH2 / H); finish(c, t, t - FL1); c.restore();
-        if (p2 < 1) { c.fillStyle = "rgba(0,0,0," + (0.1 * (1 - p2)) + ")"; for (var y = T2Y - SH2; y < T2Y + SH2; y += 4) c.fillRect(T2X - SW2, y, SW2 * 2, 1.5); }
+      var g = frameLayer(u, 2), r2 = frameLayer(u, 1), y = frameLayer(u, 0);
+      if (g) { c.globalAlpha = g.a; frameShape(c, g.s, 0); frameShape(c, g.s, FRM.tg, false); c.fillStyle = FGR; c.fill("evenodd"); c.globalAlpha = 1; }
+      if (r2) { frameShape(c, r2.s, FRM.tg); frameShape(c, r2.s, FRM.tg + FRM.tr, false); c.fillStyle = FRD; c.fill("evenodd"); }
+      if (y) {
+        var d0 = FRM.tg + FRM.tr;
+        if (y.k >= 1) { c.beginPath(); c.rect(-W, -H, W * 3, H * 3); frameShape(c, 1, d0, false); }
+        else { frameShape(c, y.s, d0 + lerp(H * 0.045, H * 0.3, sm5(seg(y.k, 0.45, 1)))); frameShape(c, y.s, d0, false); }
+        c.fillStyle = FY; c.fill("evenodd");
       }
       c.restore();
-      drawTVArt(c, "tvRed", T2X, T2Y, SW2);
-      /* the bezel sits outside the screen, so nothing is left over the picture when the camera fills the frame with it */
-      c.save(); c.beginPath(); c.rect(T2X - W, T2Y - H, W * 2, H * 2); crtShape(c, T2X, T2Y, SW2, SH2, r0, bu, 0, false); c.clip("evenodd");
-      c.lineJoin = "round"; crtShape(c, T2X, T2Y, SW2, SH2, r0, bu, 0); c.lineWidth = SH2 * 0.08; c.strokeStyle = Y; c.stroke();
-      crtShape(c, T2X, T2Y, SW2 + SH2 * 0.11, SH2 + SH2 * 0.11, SH2 * 0.15, bu, 0.006); c.lineWidth = 2; c.strokeStyle = "#ff3b5c"; c.stroke();
-      crtShape(c, T2X, T2Y, SW2 + SH2 * 0.15, SH2 + SH2 * 0.15, SH2 * 0.16, bu, -0.006); c.strokeStyle = LIME; c.stroke();
-      c.restore();
-      /* the landing of the rush: the frame lines flare for an instant */
-      var fl2 = seg(t, P2B, P2B + 0.18);
-      if (fl2 > 0 && fl2 < 1) { c.save(); c.globalCompositeOperation = "lighter"; c.globalAlpha = 1 - fl2; c.lineJoin = "round"; crtShape(c, T2X, T2Y, SW2 + SH2 * 0.02, SH2 + SH2 * 0.02, r0, bu, 0); c.lineWidth = SH2 * 0.05 * (1 - fl2) + 2; c.strokeStyle = "#fff6b0"; c.stroke(); c.restore(); }
-      /* framed on it: round the edges there is nothing but its coloured frame lines (no case, no lights, no other set) */
-      var fr = seg(t, P2A + 0.1, P2B);
-      if (fr > 0) { c.save(); c.globalAlpha = fr; c.beginPath(); c.rect(T2X - W * 2, T2Y - H * 2, W * 4, H * 4); crtShape(c, T2X, T2Y, SW2 + SH2 * 0.15 + 4, SH2 + SH2 * 0.15 + 4, SH2 * 0.16, bu, -0.006, false); c.fillStyle = "#16161c"; c.fill("evenodd"); c.restore(); }
-      c.restore();
     }
-    function studio(c, t) {
-      var cm = studioCam(t), p2 = Math.min(1, pushP(t));
-      c.save(); c.translate(W / 2, H / 2); c.scale(cm.z, cm.z); c.translate(-cm.x, -cm.y);
-      if (ready("studioBg")) { var sk3 = Math.max(W / 1536, H * 1.36 / 1024), iw3 = 1536 * sk3, ih3 = 1024 * sk3; c.drawImage(IMG.studioBg, W / 2 - iw3 / 2, H * 0.5 - ih3 / 2, iw3, ih3); c.fillStyle = "rgba(4,4,10,0.22)"; c.fillRect(-W, -H, W * 3, H * 3); }
-      else { c.fillStyle = "#07070c"; c.fillRect(-W, -H, W * 3, H * 3); }
-      if (!ready("studioBg")) [[W * 0.3, -0.25], [W * 0.7, 0.25]].forEach(function (sp, i) {
-        c.save(); c.translate(sp[0], -H * 0.2); c.rotate(sp[1] + Math.sin(t * 1.6 + i) * 0.06); c.globalCompositeOperation = "lighter";
-        var bg = c.createLinearGradient(0, 0, 0, H * 1.3); bg.addColorStop(0, "rgba(255,255,240,0.3)"); bg.addColorStop(1, "rgba(255,255,240,0)");
-        c.fillStyle = bg; c.beginPath(); c.moveTo(-H * 0.02, 0); c.lineTo(H * 0.02, 0); c.lineTo(H * 0.24, H * 1.3); c.lineTo(-H * 0.24, H * 1.3); c.closePath(); c.fill(); c.restore();
-      });
-      sideTV(c, 0, TVL, t); sideTV(c, 2, TVR, t); middleTV(c, t, p2);
-      c.restore();
+    var HWF = OV * W, HHF = HWF * TVART.tvMain.hh / TVART.tvMain.hw;   /* the TV's screen as the camera lands in it */
+    /* landed: the TV stays dark inside the frame for a beat; a point of light opens in the middle into a thin line, the whole frame
+       flashes (in the timeline) and the finish card is on, the frame staying round it */
+    function framed(c, t) {
+      c.fillStyle = "#0b0b11"; c.fillRect(-W, -H, W * 3, H * 3);
+      if (t < FL1) {
+        sheen(c, W / 2, H / 2, HWF, HHF);
+        var kg = seg(t, FL0, FL1);
+        if (kg > 0) {
+          var gk = eIn(kg), HS = H * 0.833, WS = W * 0.833;
+          c.save(); c.globalCompositeOperation = "lighter";
+          var gr = c.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, HS * (0.12 + 0.55 * gk)); gr.addColorStop(0, "rgba(255,255,235," + (0.85 * Math.min(1, kg * 2)) + ")"); gr.addColorStop(1, "rgba(255,255,235,0)");
+          c.fillStyle = gr; c.fillRect(0, 0, W, H);
+          var lw2 = WS * (0.03 + 0.85 * gk); c.fillStyle = "rgba(255,255,255," + Math.min(1, kg * 2.5) + ")"; c.fillRect(W / 2 - lw2 / 2, H / 2 - HS * 0.008, lw2, HS * 0.016);
+          c.restore();
+          star4(c, W / 2, H / 2, HS * (0.05 + 0.1 * gk), 0.12, Math.min(1, kg * 3), "#ffffff");
+        }
+      } else finish(c, t, t - FL1);
+      var k2 = pushK(t); if (k2 > 0) speedLines(c, W / 2, H / 2, k2 * 0.85, 61, 28, t);
+      frameCut(c, t - CI0);
     }
     /* (1)(2) the battle: the last blow, the death, the small TV, the ribbon */
     /* the enemy's static builds the TV (seventh draft): every block flies, arcing, to its own cell of the TV's screen and lands there;
@@ -1914,12 +1899,12 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     }
     function smallTV(c, t, th) {
       if (th < DT.peel0 - 0.02) return;
-      var hr = artHole("tvMain", TX, TY, SW), HW = hr.w, HH = hr.h, r0 = HH * 0.16, bu = HH * 0.03, bw = HW * 1.4;
+      var hr = artHole("tvMain", TX, TY, SW), HW = hr.w, HH = hr.h, r0 = HH * 0.16, bxT = HH * 0.015, bw = HW * 1.4;
       var en = seg(t, TVON, TVON + 0.16), km = seg(th, DT.set[0], DT.set[1]), locked = th >= DT.lock;
       c.save();
       var gk = Math.max(seg(th, DT.peel0, DT.lock) * 0.6, en > 0 ? 1 - en * 0.4 : 0);
       if (gk > 0) { var gg = c.createRadialGradient(TX, TY, 0, TX, TY, bw * 1.3); gg.addColorStop(0, "rgba(255,240,120," + (0.55 * gk) + ")"); gg.addColorStop(1, "rgba(255,240,120,0)"); c.fillStyle = gg; c.fillRect(TX - bw * 1.4, TY - bw * 1.4, bw * 2.8, bw * 2.8); }
-      c.save(); crtShape(c, TX, TY, HW + 2, HH + 2, r0, bu, 0); c.clip();
+      c.save(); smoothCRT(c, TX, TY, HW + 2, HH + 2, r0, bxT, bxT, 0); c.clip();
       if (t < TVON) {
         /* the enemy's blocks that have landed in their cells, then they start to crawl as static */
         var sk = seg(th, DT.bars[1] - 0.04, DT.bars[1] + 0.06), cw = HW / 10, ch = HH / 7, kb = th >= DT.bars[0] && th < DT.bars[1] + 0.02;
@@ -1932,27 +1917,28 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
         if (sk > 0) { c.save(); c.globalAlpha = sk; staticNoise(c, hr.x, hr.y, HW, HH, Math.floor(t * 50), 90); c.restore(); }
         var sw2 = seg(th, DT.lock, DT.lock + 0.22); if (sw2 > 0) { c.save(); c.globalCompositeOperation = "lighter"; c.globalAlpha = Math.sin(Math.PI * sw2) * 0.8; var sg2 = c.createRadialGradient(TX, TY, 0, TX, TY, SW * 0.6); sg2.addColorStop(0, "#fffbd0"); sg2.addColorStop(1, "rgba(255,251,208,0)"); c.fillStyle = sg2; c.fillRect(TX - SW, TY - SH, SW * 2, SH * 2); c.restore(); }
       } else {
-        c.save(); c.translate(TX - SW / 2, TY - SH / 2); c.scale(SW / W, SH / H); studio(c, t); c.restore();
-        var p1 = camEase(seg(t, P1A, P1B), CV);
-        if (p1 < 1) { c.fillStyle = "rgba(0,0,0," + (0.14 * (1 - p1)) + ")"; for (var y = TY - HH; y < TY + HH; y += SH * 0.04) c.fillRect(TX - SW, y, SW * 2, SH * 0.015); }
+        /* (eighth draft) as the arrow goes in, the static cuts to black, and the screen stays dark from then on */
+        c.fillStyle = "#0b0b11"; c.fillRect(TX - SW, TY - HH, SW * 2, HH * 2); sheen(c, TX, TY, HW, HH);
         if (en < 1) { c.save(); c.globalCompositeOperation = "lighter"; c.globalAlpha = 1 - eOut(en); c.fillStyle = "#fff6b0"; c.fillRect(TX - SW, TY - HH, SW * 2, HH * 2); c.restore(); }
       }
       c.restore();
       /* the set (the generated black TV) comes up round the screen once the frames have locked on */
       if (km > 0) { c.save(); c.globalAlpha = eOut(km); var ms = lerp(1.12, 1, eOut(km)); c.translate(TX, TY); c.scale(ms, ms); c.translate(-TX, -TY); drawTVArt(c, "tvMain", TX, TY, SW); c.restore(); }
-      /* the three frames: they fly over from the enemy, turning and shrinking, and lock onto the screen, where they stay as its bezel */
-      c.save(); c.beginPath(); c.rect(TX - W, TY - H, W * 2, H * 2); crtShape(c, TX, TY, HW, HH, r0, bu, 0, false); c.clip("evenodd"); c.lineJoin = "round";
-      [[Y, SH * 0.09, 0, 0, 0.38, HH * 0.17], ["#ff3b5c", Math.max(1, SH * 0.02), SH * 0.13, 0.006, -0.32, HH * 0.19], [LIME, Math.max(1, SH * 0.02), SH * 0.18, -0.006, 0.55, HH * 0.2]].forEach(function (f, i) {
+      /* the three frames: they fly over from the enemy, turning and shrinking, and lock onto the screen, where they stay as its bezel -
+         in the original's order and colours (user 2026-11-28): yellow-green at the screen's edge, red round it, a yellow band outside */
+      var lwT = Math.max(1.2, SH * 0.028), byT = SH * 0.075;
+      c.save(); c.beginPath(); c.rect(TX - W, TY - H, W * 2, H * 2); smoothCRT(c, TX, TY, HW, HH, r0, bxT, bxT, 0, false); c.clip("evenodd"); c.lineJoin = "round";
+      [[FY, byT, lwT * 2 + byT / 2, 0.38], [FRD, lwT, lwT * 1.5, -0.32], [FGR, lwT, lwT * 0.5, 0.55]].forEach(function (f, i) {
         var kf = locked ? 1 : seg(th, DT.fr[0] + i * 0.05, DT.fr[1] - 0.04 + i * 0.02); if (kf <= 0) return;
         var e = eInOut(kf), fx = lerp(ex, TX, e), fy = lerp(ey - H * 0.02, TY, e) - Math.sin(Math.PI * e) * H * 0.09;
-        c.save(); c.globalAlpha = Math.min(1, kf * 4); crtShape(c, fx, fy, lerp(H * 0.42, HW + f[2], e), lerp(H * 0.34, HH + f[2], e), lerp(H * 0.08, f[5], e), bu, lerp(f[4], f[3], e));
+        c.save(); c.globalAlpha = Math.min(1, kf * 4); smoothCRT(c, fx, fy, lerp(H * 0.42, HW + 2 * f[2], e), lerp(H * 0.34, HH + 2 * f[2], e), lerp(H * 0.08, r0 + f[2], e), bxT, bxT, lerp(f[3], 0, e));
         c.lineWidth = lerp(f[1] * 1.6, f[1], e); c.strokeStyle = f[0]; c.stroke(); c.restore();
       });
       c.restore();
       c.restore();
       /* where the blocks are going: a faint dashed outline of the screen while they fly, and a pop when the frames lock on */
       var gdl = Math.min(seg(th, DT.peel0, DT.peel0 + 0.1), 1 - seg(th, DT.lock - 0.06, DT.lock + 0.04));
-      if (gdl > 0) { c.save(); c.globalAlpha = 0.55 * gdl; c.setLineDash([SH * 0.06, SH * 0.05]); c.lineDashOffset = -th * SH * 0.6; crtShape(c, TX, TY, HW + 4, HH + 4, r0, bu, 0); c.lineWidth = 1.5; c.strokeStyle = "#ffffff"; c.stroke(); c.restore(); }
+      if (gdl > 0) { c.save(); c.globalAlpha = 0.55 * gdl; c.setLineDash([SH * 0.06, SH * 0.05]); c.lineDashOffset = -th * SH * 0.6; smoothCRT(c, TX, TY, HW + 4, HH + 4, r0, bxT, bxT, 0); c.lineWidth = 1.5; c.strokeStyle = "#ffffff"; c.stroke(); c.restore(); }
       [0, 0.07].forEach(function (dl, i) { var rk = seg(th, DT.lock + dl, DT.lock + 0.3 + dl); if (rk > 0 && rk < 1) ring(c, TX, TY, lerp(SW * 0.5, SW * 1.3, eOut(rk)), lerp(4, 1, rk), [YH, "#ffffff"][i], 1 - rk); });
       /* the ribbon going in: rings rippling out of the screen */
       [0, 0.06, 0.12].forEach(function (dl, i) { var rk = seg(t, P1A + dl, P1A + 0.26 + dl); if (rk > 0 && rk < 1) ring(c, TX, TY, lerp(SW * 0.4, SW * 1.6, eOut(rk)), lerp(5, 1, rk), [Y, "#ffffff", "#ff3fae"][i], 1 - rk); });
@@ -2086,17 +2072,16 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     }
     /* timeline */
     if (tr < P1B) {
-      var p1 = battleCamP(tr), Z = Math.exp(p1 * Math.log(ZF1)), m1 = (1 - p1) / Z, pm = clamp01((p1 - CRP) / (1 - CRP));
+      var p1 = battleCamP(tr), Z = Math.exp(p1 * Math.log(ZF1)), m1 = (1 - p1) / Z;
       ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(Z, Z); ctx.translate(-(TX - (TX - W / 2) * m1), -(TY - (TY - H / 2) * m1)); battle(ctx, tr); ctx.restore();
-      speedLines(ctx, W / 2 + (TX - W / 2) * (1 - p1), H / 2 + (TY - H / 2) * (1 - p1), Math.sin(Math.PI * pm) * 0.85, 61, 28, tr);
+      speedLines(ctx, W / 2 + (TX - W / 2) * (1 - p1), H / 2 + (TY - H / 2) * (1 - p1), pushK(tr) * 0.85, 61, 28, tr);
+      frameCut(ctx, tr - CI0);   /* the P4R frame starts to come up just before the camera lands */
       var fl0 = 1 - seg(tr, 0.05, 0.12); if (tr > 0.05 && fl0 > 0) { ctx.save(); ctx.globalAlpha = fl0 * 0.35; ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H); ctx.restore(); }
       return;
     }
     if (tr < OFF0) {
-      var tau2 = tr - P2B, shk = tau2 > 0 && tau2 < 0.16 ? Math.exp(-tau2 / 0.045) : 0;
-      ctx.save(); if (shk > 0) ctx.translate(Math.sin(tau2 * 110) * H * 0.008 * shk, Math.cos(tau2 * 83) * H * 0.006 * shk); studio(ctx, tr); ctx.restore();
-      var p2 = Math.min(1, pushP(tr)), rk2 = rushK(tr);
-      if (rk2 > 0) speedLines(ctx, W / 2 + (T2X - W / 2) * ZS0 * (1 - p2), H / 2 + (T2Y - H / 2) * ZS0 * (1 - p2), rk2, 62, 40, tr);
+      var ti = tr - TIMP, shk = ti > 0 && ti < 0.16 ? Math.exp(-ti / 0.045) : 0;   /* a jolt as the yellow frame lands */
+      ctx.save(); if (shk > 0) ctx.translate(Math.sin(ti * 110) * H * 0.008 * shk, Math.cos(ti * 83) * H * 0.006 * shk); framed(ctx, tr); ctx.restore();
       /* the flash: the whole frame goes white for an instant and the picture is there */
       var fk = seg(tr, FL1, FL1 + 0.24); if (fk > 0 && fk < 1) { ctx.save(); ctx.globalAlpha = 1 - eOut(fk); ctx.fillStyle = "#fffdf2"; ctx.fillRect(0, 0, W, H); ctx.restore(); }
       return;
@@ -2106,14 +2091,14 @@ footer { margin-top: 48px; color: var(--dim); font-size: 13px; }
     ctx.save(); ctx.fillStyle = "rgba(255,255,255,0.55)"; ctx.font = Math.round(H * 0.05) + "px sans-serif"; ctx.textAlign = "center"; ctx.fillText("（结算页）", W / 2, H * 0.55); ctx.restore();
     var sy = lerp(1, 0.006, eIn(seg(off, 0, 0.45))), sx = lerp(1, 0.004, eIn(seg(off, 0.45, 0.8))), fade = 1 - seg(off, 0.8, 1);
     if (fade > 0) {
-      ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(sx, sy); ctx.translate(-W / 2, -H / 2); ctx.globalAlpha = fade; studio(ctx, OFF0); ctx.restore();
+      ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(sx, sy); ctx.translate(-W / 2, -H / 2); ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip(); ctx.globalAlpha = fade; framed(ctx, OFF0); ctx.restore();
       ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = fade * seg(off, 0.25, 0.45); var gw = W * sx; var lg2 = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(8, gw * 0.55)); lg2.addColorStop(0, "rgba(255,255,255,1)"); lg2.addColorStop(1, "rgba(255,255,255,0)"); ctx.fillStyle = lg2; ctx.fillRect(W / 2 - gw * 0.6 - 10, H / 2 - H * 0.03, gw * 1.2 + 20, H * 0.06); ctx.restore();
     }
   }
 
   var DEMOS = [
-    { id: "aoa", name: "总攻击 第七版（用上 Codex 生的电视、演播室、伊邪那岐；敌人变电视放慢；冲向中间电视改成猛冲；约 6.1 秒）", dur: 6.13, start: 1.2,
-      desc: "①打中：受击、白闪两下（约 0.33 秒）→ ②信号断了：切片乱跳、红蓝错色晃动、故障条、黑紫烟上飘、彩色圆环往外扩，雪花慢慢灌满它的轮廓，变成一团雪花剪影 → ③碎成一格一格的彩色马赛克 → ④方块从朝向电视的那一侧开始一块块剥落（剥落前抖一下），排着队、划着弧线飞向电视，按列把屏幕填满；飞的时候电视屏幕的位置有一圈虚线提示目的地；敌人的身体随之一格格消失，最后留一个错色的轮廓残影缩成一点 → ⑤三层彩框飞过去锁上（弹一圈），机身出现，屏幕闪一下测试彩条、变成雪花，停一小拍（这一段从约 0.85 秒放慢到约 1.85 秒）→ ⑥彩带从右下领着箭头进来，镜头从这时起慢慢往电视推；钻进屏幕中心的入口 → ⑦彩带被吸进去，正式推进接着慢推的速度起步，先慢后快冲进电视 → 演播室缓推 → 猛冲中间那台红电视（0.18 秒，一下子就到全速，急刹、回弹，画面抖一下，彩框闪一下），四周只剩彩框 → 黑屏停 0.5 秒 → 中间亮点拉成亮线 → 闪白，结算画面亮出 → 关机进结算页。约 6.1 秒。电视、演播室、伊邪那岐、悠（扛刀推眼镜）都是 Codex 生的图。",
+    { id: "aoa", name: "总攻击 第八版（不要演播室：镜头冲进敌人变的那台电视，原版那种歪的电视框切进来，黑屏停一会再亮；约 5.7 秒）", dur: 5.73, start: 1.2,
+      desc: "①打中：受击、白闪两下 → ②信号断了：切片乱跳、红蓝错色晃动、故障条、黑紫烟上飘、彩色圆环往外扩，雪花慢慢灌满它的轮廓 → ③碎成一格一格的彩色马赛克 → ④方块一块块剥落、排着队划弧线飞向电视，按列把屏幕填满，敌人最后留一个错色残影缩成一点 → ⑤三层彩框（黄、红、黄绿）飞过去锁在屏幕外圈，机身出现，屏幕闪一下测试彩条、变成雪花，停一小拍 → ⑥彩带从右下领着箭头进来，镜头从这时起慢慢往电视推；箭头钻进屏幕中心的入口，雪花一下子变成黑屏 → ⑦彩带被吸进去，镜头接着慢推的速度正式推进，先慢后快冲进黑屏，只在最后几帧急刹 → ⑧冲进去的那一下，电视自己的框飞出画面，原版那种歪的电视框从屏幕深处往外推出来：黄框一出来就有七成大、最先冲上来，红框稍小、隔一点跟上，黄绿框最后、从几乎透明慢慢显出来；三层都往左倾约 5 度、左右边是曲面，落定后比画面还大一点，只在四个角露出来，画面震一下 → ⑨黑屏停一会 → 中间亮点拉成亮线 → 闪白，结算画面亮出（彩框留在四周）→ 关机进结算页。约 5.7 秒。悠的立绘还是占位（扛刀那张），新姿势挑好再换。",
       draw: function (ctx, W, H, tr) { aoaScene(ctx, W, H, tr); } },
     { id: "tvstate", name: "电视框状态 第二版：连环拳（这回合下 2 张攻击额外打出）", dur: 2.7, start: 1.3,
       desc: "电视框照 P4R 改得不那么规整：黄色是屏幕外面那一圈，四条边往外微微鼓（像老电视），边上薄、四个角厚，角里有网点；里面的红线、绿线不完全同心；左上压着一个状态名标签，右上角一台小电视，屏幕上显示还剩几次。出现：几层歪着的黄、红、绿框从大到小转着收拢到位（P4R 进战斗那种）。每次额外打出：信号错位一下，小电视里的数字跳一下。用完（或回合结束）：几层框反着转开、散掉。",
