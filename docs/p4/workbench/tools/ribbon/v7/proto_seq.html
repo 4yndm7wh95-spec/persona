@@ -1,0 +1,111 @@
+<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;background:#000}canvas{display:block}</style></head><body>
+<canvas id="c" width="1280" height="720"></canvas>
+<script src="ribbon7.js"></script>
+<script>
+var cv = document.getElementById('c'), ctx = cv.getContext('2d'), R = RIB7.build(), C = RIB7.C;
+function clamp(x, a, b) { return x < a ? a : x > b ? b : x; }
+function seg(t, a, b) { return clamp((t - a) / (b - a), 0, 1); }
+function lerp(a, b, k) { return a + (b - a) * k; }
+function smoother(k) { k = clamp(k, 0, 1); return k * k * k * (k * (6 * k - 15) + 10); }
+function dsmoother(k) { k = clamp(k, 0, 1); return 30 * k * k * (1 - k) * (1 - k) / 1.875; }   /* speed, 1 at the peak */
+function eBack(k) { var c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); }
+function pstar(c, x, y, r, rot, col) {
+  if (r <= 0.3) return; c.save(); c.translate(x, y); c.rotate(rot); c.beginPath();
+  for (var i = 0; i < 4; i++) { var a = i * Math.PI / 2, b = a + Math.PI / 2, m = a + Math.PI / 4; if (!i) c.moveTo(Math.cos(a) * r, Math.sin(a) * r); c.quadraticCurveTo(Math.cos(m) * r * 0.16, Math.sin(m) * r * 0.16, Math.cos(b) * r, Math.sin(b) * r); }
+  c.closePath(); c.fillStyle = col; c.fill(); c.restore();
+}
+/* ---- timing ---- */
+var EN0 = 0.10, END_ = 0.86, X0 = 1.45, XD = 0.9;      /* entry start / duration; exit start / duration */
+var LAND = EN0 + END_;
+var VEND = RIB7.vAtS(R, R.SN), V100 = RIB7.vAtS(R, 100), VL = RIB7.vAtS(R, R.L);
+/* the TV the arrow points into (screen 16:9; the arrow tip enters its left edge) */
+var TV = { x: 489, y: 377, w: 142, h: 80 };
+function tvBox(m) { return [TV.x - TV.w / 2 - m, TV.y - TV.h / 2 - m, TV.x + TV.w / 2 + m, TV.y + TV.h / 2 + m]; }
+function headState(t) {
+  var k = (t - EN0) / END_;
+  if (k <= 0) return null;
+  var sp = dsmoother(k);
+  return { sH: RIB7.sAtV(R, VEND * smoother(k)), LH: 60 + 330 * Math.pow(sp, 0.9) };
+}
+function tailS(t) { var u = seg(t, X0, X0 + XD); return { u: u, sT: RIB7.sAtV(R, lerp(V100, VL + 30, smoother(u))), sp: dsmoother(u) }; }
+/* camera: frames what is left of the ribbon (inside the original frame) plus the TV; reaches the TV screen as the tail goes in */
+function boxAt(sT) {
+  var b = tvBox(16), s0 = Math.max(sT, R.S[0]);
+  for (var s = s0; s <= R.L; s += 12) {
+    for (var f = 0; f <= 0.36; f += 0.18) {
+      var D = RIB7.lerpA(R.D, R, s), p = RIB7.pt(R, s, f * D), x = clamp(p[0], 0, 1280), y = clamp(p[1], 0, 720);
+      b[0] = Math.min(b[0], x); b[1] = Math.min(b[1], y); b[2] = Math.max(b[2], x); b[3] = Math.max(b[3], y);
+    }
+  }
+  return b;
+}
+function camAt(t) {
+  if (t < X0) return { z: 1, x: 640, y: 360 };
+  /* a straight dolly into the TV, on the same speed curve as the tail: the TV drifts to the middle while the zoom grows
+     (exponentially, so it feels even); both arrive together */
+  var p = smoother(seg(t, X0, X0 + XD)), zE = 1280 / (TV.w / 1.07), z = Math.exp(p * Math.log(zE)), m = (1 - p) / z;
+  return { z: z, x: TV.x - (TV.x - 640) * m * 1, y: TV.y - (TV.y - 360) * m };
+}
+function stage(c, t) {
+  var g = c.createLinearGradient(0, 0, 0, 720); g.addColorStop(0, '#0b0d17'); g.addColorStop(0.55, '#141726'); g.addColorStop(1, '#1d1f2c'); c.fillStyle = g; c.fillRect(-200, -200, 1680, 1120);
+  c.save(); c.globalCompositeOperation = 'lighter'; var sg = c.createLinearGradient(0, 0, 0, 560); sg.addColorStop(0, 'rgba(255,250,230,0.16)'); sg.addColorStop(1, 'rgba(255,250,230,0)');
+  c.fillStyle = sg; c.beginPath(); c.moveTo(440, -40); c.lineTo(520, -40); c.lineTo(660, 560); c.lineTo(330, 560); c.closePath(); c.fill(); c.restore();
+  c.fillStyle = 'rgba(255,255,255,0.05)'; for (var i = 0; i < 14; i++) for (var j = 0; j < 5; j++) if ((i + j) % 2) c.fillRect(300 + i * 70 + j * 20, 470 + j * 50, 60, 40);
+}
+function studioInTV(c, t) {   /* placeholder for what the TV shows: the dark studio with three TVs */
+  c.fillStyle = '#07070c'; c.fillRect(0, 0, 1280, 720);
+  var fl = c.createLinearGradient(0, 480, 0, 720); fl.addColorStop(0, '#15151d'); fl.addColorStop(1, '#050508'); c.fillStyle = fl; c.fillRect(0, 480, 1280, 240);
+  [[220, 290, '#1b3fae'], [640, 300, '#0b0b11'], [1060, 290, '#e6eb1a']].forEach(function (q, i) {
+    c.fillStyle = '#1c1c24'; c.fillRect(q[0] - 170, q[1] - 110, 340, 220); c.fillStyle = q[2]; c.fillRect(q[0] - 140, q[1] - 88, 280, 176);
+    c.strokeStyle = C.Y; c.lineWidth = 8; c.strokeRect(q[0] - 140, q[1] - 88, 280, 176);
+  });
+}
+function drawTV(c, t) {
+  var x0 = TV.x - TV.w / 2, y0 = TV.y - TV.h / 2, bw = TV.w * 1.28, bh = TV.h * 1.42;
+  c.fillStyle = '#1c1c24'; c.beginPath(); c.roundRect(TV.x - bw / 2 + 6, TV.y - bh / 2, bw, bh, 12); c.fill(); c.strokeStyle = '#4a4a58'; c.lineWidth = 2; c.stroke();
+  c.strokeStyle = '#4a4a58'; c.lineWidth = 3; c.lineCap = 'round'; c.beginPath(); c.moveTo(TV.x - 10, TV.y - bh / 2); c.lineTo(TV.x - 34, TV.y - bh / 2 - 40); c.moveTo(TV.x + 14, TV.y - bh / 2); c.lineTo(TV.x + 40, TV.y - bh / 2 - 36); c.stroke();
+  c.fillStyle = '#ff3b5c'; c.beginPath(); c.arc(TV.x + bw / 2 - 4, TV.y - 12, 4, 0, 7); c.fill(); c.fillStyle = '#9ee82c'; c.beginPath(); c.arc(TV.x + bw / 2 - 4, TV.y + 6, 4, 0, 7); c.fill();
+  c.save(); c.beginPath(); c.rect(x0, y0, TV.w, TV.h); c.clip(); c.translate(x0, y0); c.scale(TV.w / 1280, TV.h / 720); studioInTV(c, t); c.restore();
+  c.strokeStyle = C.Y; c.lineWidth = 7; c.strokeRect(x0 - 3.5, y0 - 3.5, TV.w + 7, TV.h + 7);
+}
+window.renderAt = function (t) {
+  var sc = cv.height / 720; ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
+  var cam = camAt(t);
+  ctx.setTransform(sc * cam.z, 0, 0, sc * cam.z, sc * (640 - cam.x * cam.z), sc * (360 - cam.y * cam.z));
+  stage(ctx, t);
+  var hs = headState(t), ts = tailS(t), exiting = t >= X0;
+  var flowV = exiting ? RIB7.vAtS(R, ts.sT) - V100 : 0;
+  if (hs) {
+    var landed = t >= LAND;
+    var o = landed ? { sH: R.SN, LH: 0 } : hs;
+    var sT = exiting ? ts.sT : R.S[0], LT = exiting ? 160 + 420 * Math.pow(ts.sp, 0.9) : 0;
+    var end = exiting ? R.L + 40 : R.SN;
+    if (exiting) o = { sH: R.L + 40, LH: 0 };
+    /* T1 (thin line above the bottom arm): zips in ahead of the head, flows during the hold, retracts with the tail */
+    var t1o = function (s, D) { return -D * (0.039 - 0.027 * RIB7.sstep(650, 1060, s)); }, t1w = function (s, D) { return Math.max(4.2, D * 0.0083); };
+    var t1h = landed ? 1052 : Math.min(1052, RIB7.sAtV(R, RIB7.vAtS(R, hs.sH) + 110)), t1t = Math.max(R.S[0], exiting ? ts.sT + 30 : R.S[0]);
+    if (t1h > t1t + 3) { if (t1t < 948) RIB7.line(ctx, R, t1t, Math.min(t1h, 948), t1o, t1w, C.Y); if (t1h > 972) RIB7.line(ctx, R, Math.max(972, t1t), t1h, t1o, t1w, C.Y); }
+    RIB7.drawTaper(ctx, R, { sH: o.sH, LH: o.LH, sT: sT, LT: LT, end: end });
+    /* T2: dashes inside the orange */
+    var oo = function (s, D) { return 0.27 * RIB7.lerpA(R.E[0], R, s); }, ow = function (s, D) { return Math.max(2.2, 0.16 * RIB7.lerpA(R.E[0], R, s)); };
+    var hO = landed ? R.SN : hs.sH;
+    var hold = t > LAND ? (t - LAND) * 60 : 0;
+    [[870, 962], [986, 1196]].forEach(function (d) { var d0 = RIB7.sAtV(R, RIB7.vAtS(R, d[0]) + flowV + hold), d1 = RIB7.sAtV(R, RIB7.vAtS(R, d[1]) + flowV + hold); var a = Math.max(d0, sT + 20), e = Math.min(d1, hO - 30, R.L); if (e > a + 2) RIB7.line(ctx, R, a, e, oo, ow, C.Y); });
+    /* the arrowhead: opens as the stripes land, slides into the TV when the ribbon is pulled in */
+    var ak = seg(t, LAND - 0.05, LAND + 0.13), slide = exiting ? smoother(seg(t, X0, X0 + 0.16)) * 120 : 0;
+    if (ak > 0 && slide < 119) {
+      var sc2 = eBack(ak), nx = R.notch[0], ny = R.notch[1], tip = R.AH[2], dx = Math.cos(0.3), dy = Math.sin(0.3);
+      ctx.save(); ctx.translate(dx * slide, dy * slide); ctx.translate(nx, ny); ctx.scale(sc2, sc2); ctx.translate(-nx, -ny);
+      ctx.beginPath(); R.AH.forEach(function (p, i) { if (i) ctx.lineTo(p[0], p[1]); else ctx.moveTo(p[0], p[1]); }); ctx.closePath(); ctx.fillStyle = C.Y; ctx.fill(); ctx.restore();
+    }
+    /* stars: pop after the head passes, shrink away when the tail reaches them */
+    [[961, -0.012, 13, 0.25, C.O], [1110, 0.405, 17, 0.1, C.O], [640, 0.12, 18, 0.3, C.O], [1232, 0.165, 7, 0.2, '#fffbe0']].forEach(function (st) {
+      var s = RIB7.sAtV(R, RIB7.vAtS(R, st[0]) + flowV), k2 = landed ? 1 : seg(RIB7.vAtS(R, hs.sH) - RIB7.vAtS(R, s), 40, 160), gone = exiting ? Math.max(seg(ts.sT, s - 60, s + 10), seg(s, R.L - 60, R.L)) : 0; if (k2 <= 0 || gone >= 1) return;
+      var D = RIB7.lerpA(R.D, R, s), p = RIB7.pt(R, s, st[1] * D); pstar(ctx, p[0], p[1], st[2] * eBack(k2) * (1 - gone), st[3] + (1 - k2) * 0.8 + t * 0.4, st[4]);
+    });
+  }
+  drawTV(ctx, t);
+  window.done = true;
+};
+renderAt(1.2);
+</script></body></html>
